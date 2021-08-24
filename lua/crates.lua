@@ -184,16 +184,19 @@ function M.show_versions_popup()
     local win = vim.api.nvim_open_win(buf, true, config)
 
     local close_cmd = string.format("lua require('crates').hide_versions_popup(%d)", win)
-    vim.api.nvim_buf_set_keymap(buf, "n", "q", string.format(":%s<cr>", close_cmd), { noremap = true })
+    vim.api.nvim_buf_set_keymap(buf, "n", "q", string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
 
     vim.cmd("augroup CratesPopup"..win)
     vim.cmd("autocmd BufLeave,WinLeave *"..close_cmd)
     vim.cmd("augroup END")
+
+    return win
 end
 
 function M.hide_versions_popup(win)
-    vim.cmd("silent! augroup! CratesPopup" .. win)
-    pcall(api.nvim_win_close, win, true)
+    if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+    end
 end
 
 function M.setup(config)
@@ -204,8 +207,9 @@ function M.setup(config)
         M.config = config_manager.default()
     end
 
+    -- TODO make this work
     if M.config.autoload then
-        vim.cmd("augroup Crates"..win)
+        vim.cmd("augroup Crates")
         vim.cmd("autocmd BufRead Cargo.toml call lua require('crates').update()")
         vim.cmd("augroup END")
     end
