@@ -2,6 +2,7 @@ local M = {}
 
 function M.default()
     return {
+        autoload = true,
         loading_indicator = true,
         text = {
             version = "%s",
@@ -12,7 +13,9 @@ function M.default()
             loading = "CratesNvimLoading",
             version = "CratesNvimVersion",
             error = "CratesNvimError",
-        }
+        },
+        win_style = "minimal",
+        win_border = "none",
     }
 end
 

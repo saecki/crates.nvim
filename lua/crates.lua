@@ -147,12 +147,67 @@ function M.toggle()
     end
 end
 
+function M.show_versions_popup()
+    local row = vim.api.nvim_win_get_cursor(0)[1]
+    local crate = nil
+    for _,c in pairs(M.cache) do
+        if c.linenr + 1 == row then
+            crate = c
+        end
+    end
+
+    if not crate then
+        return
+    end
+
+    local num_versions = vim.tbl_count(crate.available_versions)
+    local height = math.min(20, num_versions)
+
+    local width = 20
+    for _,v in ipairs(crate.available_versions) do
+        width = math.max(string.len(v), width)
+    end
+
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(buf, 0, num_versions, false, crate.available_versions)
+    vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+
+    local config = {
+        relative = "cursor",
+        col = 0,
+        row = 1,
+        width = width,
+        height = height,
+        style = M.config.win_style,
+        border = M.config.win_border,
+    }
+    local win = vim.api.nvim_open_win(buf, true, config)
+
+    local close_cmd = string.format("lua require('crates').hide_versions_popup(%d)", win)
+    vim.api.nvim_buf_set_keymap(buf, "n", "q", string.format(":%s<cr>", close_cmd), { noremap = true })
+
+    vim.cmd("augroup CratesPopup"..win)
+    vim.cmd("autocmd BufLeave,WinLeave *"..close_cmd)
+    vim.cmd("augroup END")
+end
+
+function M.hide_versions_popup(win)
+    vim.cmd("silent! augroup! CratesPopup" .. win)
+    pcall(api.nvim_win_close, win, true)
+end
+
 function M.setup(config)
     if config then
         config_manager.extend_with_default(config)
         M.config = config
     else
         M.config = config_manager.default()
+    end
+
+    if M.config.autoload then
+        vim.cmd("augroup Crates"..win)
+        vim.cmd("autocmd BufRead Cargo.toml call lua require('crates').update()")
+        vim.cmd("augroup END")
     end
 end
 
