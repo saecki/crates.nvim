@@ -5,6 +5,7 @@ A neovim plugin show available crates.io versions
 ```lua
 require("crates").setup {
     autoload = true,
+    autoupdate = true,
     loading_indicator = true,
     text = {
         version = "%s",
@@ -23,5 +24,5 @@ require("crates").setup {
 
 ## TODO
 - [ ] semantic versioning and show update candidates
-- [ ] completion provider for nivm-compe
+- [ ] completion source for nivm-cmp
 

@@ -3,7 +3,9 @@ local M = {}
 function M.default()
     return {
         autoload = true,
+        autoupdate = true,
         loading_indicator = true,
+        popup_hide_keys = { "q", "<esc>" },
         text = {
             version = "%s",
             loading = "Loading...",

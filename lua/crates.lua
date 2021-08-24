@@ -6,9 +6,14 @@ local config_manager = require("crates.config")
 
 local api = "https://crates.io/api/v1"
 
-M.cache = {}
+M.vers_cache = {}
+M.crate_cache = {}
 M.running_jobs = {}
 M.visible = false
+
+local function get_filepath()
+    return vim.fn.expand("%:p")
+end
 
 function M.fetch_crate_versions(name, callback)
     local url = string.format("%s/crates/%s/versions", api, name)
@@ -41,12 +46,12 @@ function M.fetch_crate_versions(name, callback)
     j:start()
 end
 
-function M.display_version(crate)
+function M.display_version(crate, versions)
     if not M.visible then
         return
     end
 
-    local display_vers = crate.available_versions and crate.available_versions[1] or nil
+    local display_vers = versions and versions[1] or nil
     local virt_text
     if display_vers then
         virt_text = { { string.format(M.config.text.version, display_vers), M.config.highlight.version } }
@@ -78,11 +83,10 @@ function M.reload_crate(crate)
         end
 
         if versions and versions[1] then
-            crate.available_versions = versions
-            M.cache[crate.name] = crate
+            M.vers_cache[crate.name] = versions
         end
 
-        M.display_version(crate)
+        M.display_version(crate, versions)
     end
 
     if M.config.loading_indicator then
@@ -95,7 +99,7 @@ end
 function M._clear()
     for n,j in pairs(M.running_jobs) do
         j.on_exit = nil
-        j:shutdown(0, 9)
+        j:shutdown(0, 2)
         M.running_jobs[n] = nil
     end
 
@@ -112,12 +116,16 @@ end
 
 function M.reload()
     M.visible = true
-    M.cache = {}
+    M.vers_cache = {}
     M._clear()
-
+    
+    local filepath = get_filepath()
     local crates = toml.parse_crates()
+    
+    M.crate_cache[filepath] = {}
 
     for _,c in ipairs(crates) do
+        M.crate_cache[filepath][c.name] = c
         M.reload_crate(c)
     end
 end
@@ -126,13 +134,18 @@ function M.update()
     M.visible = true
     M._clear()
 
+    local filepath = get_filepath()
     local crates = toml.parse_crates()
 
-    for _,c in ipairs(crates) do
-        local cached_item = M.cache[c.name]
+    M.crate_cache[filepath] = {}
 
-        if cached_item then
-            M.display_version(cached_item)
+    for _,c in ipairs(crates) do
+        local versions = M.vers_cache[c.name]
+
+        M.crate_cache[filepath][c.name] = c
+
+        if versions then
+            M.display_version(c, versions)
         else
             M.reload_crate(c)
         end
@@ -150,29 +163,38 @@ end
 function M.show_versions_popup()
     local row = vim.api.nvim_win_get_cursor(0)[1]
     local crate = nil
-    for _,c in pairs(M.cache) do
-        if c.linenr + 1 == row then
-            crate = c
+
+    local filepath = get_filepath()
+    local crates = M.crate_cache[filepath]
+    if crates then
+        for _,c in pairs(crates) do
+            if c.linenr + 1 == row then
+                crate = c
+            end
         end
     end
-
     if not crate then
         return
     end
 
-    local num_versions = vim.tbl_count(crate.available_versions)
+    local versions = M.vers_cache[crate.name]
+    if not versions then
+        return
+    end
+
+    local num_versions = vim.tbl_count(versions)
     local height = math.min(20, num_versions)
 
     local width = 20
-    for _,v in ipairs(crate.available_versions) do
+    for _,v in ipairs(versions) do
         width = math.max(string.len(v), width)
     end
 
     local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(buf, 0, num_versions, false, crate.available_versions)
+    vim.api.nvim_buf_set_lines(buf, 0, num_versions, false, versions)
     vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
 
-    local config = {
+    local opts = {
         relative = "cursor",
         col = 0,
         row = 1,
@@ -181,10 +203,12 @@ function M.show_versions_popup()
         style = M.config.win_style,
         border = M.config.win_border,
     }
-    local win = vim.api.nvim_open_win(buf, true, config)
+    local win = vim.api.nvim_open_win(buf, true, opts)
 
     local close_cmd = string.format("lua require('crates').hide_versions_popup(%d)", win)
-    vim.api.nvim_buf_set_keymap(buf, "n", "q", string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
+    for _,k in ipairs(M.config.popup_hide_keys) do
+        vim.api.nvim_buf_set_keymap(buf, "n", k, string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
+    end
 
     vim.cmd("augroup CratesPopup"..win)
     vim.cmd("autocmd BufLeave,WinLeave *"..close_cmd)
@@ -207,12 +231,14 @@ function M.setup(config)
         M.config = config_manager.default()
     end
 
-    -- TODO make this work
+    vim.cmd("augroup Crates")
     if M.config.autoload then
-        vim.cmd("augroup Crates")
-        vim.cmd("autocmd BufRead Cargo.toml call lua require('crates').update()")
-        vim.cmd("augroup END")
+        vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
     end
+    if M.config.autoupdate then
+        vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
+    end
+    vim.cmd("augroup END")
 end
 
 return M
