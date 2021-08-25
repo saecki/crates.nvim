@@ -53,7 +53,7 @@ function M.show_versions()
     end
     
     for _,k in ipairs(C.config.popup.keys.copy_version) do
-        vim.api.nvim_buf_set_keymap(buf, "n", k, "0yg_", { noremap = true, silent = true })
+        vim.api.nvim_buf_set_keymap(buf, "n", k, "_yg_", { noremap = true, silent = true })
     end
 
     vim.cmd("augroup CratesPopup"..win)

@@ -8,7 +8,7 @@ function M.default()
         popup = {
             keys ={
                 hide = { "q", "<esc>" },
-                copy_version = { "y" },
+                copy_version = { "yy" },
             },
         },
         text = {
