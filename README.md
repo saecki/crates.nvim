@@ -4,6 +4,8 @@ A neovim plugin show available crates.io versions
 This is quite young software, so you might encounter some bugs.
 Feel free to open issues.
 
+![](res/example.png)
+
 ## Features
 - Autmatically load when opening a Cargo.toml file (`autoload`)
 - Update while editing (`autoupdate`)
