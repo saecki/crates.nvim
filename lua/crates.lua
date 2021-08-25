@@ -2,6 +2,7 @@ local M = {}
 
 local job = require("plenary.job")
 local toml = require("crates.toml")
+local semver = require("crates.semver")
 local config_manager = require("crates.config")
 
 local api = "https://crates.io/api/v1"
@@ -51,10 +52,34 @@ function M.display_version(crate, versions)
         return
     end
 
-    local display_vers = versions and versions[1] or nil
+    local newest = versions and versions[1] or nil
     local virt_text
-    if display_vers then
-        virt_text = { { string.format(M.config.text.version, display_vers), M.config.highlight.version } }
+    if newest then
+        local new_ver = semver.parse_version(newest)
+        if semver.matches_requirements(new_ver, crate.requirements) then
+            -- version matches, no upgrade available
+            virt_text = { { string.format(M.config.text.version, newest), M.config.highlight.version } }
+        else
+            local match = nil
+            for _,v in ipairs(versions) do
+                local vers = semver.parse_version(v)
+                if semver.matches_requirements(vers, crate.requirements) then
+                    match = v
+                    break
+                end
+            end
+
+            if match then -- TODO not showing match
+                -- ugrade available, but matching version
+                virt_text = {
+                    { string.format(M.config.text.version, match), M.config.highlight.version },
+                    { string.format(M.config.text.update, newest), M.config.highlight.update },
+                }
+            else
+                -- no version matches, no upgrade available
+                virt_text = { { string.format(M.config.text.version, newest), M.config.highlight.error } }
+            end
+        end
     else
         virt_text = { { M.config.text.error, M.config.highlight.error } }
     end
@@ -74,7 +99,7 @@ function M.reload_crate(crate)
         local data = vim.fn.json_decode(resp)
 
         local versions = {}
-        if data and data.versions then
+        if data and type(data) ~= "userdata" and data.versions then
             for _,v in ipairs(data.versions) do
                 if v.num then
                     table.insert(versions, v.num)
@@ -118,10 +143,10 @@ function M.reload()
     M.visible = true
     M.vers_cache = {}
     M._clear()
-    
+
     local filepath = M.get_filepath()
     local crates = toml.parse_crates()
-    
+
     M.crate_cache[filepath] = {}
 
     for _,c in ipairs(crates) do

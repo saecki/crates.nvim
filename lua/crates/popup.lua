@@ -34,7 +34,7 @@ function M.show_versions()
 
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buf, 0, num_versions, false, versions)
-    vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
 
     local opts = {
         relative = "cursor",
@@ -48,8 +48,12 @@ function M.show_versions()
     local win = vim.api.nvim_open_win(buf, true, opts)
 
     local close_cmd = string.format("lua require('crates.popup').hide_versions(%d)", win)
-    for _,k in ipairs(C.config.popup_hide_keys) do
+    for _,k in ipairs(C.config.popup.keys.hide) do
         vim.api.nvim_buf_set_keymap(buf, "n", k, string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
+    end
+    
+    for _,k in ipairs(C.config.popup.keys.copy_version) do
+        vim.api.nvim_buf_set_keymap(buf, "n", k, "0yg_", { noremap = true, silent = true })
     end
 
     vim.cmd("augroup CratesPopup"..win)

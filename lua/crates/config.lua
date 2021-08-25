@@ -5,15 +5,22 @@ function M.default()
         autoload = true,
         autoupdate = true,
         loading_indicator = true,
-        popup_hide_keys = { "q", "<esc>" },
+        popup = {
+            keys ={
+                hide = { "q", "<esc>" },
+                copy_version = { "y" },
+            },
+        },
         text = {
-            version = "%s",
             loading = "Loading...",
+            version = "%s",
+            update = "  %s",
             error = "Error fetching version",
         },
         highlight = {
             loading = "CratesNvimLoading",
             version = "CratesNvimVersion",
+            update = "CratesNvimUpdate",
             error = "CratesNvimError",
         },
         win_style = "minimal",

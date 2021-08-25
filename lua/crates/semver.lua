@@ -1,0 +1,202 @@
+local M = {}
+
+function M.parse_version(string)
+    local major, minor, patch, suffix
+
+    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)(.*)$")
+    if major and minor and patch and suffix and suffix ~= "" then
+        return {
+            major = tonumber(major),
+            minor = tonumber(minor),
+            patch = tonumber(patch),
+            suffix = suffix,
+        }
+    end
+
+    major, minor, patch = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
+    if major and minor and patch then
+        return {
+            major = tonumber(major),
+            minor = tonumber(minor),
+            patch = tonumber(patch),
+        }
+    end
+
+    major, minor = string:match("^([0-9]+)%.([0-9]+)$")
+    if major and minor then
+        return {
+            major = tonumber(major),
+            minor = tonumber(minor),
+        }
+    end
+
+    major = string:match("^([0-9]+)$")
+    if major then
+        return { major = tonumber(major) }
+    end
+
+    return {}
+end
+
+function M.parse_requirement(string)
+    local vers_str
+
+    -- less than or equal
+    vers_str = string:match("^<=(.+)$")
+    if vers_str then
+        return { cond = "le", vers = M.parse_version(vers_str) }
+    end
+
+    -- less than
+    vers_str = string:match("^<(.+)$")
+    if vers_str then
+        return { cond = "lt", vers = M.parse_version(vers_str) }
+    end
+
+    -- greater than or equal
+    vers_str = string:match("^>=(.+)$")
+    if vers_str then
+        return { cond = "ge", vers = M.parse_version(vers_str) }
+    end
+
+    -- greater than
+    vers_str = string:match("^>(.+)$")
+    if vers_str then
+        return { cond = "gt", vers = M.parse_version(vers_str) }
+    end
+
+    -- tilde
+    vers_str = string:match("^%~(.+)$")
+    if vers_str then
+        return { cond = "tl", vers = M.parse_version(vers_str) }
+    end
+
+    -- wildcard
+    vers_str = string:match("^(.+)%.%*$")
+    if vers_str then
+        return { cond = "tl", vers = M.parse_version(vers_str) }
+    end
+
+    -- caret
+    vers_str = string:match("^%^(.+)$")
+    if vers_str then
+        return { cond = "cr", vers = M.parse_version(vers_str) }
+    end
+
+    return { cond = "cr", vers = M.parse_version(string) }
+end
+
+function M.parse_requirements(string)
+    local requirements = {}
+    for c in string:gmatch("[,]?%s*([^,]+)%s*[,]?") do
+        local requirement = M.parse_requirement(c)
+        table.insert(requirements, requirement)
+    end
+
+    return requirements
+end
+
+local function filled_zeros(version)
+    return {
+        major = version.major or 0,
+        minor = version.minor or 0,
+        patch = version.patch or 0,
+        suffix = version.suffix,
+    }
+end
+
+local function compare_suffixes(a, b)
+    if a and b then
+        if     a  < b then return -1
+        elseif a == b then return 0
+        elseif a  > b then return 1
+        end
+    end
+
+    if         a and not b then return -1
+    elseif not a and not b then return 0
+    elseif not a and     b then return 1
+    end
+end
+
+local function compare_versions(a, b)
+    local major = a.major - b.major
+    local minor = a.minor - b.minor
+    local patch = a.patch - b.patch
+    local suffix = compare_suffixes(a.suffix, b.suffix)
+
+    if major == 0 then
+        if minor == 0 then
+            if patch == 0 then
+                return suffix
+            else
+                return patch
+            end
+        else
+            return minor
+        end
+    else
+        return major
+    end
+end
+
+function M.matches_requirement(v, r)
+    if r.cond == "cr" then
+        local a = filled_zeros(v)
+        local b = filled_zeros(r.vers)
+        local c
+        if b.major == 0 and b.minor == 0 then
+            c = { major = 0, minor = 0, patch = b.patch + 1 }
+        elseif b.major == 0 then
+            c = { major = 0, minor = b.minor + 1, patch = 0 }
+        else
+            c = { major = b.major + 1, minor = 0, patch = 0 }
+        end
+
+        return compare_versions(a, b) >= 0
+            and compare_versions(a, c) < 0
+    end
+
+    if r.cond == "tl" then
+        local a = v
+        local b = r.vers
+        local c
+        if not b.minor and not b.patch then
+            c = { major = b.major + 1, minor = 0, patch = 0 }
+        else
+            c = { major = b.major, minor = b.minor + 1, patch = 0 }
+        end
+        b = filled_zeros(b)
+
+        return compare_versions(a, b) >= 0
+            and compare_versions(a, c) < 0
+    end
+
+    if r.cond == "lt" then
+        local a = filled_zeros(v)
+        local b = filled_zeros(r.vers)
+        return compare_versions(a, b) < 0
+    elseif r.cond == "le" then
+        local a = filled_zeros(v)
+        local b = filled_zeros(r.vers)
+        return compare_versions(a, b) <= 0
+    elseif r.cond == "gt" then
+        local a = filled_zeros(v)
+        local b = filled_zeros(r.vers)
+        return compare_versions(a, b) > 0
+    elseif r.cond == "ge" then
+        local a = filled_zeros(v)
+        local b = filled_zeros(r.vers)
+        return compare_versions(a, b) >= 0
+    end
+end
+
+function M.matches_requirements(version, requirements)
+    local matches = true
+    for _,r in ipairs(requirements) do
+        matches = matches and M.matches_requirement(version, r)
+    end
+    return matches
+end
+
+return M

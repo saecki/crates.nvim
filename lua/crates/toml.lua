@@ -1,5 +1,7 @@
 local M = {}
 
+local semver = require('crates.semver')
+
 local function parse_crate_dep_section_line(line)
     local version = line:match("^%s*version%s*=%s*\"(.+)\"%s*$")
     if version then
@@ -10,14 +12,15 @@ local function parse_crate_dep_section_line(line)
 end
 
 local function parse_dep_section_line(line)
+    local name, version, keys
     -- plain version
-    local name, version = line:match("^%s*([^%s]+)%s*=%s*%\"(.+)\"%s*$")
+    name, version = line:match("^%s*([^%s]+)%s*=%s*%\"(.+)\"%s*$")
     if name and version then
         return { name = name, version = version }
     end
 
     -- version in map
-    local name, keys = line:match("^%s*([^%s]+)%s*=%s*{(.+)}%s*$")
+    name, keys = line:match("^%s*([^%s]+)%s*=%s*{(.+)}%s*$")
     if name and keys then
         for val in keys:gmatch("[,]?([^,]+)[,]?") do
             local crate = parse_crate_dep_section_line(val)
@@ -69,6 +72,10 @@ function M.parse_crates()
                 table.insert(crates, crate)
             end
         end
+    end
+
+    for _,c in ipairs(crates) do
+        c.requirements = semver.parse_requirements(c.version)
     end
 
     return crates
