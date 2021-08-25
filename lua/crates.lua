@@ -11,7 +11,7 @@ M.crate_cache = {}
 M.running_jobs = {}
 M.visible = false
 
-local function get_filepath()
+function M.get_filepath()
     return vim.fn.expand("%:p")
 end
 
@@ -119,7 +119,7 @@ function M.reload()
     M.vers_cache = {}
     M._clear()
     
-    local filepath = get_filepath()
+    local filepath = M.get_filepath()
     local crates = toml.parse_crates()
     
     M.crate_cache[filepath] = {}
@@ -134,7 +134,7 @@ function M.update()
     M.visible = true
     M._clear()
 
-    local filepath = get_filepath()
+    local filepath = M.get_filepath()
     local crates = toml.parse_crates()
 
     M.crate_cache[filepath] = {}
@@ -157,69 +157,6 @@ function M.toggle()
         M.clear()
     else
         M.update()
-    end
-end
-
-function M.show_versions_popup()
-    local row = vim.api.nvim_win_get_cursor(0)[1]
-    local crate = nil
-
-    local filepath = get_filepath()
-    local crates = M.crate_cache[filepath]
-    if crates then
-        for _,c in pairs(crates) do
-            if c.linenr + 1 == row then
-                crate = c
-            end
-        end
-    end
-    if not crate then
-        return
-    end
-
-    local versions = M.vers_cache[crate.name]
-    if not versions then
-        return
-    end
-
-    local num_versions = vim.tbl_count(versions)
-    local height = math.min(20, num_versions)
-
-    local width = 20
-    for _,v in ipairs(versions) do
-        width = math.max(string.len(v), width)
-    end
-
-    local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(buf, 0, num_versions, false, versions)
-    vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
-
-    local opts = {
-        relative = "cursor",
-        col = 0,
-        row = 1,
-        width = width,
-        height = height,
-        style = M.config.win_style,
-        border = M.config.win_border,
-    }
-    local win = vim.api.nvim_open_win(buf, true, opts)
-
-    local close_cmd = string.format("lua require('crates').hide_versions_popup(%d)", win)
-    for _,k in ipairs(M.config.popup_hide_keys) do
-        vim.api.nvim_buf_set_keymap(buf, "n", k, string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
-    end
-
-    vim.cmd("augroup CratesPopup"..win)
-    vim.cmd("autocmd BufLeave,WinLeave * "..close_cmd)
-    vim.cmd("augroup END")
-
-    return win
-end
-
-function M.hide_versions_popup(win)
-    if vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
     end
 end
 
