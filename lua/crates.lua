@@ -52,44 +52,87 @@ function M.display_versions(crate, versions)
         return
     end
 
-    local newest = versions and versions[1] or nil
+    local avoid_pre = M.config.avoid_prerelease and not crate.req_has_suffix
+
+    local newest_yanked = nil
+    local newest_pre = nil
+    local newest = nil
+    if versions then
+        for _,v in ipairs(versions) do
+            if not v.yanked then
+                if avoid_pre then
+                    if v.parsed.suffix then
+                        newest_pre = newest_pre or v
+                    else 
+                        newest = v
+                        break
+                    end
+                else
+                    newest = v
+                    break
+                end
+            else
+                newest_yanked = newest_yanked or v
+            end
+        end
+
+        newest = newest or newest_pre or newest_yanked
+    end
+
     local virt_text
     if newest then
-        local new_ver = semver.parse_version(newest.num)
-        if semver.matches_requirements(new_ver, crate.requirements) then
+        if semver.matches_requirements(newest.parsed, crate.reqs) then
             -- version matches, no upgrade available
             virt_text = { { string.format(M.config.text.version, newest.num), M.config.highlight.version } }
         else
-            local yanked_match = nil
+            -- version does not match, upgrade available
+            local match_yanked = nil
+            local match_pre = nil
             local match = nil
             for _,v in ipairs(versions) do
-                local vers = semver.parse_version(v.num)
-                if semver.matches_requirements(vers, crate.requirements) then
+                if semver.matches_requirements(v.parsed, crate.reqs) then
                     if not v.yanked then
-                        match = v
-                        break
-                    elseif not yanked_match then
-                        yanked_match = v
+                        if avoid_pre then
+                            if v.parsed.suffix then
+                                match_pre = match_pre or v
+                            else 
+                                match = v
+                                break
+                            end
+                        else
+                            match = v
+                            break
+                        end
+                    else
+                        match_yanked = match_yanked or v
                     end
                 end
             end
 
             if match then
-                -- ugrade available, but matching version
+                -- found a match
                 virt_text = {
                     { string.format(M.config.text.version, match.num), M.config.highlight.version },
                     { string.format(M.config.text.update, newest.num), M.config.highlight.update },
                 }
-            elseif yanked_match then
-                -- ugrade available, but matching version is yanked
-                local yanked_text = string.format(M.config.text.yanked, yanked_match.num)
+            elseif match_pre then
+                -- found a pre-release match
                 virt_text = {
-                    { string.format(M.config.text.version, yanked_text), M.config.highlight.yanked },
+                    { string.format(M.config.text.prerelease, match_pre.num), M.config.highlight.prerelease },
+                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                }
+            elseif match_yanked then
+                -- found a yanked match
+                virt_text = {
+                    { string.format(M.config.text.yanked, match_yanked.num), M.config.highlight.yanked },
                     { string.format(M.config.text.update, newest.num), M.config.highlight.update },
                 }
             else
-                -- no version matches
-                virt_text = { { string.format(M.config.text.version, newest.num), M.config.highlight.error } }
+                -- no match found
+                virt_text = { 
+                    { M.config.text.nomatch, M.config.highlight.nomatch },
+                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                }
             end
         end
     else
@@ -113,11 +156,12 @@ function M.reload_crate(crate)
         local versions = {}
         if data and type(data) ~= "userdata" and data.versions then
             for _,v in ipairs(data.versions) do
-                local version = {
-                    num = v.num,
-                    yanked = v.yanked,
-                }
                 if v.num then
+                    local version = {
+                        num = v.num,
+                        yanked = v.yanked,
+                        parsed = semver.parse_version(v.num),
+                    }
                     table.insert(versions, version)
                 end
             end

@@ -2,22 +2,27 @@ local M = {}
 
 function M.default()
     return {
+        avoid_prerelease = true,
         autoload = true,
         autoupdate = true,
         loading_indicator = true,
         text = {
             loading = "Loading...",
             version = "%s",
+            prerelease = "%s",
+            yanked = "%s yanked",
+            nomatch = "No match",
             update = "  %s",
             error = "Error fetching version",
-            yanked = "%s yanked",
         },
         highlight = {
             loading = "CratesNvimLoading",
             version = "CratesNvimVersion",
+            prerelease = "CratesNvimPreRelease",
+            yanked = "CratesNvimYanked",
+            nomatch = "CratesNvimNoMatch",
             update = "CratesNvimUpdate",
             error = "CratesNvimError",
-            yanked = "CratesNvimYanked"
         },
         popup = {
             text = {

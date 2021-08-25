@@ -22,12 +22,9 @@ local function parse_dep_section_line(line)
     -- version in map
     name, keys = line:match("^%s*([^%s]+)%s*=%s*{(.+)}%s*$")
     if name and keys then
-        for val in keys:gmatch("[,]?([^,]+)[,]?") do
-            local crate = parse_crate_dep_section_line(val)
-            if crate then
-                crate.name = name
-                return crate
-            end
+        version = line:match("^.*[,]?%s*version%s*=%s*\"([^\"]+)\"%s*[,]?.*$")
+        if name and version then
+            return { name = name, version = version }
         end
     end
 
@@ -75,7 +72,16 @@ function M.parse_crates()
     end
 
     for _,c in ipairs(crates) do
-        c.requirements = semver.parse_requirements(c.version)
+        c.reqs = semver.parse_requirements(c.version)
+        print(vim.inspect(c.requirements))
+
+        c.req_has_suffix = false
+        for _,r in ipairs(c.reqs) do
+            if r.vers.suffix then
+                c.req_has_suffix = true
+                break
+            end
+        end
     end
 
     return crates
