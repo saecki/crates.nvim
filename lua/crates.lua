@@ -150,7 +150,7 @@ function M._clear()
     M.namespace_id = vim.api.nvim_create_namespace("crates.nvim")
 end
 
-function M.clear()
+function M.hide()
     M.visible = false
     M._clear()
 end
@@ -195,7 +195,7 @@ end
 
 function M.toggle()
     if M.visible then
-        M.clear()
+        M.hide()
     else
         M.update()
     end
