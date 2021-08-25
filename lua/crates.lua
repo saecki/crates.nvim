@@ -211,7 +211,7 @@ function M.show_versions_popup()
     end
 
     vim.cmd("augroup CratesPopup"..win)
-    vim.cmd("autocmd BufLeave,WinLeave *"..close_cmd)
+    vim.cmd("autocmd BufLeave,WinLeave * "..close_cmd)
     vim.cmd("augroup END")
 
     return win
