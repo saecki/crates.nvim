@@ -47,7 +47,7 @@ function M.fetch_crate_versions(name, callback)
     j:start()
 end
 
-function M.display_version(crate, versions)
+function M.display_versions(crate, versions)
     if not M.visible then
         return
     end
@@ -55,29 +55,41 @@ function M.display_version(crate, versions)
     local newest = versions and versions[1] or nil
     local virt_text
     if newest then
-        local new_ver = semver.parse_version(newest)
+        local new_ver = semver.parse_version(newest.num)
         if semver.matches_requirements(new_ver, crate.requirements) then
             -- version matches, no upgrade available
-            virt_text = { { string.format(M.config.text.version, newest), M.config.highlight.version } }
+            virt_text = { { string.format(M.config.text.version, newest.num), M.config.highlight.version } }
         else
+            local yanked_match = nil
             local match = nil
             for _,v in ipairs(versions) do
-                local vers = semver.parse_version(v)
+                local vers = semver.parse_version(v.num)
                 if semver.matches_requirements(vers, crate.requirements) then
-                    match = v
-                    break
+                    if not v.yanked then
+                        match = v
+                        break
+                    elseif not yanked_match then
+                        yanked_match = v
+                    end
                 end
             end
 
-            if match then -- TODO not showing match
+            if match then
                 -- ugrade available, but matching version
                 virt_text = {
-                    { string.format(M.config.text.version, match), M.config.highlight.version },
-                    { string.format(M.config.text.update, newest), M.config.highlight.update },
+                    { string.format(M.config.text.version, match.num), M.config.highlight.version },
+                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                }
+            elseif yanked_match then
+                -- ugrade available, but matching version is yanked
+                local yanked_text = string.format(M.config.text.yanked, yanked_match.num)
+                virt_text = {
+                    { string.format(M.config.text.version, yanked_text), M.config.highlight.yanked },
+                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
                 }
             else
-                -- no version matches, no upgrade available
-                virt_text = { { string.format(M.config.text.version, newest), M.config.highlight.error } }
+                -- no version matches
+                virt_text = { { string.format(M.config.text.version, newest.num), M.config.highlight.error } }
             end
         end
     else
@@ -101,8 +113,12 @@ function M.reload_crate(crate)
         local versions = {}
         if data and type(data) ~= "userdata" and data.versions then
             for _,v in ipairs(data.versions) do
+                local version = {
+                    num = v.num,
+                    yanked = v.yanked,
+                }
                 if v.num then
-                    table.insert(versions, v.num)
+                    table.insert(versions, version)
                 end
             end
         end
@@ -111,7 +127,7 @@ function M.reload_crate(crate)
             M.vers_cache[crate.name] = versions
         end
 
-        M.display_version(crate, versions)
+        M.display_versions(crate, versions)
     end
 
     if M.config.loading_indicator then
@@ -170,7 +186,7 @@ function M.update()
         M.crate_cache[filepath][c.name] = c
 
         if versions then
-            M.display_version(c, versions)
+            M.display_versions(c, versions)
         else
             M.reload_crate(c)
         end

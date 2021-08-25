@@ -13,21 +13,36 @@ require("crates").setup {
     autoload = true,
     autoupdate = true,
     loading_indicator = true,
-    popup_hide_keys = { "q", "<esc>" },
     text = {
         loading = "Loading...",
         version = "%s",
         update = "  %s",
         error = "Error fetching version",
+        yanked = "%s yanked",
     },
     highlight = {
         loading = "CratesNvimLoading",
         version = "CratesNvimVersion",
         update = "CratesNvimUpdate",
         error = "CratesNvimError",
+        yanked = "CratesNvimYanked"
     },
-    win_style = "minimal",
-    win_border = "none",
+    popup = {
+        text = {
+            yanked = "yanked"
+        },
+        highlight = {
+            yanked = "CratesNvimPopupYanked"
+        },
+        keys = {
+            hide = { "q", "<esc>" },
+            copy_version = { "yy" },
+        },
+        style = "minimal",
+        border = "none",
+        max_height = 30,
+        min_width = 20,
+    },
 }
 ```
 
