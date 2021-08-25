@@ -4,36 +4,48 @@ A neovim plugin show available crates.io versions
 This is quite young software, so you might encounter some bugs.
 Feel free to open issues.
 
-![](res/example.png)
-
 ## Features
 - Autmatically load when opening a Cargo.toml file (`autoload`)
 - Update while editing (`autoupdate`)
 - Show currently usable version
-- Show upgrade candidates
-- Show if only usable version is yanked
-- Show if no version is available
-- Open floating window with all available versions
+- Show usable version is a pre-release
+- Show usable version is yanked
+- Show if no version is usable
+- Show best upgrade candidate
+- Open floating window with all versions
 
 ## Setup
+
+### vim-plug
+```
+Plug 'nvim-lua/plenary.nvim'
+Plug 'saecki/crates.nvim'
+```
+
+## Config
 ```lua
 require("crates").setup {
+    avoid_prerelease = true,
     autoload = true,
     autoupdate = true,
     loading_indicator = true,
     text = {
         loading = "Loading...",
         version = "%s",
+        prerelease = "%s",
+        yanked = "%s yanked",
+        nomatch = "No match",
         update = "  %s",
         error = "Error fetching version",
-        yanked = "%s yanked",
     },
     highlight = {
         loading = "CratesNvimLoading",
         version = "CratesNvimVersion",
+        prerelease = "CratesNvimPreRelease",
+        yanked = "CratesNvimYanked",
+        nomatch = "CratesNvimNoMatch",
         update = "CratesNvimUpdate",
         error = "CratesNvimError",
-        yanked = "CratesNvimYanked"
     },
     popup = {
         text = {
@@ -68,14 +80,14 @@ require('crates').hide()
 require('crates').toggle()
 
 
--- show popup with all available versions (returns window id)
+-- show popup with all versions (returns window id)
 require('crates.popup').show_versions()
 
--- show popup with all available versions
+-- hide popup with all versions
 require('crates.popup').hide_versions(win_id)
 ```
 
-### Show versions popup when editing `Cargo.toml`
+### Show appropriate documentation `Cargo.toml`
 ```viml
 nnoremap <silent> K :call <SID>show_documentation()<cr>
 function! s:show_documentation()
@@ -92,4 +104,5 @@ endfunction
 ## TODO
 - possibly port to teal?
 - completion source for nivm-cmp
+- update current line to candidate
 
