@@ -40,6 +40,12 @@ end
 
 function M.parse_requirement(string)
     local vers_str
+    
+    -- equal
+    vers_str = string:match("^=(.+)$")
+    if vers_str then
+        return { cond = "eq", vers = M.parse_version(vers_str) }
+    end
 
     -- less than or equal
     vers_str = string:match("^<=(.+)$")
@@ -172,7 +178,12 @@ function M.matches_requirement(v, r)
             and compare_versions(a, c) < 0
     end
 
-    if r.cond == "lt" then
+    if r.cond == "eq" then
+        return v.major == r.vers.major
+            and v.minor == r.vers.minor
+            and v.patch == r.vers.patch
+            and v.suffix == r.vers.suffix
+    elseif r.cond == "lt" then
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)
         return compare_versions(a, b) < 0
