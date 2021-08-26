@@ -71,7 +71,6 @@ function M.parse_crates()
 
     for _,c in ipairs(crates) do
         c.reqs = semver.parse_requirements(c.version)
-        print(vim.inspect(c.requirements))
 
         c.req_has_suffix = false
         for _,r in ipairs(c.reqs) do

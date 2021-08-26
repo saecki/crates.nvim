@@ -1,20 +1,16 @@
 local M = {}
 
 local job = require("plenary.job")
+local core = require("crates.core")
 local toml = require("crates.toml")
 local semver = require("crates.semver")
+local util = require("crates.util")
+local popup = require("crates.popup")
 local config_manager = require("crates.config")
 
 local api = "https://crates.io/api/v1"
 
-M.vers_cache = {}
-M.crate_cache = {}
 M.running_jobs = {}
-M.visible = false
-
-function M.get_filepath()
-    return vim.fn.expand("%:p")
-end
 
 function M.fetch_crate_versions(name, callback)
     local url = string.format("%s/crates/%s/versions", api, name)
@@ -29,7 +25,7 @@ function M.fetch_crate_versions(name, callback)
             callback(resp)
         end
 
-        if M.visible then
+        if core.visible then
             vim.schedule(cb)
         end
 
@@ -47,46 +43,19 @@ function M.fetch_crate_versions(name, callback)
     j:start()
 end
 
-function M.get_newest(crate, versions, avoid_pre)
-    if not versions then
-        return nil
-    end
-    
-    local newest_yanked = nil
-    local newest_pre = nil
-
-    for _,v in ipairs(versions) do
-        if not v.yanked then
-            if avoid_pre then
-                if v.parsed.suffix then
-                    newest_pre = newest_pre or v
-                else
-                    return v
-                end
-            else
-                return v
-            end
-        else
-            newest_yanked = newest_yanked or v
-        end
-    end
-
-    return newest_pre or newest_yanked
-end
-
 function M.display_versions(crate, versions)
-    if not M.visible then
+    if not core.visible then
         return
     end
 
-    local avoid_pre = M.config.avoid_prerelease and not crate.req_has_suffix
-    local newest = M.get_newest(crate, versions, avoid_pre)
+    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
+    local newest = util.get_newest(versions, avoid_pre)
 
     local virt_text
     if newest then
         if semver.matches_requirements(newest.parsed, crate.reqs) then
             -- version matches, no upgrade available
-            virt_text = { { string.format(M.config.text.version, newest.num), M.config.highlight.version } }
+            virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
         else
             -- version does not match, upgrade available
             local match_yanked = nil
@@ -115,31 +84,31 @@ function M.display_versions(crate, versions)
             if match then
                 -- found a match
                 virt_text = {
-                    { string.format(M.config.text.version, match.num), M.config.highlight.version },
-                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                    { string.format(core.cfg.text.version, match.num), core.cfg.highlight.version },
+                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
                 }
             elseif match_pre then
                 -- found a pre-release match
                 virt_text = {
-                    { string.format(M.config.text.prerelease, match_pre.num), M.config.highlight.prerelease },
-                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                    { string.format(core.cfg.text.prerelease, match_pre.num), core.cfg.highlight.prerelease },
+                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
                 }
             elseif match_yanked then
                 -- found a yanked match
                 virt_text = {
-                    { string.format(M.config.text.yanked, match_yanked.num), M.config.highlight.yanked },
-                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                    { string.format(core.cfg.text.yanked, match_yanked.num), core.cfg.highlight.yanked },
+                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
                 }
             else
                 -- no match found
                 virt_text = {
-                    { M.config.text.nomatch, M.config.highlight.nomatch },
-                    { string.format(M.config.text.update, newest.num), M.config.highlight.update },
+                    { core.cfg.text.nomatch, core.cfg.highlight.nomatch },
+                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
                 }
             end
         end
     else
-        virt_text = { { M.config.text.error, M.config.highlight.error } }
+        virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
@@ -147,7 +116,7 @@ function M.display_versions(crate, versions)
 end
 
 function M.display_loading(crate)
-    local virt_text = { { M.config.text.loading, M.config.highlight.loading } }
+    local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
     vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr - 1, virt_text, {})
 end
@@ -171,13 +140,13 @@ function M.reload_crate(crate)
         end
 
         if versions and versions[1] then
-            M.vers_cache[crate.name] = versions
+            core.vers_cache[crate.name] = versions
         end
 
         M.display_versions(crate, versions)
     end
 
-    if M.config.loading_indicator then
+    if core.cfg.loading_indicator then
         M.display_loading(crate)
     end
 
@@ -198,39 +167,39 @@ function M._clear()
 end
 
 function M.hide()
-    M.visible = false
+    core.visible = false
     M._clear()
 end
 
 function M.reload()
-    M.visible = true
-    M.vers_cache = {}
+    core.visible = true
+    core.vers_cache = {}
     M._clear()
 
-    local filepath = M.get_filepath()
+    local filepath = util.get_filepath()
     local crates = toml.parse_crates()
 
-    M.crate_cache[filepath] = {}
+    core.crate_cache[filepath] = {}
 
     for _,c in ipairs(crates) do
-        M.crate_cache[filepath][c.name] = c
+        core.crate_cache[filepath][c.name] = c
         M.reload_crate(c)
     end
 end
 
 function M.update()
-    M.visible = true
+    core.visible = true
     M._clear()
 
-    local filepath = M.get_filepath()
+    local filepath = util.get_filepath()
     local crates = toml.parse_crates()
 
-    M.crate_cache[filepath] = {}
+    core.crate_cache[filepath] = {}
 
     for _,c in ipairs(crates) do
-        local versions = M.vers_cache[c.name]
+        local versions = core.vers_cache[c.name]
 
-        M.crate_cache[filepath][c.name] = c
+        core.crate_cache[filepath][c.name] = c
 
         if versions then
             M.display_versions(c, versions)
@@ -241,29 +210,57 @@ function M.update()
 end
 
 function M.toggle()
-    if M.visible then
+    if core.visible then
         M.hide()
     else
         M.update()
     end
 end
 
+function M.upgrade()
+    local linenr = vim.api.nvim_win_get_cursor(0)[1]
+    local crate, versions = util.get_line_crate(linenr)
+
+    if not crate or not versions then
+        return
+    end
+
+    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
+    local newest = util.get_newest(versions, avoid_pre)
+
+    if not newest then
+        return
+    end
+
+    vim.api.nvim_buf_set_text(
+        0,
+        crate.linenr - 1,
+        crate.col[1],
+        crate.linenr - 1,
+        crate.col[2],
+        { newest.num }
+    )
+end
+
 function M.setup(config)
     if config then
-        config_manager.extend_with_default(config)
-        M.config = config
+        local default = config_manager.default()
+        core.cfg = vim.tbl_deep_extend("keep", config, default)
     else
-        M.config = config_manager.default()
+        core.cfg = config_manager.default()
     end
 
     vim.cmd("augroup Crates")
-    if M.config.autoload then
+    if core.cfg.autoload then
         vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
     end
-    if M.config.autoupdate then
+    if core.cfg.autoupdate then
         vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
     end
     vim.cmd("augroup END")
 end
+
+M.show_versions_popup = popup.show_versions
+M.hide_versions_popup = popup.hide_versions
 
 return M

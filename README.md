@@ -97,16 +97,14 @@ require('crates').hide()
 -- show/hide versions
 require('crates').toggle()
 
-
 -- upgrade crate on current line
-require('crates.util').upgrade()
+require('crates').upgrade()
 
-
--- show popup with all versions (returns window id)
-require('crates.popup').show_versions()
+-- show popup with all versions
+require('crates').show_versions_popup()
 
 -- hide popup with all versions
-require('crates.popup').hide_versions(win_id)
+require('crates').hide_versions_popup()
 ```
 
 ### Show appropriate documentation `Cargo.toml`
@@ -117,7 +115,7 @@ function! s:show_documentation()
     if (index(['vim','help'], &filetype) >= 0)
         execute 'h '.expand('<cword>')
     elseif ('Cargo.toml' == expand('%:t'))
-        lua require('crates.popup').show_versions()
+        lua require('crates').show_versions_popup()
     else
         lua vim.lsp.buf.hover()
     endif
@@ -127,5 +125,4 @@ endfunction
 ## TODO
 - possibly port to teal?
 - Enter to insert version in popup
-- Restructure code
 
