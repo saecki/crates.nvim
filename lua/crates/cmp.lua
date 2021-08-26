@@ -1,17 +1,17 @@
 local source = {}
 
 local cmp = require('cmp')
-local C = require('crates')
+local crates = require('crates')
 local util = require('crates.util')
 
 ---Source constructor.
 source.new = function()
-  return setmetatable({}, { __index = source })
+    return setmetatable({}, { __index = source })
 end
 
 ---Return the source name for some information.
 source.get_debug_name = function()
-  return 'crates'
+    return 'crates'
 end
 
 ---Return the source is available or not.
@@ -27,14 +27,14 @@ end
 ---@param params cmp.SourceBaseApiParams
 ---@return string
 function source.get_keyword_pattern(_, _)
-  return [[\([^"']\)*]]
+    return [[\([^"'\%^<>=~,\s]\)*]]
 end
 
 ---Return trigger characters.
 ---@param params cmp.SourceBaseApiParams
 ---@return string[]
 function source.get_trigger_characters(_, _)
-  return { '"', "'", ".", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
+    return { '"', "'", ".", "<", ">", "=", "^", "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
 end
 
 ---Invoke completion (required).
@@ -54,7 +54,7 @@ function source.complete(_, _, callback)
             }
             if v.yanked then
                 r.deprecated = true
-                r.documentation = C.config.popup.text.yanked
+                r.documentation = crates.config.popup.text.yanked
             end
             table.insert(results, r)
         end
@@ -62,20 +62,6 @@ function source.complete(_, _, callback)
     else
         callback(nil)
     end
-end
-
----Resolve completion item that will be called when the item selected or before the item confirmation.
----@param completion_item lsp.CompletionItem
----@param callback fun(completion_item: lsp.CompletionItem|nil)
-function source.resolve(_, completion_item, callback)
-  callback(completion_item)
-end
-
----Execute command that will be called when after the item confirmation.
----@param completion_item lsp.CompletionItem
----@param callback fun(completion_item: lsp.CompletionItem|nil)
-function source.execute(_, completion_item, callback)
-  callback(completion_item)
 end
 
 return source
