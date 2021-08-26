@@ -8,6 +8,7 @@ Feel free to open issues.
 
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+- Upgrade crate on current line
 - Automatically load when opening a Cargo.toml file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show currently usable version
@@ -19,13 +20,19 @@ Feel free to open issues.
 
 ## Setup
 
-### vim-plug
+### Installation
+[__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
 Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim'
 ```
 
-### nvim-cmp source
+[__packer.nvim__](https://github.com/wbthomason/packer.nvim)
+```
+use { 'nvim-lua/plenary.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+```
+
+### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources
 ```lua
 require('cmp').setup {

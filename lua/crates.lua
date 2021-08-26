@@ -265,6 +265,12 @@ function M.setup(config)
         vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
     end
     vim.cmd("augroup END")
+
+    vim.cmd([[
+        augroup CratesPopup
+        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide_versions()
+        augroup END
+    ]])
 end
 
 M.show_versions_popup = popup.show_versions

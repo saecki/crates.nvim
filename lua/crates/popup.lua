@@ -4,8 +4,10 @@ local core = require('crates.core')
 local util = require('crates.util')
 
 function M.show_versions()
-    -- hide if still open
-    M.hide_versions()
+    if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
+        M.focus_versions()
+        return
+    end
 
     local top_offset = 2
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
@@ -56,6 +58,7 @@ function M.show_versions()
     end
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
+    vim.api.nvim_buf_set_name(buf, "crates.popup"..buf)
 
     -- create window
     local opts = {
@@ -67,7 +70,7 @@ function M.show_versions()
         style = core.cfg.popup.style,
         border = core.cfg.popup.border,
     }
-    M.win_id = vim.api.nvim_open_win(buf, true, opts)
+    M.win_id = vim.api.nvim_open_win(buf, false, opts)
 
     -- add key mappings
     local close_cmd = "lua require('crates.popup').hide_versions()"
@@ -79,18 +82,22 @@ function M.show_versions()
         vim.api.nvim_buf_set_keymap(buf, "n", k, "_yE", { noremap = true, silent = true })
     end
 
-    -- show window
-    vim.api.nvim_win_set_cursor(M.win_id, { 3, 0 })
+    if core.cfg.autofocus then
+        M.focus_versions()
+    end
+end
 
-    -- automatically hide window
-    vim.cmd("augroup CratesPopup" .. M.win_id)
-    vim.cmd("autocmd BufLeave,WinLeave * "..close_cmd)
-    vim.cmd("augroup END")
+function M.focus_versions()
+    if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
+        vim.api.nvim_set_current_win(M.win_id)
+        vim.api.nvim_win_set_cursor(M.win_id, { 3, 0 })
+    end
 end
 
 function M.hide_versions()
     if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
         vim.api.nvim_win_close(M.win_id, false)
+        M.win_id = nil
     end
 end
 
