@@ -1,12 +1,16 @@
 local M = {}
 
-local C = require('crates')
+local core = require('crates.core')
 
-function M.get_line_versions(linenr)
+function M.get_filepath()
+    return vim.fn.expand("%:p")
+end
+
+function M.get_line_crate(linenr)
     local crate = nil
 
-    local filepath = C.get_filepath()
-    local crates = C.crate_cache[filepath]
+    local filepath = M.get_filepath()
+    local crates = core.crate_cache[filepath]
     if crates then
         for _,c in pairs(crates) do
             if c.linenr == linenr then
@@ -20,32 +24,34 @@ function M.get_line_versions(linenr)
         return nil, nil
     end
 
-    return crate, C.vers_cache[crate.name]
+    return crate, core.vers_cache[crate.name]
 end
 
-function M.upgrade()
-    local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    local crate, versions = M.get_line_versions(linenr)
-
-    if not crate or not versions then
-        return
+function M.get_newest(versions, avoid_pre)
+    if not versions then
+        return nil
     end
 
-    local avoid_pre = C.config.avoid_prerelease and not crate.req_has_suffix
-    local newest = C.get_newest(crate, versions, avoid_pre)
+    local newest_yanked = nil
+    local newest_pre = nil
 
-    if not newest then
-        return
+    for _,v in ipairs(versions) do
+        if not v.yanked then
+            if avoid_pre then
+                if v.parsed.suffix then
+                    newest_pre = newest_pre or v
+                else
+                    return v
+                end
+            else
+                return v
+            end
+        else
+            newest_yanked = newest_yanked or v
+        end
     end
 
-    vim.api.nvim_buf_set_text(
-        0,
-        crate.linenr - 1,
-        crate.col[1],
-        crate.linenr - 1,
-        crate.col[2],
-        { newest.num }
-    )
+    return newest_pre or newest_yanked
 end
 
 return M

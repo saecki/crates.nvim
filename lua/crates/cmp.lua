@@ -43,7 +43,7 @@ end
 ---@param callback fun(response: lsp.CompletionResponse|nil)
 function source.complete(_, _, callback)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    local crate, versions = util.get_line_versions(linenr)
+    local crate, versions = util.get_line_crate(linenr)
 
     if crate and versions then
         local results = {}
