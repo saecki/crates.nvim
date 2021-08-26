@@ -2,15 +2,15 @@ local M = {}
 
 local core = require('crates.core')
 
-function M.get_filepath()
-    return vim.fn.expand("%:p")
+function M.current_buf()
+    return vim.api.nvim_get_current_buf()
 end
 
 function M.get_line_crate(linenr)
     local crate = nil
 
-    local filepath = M.get_filepath()
-    local crates = core.crate_cache[filepath]
+    local cur_buf = M.current_buf()
+    local crates = core.crate_cache[cur_buf]
     if crates then
         for _,c in pairs(crates) do
             if c.linenr == linenr then
@@ -52,6 +52,17 @@ function M.get_newest(versions, avoid_pre)
     end
 
     return newest_pre or newest_yanked
+end
+
+function M.set_version(buf, crate, text)
+    vim.api.nvim_buf_set_text(
+        buf,
+        crate.linenr - 1,
+        crate.col[1],
+        crate.linenr - 1,
+        crate.col[2],
+        { text }
+    )
 end
 
 return M
