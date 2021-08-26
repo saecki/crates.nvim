@@ -17,6 +17,7 @@ Feel free to open issues.
     - indicate if no version is usable
 - Show best upgrade candidate
 - Open floating window with all versions
+    - Select a version by pressing enter (`popup.keys.select`)
 
 ## Setup
 
