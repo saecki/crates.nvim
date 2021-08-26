@@ -79,7 +79,7 @@ function M.show_versions()
     for _,k in ipairs(core.cfg.popup.keys.hide) do
         vim.api.nvim_buf_set_keymap(buf, "n", k, hide_cmd, { noremap = true, silent = true })
     end
-    
+
     local select_cmd = string.format(
         ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
         util.current_buf(),
@@ -124,14 +124,14 @@ function M.select_version(buf, name, index)
 
     local versions = core.vers_cache[name]
     if not versions then return end
-    
+
     if index <= 0 or index > vim.tbl_count(versions) then
         return
     end
     local text = versions[index].num
 
     util.set_version(buf, crate, text)
-    
+
     -- update crate position
     core.crate_cache[buf] = {}
     local parsed_crates = toml.parse_crates(buf)
