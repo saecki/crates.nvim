@@ -3,7 +3,7 @@ local M = {}
 local semver = require('crates.semver')
 
 local function parse_crate_dep_section_line(line)
-    local version = line:match([[^%s*version%s*=%s*"([^"]*)["]?%s*$]])
+    local version = line:match([[^%s*version%s*=%s*["']([^"']*)["']?%s*$]])
     if version then
         return { version = version }
     end
@@ -14,13 +14,13 @@ end
 local function parse_dep_section_line(line)
     local name, version, keys
     -- plain version
-    name, version = line:match([[^%s*([^%s]+)%s*=%s*%"([^"]*)["]?%s*$]])
+    name, version = line:match([[^%s*([^%s]+)%s*=%s*%["']([^"']*)["']?%s*$]])
     if name and version then
         return { name = name, version = version }
     end
 
     -- version in map
-    name, version = line:match([[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*"([^"]*)["]?%s*[,]?.*[}]?%s*$]])
+    name, version = line:match([[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*["']([^"']*)["']?%s*[,]?.*[}]?%s*$]])
     if name and version then
         return { name = name, version = version }
     end
