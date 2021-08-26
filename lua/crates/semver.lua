@@ -22,7 +22,7 @@ function M.parse_version(string)
         }
     end
 
-    major, minor = string:match("^([0-9]+)%.([0-9]+)$")
+    major, minor = string:match("^([0-9]+)%.([0-9]+)")
     if major and minor then
         return {
             major = tonumber(major),
@@ -30,7 +30,7 @@ function M.parse_version(string)
         }
     end
 
-    major = string:match("^([0-9]+)$")
+    major = string:match("^([0-9]+)")
     if major then
         return { major = tonumber(major) }
     end
