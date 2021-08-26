@@ -1,7 +1,7 @@
 # crates.nvim
-A neovim plugin show available crates.io versions
+A neovim plugin that shows available crates.io versions.
 
-This is quite young software, so you might encounter some bugs.
+This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features
@@ -104,6 +104,7 @@ require('crates.popup').hide_versions(win_id)
 ```
 
 ### Show appropriate documentation `Cargo.toml`
+How you might integrate `show_versions` into your `init.vim`:
 ```viml
 nnoremap <silent> K :call <SID>show_documentation()<cr>
 function! s:show_documentation()
