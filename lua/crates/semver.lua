@@ -3,7 +3,7 @@ local M = {}
 function M.parse_version(string)
     local major, minor, patch, suffix
 
-    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)(.*)$")
+    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)([^%s]*)$")
     if major and minor and patch and suffix and suffix ~= "" then
         return {
             major = tonumber(major),
