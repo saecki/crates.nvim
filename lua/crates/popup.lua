@@ -1,31 +1,19 @@
 local M = {}
 
 local C = require('crates')
+local util = require('crates.util')
 
 function M.show_versions()
-    local row = vim.api.nvim_win_get_cursor(0)[1]
-    local crate = nil
+    local top_offset = 2
+    local linenr = vim.api.nvim_win_get_cursor(0)[1]
+    local crate, versions = util.get_line_versions(linenr)
 
-    local filepath = C.get_filepath()
-    local crates = C.crate_cache[filepath]
-    if crates then
-        for _,c in pairs(crates) do
-            if c.linenr + 1 == row then
-                crate = c
-            end
-        end
-    end
-    if not crate then
-        return
-    end
-
-    local versions = C.vers_cache[crate.name]
-    if not versions then
+    if not crate or not versions then
         return
     end
 
     local num_versions = vim.tbl_count(versions)
-    local height = math.min(C.config.popup.max_height, num_versions)
+    local height = math.min(C.config.popup.max_height, num_versions + top_offset)
 
     local width = C.config.popup.min_width
     local versions_text = {}
@@ -44,7 +32,6 @@ function M.show_versions()
         width = math.max(string.len(vers_text), width)
     end
 
-    local top_offset = 2
     local buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
@@ -66,7 +53,7 @@ function M.show_versions()
     end
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
-    
+
     -- create window
     local opts = {
         relative = "cursor",
@@ -84,7 +71,7 @@ function M.show_versions()
     for _,k in ipairs(C.config.popup.keys.hide) do
         vim.api.nvim_buf_set_keymap(buf, "n", k, string.format(":%s<cr>", close_cmd), { noremap = true, silent = true })
     end
-    
+
     for _,k in ipairs(C.config.popup.keys.copy_version) do
         vim.api.nvim_buf_set_keymap(buf, "n", k, "_yE", { noremap = true, silent = true })
     end

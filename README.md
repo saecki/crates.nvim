@@ -5,12 +5,13 @@ This is quite young software, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features
-- Autmatically load when opening a Cargo.toml file (`autoload`)
-- Update while editing (`autoupdate`)
+- Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+- Automatically load when opening a Cargo.toml file (`autoload`)
+- Live update while editing (`autoupdate`)
 - Show currently usable version
-- Show usable version is a pre-release
-- Show usable version is yanked
-- Show if no version is usable
+    - if usable version is a pre-release
+    - if usable version is yanked
+    - if no version is usable
 - Show best upgrade candidate
 - Open floating window with all versions
 
@@ -20,6 +21,21 @@ Feel free to open issues.
 ```
 Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim'
+```
+
+### nvim-cmp source
+Just add it to your list of sources
+```lua
+require('cmp').setup {
+    ...
+    sources = {
+        { name = "path" },
+        { name = "buffer" },
+        { name = "nvim_lsp" },
+        ...
+        { name = "crates" },
+    },
+}
 ```
 
 ## Config
@@ -103,6 +119,6 @@ endfunction
 
 ## TODO
 - possibly port to teal?
-- completion source for nivm-cmp
-- update current line to candidate
+- Enter to insert version in popup
+- Update current line to displayed candidate
 

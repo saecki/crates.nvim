@@ -40,7 +40,7 @@ end
 
 function M.parse_requirement(string)
     local vers_str
-    
+
     -- equal
     vers_str = string:match("^=(.+)$")
     if vers_str then

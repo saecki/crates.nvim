@@ -3,7 +3,7 @@ local M = {}
 local semver = require('crates.semver')
 
 local function parse_crate_dep_section_line(line)
-    local version = line:match("^%s*version%s*=%s*\"(.+)\"%s*$")
+    local version = line:match([[^%s*version%s*=%s*"([^%s"]*)["]?%s*$]])
     if version then
         return { version = version }
     end
@@ -14,7 +14,7 @@ end
 local function parse_dep_section_line(line)
     local name, version, keys
     -- plain version
-    name, version = line:match("^%s*([^%s]+)%s*=%s*%\"(.+)\"%s*$")
+    name, version = line:match([[^%s*([^%s]+)%s*=%s*%"([^%s"]*)["]?%s*$]])
     if name and version then
         return { name = name, version = version }
     end
@@ -22,7 +22,7 @@ local function parse_dep_section_line(line)
     -- version in map
     name, keys = line:match("^%s*([^%s]+)%s*=%s*{(.+)}%s*$")
     if name and keys then
-        version = line:match("^.*[,]?%s*version%s*=%s*\"([^\"]+)\"%s*[,]?.*$")
+        version = line:match([[^.*[,]?%s*version%s*=%s*"([^%s"]*)"%s*[,]?.*$]])
         if name and version then
             return { name = name, version = version }
         end
@@ -59,13 +59,13 @@ function M.parse_crates()
             local crate = parse_crate_dep_section_line(l)
             if crate then
                 crate.name = dep_section_crate
-                crate.linenr = i - 1
+                crate.linenr = i
                 table.insert(crates, crate)
             end
         elseif dep_section then
             local crate = parse_dep_section_line(l)
             if crate then
-                crate.linenr = i - 1
+                crate.linenr = i
                 table.insert(crates, crate)
             end
         end

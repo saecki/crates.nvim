@@ -63,7 +63,7 @@ function M.display_versions(crate, versions)
                 if avoid_pre then
                     if v.parsed.suffix then
                         newest_pre = newest_pre or v
-                    else 
+                    else
                         newest = v
                         break
                     end
@@ -95,7 +95,7 @@ function M.display_versions(crate, versions)
                         if avoid_pre then
                             if v.parsed.suffix then
                                 match_pre = match_pre or v
-                            else 
+                            else
                                 match = v
                                 break
                             end
@@ -129,7 +129,7 @@ function M.display_versions(crate, versions)
                 }
             else
                 -- no match found
-                virt_text = { 
+                virt_text = {
                     { M.config.text.nomatch, M.config.highlight.nomatch },
                     { string.format(M.config.text.update, newest.num), M.config.highlight.update },
                 }
@@ -139,14 +139,14 @@ function M.display_versions(crate, versions)
         virt_text = { { M.config.text.error, M.config.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr, crate.linenr + 1)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr - 1, virt_text, {})
 end
 
 function M.display_loading(crate)
     local virt_text = { { M.config.text.loading, M.config.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr, crate.linenr + 1)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr - 1, virt_text, {})
 end
 
 function M.reload_crate(crate)
