@@ -134,3 +134,6 @@ endfunction
 ## TODO
 - possibly port to teal?
 
+## Similar projects
+- [vim-crates](https://github.com/mhinz/vim-crates)
+
