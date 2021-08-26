@@ -14,7 +14,7 @@ end
 local function parse_dep_section_line(line)
     local name, version, keys
     -- plain version
-    name, version = line:match([[^%s*([^%s]+)%s*=%s*%["']([^"']*)["']?%s*$]])
+    name, version = line:match([[^%s*([^%s]+)%s*=%s*["']([^"']*)["']?%s*$]])
     if name and version then
         return { name = name, version = version }
     end
