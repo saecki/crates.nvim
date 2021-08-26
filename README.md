@@ -4,14 +4,16 @@ A neovim plugin that shows available crates.io versions.
 This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
+![](res/example.png)
+
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - Automatically load when opening a Cargo.toml file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show currently usable version
-    - if usable version is a pre-release
-    - if usable version is yanked
-    - if no version is usable
+    - indicate if usable version is a pre-release
+    - indicate if usable version is yanked
+    - indicate if no version is usable
 - Show best upgrade candidate
 - Open floating window with all versions
 
