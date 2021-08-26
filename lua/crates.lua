@@ -123,10 +123,17 @@ end
 
 function M.reload_crate(crate)
     local function on_fetched(resp)
-        local data = vim.fn.json_decode(resp)
+        local data = nil
+        local try_parse = function()
+            data = vim.fn.json_decode(resp)
+        end
+
+        if not pcall(try_parse) then
+            data = nil
+        end
 
         local versions = {}
-        if data and type(data) ~= "userdata" and data.versions then
+        if data and type(data) == "table" and data.versions then
             for _,v in ipairs(data.versions) do
                 if v.num then
                     local version = {
