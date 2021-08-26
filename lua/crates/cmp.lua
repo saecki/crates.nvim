@@ -1,7 +1,7 @@
 local source = {}
 
 local cmp = require('cmp')
-local crates = require('crates')
+local core = require('crates.core')
 local util = require('crates.util')
 
 ---Source constructor.
@@ -54,7 +54,7 @@ function source.complete(_, _, callback)
             }
             if v.yanked then
                 r.deprecated = true
-                r.documentation = crates.config.popup.text.yanked
+                r.documentation = core.cfg.popup.text.yanked
             end
             table.insert(results, r)
         end

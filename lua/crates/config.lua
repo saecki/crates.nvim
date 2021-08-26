@@ -34,6 +34,7 @@ function M.default()
             },
             keys = {
                 hide = { "q", "<esc>" },
+                select = { "<cr>" },
                 copy_version = { "yy" },
             },
             style = "minimal",

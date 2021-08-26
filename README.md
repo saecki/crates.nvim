@@ -73,6 +73,7 @@ require("crates").setup {
         error = "CratesNvimError",
     },
     popup = {
+        auto_focus = false,
         text = {
             yanked = "yanked"
         },
@@ -81,6 +82,7 @@ require("crates").setup {
         },
         keys = {
             hide = { "q", "<esc>" },
+            select = { "<cr>" },
             copy_version = { "yy" },
         },
         style = "minimal",
@@ -131,5 +133,4 @@ endfunction
 
 ## TODO
 - possibly port to teal?
-- Enter to insert version in popup
 

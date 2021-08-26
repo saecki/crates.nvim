@@ -183,13 +183,13 @@ function M.reload()
     core.vers_cache = {}
     M._clear()
 
-    local filepath = util.get_filepath()
-    local crates = toml.parse_crates()
+    local cur_buf = util.current_buf()
+    local crates = toml.parse_crates(0)
 
-    core.crate_cache[filepath] = {}
+    core.crate_cache[cur_buf] = {}
 
     for _,c in ipairs(crates) do
-        core.crate_cache[filepath][c.name] = c
+        core.crate_cache[cur_buf][c.name] = c
         M.reload_crate(c)
     end
 end
@@ -198,15 +198,15 @@ function M.update()
     core.visible = true
     M._clear()
 
-    local filepath = util.get_filepath()
-    local crates = toml.parse_crates()
+    local cur_buf = util.current_buf()
+    local crates = toml.parse_crates(0)
 
-    core.crate_cache[filepath] = {}
+    core.crate_cache[cur_buf] = {}
 
     for _,c in ipairs(crates) do
         local versions = core.vers_cache[c.name]
 
-        core.crate_cache[filepath][c.name] = c
+        core.crate_cache[cur_buf][c.name] = c
 
         if versions then
             M.display_versions(c, versions)
@@ -239,14 +239,7 @@ function M.upgrade()
         return
     end
 
-    vim.api.nvim_buf_set_text(
-        0,
-        crate.linenr - 1,
-        crate.col[1],
-        crate.linenr - 1,
-        crate.col[2],
-        { newest.num }
-    )
+    util.set_version(0, crate, newest.num)
 end
 
 function M.setup(config)

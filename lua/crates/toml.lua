@@ -29,8 +29,8 @@ local function parse_dep_section_line(line)
     return nil
 end
 
-function M.parse_crates()
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+function M.parse_crates(buf)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
     local crates = {}
     local dep_section = false
