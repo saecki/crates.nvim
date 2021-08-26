@@ -23,4 +23,29 @@ function M.get_line_versions(linenr)
     return crate, C.vers_cache[crate.name]
 end
 
+function M.upgrade()
+    local linenr = vim.api.nvim_win_get_cursor(0)[1]
+    local crate, versions = M.get_line_versions(linenr)
+
+    if not crate or not versions then
+        return
+    end
+
+    local avoid_pre = C.config.avoid_prerelease and not crate.req_has_suffix
+    local newest = C.get_newest(crate, versions, avoid_pre)
+
+    if not newest then
+        return
+    end
+
+    vim.api.nvim_buf_set_text(
+        0,
+        crate.linenr - 1,
+        crate.col[1],
+        crate.linenr - 1,
+        crate.col[2],
+        { newest.num }
+    )
+end
+
 return M
