@@ -3,26 +3,27 @@ local M = {}
 local semver = require('crates.semver')
 
 local function parse_crate_dep_section_line(line)
-    local version = line:match([[^%s*version%s*=%s*["']([^"']*)["']?%s*$]])
-    if version then
-        return { version = version }
+    local vs, version, ve = line:match([[^%s*version%s*=%s*["']()([^"']*)()["']?%s*$]])
+    if version and vs and ve then
+        return { version = version, col = { vs - 1, ve - 1 } }
     end
 
     return nil
 end
 
 local function parse_dep_section_line(line)
-    local name, version, keys
+    local name, version, vs, ve
     -- plain version
-    name, version = line:match([[^%s*([^%s]+)%s*=%s*["']([^"']*)["']?%s*$]])
-    if name and version then
-        return { name = name, version = version }
+    name, vs, version, ve = line:match([[^%s*([^%s]+)%s*=%s*["']()([^"']*)()["']?%s*$]])
+    if name and version and vs and ve then
+        return { name = name, version = version, col = { vs - 1, ve - 1 } }
     end
 
     -- version in map
-    name, version = line:match([[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*["']([^"']*)["']?%s*[,]?.*[}]?%s*$]])
-    if name and version then
-        return { name = name, version = version }
+    local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*["']()([^"']*)()["']?%s*[,]?.*[}]?%s*$]]
+    name, vs, version, ve = line:match(pat)
+    if name and version and vs and ve then
+        return { name = name, version = version, col = { vs - 1, ve - 1 } }
     end
 
     return nil

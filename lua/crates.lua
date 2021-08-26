@@ -47,37 +47,40 @@ function M.fetch_crate_versions(name, callback)
     j:start()
 end
 
+function M.get_newest(crate, versions, avoid_pre)
+    if not versions then
+        return nil
+    end
+    
+    local newest_yanked = nil
+    local newest_pre = nil
+
+    for _,v in ipairs(versions) do
+        if not v.yanked then
+            if avoid_pre then
+                if v.parsed.suffix then
+                    newest_pre = newest_pre or v
+                else
+                    return v
+                end
+            else
+                return v
+            end
+        else
+            newest_yanked = newest_yanked or v
+        end
+    end
+
+    return newest_pre or newest_yanked
+end
+
 function M.display_versions(crate, versions)
     if not M.visible then
         return
     end
 
     local avoid_pre = M.config.avoid_prerelease and not crate.req_has_suffix
-
-    local newest_yanked = nil
-    local newest_pre = nil
-    local newest = nil
-    if versions then
-        for _,v in ipairs(versions) do
-            if not v.yanked then
-                if avoid_pre then
-                    if v.parsed.suffix then
-                        newest_pre = newest_pre or v
-                    else
-                        newest = v
-                        break
-                    end
-                else
-                    newest = v
-                    break
-                end
-            else
-                newest_yanked = newest_yanked or v
-            end
-        end
-
-        newest = newest or newest_pre or newest_yanked
-    end
+    local newest = M.get_newest(crate, versions, avoid_pre)
 
     local virt_text
     if newest then

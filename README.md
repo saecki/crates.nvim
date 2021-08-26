@@ -98,6 +98,10 @@ require('crates').hide()
 require('crates').toggle()
 
 
+-- upgrade crate on current line
+require('crates.util').upgrade()
+
+
 -- show popup with all versions (returns window id)
 require('crates.popup').show_versions()
 
@@ -123,5 +127,5 @@ endfunction
 ## TODO
 - possibly port to teal?
 - Enter to insert version in popup
-- Update current line to displayed candidate
+- Restructure code
 
