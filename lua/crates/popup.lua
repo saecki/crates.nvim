@@ -60,7 +60,6 @@ function M.show_versions()
     end
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
-    vim.api.nvim_buf_set_name(buf, "crates.popup"..buf)
 
     -- create window
     local opts = {
