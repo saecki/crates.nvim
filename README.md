@@ -30,7 +30,7 @@ Plug 'saecki/crates.nvim'
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
 ```
-use { 'nvim-lua/plenary.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+use { 'Saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 ```
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
