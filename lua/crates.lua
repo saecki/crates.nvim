@@ -1,47 +1,12 @@
 local M = {}
 
-local job = require("plenary.job")
 local core = require("crates.core")
+local api = require("crates.api")
 local toml = require("crates.toml")
 local semver = require("crates.semver")
 local util = require("crates.util")
 local popup = require("crates.popup")
 local config_manager = require("crates.config")
-
-local api = "https://crates.io/api/v1"
-
-M.running_jobs = {}
-
-function M.fetch_crate_versions(name, callback)
-    local url = string.format("%s/crates/%s/versions", api, name)
-
-    local function on_exit(j, code, _)
-        local resp = table.concat(j:result(), "\n")
-        if code ~= 0 then
-            resp = nil
-        end
-
-        local function cb()
-            callback(resp)
-        end
-
-        if core.visible then
-            vim.schedule(cb)
-        end
-
-        M.running_jobs[name] = nil
-    end
-
-    local j = job:new {
-        command = "curl",
-        args = { url },
-        on_exit = on_exit,
-    }
-
-    M.running_jobs[name] = j
-
-    j:start()
-end
 
 function M.display_versions(crate, versions)
     if not core.visible then
@@ -122,30 +87,7 @@ function M.display_loading(crate)
 end
 
 function M.reload_crate(crate)
-    local function on_fetched(resp)
-        local data = nil
-        local try_parse = function()
-            data = vim.fn.json_decode(resp)
-        end
-
-        if not pcall(try_parse) then
-            data = nil
-        end
-
-        local versions = {}
-        if data and type(data) == "table" and data.versions then
-            for _,v in ipairs(data.versions) do
-                if v.num then
-                    local version = {
-                        num = v.num,
-                        yanked = v.yanked,
-                        parsed = semver.parse_version(v.num),
-                    }
-                    table.insert(versions, version)
-                end
-            end
-        end
-
+    local function on_fetched(versions)
         if versions and versions[1] then
             core.vers_cache[crate.name] = versions
         end
@@ -157,16 +99,10 @@ function M.reload_crate(crate)
         M.display_loading(crate)
     end
 
-    M.fetch_crate_versions(crate.name, on_fetched)
+    api.fetch_crate_versions(crate.name, on_fetched)
 end
 
-function M._clear()
-    for n,j in pairs(M.running_jobs) do
-        j.on_exit = nil
-        j:shutdown(0, 2)
-        M.running_jobs[n] = nil
-    end
-
+function M.clear()
     if M.namespace_id then
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
     end
@@ -175,13 +111,13 @@ end
 
 function M.hide()
     core.visible = false
-    M._clear()
+    M.clear()
 end
 
 function M.reload()
     core.visible = true
     core.vers_cache = {}
-    M._clear()
+    M.clear()
 
     local cur_buf = util.current_buf()
     local crates = toml.parse_crates(0)
@@ -196,7 +132,7 @@ end
 
 function M.update()
     core.visible = true
-    M._clear()
+    M.clear()
 
     local cur_buf = util.current_buf()
     local crates = toml.parse_crates(0)
