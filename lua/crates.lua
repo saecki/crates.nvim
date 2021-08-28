@@ -224,7 +224,7 @@ function M.toggle()
     end
 end
 
-function M.upgrade()
+function M.upgrade_crate()
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
     local crate, versions = util.get_line_crate(linenr)
 
