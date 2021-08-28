@@ -25,7 +25,7 @@ function M.default()
             error = "CratesNvimError",
         },
         popup = {
-            auto_focus = false,
+            autofocus = false,
             text = {
                 yanked = "yanked"
             },

@@ -7,7 +7,7 @@ local toml = require('crates.toml')
 local top_offset = 2
 
 function M.show_versions()
-    if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
         M.focus_versions()
         return
     end
@@ -71,7 +71,7 @@ function M.show_versions()
         style = core.cfg.popup.style,
         border = core.cfg.popup.border,
     }
-    M.win_id = vim.api.nvim_open_win(M.buf, false, opts)
+    M.win = vim.api.nvim_open_win(M.buf, false, opts)
 
     -- add key mappings
     local hide_cmd = ":lua require('crates.popup').hide_versions()<cr>"
@@ -95,22 +95,22 @@ function M.show_versions()
     end
 
     -- autofocus
-    if core.cfg.autofocus then
+    if core.cfg.popup.autofocus then
         M.focus_versions()
     end
 end
 
 function M.focus_versions()
-    if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
-        vim.api.nvim_set_current_win(M.win_id)
-        vim.api.nvim_win_set_cursor(M.win_id, { 3, 0 })
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
+        vim.api.nvim_set_current_win(M.win)
+        vim.api.nvim_win_set_cursor(M.win, { 3, 0 })
     end
 end
 
 function M.hide_versions()
-    if M.win_id and vim.api.nvim_win_is_valid(M.win_id) then
-        vim.api.nvim_win_close(M.win_id, false)
-        M.win_id = nil
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
+        vim.api.nvim_win_close(M.win, false)
+        M.win = nil
     end
     if M.buf and vim.api.nvim_buf_is_valid(M.buf) then
         vim.api.nvim_buf_delete(M.buf, {})
