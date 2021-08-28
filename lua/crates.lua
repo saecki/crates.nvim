@@ -91,7 +91,7 @@ function M.reload_crate(crate)
         if versions and versions[1] then
             core.vers_cache[crate.name] = versions
         end
-        
+
         -- get current position of crate
         local cur_buf = util.current_buf()
         local c = core.crate_cache[cur_buf][crate.name]
