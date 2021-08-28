@@ -74,7 +74,7 @@ require("crates").setup {
         error = "CratesNvimError",
     },
     popup = {
-        auto_focus = false,
+        autofocus = false,
         text = {
             yanked = "yanked"
         },
@@ -108,9 +108,9 @@ require('crates').hide()
 require('crates').toggle()
 
 -- upgrade crate on current line
-require('crates').upgrade()
+require('crates').upgrade_crate()
 
--- show popup with all versions
+-- show popup with all versions (calling this again will focus the popup)
 require('crates').show_versions_popup()
 
 -- hide popup with all versions
