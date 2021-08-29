@@ -51,6 +51,7 @@ require('cmp').setup {
 ## Config
 
 __Default__
+
 The icons in the default configuration require a patched font:
 ```lua
 require("crates").setup {
@@ -98,6 +99,7 @@ require("crates").setup {
 ```
 
 __Plain text__
+
 Replace these sections if you don't have a patched font:
 ```lua
 require("crates").setup {
