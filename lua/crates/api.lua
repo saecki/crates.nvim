@@ -20,12 +20,8 @@ function M.fetch_crate_versions(name, callback)
             return
         end
 
-        local data = nil
-        local try_parse = function()
-            data = vim.fn.json_decode(resp)
-        end
-
-        if not pcall(try_parse) then
+        local success, data = pcall(vim.fn.json_decode, resp)
+        if not success then
             data = nil
         end
 
