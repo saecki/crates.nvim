@@ -6,7 +6,7 @@ local toml = require("crates.toml")
 local semver = require("crates.semver")
 local util = require("crates.util")
 local popup = require("crates.popup")
-local config_manager = require("crates.config")
+local config = require("crates.config")
 
 function M.display_versions(crate, versions)
     if not core.visible then
@@ -184,12 +184,12 @@ function M.update_crate()
     util.set_version(0, crate, match.num)
 end
 
-function M.setup(config)
-    if config then
-        local default = config_manager.default()
-        core.cfg = vim.tbl_deep_extend("keep", config, default)
+function M.setup(cfg)
+    local default = config.default()
+    if cfg then
+        core.cfg = vim.tbl_deep_extend("keep", cfg, default)
     else
-        core.cfg = config_manager.default()
+        core.cfg = vim.tbl_deep_extend("keep", core.cfg, default)
     end
 
     vim.cmd("augroup Crates")
