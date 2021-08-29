@@ -19,44 +19,36 @@ function M.show_versions()
         return
     end
 
+    local title_text = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
-
-    local width = math.max(core.cfg.popup.min_width, string.len(crate.name) + 3)
+    local width = math.max(core.cfg.popup.min_width, string.len(title_text))
     local versions_text = {}
-    local yanked_highlights = {}
-    for i,v in ipairs(versions) do
-        local vers_text = v.num
-        if v.yanked then
-            local c_start = string.len(vers_text) + 1
-            local c_end = c_start + string.len(core.cfg.popup.text.yanked)
-            table.insert(yanked_highlights, { line = i - 1, col_start = c_start, col_end = c_end })
 
-            vers_text = vers_text .. " " .. core.cfg.popup.text.yanked
+    for i,v in ipairs(versions) do
+        local text, hi
+        if v.yanked then
+            text = string.format(core.cfg.popup.text.yanked, v.num)
+            hi = core.cfg.popup.highlight.yanked
+        else
+            text = string.format(core.cfg.popup.text.version, v.num)
+            hi = core.cfg.popup.highlight.version
         end
 
-        table.insert(versions_text, vers_text)
-        width = math.max(string.len(vers_text), width)
+        table.insert(versions_text, { text = text, hi = hi })
+        width = math.max(string.len(text), width)
     end
 
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
     -- add text and highlights
-    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { "# "..crate.name, "" })
-    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, "Special", 0, 0, 1)
-    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, "Title", 0, 2, -1)
+    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title_text, "" })
+    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
 
-    vim.api.nvim_buf_set_lines(M.buf, top_offset, num_versions + top_offset, false, versions_text)
-    for _,h in ipairs(yanked_highlights) do
-        vim.api.nvim_buf_add_highlight(
-            M.buf,
-            namespace_id,
-            core.cfg.popup.highlight.yanked,
-            h.line + top_offset,
-            h.col_start,
-            h.col_end
-        )
+    for i,v in ipairs(versions_text) do
+        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
+        vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
     end
 
     vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
@@ -64,8 +56,8 @@ function M.show_versions()
     -- create window
     local opts = {
         relative = "cursor",
-        col = 0,
-        row = 1,
+        col = 1,
+        row = 0,
         width = width,
         height = height,
         style = core.cfg.popup.style,
@@ -90,8 +82,14 @@ function M.show_versions()
         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_cmd, { noremap = true, silent = true })
     end
 
+    local copy_cmd = string.format(
+        ":lua require('crates.popup').copy_version('%s', %s - %d)<cr>",
+        crate.name,
+        "vim.api.nvim_win_get_cursor(0)[1]",
+        top_offset
+    )
     for _,k in ipairs(core.cfg.popup.keys.copy_version) do
-        vim.api.nvim_buf_set_keymap(M.buf, "n", k, "_yE", { noremap = true, silent = true })
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, copy_cmd, { noremap = true, silent = true })
     end
 
     -- autofocus
@@ -148,6 +146,18 @@ function M.select_version(buf, name, index)
     if c then
         crate.col = c.col
     end
+end
+
+function M.copy_version(name, index)
+    local versions = core.vers_cache[name]
+    if not versions then return end
+
+    if index <= 0 or index > vim.tbl_count(versions) then
+        return
+    end
+    local text = versions[index].num
+
+    vim.fn.setreg(core.cfg.popup.copy_register, text)
 end
 
 return M

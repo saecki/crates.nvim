@@ -34,7 +34,7 @@ use { 'Saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 ```
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
-Just add it to your list of sources
+Just add it to your list of sources:
 ```lua
 require('cmp').setup {
     ...
@@ -46,6 +46,11 @@ require('cmp').setup {
         { name = "crates" },
     },
 }
+```
+
+Or add it lazily:
+```viml
+autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
 ```
 
 ## Config
@@ -60,36 +65,41 @@ require("crates").setup {
     autoupdate = true,
     loading_indicator = true,
     text = {
-        loading = "   Loading",
-        version = "   %s",
+        loading    = "   Loading",
+        version    = "   %s",
         prerelease = "   %s",
-        yanked = "   %s",
-        nomatch = "   No match",
-        update = "   %s",
-        error = "   Error fetching crate",
+        yanked     = "   %s",
+        nomatch    = "   No match",
+        update     = "   %s",
+        error      = "   Error fetching crate",
     },
     highlight = {
-        loading = "CratesNvimLoading",
-        version = "CratesNvimVersion",
+        loading    = "CratesNvimLoading",
+        version    = "CratesNvimVersion",
         prerelease = "CratesNvimPreRelease",
-        yanked = "CratesNvimYanked",
-        nomatch = "CratesNvimNoMatch",
-        update = "CratesNvimUpdate",
-        error = "CratesNvimError",
+        yanked     = "CratesNvimYanked",
+        nomatch    = "CratesNvimNoMatch",
+        update     = "CratesNvimUpdate",
+        error      = "CratesNvimError",
     },
     popup = {
         autofocus = false,
         text = {
-            yanked = " "
+            title   = "  %s ",
+            version = "   %s ",
+            yanked  = "  %s ",
         },
         highlight = {
-            yanked = "CratesNvimPopupYanked"
+            title   = "CratesNvimPopupTitle",
+            version = "CratesNvimPopupVersion",
+            yanked  = "CratesNvimPopupYanked",
         },
         keys = {
             hide = { "q", "<esc>" },
             select = { "<cr>" },
             copy_version = { "yy" },
         },
+        copy_register = '"',
         style = "minimal",
         border = "none",
         max_height = 30,
@@ -104,20 +114,19 @@ Replace these sections if you don't have a patched font:
 ```lua
 require("crates").setup {
     text = {
-        loading = "  Loading...",
-        version = "  %s",
+        loading    = "  Loading...",
+        version    = "  %s",
         prerelease = "  %s",
-        yanked = "  %s yanked",
-        nomatch = "  Not found",
-        update = "  %s",
-        error = "  Error fetching version",
+        yanked     = "  %s yanked",
+        nomatch    = "  Not found",
+        update     = "  %s",
+        error      = "  Error fetching version",
     },
     popup = {
         text = {
-            yanked = "yanked"
-        },
-        highlight = {
-            yanked = "CratesNvimPopupYanked"
+            title   = " # %s ",
+            version = " %s ",
+            yanked  = " %s yanked",
         },
     },
 }
@@ -167,6 +176,8 @@ endfunction
 
 ## TODO
 - Don't replace conditions in version requirements (`^`, `~`, `=`, ...)
+- Line range for crate dependency sections
+- Add documentation
 
 ## Similar projects
 - [vim-crates](https://github.com/mhinz/vim-crates)
