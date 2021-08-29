@@ -2,28 +2,42 @@ local M = {}
 
 local semver = require('crates.semver')
 
-local function parse_crate_dep_section_line(line)
+function M.parse_crate_dep_section_line(line)
     local vs, version, ve = line:match([[^%s*version%s*=%s*["']()([^"']*)()["']?%s*$]])
     if version and vs and ve then
-        return { version = version, col = { vs - 1, ve - 1 } }
+        return { 
+            version = version,
+            col = { vs - 1, ve - 1 },
+            syntax = "section",
+        }
     end
 
     return nil
 end
 
-local function parse_dep_section_line(line)
+function M.parse_dep_section_line(line)
     local name, version, vs, ve
     -- plain version
     name, vs, version, ve = line:match([[^%s*([^%s]+)%s*=%s*["']()([^"']*)()["']?%s*$]])
     if name and version and vs and ve then
-        return { name = name, version = version, col = { vs - 1, ve - 1 } }
+        return { 
+            name = name,
+            version = version,
+            col = { vs - 1, ve - 1 },
+            syntax = "normal",
+        }
     end
 
     -- version in map
     local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*["']()([^"']*)()["']?%s*[,]?.*[}]?%s*$]]
     name, vs, version, ve = line:match(pat)
     if name and version and vs and ve then
-        return { name = name, version = version, col = { vs - 1, ve - 1 } }
+        return {
+            name = name,
+            version = version,
+            col = { vs - 1, ve - 1 },
+            syntax = "map",
+        }
     end
 
     return nil
@@ -54,14 +68,14 @@ function M.parse_crates(buf)
                 dep_section_crate = nil
             end
         elseif dep_section and dep_section_crate then
-            local crate = parse_crate_dep_section_line(l)
+            local crate = M.parse_crate_dep_section_line(l)
             if crate then
                 crate.name = dep_section_crate
                 crate.linenr = i
                 table.insert(crates, crate)
             end
         elseif dep_section then
-            local crate = parse_dep_section_line(l)
+            local crate = M.parse_dep_section_line(l)
             if crate then
                 crate.linenr = i
                 table.insert(crates, crate)

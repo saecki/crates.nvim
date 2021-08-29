@@ -136,10 +136,17 @@ function M.select_version(buf, name, index)
     util.set_version(buf, crate, text)
 
     -- update crate position
-    core.crate_cache[buf] = {}
-    local parsed_crates = toml.parse_crates(buf)
-    for _,c in ipairs(parsed_crates) do
-        core.crate_cache[buf][c.name] = c
+    local line = vim.api.nvim_buf_get_lines(buf, crate.linenr - 1, crate.linenr, false)[1]
+    local c = nil
+    if crate.syntax == "section" then
+        c = toml.parse_crate_dep_section_line(line)
+    elseif crate.syntax == "normal" then
+        c = toml.parse_dep_section_line(line)
+    elseif crate.syntax == "map" then
+        c = toml.parse_dep_section_line(line)
+    end
+    if c then
+        crate.col = c.col
     end
 end
 
