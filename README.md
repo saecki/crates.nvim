@@ -107,7 +107,10 @@ require('crates').hide()
 -- show/hide versions
 require('crates').toggle()
 
--- upgrade crate on current line
+-- update crate on current line to newest compatible version
+require('crates').update_crate()
+
+-- upgrade crate on current line to newest version
 require('crates').upgrade_crate()
 
 -- show popup with all versions (calling this again will focus the popup)

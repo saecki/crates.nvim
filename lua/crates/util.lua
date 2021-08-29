@@ -1,6 +1,7 @@
 local M = {}
 
 local core = require('crates.core')
+local semver = require('crates.semver')
 
 function M.current_buf()
     return vim.api.nvim_get_current_buf()
@@ -27,31 +28,36 @@ function M.get_line_crate(linenr)
     return crate, core.vers_cache[crate.name]
 end
 
-function M.get_newest(versions, avoid_pre)
+function M.get_newest(versions, avoid_pre, reqs)
     if not versions then
         return nil
     end
 
     local newest_yanked = nil
     local newest_pre = nil
+    local newest = nil
 
     for _,v in ipairs(versions) do
-        if not v.yanked then
-            if avoid_pre then
-                if v.parsed.suffix then
-                    newest_pre = newest_pre or v
+        if not reqs or reqs and semver.matches_requirements(v.parsed, reqs) then
+            if not v.yanked then
+                if avoid_pre then
+                    if v.parsed.suffix then
+                        newest_pre = newest_pre or v
+                    else
+                        newest = v
+                        break
+                    end
                 else
-                    return v
+                    newest = v
+                    break
                 end
             else
-                return v
+                newest_yanked = newest_yanked or v
             end
-        else
-            newest_yanked = newest_yanked or v
         end
     end
 
-    return newest_pre or newest_yanked
+    return newest, newest_pre, newest_yanked
 end
 
 function M.set_version(buf, crate, text)

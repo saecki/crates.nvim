@@ -14,7 +14,8 @@ function M.display_versions(crate, versions)
     end
 
     local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-    local newest = util.get_newest(versions, avoid_pre)
+    local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
+    newest = newest or newest_pre or newest_yanked
 
     local virt_text
     if newest then
@@ -23,28 +24,7 @@ function M.display_versions(crate, versions)
             virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
         else
             -- version does not match, upgrade available
-            local match_yanked = nil
-            local match_pre = nil
-            local match = nil
-            for _,v in ipairs(versions) do
-                if semver.matches_requirements(v.parsed, crate.reqs) then
-                    if not v.yanked then
-                        if avoid_pre then
-                            if v.parsed.suffix then
-                                match_pre = match_pre or v
-                            else
-                                match = v
-                                break
-                            end
-                        else
-                            match = v
-                            break
-                        end
-                    else
-                        match_yanked = match_yanked or v
-                    end
-                end
-            end
+            local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate.reqs)
 
             if match then
                 -- found a match
@@ -175,13 +155,33 @@ function M.upgrade_crate()
     end
 
     local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-    local newest = util.get_newest(versions, avoid_pre)
+    local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
+    newest = newest or newest_pre or newest_yanked
 
     if not newest then
         return
     end
 
     util.set_version(0, crate, newest.num)
+end
+
+function M.update_crate()
+    local linenr = vim.api.nvim_win_get_cursor(0)[1]
+    local crate, versions = util.get_line_crate(linenr)
+
+    if not crate or not versions then
+        return
+    end
+
+    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
+    local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate.reqs)
+    match = match or match_pre or match_yanked
+
+    if not match then
+        return
+    end
+
+    util.set_version(0, crate, match.num)
 end
 
 function M.setup(config)
