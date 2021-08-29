@@ -60,10 +60,10 @@ __Default__
 The icons in the default configuration require a patched font:
 ```lua
 require("crates").setup {
-    avoid_prerelease = true,
-    autoload = true,
-    autoupdate = true,
-    loading_indicator = true,
+    avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
+    autoload = true, -- automatically run update when opening a Cargo.toml
+    autoupdate = true, -- atomatically update when editing text
+    loading_indicator = true, -- show a loading indicator while fetching crate versions
     text = {
         loading    = "   Loading",
         version    = "   %s",
@@ -83,7 +83,12 @@ require("crates").setup {
         error      = "CratesNvimError",
     },
     popup = {
-        autofocus = false,
+        autofocus = false, -- focus the versions popup when opening it
+        copy_register = '"', -- the register into which the version will be copied
+        style = "minimal", -- same as nvim_open_win opts.style
+        border = "none", -- same as nvim_open_win opts.border
+        max_height = 30,
+        min_width = 20,
         text = {
             title   = "  %s ",
             version = "   %s ",
@@ -99,11 +104,6 @@ require("crates").setup {
             select = { "<cr>" },
             copy_version = { "yy" },
         },
-        copy_register = '"',
-        style = "minimal",
-        border = "none",
-        max_height = 30,
-        min_width = 20,
     },
 }
 ```
@@ -149,17 +149,34 @@ require('crates').toggle()
 -- update crate on current line to newest compatible version
 require('crates').update_crate()
 
+-- update crates on lines visually selected to newest compatible version
+require('crates').update_crates()
+
 -- upgrade crate on current line to newest version
 require('crates').upgrade_crate()
 
--- show popup with all versions (calling this again will focus the popup)
+-- upgrade crates on lines visually selected to newest version
+require('crates').upgrade_crates()
+
+-- show popup with all versions (if `popup.autofocus` is disabled calling this again will focus the popup)
 require('crates').show_versions_popup()
 
 -- hide popup with all versions
 require('crates').hide_versions_popup()
 ```
+### Key mappings
 
-### Show appropriate documentation `Cargo.toml`
+Some examples of key mappings:
+```viml
+nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
+nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
+nnoremap <silent> <leader>vu :lua require('crates').update_crate()<cr>
+vnoremap <silent> <leader>vu :lua require('crates').update_crates()<cr>
+nnoremap <silent> <leader>vU :lua require('crates').upgrade_crate()<cr>
+vnoremap <silent> <leader>vU :lua require('crates').upgrade_crates()<cr>
+```
+
+### Show appropriate documentation in `Cargo.toml`
 How you might integrate `show_versions` into your `init.vim`:
 ```viml
 nnoremap <silent> K :call <SID>show_documentation()<cr>
@@ -176,8 +193,6 @@ endfunction
 
 ## TODO
 - Don't replace conditions in version requirements (`^`, `~`, `=`, ...)
-- Line range for crate dependency sections
-- Add documentation
 
 ## Similar projects
 - [vim-crates](https://github.com/mhinz/vim-crates)

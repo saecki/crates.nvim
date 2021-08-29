@@ -8,6 +8,8 @@ local util = require("crates.util")
 local popup = require("crates.popup")
 local config = require("crates.config")
 
+---@param crate Crate
+---@param versions Version[]
 function M.display_versions(crate, versions)
     if not core.visible then
         return
@@ -56,16 +58,18 @@ function M.display_versions(crate, versions)
         virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr - 1, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.vers_line, crate.vers_line + 1)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.vers_line, virt_text, {})
 end
 
+---@param crate Crate
 function M.display_loading(crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.linenr - 1, crate.linenr)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.linenr - 1, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.vers_line, crate.vers_line + 1)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.vers_line, virt_text, {})
 end
 
+---@param crate Crate
 function M.reload_crate(crate)
     local function on_fetched(versions)
         if versions and versions[1] then
@@ -146,44 +150,38 @@ function M.toggle()
     end
 end
 
+-- upgrade the crate on the current line
 function M.upgrade_crate()
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    local crate, versions = util.get_line_crate(linenr)
-
-    if not crate or not versions then
-        return
-    end
-
-    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-    local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
-    newest = newest or newest_pre or newest_yanked
-
-    if not newest then
-        return
-    end
-
-    util.set_version(0, crate, newest.num)
+    util.upgrade_crates({ s = linenr - 1, e = linenr })
 end
 
+-- upgrade the crates on the lines visually selected
+function M.upgrade_crates()
+    local lines = {
+        s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
+        e = vim.api.nvim_buf_get_mark(0, ">")[1],
+    }
+    util.upgrade_crates(lines)
+end
+
+-- update the crate on the current line
 function M.update_crate()
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    local crate, versions = util.get_line_crate(linenr)
-
-    if not crate or not versions then
-        return
-    end
-
-    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-    local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate.reqs)
-    match = match or match_pre or match_yanked
-
-    if not match then
-        return
-    end
-
-    util.set_version(0, crate, match.num)
+    util.update_crates({ s = linenr - 1, e = linenr })
 end
 
+-- update the crates on the lines visually selected
+function M.update_crates()
+    local lines = {
+        s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
+        e = vim.api.nvim_buf_get_mark(0, ">")[1],
+    }
+    util.update_crates(lines)
+end
+
+
+---@param cfg Config
 function M.setup(cfg)
     local default = config.default()
     if cfg then

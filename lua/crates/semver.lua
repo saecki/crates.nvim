@@ -1,5 +1,17 @@
+---@class SemVer
+---@field major integer
+---@field minor integer
+---@field patch integer
+---@field suffix string
+
+---@class Requirement
+---@field cond string
+---@field vers SemVer
+
 local M = {}
 
+---@param string string
+---@return SemVer
 function M.parse_version(string)
     local major, minor, patch, suffix
 
@@ -38,52 +50,46 @@ function M.parse_version(string)
     return {}
 end
 
+---@param string string
+---@return Requirement
 function M.parse_requirement(string)
     local vers_str
 
-    -- equal
     vers_str = string:match("^=(.+)$")
     if vers_str then
         return { cond = "eq", vers = M.parse_version(vers_str) }
     end
 
-    -- less than or equal
     vers_str = string:match("^<=(.+)$")
     if vers_str then
         return { cond = "le", vers = M.parse_version(vers_str) }
     end
 
-    -- less than
     vers_str = string:match("^<(.+)$")
     if vers_str then
         return { cond = "lt", vers = M.parse_version(vers_str) }
     end
 
-    -- greater than or equal
     vers_str = string:match("^>=(.+)$")
     if vers_str then
         return { cond = "ge", vers = M.parse_version(vers_str) }
     end
 
-    -- greater than
     vers_str = string:match("^>(.+)$")
     if vers_str then
         return { cond = "gt", vers = M.parse_version(vers_str) }
     end
 
-    -- tilde
     vers_str = string:match("^%~(.+)$")
     if vers_str then
         return { cond = "tl", vers = M.parse_version(vers_str) }
     end
 
-    -- wildcard
     vers_str = string:match("^(.+)%.%*$")
     if vers_str then
         return { cond = "tl", vers = M.parse_version(vers_str) }
     end
 
-    -- caret
     vers_str = string:match("^%^(.+)$")
     if vers_str then
         return { cond = "cr", vers = M.parse_version(vers_str) }
@@ -92,6 +98,8 @@ function M.parse_requirement(string)
     return { cond = "cr", vers = M.parse_version(string) }
 end
 
+---@param string string
+---@return Requirement[]
 function M.parse_requirements(string)
     local requirements = {}
     for c in string:gmatch("[,]?%s*([^,]+)%s*[,]?") do
@@ -102,6 +110,8 @@ function M.parse_requirements(string)
     return requirements
 end
 
+---@param version SemVer
+---@return SemVer
 local function filled_zeros(version)
     return {
         major = version.major or 0,
@@ -111,6 +121,9 @@ local function filled_zeros(version)
     }
 end
 
+---@param a string
+---@param b string
+---@return integer
 local function compare_suffixes(a, b)
     if a and b then
         if     a  < b then return -1
@@ -125,6 +138,9 @@ local function compare_suffixes(a, b)
     end
 end
 
+---@param a SemVer
+---@param b SemVer
+---@return integer
 local function compare_versions(a, b)
     local major = a.major - b.major
     local minor = a.minor - b.minor
@@ -146,6 +162,9 @@ local function compare_versions(a, b)
     end
 end
 
+---@param v SemVer
+---@param r Requirement
+---@return boolean
 function M.matches_requirement(v, r)
     if r.cond == "cr" then
         local a = filled_zeros(v)
@@ -202,6 +221,9 @@ function M.matches_requirement(v, r)
     end
 end
 
+---@param version SemVer
+---@param requirements Requirement[]
+---@return boolean
 function M.matches_requirements(version, requirements)
     local matches = true
     for _,r in ipairs(requirements) do

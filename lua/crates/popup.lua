@@ -13,11 +13,12 @@ function M.show_versions()
     end
 
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    local crate, versions = util.get_line_crate(linenr)
-
-    if not crate or not versions then
+    local crates = util.get_lines_crates({ s = linenr - 1, e = linenr })
+    if not crates or not crates[1] then
         return
     end
+    local crate = crates[1].crate
+    local versions = crates[1].versions
 
     local title_text = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
@@ -25,7 +26,7 @@ function M.show_versions()
     local width = math.max(core.cfg.popup.min_width, string.len(title_text))
     local versions_text = {}
 
-    for i,v in ipairs(versions) do
+    for _,v in ipairs(versions) do
         local text, hi
         if v.yanked then
             text = string.format(core.cfg.popup.text.yanked, v.num)
@@ -56,8 +57,8 @@ function M.show_versions()
     -- create window
     local opts = {
         relative = "cursor",
-        col = 1,
-        row = 0,
+        col = 0,
+        row = 1,
         width = width,
         height = height,
         style = core.cfg.popup.style,
@@ -116,6 +117,9 @@ function M.hide_versions()
     end
 end
 
+---@param buf integer
+---@param name string
+---@param index integer
 function M.select_version(buf, name, index)
     local crates = core.crate_cache[buf]
     if not crates then return end
@@ -134,7 +138,7 @@ function M.select_version(buf, name, index)
     util.set_version(buf, crate, text)
 
     -- update crate position
-    local line = vim.api.nvim_buf_get_lines(buf, crate.linenr - 1, crate.linenr, false)[1]
+    local line = vim.api.nvim_buf_get_lines(buf, crate.vers_line, crate.vers_line + 1, false)[1]
     local c = nil
     if crate.syntax == "section" then
         c = toml.parse_crate_dep_section_line(line)
@@ -148,6 +152,8 @@ function M.select_version(buf, name, index)
     end
 end
 
+---@param name string
+---@param index integer
 function M.copy_version(name, index)
     local versions = core.vers_cache[name]
     if not versions then return end

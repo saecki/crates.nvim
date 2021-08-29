@@ -1,3 +1,8 @@
+---@class Version
+---@field num string
+---@field yanked boolean
+---@field parsed SemVer
+
 local job = require("plenary.job")
 local semver = require("crates.semver")
 
@@ -6,6 +11,8 @@ local M = {}
 local endpoint = "https://crates.io/api/v1"
 local running_jobs = {}
 
+---@param name string
+---@param callback function(versions Version[])
 function M.fetch_crate_versions(name, callback)
     if running_jobs[name] then
         return

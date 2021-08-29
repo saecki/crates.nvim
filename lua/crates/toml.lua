@@ -1,13 +1,27 @@
+---@class Crate
+---@field name string
+---@field reqs Requirement[]
+---@field req_has_suffix boolean
+---@field vers_line integer -- 0-indexed
+---@field line Range
+---@field col Range
+
+---@class Range
+---@field s integer -- 0-indexed inclusive
+---@field e integer -- 0-indexed exclusive
+
 local M = {}
 
 local semver = require('crates.semver')
 
+---@param line string
+---@return Crate
 function M.parse_crate_dep_section_line(line)
     local vs, version, ve = line:match([[^%s*version%s*=%s*["']()([^"']*)()["']?%s*$]])
     if version and vs and ve then
         return {
             version = version,
-            col = { vs - 1, ve - 1 },
+            col = { s = vs - 1, e = ve },
             syntax = "section",
         }
     end
@@ -15,6 +29,8 @@ function M.parse_crate_dep_section_line(line)
     return nil
 end
 
+---@param line string
+---@return Crate
 function M.parse_dep_section_line(line)
     local name, version, vs, ve
     -- plain version
@@ -23,7 +39,7 @@ function M.parse_dep_section_line(line)
         return {
             name = name,
             version = version,
-            col = { vs - 1, ve - 1 },
+            col = { s = vs - 1, e = ve },
             syntax = "normal",
         }
     end
@@ -35,7 +51,7 @@ function M.parse_dep_section_line(line)
         return {
             name = name,
             version = version,
-            col = { vs - 1, ve - 1 },
+            col = { s = vs - 1, e = ve },
             syntax = "map",
         }
     end
@@ -43,12 +59,16 @@ function M.parse_dep_section_line(line)
     return nil
 end
 
+---@param buf integer
+---@return Crate[]
 function M.parse_crates(buf)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
     local crates = {}
     local dep_section = false
-    local dep_section_crate = nil -- [dependencies.<crate>]
+    local dep_section_start = 0
+    local dep_section_crate = nil
+    local dep_section_crate_name = nil -- [dependencies.<crate>]
 
     for i,l in ipairs(lines) do
         local uncommented = l:match("^([^#]*)#.*$")
@@ -59,25 +79,35 @@ function M.parse_crates(buf)
         local section = l:match("^%s*%[(.+)%]%s*$")
 
         if section then
+            -- push pending crate
+            if dep_section_crate then
+                dep_section_crate.line = { s = dep_section_start, e = i - 1 }
+                table.insert(crates, dep_section_crate)
+            end
+
             local c = section:match("^.*dependencies(.*)$")
             if c then
                 dep_section = true
-                dep_section_crate = c:match("^%.(.+)$")
+                dep_section_start = i - 1
+                dep_section_crate = nil
+                dep_section_crate_name = c:match("^%.(.+)$")
             else
                 dep_section = false
                 dep_section_crate = nil
+                dep_section_crate_name = nil
             end
-        elseif dep_section and dep_section_crate then
+        elseif dep_section and dep_section_crate_name then
             local crate = M.parse_crate_dep_section_line(l)
             if crate then
-                crate.name = dep_section_crate
-                crate.linenr = i
-                table.insert(crates, crate)
+                crate.name = dep_section_crate_name
+                crate.vers_line = i - 1
+                dep_section_crate = crate
             end
         elseif dep_section then
             local crate = M.parse_dep_section_line(l)
             if crate then
-                crate.linenr = i
+                crate.line = { s = i - 1, e = i }
+                crate.vers_line = i - 1
                 table.insert(crates, crate)
             end
         end
