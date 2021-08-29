@@ -7,13 +7,13 @@ function M.default()
         autoupdate = true,
         loading_indicator = true,
         text = {
-            loading = "Loading...",
-            version = "%s",
-            prerelease = "%s",
-            yanked = "%s yanked",
-            nomatch = "No match",
-            update = "  %s",
-            error = "Error fetching version",
+            loading = "   Loading",
+            version = "   %s",
+            prerelease = "   %s",
+            yanked = "   %s",
+            nomatch = "   No match",
+            update = "   %s",
+            error = "   Error fetching crate",
         },
         highlight = {
             loading = "CratesNvimLoading",
@@ -27,7 +27,7 @@ function M.default()
         popup = {
             autofocus = false,
             text = {
-                yanked = "yanked"
+                yanked = " "
             },
             highlight = {
                 yanked = "CratesNvimPopupYanked"

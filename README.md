@@ -49,6 +49,9 @@ require('cmp').setup {
 ```
 
 ## Config
+
+__Default__
+The icons in the default configuration require a patched font:
 ```lua
 require("crates").setup {
     avoid_prerelease = true,
@@ -56,13 +59,13 @@ require("crates").setup {
     autoupdate = true,
     loading_indicator = true,
     text = {
-        loading = "Loading...",
-        version = "%s",
-        prerelease = "%s",
-        yanked = "%s yanked",
-        nomatch = "No match",
-        update = "  %s",
-        error = "Error fetching version",
+        loading = "   Loading",
+        version = "   %s",
+        prerelease = "   %s",
+        yanked = "   %s",
+        nomatch = "   No match",
+        update = "   %s",
+        error = "   Error fetching crate",
     },
     highlight = {
         loading = "CratesNvimLoading",
@@ -76,7 +79,7 @@ require("crates").setup {
     popup = {
         autofocus = false,
         text = {
-            yanked = "yanked"
+            yanked = " "
         },
         highlight = {
             yanked = "CratesNvimPopupYanked"
@@ -93,6 +96,31 @@ require("crates").setup {
     },
 }
 ```
+
+__Plain text__
+Replace these sections if you don't have a patched font:
+```lua
+require("crates").setup {
+    text = {
+        loading = "  Loading...",
+        version = "  %s",
+        prerelease = "  %s",
+        yanked = "  %s yanked",
+        nomatch = "  Not found",
+        update = "  %s",
+        error = "  Error fetching version",
+    },
+    popup = {
+        text = {
+            yanked = "yanked"
+        },
+        highlight = {
+            yanked = "CratesNvimPopupYanked"
+        },
+    },
+}
+```
+
 ### Functions
 ```lua
 -- load and display versions
@@ -136,7 +164,7 @@ endfunction
 ```
 
 ## TODO
-- possibly port to teal?
+- Don't replace conditions in version requirements (`^`, `~`, `=`, ...)
 
 ## Similar projects
 - [vim-crates](https://github.com/mhinz/vim-crates)

@@ -5,7 +5,7 @@ local semver = require('crates.semver')
 function M.parse_crate_dep_section_line(line)
     local vs, version, ve = line:match([[^%s*version%s*=%s*["']()([^"']*)()["']?%s*$]])
     if version and vs and ve then
-        return { 
+        return {
             version = version,
             col = { vs - 1, ve - 1 },
             syntax = "section",
@@ -20,7 +20,7 @@ function M.parse_dep_section_line(line)
     -- plain version
     name, vs, version, ve = line:match([[^%s*([^%s]+)%s*=%s*["']()([^"']*)()["']?%s*$]])
     if name and version and vs and ve then
-        return { 
+        return {
             name = name,
             version = version,
             col = { vs - 1, ve - 1 },
