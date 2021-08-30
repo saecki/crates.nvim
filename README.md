@@ -184,7 +184,7 @@ nnoremap <silent> K :call <SID>show_documentation()<cr>
 function! s:show_documentation()
     if (index(['vim','help'], &filetype) >= 0)
         execute 'h '.expand('<cword>')
-    elseif ('Cargo.toml' == expand('%:t'))
+    elseif (expand('%:t') == 'Cargo.toml')
         lua require('crates').show_versions_popup()
     else
         lua vim.lsp.buf.hover()
