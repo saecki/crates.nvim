@@ -8,13 +8,14 @@ Feel free to open issues.
 
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
-- Upgrade crate on current line
+- Update crates to newest compatible version
+- Upgrade crates to newest version
 - Automatically load when opening a Cargo.toml file (`autoload`)
 - Live update while editing (`autoupdate`)
-- Show currently usable version
-    - indicate if usable version is a pre-release
-    - indicate if usable version is yanked
-    - indicate if no version is usable
+- Show compatible version
+    - indicate if compatible version is a pre-release
+    - indicate if compatible version is yanked
+    - indicate if no version is compatible
 - Show best upgrade candidate
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
@@ -146,17 +147,15 @@ require('crates').hide()
 -- show/hide versions
 require('crates').toggle()
 
--- update crate on current line to newest compatible version
-require('crates').update_crate()
+-- update crates to newest compatible version
+require('crates').update_crate() -- current line
+require('crates').update_crates() -- visually selected
+require('crates').update_all_crates() -- all in current buffer
 
--- update crates on lines visually selected to newest compatible version
-require('crates').update_crates()
-
--- upgrade crate on current line to newest version
-require('crates').upgrade_crate()
-
--- upgrade crates on lines visually selected to newest version
-require('crates').upgrade_crates()
+-- upgrade crates to newest version
+require('crates').upgrade_crate() -- current line
+require('crates').upgrade_crates() -- visually selected
+require('crates').upgrade_all_crates() -- all in current buffer
 
 -- show popup with all versions (if `popup.autofocus` is disabled calling this again will focus the popup)
 require('crates').show_versions_popup()
@@ -172,8 +171,10 @@ nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
 nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
 nnoremap <silent> <leader>vu :lua require('crates').update_crate()<cr>
 vnoremap <silent> <leader>vu :lua require('crates').update_crates()<cr>
+nnoremap <silent> <leader>va :lua require('crates').update_all_crates()<cr>
 nnoremap <silent> <leader>vU :lua require('crates').upgrade_crate()<cr>
 vnoremap <silent> <leader>vU :lua require('crates').upgrade_crates()<cr>
+nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
 ```
 
 ### Show appropriate documentation in `Cargo.toml`

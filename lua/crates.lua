@@ -165,6 +165,15 @@ function M.upgrade_crates()
     util.upgrade_crates(lines)
 end
 
+-- upgrade all crates in the buffer
+function M.upgrade_all_crates()
+    local lines = {
+        s = 0,
+        e = vim.api.nvim_buf_line_count(0),
+    }
+    util.upgrade_crates(lines)
+end
+
 -- update the crate on the current line
 function M.update_crate()
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
@@ -176,6 +185,15 @@ function M.update_crates()
     local lines = {
         s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
         e = vim.api.nvim_buf_get_mark(0, ">")[1],
+    }
+    util.update_crates(lines)
+end
+
+-- update all crates in the buffer
+function M.update_all_crates()
+    local lines = {
+        s = 0,
+        e = vim.api.nvim_buf_line_count(0),
     }
     util.update_crates(lines)
 end
