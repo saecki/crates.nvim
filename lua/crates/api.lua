@@ -9,6 +9,8 @@ local semver = require("crates.semver")
 local M = {}
 
 local endpoint = "https://crates.io/api/v1"
+local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
+
 local running_jobs = {}
 
 ---@param name string
@@ -61,7 +63,7 @@ function M.fetch_crate_versions(name, callback)
 
     local j = job:new {
         command = "curl",
-        args = { url },
+        args = { "-sLA", useragent, url },
         on_exit = vim.schedule_wrap(on_exit),
     }
 
