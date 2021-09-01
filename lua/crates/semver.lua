@@ -225,11 +225,12 @@ end
 ---@param requirements Requirement[]
 ---@return boolean
 function M.matches_requirements(version, requirements)
-    local matches = true
     for _,r in ipairs(requirements) do
-        matches = matches and M.matches_requirement(version, r)
+        if not M.matches_requirement(version, r) then
+            return false
+        end
     end
-    return matches
+    return true
 end
 
 return M
