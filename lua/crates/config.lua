@@ -52,6 +52,12 @@ function M.default()
                 copy_version = { "yy" },
             },
         },
+        cmp = {
+            text = {
+                prerelease = " <p color='red' > pre-release </p>",
+                yanked     = "  yanked ",
+            },
+        }
     }
 end
 

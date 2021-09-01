@@ -194,7 +194,6 @@ endfunction
 
 ## TODO
 - Don't replace conditions in version requirements (`^`, `~`, `=`, ...)
-- Sort completion items
 
 ## Similar projects
 - [vim-crates](https://github.com/mhinz/vim-crates)

@@ -50,15 +50,19 @@ function M.complete(_, _, callback)
     local versions = crates[1].versions
 
     local results = {}
-    for _,v in ipairs(versions) do
+    for i,v in ipairs(versions) do
         local r = {
             label = v.num,
             kind = cmp.lsp.CompletionItemKind.Value,
+            sortText = string.format("%04d", i),
         }
         if v.yanked then
             r.deprecated = true
-            r.documentation = core.cfg.popup.text.yanked
+            r.documentation = core.cfg.cmp.text.yanked
+        elseif v.parsed.suffix then
+            r.documentation = core.cfg.cmp.text.prerelease
         end
+
         table.insert(results, r)
     end
 
