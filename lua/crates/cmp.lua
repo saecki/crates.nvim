@@ -44,7 +44,7 @@ end
 function M.complete(_, _, callback)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
     local crates = util.get_lines_crates({ s = linenr - 1, e = linenr })
-    if not crates or not crates[1] then
+    if not crates or not crates[1] or not crates[1].versions then
         return
     end
     local versions = crates[1].versions
