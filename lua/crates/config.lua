@@ -35,14 +35,16 @@ function M.default()
             max_height = 30,
             min_width = 20,
             text = {
-                title   = "  %s ",
-                version = "   %s ",
-                yanked  = "  %s ",
+                title      = "  %s ",
+                version    = "   %s ",
+                prerelease = "  %s",
+                yanked     = "  %s ",
             },
             highlight = {
-                title   = "CratesNvimPopupTitle",
-                version = "CratesNvimPopupVersion",
-                yanked  = "CratesNvimPopupYanked",
+                title      = "CratesNvimPopupTitle",
+                version    = "CratesNvimPopupVersion",
+                prerelease = "CratesNvimPopupPreRelease",
+                yanked     = "CratesNvimPopupYanked",
             },
             keys = {
                 hide = { "q", "<esc>" },

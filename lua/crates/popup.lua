@@ -31,6 +31,9 @@ function M.show_versions()
         if v.yanked then
             text = string.format(core.cfg.popup.text.yanked, v.num)
             hi = core.cfg.popup.highlight.yanked
+        elseif v.parsed.suffix then
+            text = string.format(core.cfg.popup.text.prerelease, v.num)
+            hi = core.cfg.popup.highlight.prerelease
         else
             text = string.format(core.cfg.popup.text.version, v.num)
             hi = core.cfg.popup.highlight.version
