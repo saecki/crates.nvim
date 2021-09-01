@@ -37,7 +37,7 @@ function M.default()
             text = {
                 title      = "  %s ",
                 version    = "   %s ",
-                prerelease = "  %s",
+                prerelease = "  %s ",
                 yanked     = "  %s ",
             },
             highlight = {
@@ -54,10 +54,10 @@ function M.default()
         },
         cmp = {
             text = {
-                prerelease = " <p color='red' > pre-release </p>",
+                prerelease = "  pre-release ",
                 yanked     = "  yanked ",
             },
-        }
+        },
     }
 end
 
