@@ -4,8 +4,6 @@ A neovim plugin that helps managing crates.io versions.
 This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
-![](res/example.png)
-
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - Update crates to newest compatible version
@@ -19,6 +17,14 @@ Feel free to open issues.
 - Show best upgrade candidate
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
+
+![](res/virtualtext.png)
+
+### Popup
+![](res/popup.png)
+
+### Completion
+![](res/cmp.png)
 
 ## Setup
 
