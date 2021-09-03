@@ -154,7 +154,7 @@ function M.select_version(buf, name, index, smart)
         smart = core.cfg.smart_insert
     end
 
-    if smart then 
+    if smart then
         util.set_version_smart(buf, crate, version)
     else
         util.set_version(buf, crate, version.num)
