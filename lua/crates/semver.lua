@@ -42,8 +42,8 @@ end
 function M.parse_version(string)
     local major, minor, patch, suffix
 
-    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)([^%s]*)$")
-    if major and minor and patch and suffix and suffix ~= "" then
+    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
+    if major and minor and patch and suffix then
         return M.semver {
             major = tonumber(major),
             minor = tonumber(minor),
