@@ -86,6 +86,17 @@ function M.show_versions()
         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_cmd, { noremap = true, silent = true })
     end
 
+    local select_dumb_cmd = string.format(
+        ":lua require('crates.popup').select_version(%d, '%s', %s - %d, false)<cr>",
+        util.current_buf(),
+        crate.name,
+        "vim.api.nvim_win_get_cursor(0)[1]",
+        top_offset
+    )
+    for _,k in ipairs(core.cfg.popup.keys.select_dumb) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_dumb_cmd, { noremap = true, silent = true })
+    end
+
     local copy_cmd = string.format(
         ":lua require('crates.popup').copy_version('%s', %s - %d)<cr>",
         crate.name,
@@ -123,7 +134,8 @@ end
 ---@param buf integer
 ---@param name string
 ---@param index integer
-function M.select_version(buf, name, index)
+---@param smart boolean | nil
+function M.select_version(buf, name, index, smart)
     local crates = core.crate_cache[buf]
     if not crates then return end
 
@@ -136,9 +148,17 @@ function M.select_version(buf, name, index)
     if index <= 0 or index > vim.tbl_count(versions) then
         return
     end
-    local text = versions[index].num
+    local version = versions[index]
 
-    util.set_version(buf, crate, text)
+    if smart == nil then
+        smart = core.cfg.smart_insert
+    end
+
+    if smart then 
+        util.set_version_smart(buf, crate, version)
+    else
+        util.set_version(buf, crate, version.num)
+    end
 
     -- update crate position
     local line = vim.api.nvim_buf_get_lines(buf, crate.vers_line, crate.vers_line + 1, false)[1]
