@@ -174,7 +174,7 @@ function M.set_version_smart(buf, crate, version)
                 end
             elseif v.major then
                 v.major = v.major - 1
-                if v.minor < 0 then
+                if v.major < 0 then
                     v.major = 0
                 end
             end
