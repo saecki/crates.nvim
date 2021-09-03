@@ -7,8 +7,35 @@
 ---@class Requirement
 ---@field cond string
 ---@field vers SemVer
+---@field col Range -- relative to to the start of the requirement text
 
 local M = {}
+
+M.SemVer = {}
+function M.semver(obj)
+    return setmetatable(obj, { __index = M.SemVer })
+end
+
+function M.SemVer:display()
+    local text = ""
+    if self.major then
+        text = text .. self.major
+    end
+
+    if self.minor then
+        text = text .. "." .. self.minor
+    end
+
+    if self.patch then
+        text = text .. "." .. self.patch
+    end
+
+    if self.suffix then
+        text = text .. self.suffix
+    end
+
+    return text
+end
 
 ---@param string string
 ---@return SemVer
@@ -17,7 +44,7 @@ function M.parse_version(string)
 
     major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)([^%s]*)$")
     if major and minor and patch and suffix and suffix ~= "" then
-        return {
+        return M.semver {
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
@@ -27,7 +54,7 @@ function M.parse_version(string)
 
     major, minor, patch = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
     if major and minor and patch then
-        return {
+        return M.semver {
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
@@ -36,7 +63,7 @@ function M.parse_version(string)
 
     major, minor = string:match("^([0-9]+)%.([0-9]+)")
     if major and minor then
-        return {
+        return M.semver {
             major = tonumber(major),
             minor = tonumber(minor),
         }
@@ -44,66 +71,104 @@ function M.parse_version(string)
 
     major = string:match("^([0-9]+)")
     if major then
-        return { major = tonumber(major) }
+        return M.semver { major = tonumber(major) }
     end
 
-    return {}
+    return M.semver {}
 end
 
 ---@param string string
 ---@return Requirement
 function M.parse_requirement(string)
-    local vers_str
+    local vs, vers_str, ve
 
-    vers_str = string:match("^=(.+)$")
-    if vers_str then
-        return { cond = "eq", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^=%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "eq",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^<=(.+)$")
-    if vers_str then
-        return { cond = "le", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^<=%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "le",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^<(.+)$")
-    if vers_str then
-        return { cond = "lt", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^<%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "lt",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^>=(.+)$")
-    if vers_str then
-        return { cond = "ge", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^>=%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "ge",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^>(.+)$")
-    if vers_str then
-        return { cond = "gt", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^>%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "gt",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^%~(.+)$")
-    if vers_str then
-        return { cond = "tl", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^%~%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "tl",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^(.+)%.%*$")
-    if vers_str then
-        return { cond = "tl", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^()(.+)()%.%*$")
+    if vs and vers_str and ve then
+        return {
+            cond = "wl",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    vers_str = string:match("^%^(.+)$")
-    if vers_str then
-        return { cond = "cr", vers = M.parse_version(vers_str) }
+    vs, vers_str, ve = string:match("^%^%s*()(.+)()$")
+    if vs and vers_str and ve then
+        return {
+            cond = "cr",
+            vers = M.parse_version(vers_str),
+            col = { s = vs - 1, e = ve - 1 },
+        }
     end
 
-    return { cond = "cr", vers = M.parse_version(string) }
+    return {
+        cond = "bl",
+        vers = M.parse_version(string),
+        col = { s = 0, e = string.len(string) },
+    }
 end
 
 ---@param string string
 ---@return Requirement[]
 function M.parse_requirements(string)
     local requirements = {}
-    for c in string:gmatch("[,]?%s*([^,]+)%s*[,]?") do
-        local requirement = M.parse_requirement(c)
+    for s, r  in string:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
+        local requirement = M.parse_requirement(r)
+        requirement.col.s = requirement.col.s + s - 1
+        requirement.col.e = requirement.col.e + s - 1
         table.insert(requirements, requirement)
     end
 
@@ -166,7 +231,7 @@ end
 ---@param r Requirement
 ---@return boolean
 function M.matches_requirement(v, r)
-    if r.cond == "cr" then
+    if r.cond == "cr" or r.cond == "bl" then
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)
         local c
@@ -182,7 +247,7 @@ function M.matches_requirement(v, r)
             and compare_versions(a, c) < 0
     end
 
-    if r.cond == "tl" then
+    if r.cond == "tl" or r.cond == "wl" then
         local a = v
         local b = r.vers
         local c

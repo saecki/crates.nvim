@@ -5,6 +5,7 @@ local M = {}
 ---@return Config
 function M.default()
     return {
+        smart_insert = true, -- try not to destroy complex version requirements (`^3`, `~0.3`, `>=1, <2`, etc.)
         avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
         autoload = true, -- automatically run update when opening a Cargo.toml
         autoupdate = true, -- atomatically update when editing text

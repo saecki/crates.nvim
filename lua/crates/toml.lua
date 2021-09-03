@@ -1,5 +1,6 @@
 ---@class Crate
 ---@field name string
+---@field req_text string
 ---@field reqs Requirement[]
 ---@field req_has_suffix boolean
 ---@field vers_line integer -- 0-indexed
@@ -7,10 +8,6 @@
 ---@field line Range
 ---@field col Range
 ---@field quote Quotes
-
----@class Range
----@field s integer -- 0-indexed inclusive
----@field e integer -- 0-indexed exclusive
 
 ---@class Quotes
 ---@field s string
@@ -23,10 +20,10 @@ local semver = require('crates.semver')
 ---@param line string
 ---@return Crate
 function M.parse_crate_dep_section_line(line)
-    local qs, vs, version, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-    if qs and vs and version and ve then
+    local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if qs and vs and req_text and ve then
         return {
-            version = version,
+            req_text = req_text,
             col = { s = vs - 1, e = ve },
             quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "section",
@@ -39,13 +36,13 @@ end
 ---@param line string
 ---@return Crate
 function M.parse_dep_section_line(line)
-    local name, qs, vs, version, ve, qe
+    local name, qs, vs, req_text, ve, qe
     -- plain version
-    name, qs, vs, version, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-    if name and qs and vs and version and ve then
+    name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if name and qs and vs and req_text and ve then
         return {
             name = name,
-            version = version,
+            req_text = req_text,
             col = { s = vs - 1, e = ve },
             quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "normal",
@@ -54,11 +51,11 @@ function M.parse_dep_section_line(line)
 
     -- version in map
     local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
-    name, qs, vs, version, ve, qe = line:match(pat)
-    if name and qs and vs and version and ve then
+    name, qs, vs, req_text, ve, qe = line:match(pat)
+    if name and qs and vs and req_text and ve then
         return {
             name = name,
-            version = version,
+            req_text = req_text,
             col = { s = vs - 1, e = ve },
             quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "map",
@@ -123,7 +120,7 @@ function M.parse_crates(buf)
     end
 
     for _,c in ipairs(crates) do
-        c.reqs = semver.parse_requirements(c.version)
+        c.reqs = semver.parse_requirements(c.req_text)
 
         c.req_has_suffix = false
         for _,r in ipairs(c.reqs) do

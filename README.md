@@ -8,6 +8,7 @@ Feel free to open issues.
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - Update crates to newest compatible version
 - Upgrade crates to newest version
+- Respect existing version requirements and update them in an elegant way (`smart_insert`)
 - Automatically load when opening a Cargo.toml file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show compatible version
@@ -67,6 +68,7 @@ __Default__
 The icons in the default configuration require a patched font:
 ```lua
 require("crates").setup {
+    smart_insert = true, -- try to be smart about inserting versions
     avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
     autoload = true, -- automatically run update when opening a Cargo.toml
     autoupdate = true, -- atomatically update when editing text
@@ -213,7 +215,6 @@ endfunction
 ```
 
 ## TODO
-- Don't replace conditions in version requirements (`^`, `~`, `=`, ...)
 
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)

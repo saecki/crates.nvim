@@ -150,52 +150,58 @@ function M.toggle()
     end
 end
 
--- upgrade the crate on the current line
-function M.upgrade_crate()
+--- upgrade the crate on the current line
+---@param smart boolean | nil
+function M.upgrade_crate(smart)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    util.upgrade_crates({ s = linenr - 1, e = linenr })
+    util.upgrade_crates({ s = linenr - 1, e = linenr }, smart)
 end
 
--- upgrade the crates on the lines visually selected
-function M.upgrade_crates()
+--- upgrade the crates on the lines visually selected
+---@param smart boolean | nil
+function M.upgrade_crates(smart)
     local lines = {
         s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
         e = vim.api.nvim_buf_get_mark(0, ">")[1],
     }
-    util.upgrade_crates(lines)
+    util.upgrade_crates(lines, smart)
 end
 
--- upgrade all crates in the buffer
-function M.upgrade_all_crates()
+--- upgrade all crates in the buffer
+---@param smart boolean | nil
+function M.upgrade_all_crates(smart)
     local lines = {
         s = 0,
         e = vim.api.nvim_buf_line_count(0),
     }
-    util.upgrade_crates(lines)
+    util.upgrade_crates(lines, smart)
 end
 
 -- update the crate on the current line
-function M.update_crate()
+---@param smart boolean | nil
+function M.update_crate(smart)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    util.update_crates({ s = linenr - 1, e = linenr })
+    util.update_crates({ s = linenr - 1, e = linenr }, smart)
 end
 
 -- update the crates on the lines visually selected
-function M.update_crates()
+---@param smart boolean | nil
+function M.update_crates(smart)
     local lines = {
         s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
         e = vim.api.nvim_buf_get_mark(0, ">")[1],
     }
-    util.update_crates(lines)
+    util.update_crates(lines, smart)
 end
 
--- update all crates in the buffer
-function M.update_all_crates()
+--- update all crates in the buffer
+---@param smart boolean | nil
+function M.update_all_crates(smart)
     local lines = {
         s = 0,
         e = vim.api.nvim_buf_line_count(0),
     }
-    util.update_crates(lines)
+    util.update_crates(lines, smart)
 end
 
 
@@ -209,6 +215,7 @@ function M.setup(cfg)
     end
 
     vim.cmd("augroup Crates")
+    vim.cmd("autocmd!")
     if core.cfg.autoload then
         vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
     end
