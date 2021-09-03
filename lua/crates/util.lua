@@ -75,13 +75,17 @@ end
 ---@param crate Crate
 ---@param text string
 function M.set_version(buf, crate, text)
+    local t = text
+    if not crate.quote.e then
+        t = text .. crate.quote.s
+    end
     vim.api.nvim_buf_set_text(
         buf,
         crate.vers_line,
         crate.col.s,
         crate.vers_line,
         crate.col.e - 1,
-        { text }
+        { t }
     )
 end
 

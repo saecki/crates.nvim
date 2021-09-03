@@ -3,12 +3,18 @@
 ---@field reqs Requirement[]
 ---@field req_has_suffix boolean
 ---@field vers_line integer -- 0-indexed
+---@field syntax string
 ---@field line Range
 ---@field col Range
+---@field quote Quotes
 
 ---@class Range
 ---@field s integer -- 0-indexed inclusive
 ---@field e integer -- 0-indexed exclusive
+
+---@class Quotes
+---@field s string
+---@field e string
 
 local M = {}
 
@@ -17,11 +23,12 @@ local semver = require('crates.semver')
 ---@param line string
 ---@return Crate
 function M.parse_crate_dep_section_line(line)
-    local vs, version, ve = line:match([[^%s*version%s*=%s*["']()([^"']*)()["']?%s*$]])
-    if version and vs and ve then
+    local qs, vs, version, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if qs and vs and version and ve then
         return {
             version = version,
             col = { s = vs - 1, e = ve },
+            quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "section",
         }
     end
@@ -32,26 +39,28 @@ end
 ---@param line string
 ---@return Crate
 function M.parse_dep_section_line(line)
-    local name, version, vs, ve
+    local name, qs, vs, version, ve, qe
     -- plain version
-    name, vs, version, ve = line:match([[^%s*([^%s]+)%s*=%s*["']()([^"']*)()["']?%s*$]])
-    if name and version and vs and ve then
+    name, qs, vs, version, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if name and qs and vs and version and ve then
         return {
             name = name,
             version = version,
             col = { s = vs - 1, e = ve },
+            quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "normal",
         }
     end
 
     -- version in map
-    local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*["']()([^"']*)()["']?%s*[,]?.*[}]?%s*$]]
-    name, vs, version, ve = line:match(pat)
-    if name and version and vs and ve then
+    local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
+    name, qs, vs, version, ve, qe = line:match(pat)
+    if name and qs and vs and version and ve then
         return {
             name = name,
             version = version,
             col = { s = vs - 1, e = ve },
+            quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "map",
         }
     end
