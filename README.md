@@ -170,11 +170,13 @@ require('crates').hide()
 require('crates').toggle()
 
 -- update crates to newest compatible version
+-- all of these take an optional `smart` flag that will override the `smart_insert` config option
 require('crates').update_crate() -- current line
 require('crates').update_crates() -- visually selected
 require('crates').update_all_crates() -- all in current buffer
 
 -- upgrade crates to newest version
+-- all of these take an optional `smart` flag that will override the `smart_insert` config option
 require('crates').upgrade_crate() -- current line
 require('crates').upgrade_crates() -- visually selected
 require('crates').upgrade_all_crates() -- all in current buffer
