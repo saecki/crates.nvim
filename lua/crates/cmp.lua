@@ -42,12 +42,20 @@ end
 ---@param params cmp.SourceCompletionApiParams
 ---@param callback fun(response: lsp.CompletionResponse|nil)
 function M.complete(_, _, callback)
-    local linenr = vim.api.nvim_win_get_cursor(0)[1]
+    local pos = vim.api.nvim_win_get_cursor(0)
+    local linenr = pos[1]
+    local col = pos[2]
+
     local crates = util.get_lines_crates({ s = linenr - 1, e = linenr })
     if not crates or not crates[1] or not crates[1].versions then
         return
     end
+
+    local crate = crates[1].crate
     local versions = crates[1].versions
+    if not util.contains(crate.col, col) then
+        return
+    end
 
     local results = {}
     for i,v in ipairs(versions) do
