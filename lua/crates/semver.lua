@@ -232,6 +232,10 @@ end
 ---@return boolean
 function M.matches_requirement(v, r)
     if r.cond == "cr" or r.cond == "bl" then
+        if r.vers.major == v.major and not r.vers.minor then
+            return true
+        end
+
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)
         local c
@@ -247,7 +251,7 @@ function M.matches_requirement(v, r)
             and compare_versions(a, c) < 0
     end
 
-    if r.cond == "tl" or r.cond == "wl" then
+    if r.cond == "tl" then
         local a = v
         local b = r.vers
         local c
@@ -262,11 +266,17 @@ function M.matches_requirement(v, r)
             and compare_versions(a, c) < 0
     end
 
-    if r.cond == "eq" then
-        return v.major == r.vers.major
-            and v.minor == r.vers.minor
-            and v.patch == r.vers.patch
-            and v.suffix == r.vers.suffix
+    if r.cond == "eq" or r.cond == "wl" then
+        if r.vers.major ~= v.major then
+            return false
+        end
+        if r.vers.minor and r.vers.minor ~= v.minor then
+            return false
+        end
+        if r.vers.patch and r.vers.patch ~= v.patch then
+            return false
+        end
+        return r.vers.suffix == v.suffix
     elseif r.cond == "lt" then
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)
