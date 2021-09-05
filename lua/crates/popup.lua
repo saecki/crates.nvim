@@ -19,6 +19,7 @@ function M.show_versions()
     end
     local crate = crates[1].crate
     local versions = crates[1].versions
+    if not versions then return end
 
     local title_text = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
