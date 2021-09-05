@@ -93,10 +93,27 @@ function M.set_version(buf, crate, text)
     )
 end
 
+---@param r Requirement
+---@param version Version
+---@return SemVer
+local function replace_existing(r, version)
+    return semver.semver {
+        major = r.vers.major and version.parsed.major or nil,
+        minor = r.vers.minor and version.parsed.minor or nil,
+        patch = r.vers.patch and version.parsed.patch or nil,
+        suffix = r.vers.suffix and version.parsed.suffix or nil,
+    }
+end
+
 ---@param buf integer
 ---@param crate Crate
 ---@param version Version
 function M.set_version_smart(buf, crate, version)
+    if #crate.reqs == 0 then
+        M.set_version(buf, crate, version.num)
+        return
+    end
+
     local pos = 1
     local text = ""
     for _,r in ipairs(crate.reqs) do
@@ -107,20 +124,13 @@ function M.set_version_smart(buf, crate, version)
             }
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         elseif r.cond == "tl" then
-            local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
-                suffix = r.vers.suffix and version.parsed.suffix or nil,
-            }
+            local v = replace_existing(r, version)
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
-        elseif r.cond == "cr" or r.cond == "bl" then
-            local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
-                suffix = r.vers.suffix and version.parsed.suffix or nil,
-            }
+        elseif r.cond == "cr" then
+            local v = replace_existing(r, version)
+            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+        elseif r.cond == "bl" then
+            local v = replace_existing(r, version)
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         elseif r.cond == "lt" and not semver.matches_requirement(version.parsed, r) then
             local v = semver.semver {
@@ -128,6 +138,7 @@ function M.set_version_smart(buf, crate, version)
                 minor = r.vers.minor and version.parsed.minor or nil,
                 patch = r.vers.patch and version.parsed.patch or nil,
             }
+
             if v.patch then
                 v.patch = v.patch + 1
             elseif v.minor then
@@ -135,14 +146,11 @@ function M.set_version_smart(buf, crate, version)
             elseif v.major then
                 v.major = v.major + 1
             end
+
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         elseif r.cond == "le" and not semver.matches_requirement(version.parsed, r) then
-            local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
-                suffix = r.vers.suffix and version.parsed.suffix or nil,
-            }
+            local v = replace_existing(r, version)
+
             if not v.minor and version.parsed.minor and version.parsed.minor > 0 then
                 v.minor = version.parsed.minor
             end
@@ -153,6 +161,7 @@ function M.set_version_smart(buf, crate, version)
             if not v.suffix and version.parsed.suffix then
                 v.suffix = version.parsed.suffix
             end
+
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         elseif r.cond == "gt" then
             local v = semver.semver {
@@ -160,6 +169,7 @@ function M.set_version_smart(buf, crate, version)
                 minor = r.vers.minor and version.parsed.minor or nil,
                 patch = r.vers.patch and version.parsed.patch or nil,
             }
+
             if v.patch then
                 v.patch = v.patch - 1
                 if v.patch < 0 then
@@ -178,14 +188,10 @@ function M.set_version_smart(buf, crate, version)
                     v.major = 0
                 end
             end
+
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         elseif r.cond == "ge" then
-            local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
-                suffix = r.vers.suffix and version.parsed.suffix or nil,
-            }
+            local v = replace_existing(r, version)
             text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
         else
             text = text .. string.sub(crate.req_text, pos, r.col.e)

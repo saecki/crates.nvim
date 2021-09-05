@@ -3,6 +3,7 @@
 ---@field minor integer
 ---@field patch integer
 ---@field suffix string
+---@field display fun(self:SemVer): string
 
 ---@class Requirement
 ---@field cond string
@@ -12,10 +13,14 @@
 local M = {}
 
 M.SemVer = {}
+
+---@param obj table
+---@return SemVer
 function M.semver(obj)
     return setmetatable(obj, { __index = M.SemVer })
 end
 
+---@return string
 function M.SemVer:display()
     local text = ""
     if self.major then
