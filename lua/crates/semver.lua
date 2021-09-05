@@ -31,7 +31,7 @@ function M.SemVer:display()
     end
 
     if self.suffix then
-        text = text .. self.suffix
+        text = text .. "-" .. self.suffix
     end
 
     return text
