@@ -138,13 +138,13 @@ require("crates").setup {
         yanked     = "  %s yanked",
         nomatch    = "  Not found",
         update     = "  %s",
-        error      = "  Error fetching version",
+        error      = "  Error fetching crate",
     },
     popup = {
         text = {
             title   = " # %s ",
             version = " %s ",
-            yanked  = " %s yanked",
+            yanked  = " %s yanked ",
         },
     },
     cmp = {
