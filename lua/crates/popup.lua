@@ -156,7 +156,7 @@ function M.select_version(buf, name, index, smart)
     end
 
     if smart then
-        util.set_version_smart(buf, crate, version)
+        util.set_version_smart(buf, crate, version.parsed)
     else
         util.set_version(buf, crate, version.num)
     end

@@ -94,23 +94,26 @@ function M.set_version(buf, crate, text)
 end
 
 ---@param r Requirement
----@param version Version
+---@param version SemVer
 ---@return SemVer
 local function replace_existing(r, version)
-    return semver.semver {
-        major = r.vers.major and version.parsed.major or nil,
-        minor = r.vers.minor and version.parsed.minor or nil,
-        patch = r.vers.patch and version.parsed.patch or nil,
-        suffix = r.vers.suffix and version.parsed.suffix or nil,
-    }
+    if version.suffix then
+        return version
+    else
+        return semver.semver {
+            major = version.major,
+            minor = r.vers.minor and version.minor or nil,
+            patch = r.vers.patch and version.patch or nil,
+        }
+    end
 end
 
 ---@param buf integer
 ---@param crate Crate
----@param version Version
+---@param version SemVer
 function M.set_version_smart(buf, crate, version)
     if #crate.reqs == 0 then
-        M.set_version(buf, crate, version.num)
+        M.set_version(buf, crate, version:display())
         return
     end
 
@@ -118,25 +121,31 @@ function M.set_version_smart(buf, crate, version)
     local text = ""
     for _,r in ipairs(crate.reqs) do
         if r.cond == "wl" then
-            local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-            }
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            if version.suffix then
+                text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. version:display()
+            else
+                local v = semver.semver {
+                    major = r.vers.major and version.major or nil,
+                    minor = r.vers.minor and version.minor or nil,
+                }
+                local before = string.sub(crate.req_text, pos, r.vers_col.s)
+                local after = string.sub(crate.req_text, r.vers_col.e + 1, r.req_col.e)
+                text = text .. before .. v:display() .. after
+            end
         elseif r.cond == "tl" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "cr" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "bl" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
-        elseif r.cond == "lt" and not semver.matches_requirement(version.parsed, r) then
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+        elseif r.cond == "lt" and not semver.matches_requirement(version, r) then
             local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
+                major = version.major,
+                minor = r.vers.minor and version.minor or nil,
+                patch = r.vers.patch and version.patch or nil,
             }
 
             if v.patch then
@@ -147,27 +156,29 @@ function M.set_version_smart(buf, crate, version)
                 v.major = v.major + 1
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
-        elseif r.cond == "le" and not semver.matches_requirement(version.parsed, r) then
-            local v = replace_existing(r, version)
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+        elseif r.cond == "le" and not semver.matches_requirement(version, r) then
+            local v
 
-            if not v.minor and version.parsed.minor and version.parsed.minor > 0 then
-                v.minor = version.parsed.minor
-            end
-            if not v.patch and version.parsed.patch and version.parsed.patch > 0 then
-                v.minor = version.parsed.minor
-                v.patch = version.parsed.patch
-            end
-            if not v.suffix and version.parsed.suffix then
-                v.suffix = version.parsed.suffix
+            if version.suffix then
+                v = version
+            else
+                v =  semver.semver { major = version.major }
+                if r.vers.minor or version.minor and version.minor > 0 then
+                    v.minor = version.minor
+                end
+                if r.vers.patch or version.patch and version.patch > 0 then
+                    v.minor = version.minor
+                    v.patch = version.patch
+                end
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "gt" then
             local v = semver.semver {
-                major = r.vers.major and version.parsed.major or nil,
-                minor = r.vers.minor and version.parsed.minor or nil,
-                patch = r.vers.patch and version.parsed.patch or nil,
+                major = r.vers.major and version.major or nil,
+                minor = r.vers.minor and version.minor or nil,
+                patch = r.vers.patch and version.patch or nil,
             }
 
             if v.patch then
@@ -189,15 +200,15 @@ function M.set_version_smart(buf, crate, version)
                 end
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "ge" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.col.s) .. v:display()
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         else
-            text = text .. string.sub(crate.req_text, pos, r.col.e)
+            text = text .. string.sub(crate.req_text, pos, r.vers_col.e)
         end
 
-        pos = r.col.e + 1
+        pos = math.max(r.req_col.e + 1, r.vers_col.e + 1)
     end
     text = text .. string.sub(crate.req_text, pos)
 
@@ -223,7 +234,7 @@ function M.upgrade_crates(lines, smart)
 
         if newest then
             if smart then
-                M.set_version_smart(0, crate, newest)
+                M.set_version_smart(0, crate, newest.parsed)
             else
                 M.set_version(0, crate, newest.num)
             end
@@ -250,7 +261,7 @@ function M.update_crates(lines, smart)
 
         if match then
             if smart then
-                M.set_version_smart(0, crate, match)
+                M.set_version_smart(0, crate, match.parsed)
             else
                 M.set_version(0, crate, match.num)
             end

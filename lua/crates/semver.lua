@@ -8,7 +8,8 @@
 ---@class Requirement
 ---@field cond string
 ---@field vers SemVer
----@field col Range -- relative to to the start of the requirement text
+---@field req_col Range -- relative to to the start of the requirement text
+---@field vers_col Range -- relative to to the start of the requirement text
 
 local M = {}
 
@@ -85,14 +86,15 @@ end
 ---@param string string
 ---@return Requirement
 function M.parse_requirement(string)
-    local vs, vers_str, ve
+    local vs, vers_str, ve, re
 
     vs, vers_str, ve = string:match("^=%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "eq",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -101,7 +103,8 @@ function M.parse_requirement(string)
         return {
             cond = "le",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -110,7 +113,8 @@ function M.parse_requirement(string)
         return {
             cond = "lt",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -119,7 +123,8 @@ function M.parse_requirement(string)
         return {
             cond = "ge",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -128,7 +133,8 @@ function M.parse_requirement(string)
         return {
             cond = "gt",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -137,16 +143,18 @@ function M.parse_requirement(string)
         return {
             cond = "tl",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
-    vs, vers_str, ve = string:match("^()(.+)()%.%*$")
-    if vs and vers_str and ve then
+    vers_str, ve, re = string:match("^(.+)()%.%*()$")
+    if vers_str and ve and re then
         return {
             cond = "wl",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = 0, e = ve - 1 },
+            req_col = { s = ve - 1, e = re - 1 },
         }
     end
 
@@ -155,14 +163,16 @@ function M.parse_requirement(string)
         return {
             cond = "cr",
             vers = M.parse_version(vers_str),
-            col = { s = vs - 1, e = ve - 1 },
+            vers_col = { s = vs - 1, e = ve - 1 },
+            req_col = { s = 0, e = vs - 1 },
         }
     end
 
     return {
         cond = "bl",
         vers = M.parse_version(string),
-        col = { s = 0, e = string.len(string) },
+        vers_col = { s = 0, e = string.len(string) },
+        req_col = { s = 0, e = 0 },
     }
 end
 
@@ -172,8 +182,8 @@ function M.parse_requirements(string)
     local requirements = {}
     for s, r  in string:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
         local requirement = M.parse_requirement(r)
-        requirement.col.s = requirement.col.s + s - 1
-        requirement.col.e = requirement.col.e + s - 1
+        requirement.vers_col.s = requirement.vers_col.s + s - 1
+        requirement.vers_col.e = requirement.vers_col.e + s - 1
         table.insert(requirements, requirement)
     end
 
