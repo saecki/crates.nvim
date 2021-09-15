@@ -1,4 +1,67 @@
 ---@class Config
+---@field smart_insert boolean
+---@field avoid_prerelease boolean
+---@field autoload boolean
+---@field autoupdate boolean
+---@field loading_indicator boolean
+---@field text TextConfig
+---@field highlight HighlightConfig
+---@field popup PopupConfig
+---@field cmp CmpConfig
+
+---@class TextConfig
+---@field loading string
+---@field version string
+---@field prerelease string
+---@field yanked string
+---@field nomatch string
+---@field update string
+---@field error string
+
+---@class HighlightConfig
+---@field loading string
+---@field version string
+---@field prerelease string
+---@field yanked string
+---@field nomatch string
+---@field update string
+---@field error string
+
+---@class PopupConfig
+---@field autofocus boolean
+---@field copy_register string
+---@field style string
+---@field border string|table
+---@field max_height integer
+---@field min_width integer
+---@field text PopupTextConfig
+---@field highlight PopupHighlightConfig
+---@field keys PopupKeyConfig
+
+---@class PopupTextConfig
+---@field title string
+---@field version string
+---@field prerelease string
+---@field yanked string
+
+---@class PopupHighlightConfig
+---@field title string
+---@field version string
+---@field prerelease string
+---@field yanked string
+
+---@class PopupKeyConfig
+---@field hide string[]
+---@field select string[]
+---@field select_dumb string[]
+---@field copy_version string[]
+
+---@class CmpConfig
+---@field text CmpTextConfig
+
+---@class CmpTextConfig
+---@field prerelease string
+---@field yanked string
 
 local M = {}
 

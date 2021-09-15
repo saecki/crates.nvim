@@ -53,7 +53,7 @@ function M.complete(_, _, callback)
 
     local crate = crates[1].crate
     local versions = crates[1].versions
-    if not util.contains(crate.col, col) then
+    if not util.contains(crate.req_col, col) then
         return
     end
 

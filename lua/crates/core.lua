@@ -4,11 +4,12 @@
 ---@field crate_cache table<integer, table<string, Crate>>
 ---@field visible boolean
 
-local M = {}
-
-M.cfg = {}
-M.vers_cache = {}
-M.crate_cache = {}
-M.visible = false
+---@type Core
+local M = {
+    cfg = {},
+    vers_cache = {},
+    crate_cache = {},
+    visible = false,
+}
 
 return M

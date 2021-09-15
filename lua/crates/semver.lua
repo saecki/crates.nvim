@@ -7,8 +7,8 @@
 
 ---@class Requirement
 ---@field cond string
+---@field cond_col Range -- relative to to the start of the requirement text
 ---@field vers SemVer
----@field req_col Range -- relative to to the start of the requirement text
 ---@field vers_col Range -- relative to to the start of the requirement text
 
 local M = {}
@@ -67,7 +67,7 @@ function M.parse_version(string)
         }
     end
 
-    major, minor = string:match("^([0-9]+)%.([0-9]+)")
+    major, minor = string:match("^([0-9]+)%.([0-9]+)[%.]?$")
     if major and minor then
         return M.semver {
             major = tonumber(major),
@@ -75,7 +75,7 @@ function M.parse_version(string)
         }
     end
 
-    major = string:match("^([0-9]+)")
+    major = string:match("^([0-9]+)[%.]?$")
     if major then
         return M.semver { major = tonumber(major) }
     end
@@ -92,9 +92,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "eq",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -102,9 +102,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "le",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -112,9 +112,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "lt",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -122,9 +122,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "ge",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -132,9 +132,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "gt",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -142,9 +142,9 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "tl",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
@@ -152,9 +152,9 @@ function M.parse_requirement(string)
     if vers_str and ve and re then
         return {
             cond = "wl",
+            cond_col = { s = ve - 1, e = re - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = 0, e = ve - 1 },
-            req_col = { s = ve - 1, e = re - 1 },
         }
     end
 
@@ -162,17 +162,17 @@ function M.parse_requirement(string)
     if vs and vers_str and ve then
         return {
             cond = "cr",
+            cond_col = { s = 0, e = vs - 1 },
             vers = M.parse_version(vers_str),
             vers_col = { s = vs - 1, e = ve - 1 },
-            req_col = { s = 0, e = vs - 1 },
         }
     end
 
     return {
         cond = "bl",
+        cond_col = { s = 0, e = 0 },
         vers = M.parse_version(string),
         vers_col = { s = 0, e = string.len(string) },
-        req_col = { s = 0, e = 0 },
     }
 end
 

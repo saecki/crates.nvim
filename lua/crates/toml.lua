@@ -1,13 +1,13 @@
 ---@class Crate
 ---@field name string
----@field req_text string
----@field reqs Requirement[]
----@field req_has_suffix boolean
----@field vers_line integer -- 0-indexed
----@field syntax string
 ---@field line Range
----@field col Range
----@field quote Quotes
+---@field syntax string
+---@field reqs Requirement[]
+---@field req_text string
+---@field req_has_suffix boolean
+---@field req_line integer -- 0-indexed
+---@field req_col Range
+---@field req_quote Quotes
 
 ---@class Quotes
 ---@field s string
@@ -19,14 +19,14 @@ local semver = require('crates.semver')
 
 ---@param line string
 ---@return Crate
-function M.parse_crate_dep_section_line(line)
+function M.parse_crate_table_entry(line)
     local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if qs and vs and req_text and ve then
         return {
             req_text = req_text,
-            col = { s = vs - 1, e = ve },
-            quote = { s = qs, e = qe ~= "" and qe or nil },
-            syntax = "section",
+            req_col = { s = vs - 1, e = ve },
+            req_quote = { s = qs, e = qe ~= "" and qe or nil },
+            syntax = "table",
         }
     end
 
@@ -35,7 +35,7 @@ end
 
 ---@param line string
 ---@return Crate
-function M.parse_dep_section_line(line)
+function M.parse_crate(line)
     local name, qs, vs, req_text, ve, qe
     -- plain version
     name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
@@ -43,22 +43,22 @@ function M.parse_dep_section_line(line)
         return {
             name = name,
             req_text = req_text,
-            col = { s = vs - 1, e = ve },
-            quote = { s = qs, e = qe ~= "" and qe or nil },
+            req_col = { s = vs - 1, e = ve },
+            req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "normal",
         }
     end
 
-    -- version in map
+    -- version in inline table
     local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
     name, qs, vs, req_text, ve, qe = line:match(pat)
     if name and qs and vs and req_text and ve then
         return {
             name = name,
             req_text = req_text,
-            col = { s = vs - 1, e = ve },
-            quote = { s = qs, e = qe ~= "" and qe or nil },
-            syntax = "map",
+            req_col = { s = vs - 1, e = ve },
+            req_quote = { s = qs, e = qe ~= "" and qe or nil },
+            syntax = "inline_table",
         }
     end
 
@@ -71,10 +71,10 @@ function M.parse_crates(buf)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
     local crates = {}
-    local dep_section = false
-    local dep_section_start = 0
-    local dep_section_crate = nil
-    local dep_section_crate_name = nil -- [dependencies.<crate>]
+    local in_dep_table = false
+    local dep_table_start = 0
+    local dep_table_crate = nil
+    local dep_table_crate_name = nil -- [dependencies.<crate>]
 
     for i,l in ipairs(lines) do
         local uncommented = l:match("^([^#]*)#.*$")
@@ -86,34 +86,34 @@ function M.parse_crates(buf)
 
         if section then
             -- push pending crate
-            if dep_section_crate then
-                dep_section_crate.line = { s = dep_section_start, e = i - 1 }
-                table.insert(crates, dep_section_crate)
+            if dep_table_crate then
+                dep_table_crate.line = { s = dep_table_start, e = i - 1 }
+                table.insert(crates, dep_table_crate)
             end
 
             local c = section:match("^.*dependencies(.*)$")
             if c then
-                dep_section = true
-                dep_section_start = i - 1
-                dep_section_crate = nil
-                dep_section_crate_name = c:match("^%.(.+)$")
+                in_dep_table = true
+                dep_table_start = i - 1
+                dep_table_crate = nil
+                dep_table_crate_name = c:match("^%.(.+)$")
             else
-                dep_section = false
-                dep_section_crate = nil
-                dep_section_crate_name = nil
+                in_dep_table = false
+                dep_table_crate = nil
+                dep_table_crate_name = nil
             end
-        elseif dep_section and dep_section_crate_name then
-            local crate = M.parse_crate_dep_section_line(l)
+        elseif in_dep_table and dep_table_crate_name then
+            local crate = M.parse_crate_table_entry(l)
             if crate then
-                crate.name = dep_section_crate_name
-                crate.vers_line = i - 1
-                dep_section_crate = crate
+                crate.name = dep_table_crate_name
+                crate.req_line = i - 1
+                dep_table_crate = crate
             end
-        elseif dep_section then
-            local crate = M.parse_dep_section_line(l)
+        elseif in_dep_table then
+            local crate = M.parse_crate(l)
             if crate then
                 crate.line = { s = i - 1, e = i }
-                crate.vers_line = i - 1
+                crate.req_line = i - 1
                 table.insert(crates, crate)
             end
         end

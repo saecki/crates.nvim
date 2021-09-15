@@ -80,15 +80,15 @@ end
 ---@param text string
 function M.set_version(buf, crate, text)
     local t = text
-    if not crate.quote.e then
-        t = text .. crate.quote.s
+    if not crate.req_quote.e then
+        t = text .. crate.req_quote.s
     end
     vim.api.nvim_buf_set_text(
         buf,
-        crate.vers_line,
-        crate.col.s,
-        crate.vers_line,
-        crate.col.e - 1,
+        crate.req_line,
+        crate.req_col.s,
+        crate.req_line,
+        crate.req_col.e - 1,
         { t }
     )
 end
@@ -129,7 +129,7 @@ function M.set_version_smart(buf, crate, version)
                     minor = r.vers.minor and version.minor or nil,
                 }
                 local before = string.sub(crate.req_text, pos, r.vers_col.s)
-                local after = string.sub(crate.req_text, r.vers_col.e + 1, r.req_col.e)
+                local after = string.sub(crate.req_text, r.vers_col.e + 1, r.cond_col.e)
                 text = text .. before .. v:display() .. after
             end
         elseif r.cond == "tl" then
@@ -208,7 +208,7 @@ function M.set_version_smart(buf, crate, version)
             text = text .. string.sub(crate.req_text, pos, r.vers_col.e)
         end
 
-        pos = math.max(r.req_col.e + 1, r.vers_col.e + 1)
+        pos = math.max(r.cond_col.e + 1, r.vers_col.e + 1)
     end
     text = text .. string.sub(crate.req_text, pos)
 
