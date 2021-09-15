@@ -1,7 +1,12 @@
 ---@class Version
 ---@field num string
+---@field features table<string, Feature>
 ---@field yanked boolean
 ---@field parsed SemVer
+
+---@class Feature
+---@field name string
+---@field members string[]
 
 local job = require("plenary.job")
 local semver = require("crates.semver")
@@ -40,9 +45,15 @@ function M.fetch_crate_versions(name, callback)
                 if v.num then
                     local version = {
                         num = v.num,
+                        features = {},
                         yanked = v.yanked,
                         parsed = semver.parse_version(v.num),
                     }
+
+                    for _,m in ipairs(v.features) do
+                        table.insert(version.features, { members = m })
+                    end
+
                     table.insert(versions, version)
                 end
             end
