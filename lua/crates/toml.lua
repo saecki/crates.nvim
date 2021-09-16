@@ -145,18 +145,16 @@ function M.parse_crates(buf)
         elseif in_dep_table and dep_table_crate_name then
             local crate_req = M.parse_crate_table_req(l)
             if crate_req then
-                dep_table_crate = dep_table_crate or {}
                 crate_req.name = dep_table_crate_name
                 crate_req.req_line = i - 1
-                dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_req)
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_req)
             end
 
             local crate_feat = M.parse_crate_table_feat(l)
             if crate_feat then
-                dep_table_crate = dep_table_crate or {}
                 crate_feat.name = dep_table_crate_name
                 crate_feat.feat_line = i - 1
-                dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_feat)
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_feat)
             end
         elseif in_dep_table then
             local crate = M.parse_crate(l)
