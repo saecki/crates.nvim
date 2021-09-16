@@ -50,8 +50,11 @@ function M.fetch_crate_versions(name, callback)
                         parsed = semver.parse_version(v.num),
                     }
 
-                    for _,m in ipairs(v.features) do
-                        table.insert(version.features, { members = m })
+                    for n,m in pairs(v.features) do
+                        table.insert(version.features, {
+                            name = n,
+                            members = m,
+                        })
                     end
 
                     table.insert(versions, version)

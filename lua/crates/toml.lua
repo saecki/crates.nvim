@@ -11,6 +11,7 @@
 ---@field feats string[]
 ---@field feat_text string
 ---@field feat_line integer -- 0-indexed
+---@field feat_col Range
 
 ---@class Quotes
 ---@field s string
@@ -47,10 +48,11 @@ end
 ---@param line string
 ---@return Crate
 function M.parse_crate_table_feat(line)
-    local feat_text = line:match("%s*features%s*=%s*%[([^%]]*)[%]]?%s*$")
-    if feat_text then
+    local fs, feat_text, fe = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
+    if fs and feat_text and fe then
         return {
             feat_text = feat_text,
+            feat_col = { s = fs -1, e = fe },
             syntax = "table",
         }
     end
@@ -61,7 +63,7 @@ end
 ---@param line string
 ---@return Crate
 function M.parse_crate(line)
-    local name, qs, vs, req_text, feat_text, ve, qe
+    local name, qs, vs, req_text, ve, qe, fs, feat_text, fe
     -- plain version
     name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if name and qs and vs and req_text and ve then
@@ -87,11 +89,12 @@ function M.parse_crate(line)
         crate.syntax = "inline_table"
     end
 
-    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?%s*features%s*=%s*%[([^%]]*)[%]]?%s*[,]?.*[}]?%s*$"
-    name, feat_text = line:match(feat_pat)
-    if name and feat_text then
+    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*[,]?.*[}]?%s*$"
+    name, fs, feat_text, fe = line:match(feat_pat)
+    if name and fs and feat_text and fe then
         crate.name = name
         crate.feat_text = feat_text
+        crate.feat_col = { s = fs - 1, e = fe }
         crate.syntax = "inline_table"
     end
 
@@ -142,19 +145,17 @@ function M.parse_crates(buf)
         elseif in_dep_table and dep_table_crate_name then
             local crate_req = M.parse_crate_table_req(l)
             if crate_req then
-                dep_table_crate = dep_table_crate or {
-                    name = dep_table_crate_name,
-                    req_line = i - 1,
-                }
+                dep_table_crate = dep_table_crate or {}
+                crate_req.name = dep_table_crate_name
+                crate_req.req_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_req)
             end
 
             local crate_feat = M.parse_crate_table_feat(l)
             if crate_feat then
-                dep_table_crate = dep_table_crate or {
-                    name = dep_table_crate_name,
-                    feat_line = i - 1,
-                }
+                dep_table_crate = dep_table_crate or {}
+                crate_feat.name = dep_table_crate_name
+                crate_feat.feat_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_feat)
             end
         elseif in_dep_table then
