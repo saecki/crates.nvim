@@ -166,6 +166,13 @@ function M.parse_crates(buf)
         end
     end
 
+    -- push pending crate
+    if dep_table_crate then
+        dep_table_crate.line = { s = dep_table_start, e = #lines - 1 }
+        table.insert(crates, dep_table_crate)
+    end
+
+
     for _,c in ipairs(crates) do
         if c.req_text then
             c.reqs = semver.parse_requirements(c.req_text)
