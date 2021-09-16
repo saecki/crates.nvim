@@ -8,6 +8,9 @@
 ---@field req_line integer -- 0-indexed
 ---@field req_col Range
 ---@field req_quote Quotes
+---@field feats string[]
+---@field feat_text string
+---@field feat_line integer -- 0-indexed
 
 ---@class Quotes
 ---@field s string
@@ -17,9 +20,17 @@ local M = {}
 
 local semver = require('crates.semver')
 
+function M.parse_string_array(line)
+    local strings = {}
+    for s in line:gmatch([[[,]?%s*["']([^,"']+)["']?%s*[,]?]]) do
+        table.insert(strings, s)
+    end
+    return strings
+end
+
 ---@param line string
 ---@return Crate
-function M.parse_crate_table_entry(line)
+function M.parse_crate_table_req(line)
     local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if qs and vs and req_text and ve then
         return {
@@ -35,8 +46,22 @@ end
 
 ---@param line string
 ---@return Crate
+function M.parse_crate_table_feat(line)
+    local feat_text = line:match("%s*features%s*=%s*%[([^%]]*)[%]]?%s*$")
+    if feat_text then
+        return {
+            feat_text = feat_text,
+            syntax = "table",
+        }
+    end
+
+    return nil
+end
+
+---@param line string
+---@return Crate
 function M.parse_crate(line)
-    local name, qs, vs, req_text, ve, qe
+    local name, qs, vs, req_text, feat_text, ve, qe
     -- plain version
     name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if name and qs and vs and req_text and ve then
@@ -49,20 +74,32 @@ function M.parse_crate(line)
         }
     end
 
-    -- version in inline table
-    local pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
-    name, qs, vs, req_text, ve, qe = line:match(pat)
+    -- inline table
+    local crate = {}
+
+    local vers_pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
+    name, qs, vs, req_text, ve, qe = line:match(vers_pat)
     if name and qs and vs and req_text and ve then
-        return {
-            name = name,
-            req_text = req_text,
-            req_col = { s = vs - 1, e = ve },
-            req_quote = { s = qs, e = qe ~= "" and qe or nil },
-            syntax = "inline_table",
-        }
+        crate.name = name
+        crate.req_text = req_text
+        crate.req_col = { s = vs - 1, e = ve }
+        crate.req_quote = { s = qs, e = qe ~= "" and qe or nil }
+        crate.syntax = "inline_table"
     end
 
-    return nil
+    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?%s*features%s*=%s*%[([^%]]*)[%]]?%s*[,]?.*[}]?%s*$"
+    name, feat_text = line:match(feat_pat)
+    if name and feat_text then
+        crate.name = name
+        crate.feat_text = feat_text
+        crate.syntax = "inline_table"
+    end
+
+    if crate.name then
+        return crate
+    else
+        return nil
+    end
 end
 
 ---@param buf integer
@@ -103,11 +140,22 @@ function M.parse_crates(buf)
                 dep_table_crate_name = nil
             end
         elseif in_dep_table and dep_table_crate_name then
-            local crate = M.parse_crate_table_entry(l)
-            if crate then
-                crate.name = dep_table_crate_name
-                crate.req_line = i - 1
-                dep_table_crate = crate
+            local crate_req = M.parse_crate_table_req(l)
+            if crate_req then
+                dep_table_crate = dep_table_crate or {
+                    name = dep_table_crate_name,
+                    req_line = i - 1,
+                }
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_req)
+            end
+
+            local crate_feat = M.parse_crate_table_feat(l)
+            if crate_feat then
+                dep_table_crate = dep_table_crate or {
+                    name = dep_table_crate_name,
+                    feat_line = i - 1,
+                }
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate, crate_feat)
             end
         elseif in_dep_table then
             local crate = M.parse_crate(l)
@@ -120,14 +168,19 @@ function M.parse_crates(buf)
     end
 
     for _,c in ipairs(crates) do
-        c.reqs = semver.parse_requirements(c.req_text)
+        if c.req_text then
+            c.reqs = semver.parse_requirements(c.req_text)
 
-        c.req_has_suffix = false
-        for _,r in ipairs(c.reqs) do
-            if r.vers.suffix then
-                c.req_has_suffix = true
-                break
+            c.req_has_suffix = false
+            for _,r in ipairs(c.reqs) do
+                if r.vers.suffix then
+                    c.req_has_suffix = true
+                    break
+                end
             end
+        end
+        if c.feat_text then
+            c.feats = M.parse_string_array(c.feat_text)
         end
     end
 

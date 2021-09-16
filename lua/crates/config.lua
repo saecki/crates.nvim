@@ -31,7 +31,7 @@
 ---@field autofocus boolean
 ---@field copy_register string
 ---@field style string
----@field border string|table
+---@field border string | string[]
 ---@field max_height integer
 ---@field min_width integer
 ---@field text PopupTextConfig
@@ -94,8 +94,8 @@ function M.default()
         popup = {
             autofocus = false, -- focus the versions popup when opening it
             copy_register = '"', -- the register into which the version will be copied
-            style = "minimal", -- same as nvim_open_win opts.style
-            border = "none", -- same as nvim_open_win opts.border
+            style = "minimal", -- same as nvim_open_win config.style
+            border = "none", -- same as nvim_open_win config.border
             max_height = 30,
             min_width = 20,
             text = {

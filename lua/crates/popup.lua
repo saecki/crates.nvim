@@ -165,7 +165,7 @@ function M.select_version(buf, name, index, smart)
     local line = vim.api.nvim_buf_get_lines(buf, crate.req_line, crate.req_line + 1, false)[1]
     local c = nil
     if crate.syntax == "table" then
-        c = toml.parse_crate_table(line)
+        c = toml.parse_crate_table_req(line)
     elseif crate.syntax == "normal" then
         c = toml.parse_crate(line)
     elseif crate.syntax == "inline_table" then
