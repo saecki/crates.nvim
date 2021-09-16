@@ -1,11 +1,12 @@
 # crates.nvim
-A neovim plugin that helps managing crates.io versions.
+A neovim plugin that helps managing crates.io dependencies.
 
 This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+    - Complete crate versions and features
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
