@@ -11,7 +11,8 @@ local config = require("crates.config")
 ---@param crate Crate
 ---@param versions Version[]
 function M.display_versions(crate, versions)
-    if not core.visible then
+    if not core.visible or not crate.reqs then
+        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
         return
     end
 
@@ -58,15 +59,15 @@ function M.display_versions(crate, versions)
         virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.req_line, crate.req_line + 1)
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
     vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.req_line, virt_text, {})
 end
 
 ---@param crate Crate
 function M.display_loading(crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.req_line, crate.req_line + 1)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.req_line, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.line.s, virt_text, {})
 end
 
 ---@param crate Crate

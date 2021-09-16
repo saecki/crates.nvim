@@ -141,7 +141,7 @@ function M.select_version(buf, name, index, smart)
     if not crates then return end
 
     local crate = crates[name]
-    if not crate then return end
+    if not crate or not crate.reqs then return end
 
     local versions = core.vers_cache[name]
     if not versions then return end
