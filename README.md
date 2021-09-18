@@ -187,10 +187,9 @@ require('crates').upgrade_crate() -- current line
 require('crates').upgrade_crates() -- visually selected
 require('crates').upgrade_all_crates() -- all in current buffer
 
--- show popup with all versions or features (if `popup.autofocus` is disabled calling this again will focus the popup)
+-- show/hide popup with all versions or features
+-- (if `popup.autofocus` is disabled calling this again will focus the popup)
 require('crates').show_popup()
-
--- hide popup
 require('crates').hide_popup()
 ```
 ### Key mappings
