@@ -36,9 +36,9 @@ function M.show()
             M.show_features(crate, newest)
         end
     elseif crate.syntax == "inline_table" then
-        if line == crate.req_line and crate.req_decl_col:contains(col) then
+        if crate.req_text and line == crate.req_line and crate.req_decl_col:contains(col) then
             M.show_versions(crate, versions)
-        elseif line == crate.feat_line and crate.feat_decl_col:contains(col) then
+        elseif crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
             M.show_features(crate, newest)
         end
     end
