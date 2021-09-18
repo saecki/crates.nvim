@@ -21,14 +21,6 @@ local M = {}
 
 local semver = require('crates.semver')
 
-function M.parse_string_array(line)
-    local strings = {}
-    for s in line:gmatch([[[,]?%s*["']([^,"']+)["']?%s*[,]?]]) do
-        table.insert(strings, s)
-    end
-    return strings
-end
-
 ---@param line string
 ---@return Crate
 function M.parse_crate_table_req(line)
@@ -161,6 +153,7 @@ function M.parse_crates(buf)
             if crate then
                 crate.line = { s = i - 1, e = i }
                 crate.req_line = i - 1
+                crate.feat_line = i - 1
                 table.insert(crates, crate)
             end
         end
@@ -186,7 +179,10 @@ function M.parse_crates(buf)
             end
         end
         if c.feat_text then
-            c.feats = M.parse_string_array(c.feat_text)
+            c.feats = {}
+            for s in c.feat_text:gmatch([[[,]?%s*["']([^,"']+)["']?%s*[,]?]]) do
+                table.insert(c.feats, s)
+            end
         end
     end
 
