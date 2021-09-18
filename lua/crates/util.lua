@@ -2,25 +2,15 @@
 ---@field crate Crate
 ---@field versions Version[]
 
----@class Range
----@field s integer -- 0-indexed inclusive
----@field e integer -- 0-indexed exclusive
-
 local M = {}
 
 local core = require('crates.core')
 local semver = require('crates.semver')
+local SemVer = semver.SemVer
 
 ---@return integer
 function M.current_buf()
     return vim.api.nvim_get_current_buf()
-end
-
----@param range Range
----@param pos integer
----@return boolean
-function M.contains(range, pos)
-    return range.s <= pos and range.e > pos
 end
 
 ---@param lines Range
@@ -32,7 +22,7 @@ function M.get_lines_crates(lines)
     local crates = core.crate_cache[cur_buf]
     if crates then
         for _,c in pairs(crates) do
-            if M.contains(lines, c.line.s) or M.contains(c.line, lines.s) then
+            if lines:contains(c.lines.s) or c.lines:contains(lines.s) then
                 table.insert(crate_versions, {
                     crate = c,
                     versions = core.vers_cache[c.name]
@@ -100,7 +90,7 @@ local function replace_existing(r, version)
     if version.suffix then
         return version
     else
-        return semver.semver {
+        return SemVer.new {
             major = version.major,
             minor = r.vers.minor and version.minor or nil,
             patch = r.vers.patch and version.patch or nil,
@@ -124,7 +114,7 @@ function M.set_version_smart(buf, crate, version)
             if version.suffix then
                 text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. version:display()
             else
-                local v = semver.semver {
+                local v = SemVer.new {
                     major = r.vers.major and version.major or nil,
                     minor = r.vers.minor and version.minor or nil,
                 }
@@ -142,7 +132,7 @@ function M.set_version_smart(buf, crate, version)
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "lt" and not semver.matches_requirement(version, r) then
-            local v = semver.semver {
+            local v = SemVer.new {
                 major = version.major,
                 minor = r.vers.minor and version.minor or nil,
                 patch = r.vers.patch and version.patch or nil,
@@ -163,7 +153,7 @@ function M.set_version_smart(buf, crate, version)
             if version.suffix then
                 v = version
             else
-                v =  semver.semver { major = version.major }
+                v =  SemVer.new { major = version.major }
                 if r.vers.minor or version.minor and version.minor > 0 then
                     v.minor = version.minor
                 end
@@ -175,7 +165,7 @@ function M.set_version_smart(buf, crate, version)
 
             text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "gt" then
-            local v = semver.semver {
+            local v = SemVer.new {
                 major = r.vers.major and version.major or nil,
                 minor = r.vers.minor and version.minor or nil,
                 patch = r.vers.patch and version.patch or nil,

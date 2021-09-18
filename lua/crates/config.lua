@@ -43,12 +43,14 @@
 ---@field version string
 ---@field prerelease string
 ---@field yanked string
+---@field feature string
 
 ---@class PopupHighlightConfig
 ---@field title string
 ---@field version string
 ---@field prerelease string
 ---@field yanked string
+---@field feature string
 
 ---@class PopupKeyConfig
 ---@field hide string[]
@@ -103,12 +105,14 @@ function M.default()
                 version    = "   %s ",
                 prerelease = "  %s ",
                 yanked     = "  %s ",
+                feature    = "   %s ",
             },
             highlight = {
                 title      = "CratesNvimPopupTitle",
                 version    = "CratesNvimPopupVersion",
                 prerelease = "CratesNvimPopupPreRelease",
                 yanked     = "CratesNvimPopupYanked",
+                feature    = "CratesNvimPopupFeature",
             },
             keys = {
                 hide = { "q", "<esc>" },

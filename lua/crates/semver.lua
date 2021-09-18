@@ -13,16 +13,20 @@
 
 local M = {}
 
+local Range = require('crates.types').Range
+
 M.SemVer = {}
+local SemVer = M.SemVer
 
 ---@param obj table
 ---@return SemVer
-function M.semver(obj)
-    return setmetatable(obj, { __index = M.SemVer })
+function SemVer.new(obj)
+    return setmetatable(obj, { __index = SemVer })
 end
 
+---@param self SemVer
 ---@return string
-function M.SemVer:display()
+function SemVer:display()
     local text = ""
     if self.major then
         text = text .. self.major
@@ -43,14 +47,14 @@ function M.SemVer:display()
     return text
 end
 
----@param string string
+---@param str string
 ---@return SemVer
-function M.parse_version(string)
+function M.parse_version(str)
     local major, minor, patch, suffix
 
-    major, minor, patch, suffix = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
+    major, minor, patch, suffix = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
     if major and minor and patch and suffix then
-        return M.semver {
+        return SemVer.new {
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
@@ -58,129 +62,129 @@ function M.parse_version(string)
         }
     end
 
-    major, minor, patch = string:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
+    major, minor, patch = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
     if major and minor and patch then
-        return M.semver {
+        return SemVer.new {
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
         }
     end
 
-    major, minor = string:match("^([0-9]+)%.([0-9]+)[%.]?$")
+    major, minor = str:match("^([0-9]+)%.([0-9]+)[%.]?$")
     if major and minor then
-        return M.semver {
+        return SemVer.new {
             major = tonumber(major),
             minor = tonumber(minor),
         }
     end
 
-    major = string:match("^([0-9]+)[%.]?$")
+    major = str:match("^([0-9]+)[%.]?$")
     if major then
-        return M.semver { major = tonumber(major) }
+        return SemVer.new { major = tonumber(major) }
     end
 
-    return M.semver {}
+    return SemVer.new {}
 end
 
----@param string string
+---@param str string
 ---@return Requirement
-function M.parse_requirement(string)
+function M.parse_requirement(str)
     local vs, vers_str, ve, re
 
-    vs, vers_str, ve = string:match("^=%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^=%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "eq",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^<=%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^<=%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "le",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^<%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^<%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "lt",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^>=%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^>=%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "ge",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^>%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^>%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "gt",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^%~%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^%~%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "tl",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vers_str, ve, re = string:match("^(.+)()%.%*()$")
+    vers_str, ve, re = str:match("^(.+)()%.%*()$")
     if vers_str and ve and re then
         return {
             cond = "wl",
-            cond_col = { s = ve - 1, e = re - 1 },
+            cond_col = Range.new(ve - 1, re - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = 0, e = ve - 1 },
+            vers_col = Range.new(0, ve - 1),
         }
     end
 
-    vs, vers_str, ve = string:match("^%^%s*()(.+)()$")
+    vs, vers_str, ve = str:match("^%^%s*()(.+)()$")
     if vs and vers_str and ve then
         return {
             cond = "cr",
-            cond_col = { s = 0, e = vs - 1 },
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = { s = vs - 1, e = ve - 1 },
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
     return {
         cond = "bl",
-        cond_col = { s = 0, e = 0 },
-        vers = M.parse_version(string),
-        vers_col = { s = 0, e = string.len(string) },
+        cond_col = Range.new(0, 0),
+        vers = M.parse_version(str),
+        vers_col = Range.new(0, str:len()),
     }
 end
 
----@param string string
+---@param str string
 ---@return Requirement[]
-function M.parse_requirements(string)
+function M.parse_requirements(str)
     local requirements = {}
-    for s, r  in string:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
+    for s, r  in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1
         requirement.vers_col.e = requirement.vers_col.e + s - 1

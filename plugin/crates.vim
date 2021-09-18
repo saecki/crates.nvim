@@ -12,4 +12,5 @@ highlight default link CratesNvimPopupTitle       Title
 highlight default link CratesNvimPopupVersion     None
 highlight default link CratesNvimPopupPreRelease  LspDiagnosticsVirtualTextWarning
 highlight default link CratesNvimPopupYanked      LspDiagnosticsVirtualTextError
+highlight default link CratesNvimPopupFeature     None
 

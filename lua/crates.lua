@@ -1,18 +1,19 @@
 local M = {}
 
-local core = require("crates.core")
-local api = require("crates.api")
-local toml = require("crates.toml")
-local semver = require("crates.semver")
-local util = require("crates.util")
-local popup = require("crates.popup")
-local config = require("crates.config")
+local api = require('crates.api')
+local config = require('crates.config')
+local core = require('crates.core')
+local popup = require('crates.popup')
+local semver = require('crates.semver')
+local toml = require('crates.toml')
+local util = require('crates.util')
+local Range = require('crates.types').Range
 
 ---@param crate Crate
 ---@param versions Version[]
 function M.display_versions(crate, versions)
     if not core.visible or not crate.reqs then
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
+        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
         return
     end
 
@@ -59,15 +60,15 @@ function M.display_versions(crate, versions)
         virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
     vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.req_line, virt_text, {})
 end
 
 ---@param crate Crate
 function M.display_loading(crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.line.s, crate.line.e)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.line.s, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.lines.s, virt_text, {})
 end
 
 ---@param crate Crate
@@ -155,26 +156,23 @@ end
 ---@param smart boolean | nil
 function M.upgrade_crate(smart)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    util.upgrade_crates({ s = linenr - 1, e = linenr }, smart)
+    util.upgrade_crates(Range.new(linenr - 1, linenr ), smart)
 end
 
 --- upgrade the crates on the lines visually selected
 ---@param smart boolean | nil
 function M.upgrade_crates(smart)
-    local lines = {
-        s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
-        e = vim.api.nvim_buf_get_mark(0, ">")[1],
-    }
+    local lines = Range.new(
+        vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
+        vim.api.nvim_buf_get_mark(0, ">")[1]
+    )
     util.upgrade_crates(lines, smart)
 end
 
 --- upgrade all crates in the buffer
 ---@param smart boolean | nil
 function M.upgrade_all_crates(smart)
-    local lines = {
-        s = 0,
-        e = vim.api.nvim_buf_line_count(0),
-    }
+    local lines = Range.new(0, vim.api.nvim_buf_line_count(0))
     util.upgrade_crates(lines, smart)
 end
 
@@ -182,26 +180,23 @@ end
 ---@param smart boolean | nil
 function M.update_crate(smart)
     local linenr = vim.api.nvim_win_get_cursor(0)[1]
-    util.update_crates({ s = linenr - 1, e = linenr }, smart)
+    util.update_crates(Range.new(linenr - 1, linenr), smart)
 end
 
 -- update the crates on the lines visually selected
 ---@param smart boolean | nil
 function M.update_crates(smart)
-    local lines = {
-        s = vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
-        e = vim.api.nvim_buf_get_mark(0, ">")[1],
-    }
+    local lines = Range.new(
+        vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
+        vim.api.nvim_buf_get_mark(0, ">")[1]
+    )
     util.update_crates(lines, smart)
 end
 
 --- update all crates in the buffer
 ---@param smart boolean | nil
 function M.update_all_crates(smart)
-    local lines = {
-        s = 0,
-        e = vim.api.nvim_buf_line_count(0),
-    }
+    local lines = Range.new(0, vim.api.nvim_buf_line_count(0))
     util.update_crates(lines, smart)
 end
 
@@ -227,12 +222,12 @@ function M.setup(cfg)
 
     vim.cmd([[
         augroup CratesPopup
-        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide_versions()
+        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
         augroup END
     ]])
 end
 
-M.show_versions_popup = popup.show_versions
-M.hide_versions_popup = popup.hide_versions
+M.show_popup = popup.show
+M.hide_popup = popup.hide
 
 return M

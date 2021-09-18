@@ -10,8 +10,8 @@
 
 local M = {}
 
-local job = require("plenary.job")
-local semver = require("crates.semver")
+local job = require('plenary.job')
+local semver = require('crates.semver')
 
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")

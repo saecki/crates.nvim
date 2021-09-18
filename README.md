@@ -68,7 +68,7 @@ __Default__
 
 The icons in the default configuration require a patched font:
 ```lua
-require("crates").setup {
+require('crates').setup {
     smart_insert = true, -- try to be smart about inserting versions
     avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
     autoload = true, -- automatically run update when opening a Cargo.toml
@@ -131,7 +131,7 @@ __Plain text__
 
 Replace these sections if you don't have a patched font:
 ```lua
-require("crates").setup {
+require('crates').setup {
     text = {
         loading    = "  Loading...",
         version    = "  %s",

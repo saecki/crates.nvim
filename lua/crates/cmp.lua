@@ -3,6 +3,7 @@ local M = {}
 local cmp = require('cmp')
 local core = require('crates.core')
 local util = require('crates.util')
+local Range = require('crates.types').Range
 
 ---Source constructor.
 M.new = function()
@@ -92,7 +93,7 @@ function M.complete(_, _, callback)
     local linenr = pos[1]
     local col = pos[2]
 
-    local crates = util.get_lines_crates({ s = linenr - 1, e = linenr })
+    local crates = util.get_lines_crates(Range.new(linenr - 1, linenr))
     if not crates or not crates[1] or not crates[1].versions then
         return
     end
@@ -100,9 +101,9 @@ function M.complete(_, _, callback)
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    if crate.reqs and crate.req_line == linenr - 1 and util.contains(crate.req_col, col) then
+    if crate.reqs and crate.req_line == linenr - 1 and crate.req_col:contains(col) then
         callback(complete_versions(versions))
-    elseif crate.feats and crate.feat_line == linenr - 1 and util.contains(crate.feat_col, col) then
+    elseif crate.feats and crate.feat_line == linenr - 1 and crate.feat_col:contains(col) then
         callback(complete_features(crate, versions))
     else
         callback(nil)

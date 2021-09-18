@@ -1,17 +1,19 @@
 ---@class Crate
 ---@field name string
----@field line Range
+---@field lines Range
 ---@field syntax string
 ---@field reqs Requirement[]
 ---@field req_text string
 ---@field req_has_suffix boolean
 ---@field req_line integer -- 0-indexed
 ---@field req_col Range
+---@field req_decl_col Range
 ---@field req_quote Quotes
 ---@field feats string[]
 ---@field feat_text string
 ---@field feat_line integer -- 0-indexed
 ---@field feat_col Range
+---@field feat_decl_col Range
 
 ---@class Quotes
 ---@field s string
@@ -20,6 +22,7 @@
 local M = {}
 
 local semver = require('crates.semver')
+local Range = require('crates.types').Range
 
 ---@param line string
 ---@return Crate
@@ -28,7 +31,8 @@ function M.parse_crate_table_req(line)
     if qs and vs and req_text and ve then
         return {
             req_text = req_text,
-            req_col = { s = vs - 1, e = ve },
+            req_col = Range.new(vs - 1,ve),
+            req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "table",
         }
@@ -44,7 +48,8 @@ function M.parse_crate_table_feat(line)
     if fs and feat_text and fe then
         return {
             feat_text = feat_text,
-            feat_col = { s = fs -1, e = fe },
+            feat_col = Range.new(fs -1, fe),
+            feat_decl_col = Range.new(0, line:len()),
             syntax = "table",
         }
     end
@@ -55,14 +60,15 @@ end
 ---@param line string
 ---@return Crate
 function M.parse_crate(line)
-    local name, qs, vs, req_text, ve, qe, fs, feat_text, fe
+    local name, vds, qs, vs, req_text, ve, qe, vde, fds, fs, feat_text, fe, fde
     -- plain version
     name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if name and qs and vs and req_text and ve then
         return {
             name = name,
             req_text = req_text,
-            req_col = { s = vs - 1, e = ve },
+            req_col = Range.new(vs - 1, ve),
+            req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "normal",
         }
@@ -71,22 +77,24 @@ function M.parse_crate(line)
     -- inline table
     local crate = {}
 
-    local vers_pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*[,]?.*[}]?%s*$]]
-    name, qs, vs, req_text, ve, qe = line:match(vers_pat)
-    if name and qs and vs and req_text and ve then
+    local vers_pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?()%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+    name, vds, qs, vs, req_text, ve, qe, vde = line:match(vers_pat)
+    if name and vds and qs and vs and req_text and ve and qe and vde then
         crate.name = name
         crate.req_text = req_text
-        crate.req_col = { s = vs - 1, e = ve }
+        crate.req_col = Range.new(vs - 1, ve)
+        crate.req_decl_col = Range.new(vds - 1, vde)
         crate.req_quote = { s = qs, e = qe ~= "" and qe or nil }
         crate.syntax = "inline_table"
     end
 
-    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*[,]?.*[}]?%s*$"
-    name, fs, feat_text, fe = line:match(feat_pat)
-    if name and fs and feat_text and fe then
+    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?()%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
+    name, fds, fs, feat_text, fe, fde = line:match(feat_pat)
+    if name and fds and fs and feat_text and fe and fde then
         crate.name = name
         crate.feat_text = feat_text
-        crate.feat_col = { s = fs - 1, e = fe }
+        crate.feat_col = Range.new(fs - 1, fe)
+        crate.feat_decl_col = Range.new(fds - 1, fde)
         crate.syntax = "inline_table"
     end
 
@@ -119,7 +127,7 @@ function M.parse_crates(buf)
         if section then
             -- push pending crate
             if dep_table_crate then
-                dep_table_crate.line = { s = dep_table_start, e = i - 1 }
+                dep_table_crate.lines = Range.new(dep_table_start, i - 1)
                 table.insert(crates, dep_table_crate)
             end
 
@@ -151,7 +159,7 @@ function M.parse_crates(buf)
         elseif in_dep_table then
             local crate = M.parse_crate(l)
             if crate then
-                crate.line = { s = i - 1, e = i }
+                crate.lines = Range.new(i - 1, i)
                 crate.req_line = i - 1
                 crate.feat_line = i - 1
                 table.insert(crates, crate)
@@ -161,7 +169,7 @@ function M.parse_crates(buf)
 
     -- push pending crate
     if dep_table_crate then
-        dep_table_crate.line = { s = dep_table_start, e = #lines - 1 }
+        dep_table_crate.lines = Range.new(dep_table_start, #lines - 1)
         table.insert(crates, dep_table_crate)
     end
 
