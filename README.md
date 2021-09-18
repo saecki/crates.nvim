@@ -19,6 +19,7 @@ Feel free to open issues.
 - Show best upgrade candidate
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
+- Open floating window with all features
 
 ![](res/virtualtext.png)
 
@@ -95,8 +96,8 @@ require('crates').setup {
     popup = {
         autofocus = false, -- focus the versions popup when opening it
         copy_register = '"', -- the register into which the version will be copied
-        style = "minimal", -- same as nvim_open_win opts.style
-        border = "none", -- same as nvim_open_win opts.border
+        style = "minimal", -- same as nvim_open_win config.style
+        border = "none", -- same as nvim_open_win config.border
         max_height = 30,
         min_width = 20,
         text = {
@@ -104,12 +105,14 @@ require('crates').setup {
             version    = "   %s ",
             prerelease = "  %s ",
             yanked     = "  %s ",
+            feature    = "   %s ",
         },
         highlight = {
             title      = "CratesNvimPopupTitle",
             version    = "CratesNvimPopupVersion",
             prerelease = "CratesNvimPopupPreRelease",
             yanked     = "CratesNvimPopupYanked",
+            feature    = "CratesNvimPopupFeature",
         },
         keys = {
             hide = { "q", "<esc>" },
@@ -146,6 +149,7 @@ require('crates').setup {
             title   = " # %s ",
             version = " %s ",
             yanked  = " %s yanked ",
+            feature = " %s ",
         },
     },
     cmp = {
@@ -183,11 +187,11 @@ require('crates').upgrade_crate() -- current line
 require('crates').upgrade_crates() -- visually selected
 require('crates').upgrade_all_crates() -- all in current buffer
 
--- show popup with all versions (if `popup.autofocus` is disabled calling this again will focus the popup)
-require('crates').show_versions_popup()
+-- show popup with all versions or features (if `popup.autofocus` is disabled calling this again will focus the popup)
+require('crates').show_popup()
 
--- hide popup with all versions
-require('crates').hide_versions_popup()
+-- hide popup
+require('crates').hide_popup()
 ```
 ### Key mappings
 
@@ -204,7 +208,7 @@ nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
 ```
 
 ### Show appropriate documentation in `Cargo.toml`
-How you might integrate `show_versions` into your `init.vim`:
+How you might integrate `show_popup` into your `init.vim`:
 ```viml
 nnoremap <silent> K :call <SID>show_documentation()<cr>
 function! s:show_documentation()
@@ -213,7 +217,7 @@ function! s:show_documentation()
     elseif (index(['man'], &filetype) >= 0)
         execute 'Man '.expand('<cword>')
     elseif (expand('%:t') == 'Cargo.toml')
-        lua require('crates').show_versions_popup()
+        lua require('crates').show_popup()
     else
         lua vim.lsp.buf.hover()
     endif
