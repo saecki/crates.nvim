@@ -4,6 +4,7 @@
 ---@field autoload boolean
 ---@field autoupdate boolean
 ---@field loading_indicator boolean
+---@field date_format string
 ---@field text TextConfig
 ---@field highlight HighlightConfig
 ---@field popup PopupConfig
@@ -32,6 +33,7 @@
 ---@field copy_register string
 ---@field style string
 ---@field border string | string[]
+---@field version_date boolean
 ---@field max_height integer
 ---@field min_width integer
 ---@field text PopupTextConfig
@@ -44,6 +46,7 @@
 ---@field prerelease string
 ---@field yanked string
 ---@field feature string
+---@field date string
 
 ---@class PopupHighlightConfig
 ---@field title string
@@ -75,6 +78,7 @@ function M.default()
         autoload = true, -- automatically run update when opening a Cargo.toml
         autoupdate = true, -- atomatically update when editing text
         loading_indicator = true, -- show a loading indicator while fetching crate versions
+        date_format = "%Y-%m-%d", -- the date format passed to os.date
         text = {
             loading    = "   Loading",
             version    = "   %s",
@@ -98,6 +102,7 @@ function M.default()
             copy_register = '"', -- the register into which the version will be copied
             style = "minimal", -- same as nvim_open_win config.style
             border = "none", -- same as nvim_open_win config.border
+            version_date = false, -- display when a version was released
             max_height = 30,
             min_width = 20,
             text = {
@@ -106,6 +111,7 @@ function M.default()
                 prerelease = "  %s ",
                 yanked     = "  %s ",
                 feature    = "   %s ",
+                date       = " %s ",
             },
             highlight = {
                 title      = "CratesNvimPopupTitle",

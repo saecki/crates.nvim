@@ -222,6 +222,7 @@ function M.setup(cfg)
 
     vim.cmd([[
         augroup CratesPopup
+        autocmd!
         autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
         augroup END
     ]])

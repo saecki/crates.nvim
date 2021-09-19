@@ -1,8 +1,9 @@
 ---@class Version
 ---@field num string
----@field features table<string, Feature>
+---@field features Feature[]
 ---@field yanked boolean
 ---@field parsed SemVer
+---@field created DateTime
 
 ---@class Feature
 ---@field name string
@@ -12,6 +13,7 @@ local M = {}
 
 local job = require('plenary.job')
 local semver = require('crates.semver')
+local DateTime = require('crates.time').DateTime
 
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
@@ -48,6 +50,7 @@ function M.fetch_crate_versions(name, callback)
                         features = {},
                         yanked = v.yanked,
                         parsed = semver.parse_version(v.num),
+                        created = DateTime.parse_rfc_3339(v.created_at)
                     }
 
                     for n,m in pairs(v.features) do

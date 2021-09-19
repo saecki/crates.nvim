@@ -69,7 +69,7 @@ function M.show_versions(crate, versions)
     local title_text = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
-    local width = math.max(core.cfg.popup.min_width, title_text:len())
+    local width = 0
     local versions_text = {}
 
     for _,v in ipairs(versions) do
@@ -85,9 +85,24 @@ function M.show_versions(crate, versions)
             hi = core.cfg.popup.highlight.version
         end
 
+
         table.insert(versions_text, { text = text, hi = hi })
-        width = math.max(text:len(), width)
+        width = math.max(vim.fn.strdisplaywidth(text), width)
     end
+
+    if core.cfg.popup.version_date then
+        local orig_width = width
+
+        for i,v in ipairs(versions_text) do
+            local diff = orig_width - vim.fn.strdisplaywidth(v.text)
+            local date_text = string.format(core.cfg.popup.text.date, versions[i].created:display())
+            v.text = v.text..string.rep(" ", diff)..date_text
+
+            width = math.max(vim.fn.strdisplaywidth(v.text), orig_width)
+        end
+    end
+
+    width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title_text))
 
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
