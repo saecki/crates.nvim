@@ -65,6 +65,8 @@ autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'cr
 
 ## Config
 
+For more information about the type of some fields see [`lua/crates/config.lua`](lua/crates/config.lua).
+
 __Default__
 
 The icons in the default configuration require a patched font:
