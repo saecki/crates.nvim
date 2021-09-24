@@ -78,7 +78,7 @@ function M.set_version(buf, crate, text)
         crate.req_line,
         crate.req_col.s,
         crate.req_line,
-        crate.req_col.e - 1,
+        crate.req_col.e,
         { t }
     )
 end

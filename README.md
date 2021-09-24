@@ -228,6 +228,10 @@ function! s:show_documentation()
 endfunction
 ```
 
+## TODO
+- select and deselect features in popup
+- parse `default_features` and show default features on hover
+
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
 - [shift-d/crates.nvim](https://github.com/shift-d/crates.nvim)

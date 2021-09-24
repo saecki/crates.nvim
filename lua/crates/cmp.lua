@@ -70,7 +70,14 @@ local function complete_features(crate, versions)
     local newest = util.get_newest(versions, avoid_pre, crate.reqs)
 
     for i,f in ipairs(newest.features) do
-        if not vim.tbl_contains(crate.feats, f.name) then
+        local contains_feature = false
+        for _,cf in ipairs(crate.feats) do
+            if cf.name == f.name then
+                contains_feature = true
+                break
+            end
+        end
+        if not contains_feature then
             local r = {
                 label = f.name,
                 kind = cmp.lsp.CompletionItemKind.Value,
@@ -101,9 +108,9 @@ function M.complete(_, _, callback)
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    if crate.reqs and crate.req_line == linenr - 1 and crate.req_col:contains(col) then
+    if crate.reqs and crate.req_line == linenr - 1 and crate.req_col:shifted(0, 1):contains(col) then
         callback(complete_versions(versions))
-    elseif crate.feats and crate.feat_line == linenr - 1 and crate.feat_col:contains(col) then
+    elseif crate.feats and crate.feat_line == linenr - 1 and crate.feat_col:shifted(0, 1):contains(col) then
         callback(complete_features(crate, versions))
     else
         callback(nil)

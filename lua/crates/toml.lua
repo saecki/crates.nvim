@@ -9,11 +9,17 @@
 ---@field req_col Range
 ---@field req_decl_col Range
 ---@field req_quote Quotes
----@field feats string[]
+---@field feats CrateFeature[]
 ---@field feat_text string
 ---@field feat_line integer -- 0-indexed
 ---@field feat_col Range
 ---@field feat_decl_col Range
+
+---@class CrateFeature
+---@field name string
+---@field col Range -- relative to to the start of the features text
+---@field decl_col Range -- relative to to the start of the features text
+---@field quote Quotes
 
 ---@class Quotes
 ---@field s string
@@ -24,6 +30,22 @@ local M = {}
 local semver = require('crates.semver')
 local Range = require('crates.types').Range
 
+---@param text string
+---@return CrateFeature[]
+function M.parse_crate_features(text)
+    local feats = {}
+    for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]()?%s*(["'])()([^,"']+)()(["']?)%s*()[,]?]]) do
+        table.insert(feats, {
+            name = f,
+            col = Range.new(fs - 1, fe - 1),
+            decl_col = Range.new(fds - 1, fde - 1),
+            quotes = { s = qs, e = qe ~= "" and qe or nil },
+        })
+    end
+
+    return feats
+end
+
 ---@param line string
 ---@return Crate
 function M.parse_crate_table_req(line)
@@ -31,7 +53,7 @@ function M.parse_crate_table_req(line)
     if qs and vs and req_text and ve then
         return {
             req_text = req_text,
-            req_col = Range.new(vs - 1,ve),
+            req_col = Range.new(vs - 1, ve - 1),
             req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "table",
@@ -48,7 +70,7 @@ function M.parse_crate_table_feat(line)
     if fs and feat_text and fe then
         return {
             feat_text = feat_text,
-            feat_col = Range.new(fs -1, fe),
+            feat_col = Range.new(fs - 1, fe - 1),
             feat_decl_col = Range.new(0, line:len()),
             syntax = "table",
         }
@@ -67,7 +89,7 @@ function M.parse_crate(line)
         return {
             name = name,
             req_text = req_text,
-            req_col = Range.new(vs - 1, ve),
+            req_col = Range.new(vs - 1, ve - 1),
             req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "plain",
@@ -77,24 +99,24 @@ function M.parse_crate(line)
     -- inline table
     local crate = {}
 
-    local vers_pat = [[^%s*([^%s]+)%s*=%s*{.*[,]?()%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+    local vers_pat = [[^%s*([^%s]+)%s*=%s*{.-[,]?()%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
     name, vds, qs, vs, req_text, ve, qe, vde = line:match(vers_pat)
     if name and vds and qs and vs and req_text and ve and qe and vde then
         crate.name = name
         crate.req_text = req_text
-        crate.req_col = Range.new(vs - 1, ve)
-        crate.req_decl_col = Range.new(vds - 1, vde)
+        crate.req_col = Range.new(vs - 1, ve - 1)
+        crate.req_decl_col = Range.new(vds - 1, vde - 1)
         crate.req_quote = { s = qs, e = qe ~= "" and qe or nil }
         crate.syntax = "inline_table"
     end
 
-    local feat_pat = "^%s*([^%s]+)%s*=%s*{.*[,]?()%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
+    local feat_pat = "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
     name, fds, fs, feat_text, fe, fde = line:match(feat_pat)
     if name and fds and fs and feat_text and fe and fde then
         crate.name = name
         crate.feat_text = feat_text
-        crate.feat_col = Range.new(fs - 1, fe)
-        crate.feat_decl_col = Range.new(fds - 1, fde)
+        crate.feat_col = Range.new(fs - 1, fe - 1)
+        crate.feat_decl_col = Range.new(fds - 1, fde - 1)
         crate.syntax = "inline_table"
     end
 
@@ -187,10 +209,7 @@ function M.parse_crates(buf)
             end
         end
         if c.feat_text then
-            c.feats = {}
-            for s in c.feat_text:gmatch([[[,]?%s*["']([^,"']+)["']?%s*[,]?]]) do
-                table.insert(c.feats, s)
-            end
+            c.feats = M.parse_crate_features(c.feat_text)
         end
     end
 
