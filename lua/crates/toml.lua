@@ -34,7 +34,7 @@ local Range = require('crates.types').Range
 ---@return CrateFeature[]
 function M.parse_crate_features(text)
     local feats = {}
-    for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]()?%s*(["'])()([^,"']+)()(["']?)%s*()[,]?]]) do
+    for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()[,]?]]) do
         table.insert(feats, {
             name = f,
             col = Range.new(fs - 1, fe - 1),

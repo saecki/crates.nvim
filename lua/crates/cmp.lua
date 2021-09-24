@@ -97,10 +97,10 @@ end
 ---@param callback fun(response: lsp.CompletionResponse|nil)
 function M.complete(_, _, callback)
     local pos = vim.api.nvim_win_get_cursor(0)
-    local linenr = pos[1]
+    local line = pos[1] - 1
     local col = pos[2]
 
-    local crates = util.get_lines_crates(Range.new(linenr - 1, linenr))
+    local crates = util.get_lines_crates(Range.new(line, line + 1))
     if not crates or not crates[1] or not crates[1].versions then
         return
     end
@@ -108,10 +108,17 @@ function M.complete(_, _, callback)
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    if crate.reqs and crate.req_line == linenr - 1 and crate.req_col:shifted(0, 1):contains(col) then
+    if crate.reqs and crate.req_line == line and crate.req_col:moved(0, 1):contains(col) then
         callback(complete_versions(versions))
-    elseif crate.feats and crate.feat_line == linenr - 1 and crate.feat_col:shifted(0, 1):contains(col) then
-        callback(complete_features(crate, versions))
+    elseif crate.feats and crate.feat_line == line and crate.feat_col:moved(0, 1):contains(col) then
+        for _,f in ipairs(crate.feats) do
+            if f.col:moved(0, 1):contains(col - crate.feat_col.s) then
+                callback(complete_features(crate, versions))
+                return
+            end
+        end
+
+        callback(nil)
     else
         callback(nil)
     end

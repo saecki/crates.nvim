@@ -41,7 +41,7 @@ function M.show()
         end
 
         if feature then
-            M.show_feature_details(crate, feature)
+            M.show_feature_details(crate, newest, feature)
         else
             M.show_features(crate, newest)
         end
@@ -281,10 +281,11 @@ function M.show_features(crate, version)
 end
 
 ---@param crate Crate
+---@param version Version
 ---@param feature Feature
-function M.show_feature_details(crate, feature)
+function M.show_feature_details(crate, version, feature)
     local members = feature.members
-    local title_text = string.format(core.cfg.popup.text.title, crate.name.." "..feature.name)
+    local title_text = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
     local num_versions = vim.tbl_count(members)
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
     local width = math.max(core.cfg.popup.min_width, title_text:len())

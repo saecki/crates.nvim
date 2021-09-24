@@ -36,7 +36,7 @@ end
 
 ---@param versions Version[]
 ---@param avoid_pre boolean
----@param reqs Requirement[]
+---@param reqs Requirement[]|nil
 ---@return Version, Version, Version
 function M.get_newest(versions, avoid_pre, reqs)
     if not versions then
