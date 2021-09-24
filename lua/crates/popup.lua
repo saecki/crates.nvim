@@ -27,19 +27,19 @@ function M.show()
     local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
     local newest = util.get_newest(versions, avoid_pre, crate.reqs)
 
-    if crate.syntax == "normal" then
+    if crate.syntax == "plain" then
         M.show_versions(crate, versions)
     elseif crate.syntax == "table" then
-        if line == crate.req_line then
-            M.show_versions(crate, versions)
-        elseif line == crate.feat_line then
+        if line == crate.feat_line then
             M.show_features(crate, newest)
+        else
+            M.show_versions(crate, versions)
         end
     elseif crate.syntax == "inline_table" then
-        if crate.req_text and line == crate.req_line and crate.req_decl_col:contains(col) then
-            M.show_versions(crate, versions)
-        elseif crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
+        if crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
             M.show_features(crate, newest)
+        else
+            M.show_versions(crate, versions)
         end
     end
 end
@@ -194,7 +194,7 @@ function M.select_version(buf, name, index, smart)
     local c = nil
     if crate.syntax == "table" then
         c = toml.parse_crate_table_req(line)
-    elseif crate.syntax == "normal" then
+    elseif crate.syntax == "plain" then
         c = toml.parse_crate(line)
     elseif crate.syntax == "inline_table" then
         c = toml.parse_crate(line)

@@ -70,7 +70,7 @@ function M.parse_crate(line)
             req_col = Range.new(vs - 1, ve),
             req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
-            syntax = "normal",
+            syntax = "plain",
         }
     end
 
