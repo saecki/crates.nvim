@@ -47,17 +47,36 @@ function M.show()
         end
     end
 
+    local function show_default_features()
+        local default_feature = {
+            name = "default",
+            members = {},
+        }
+        for _,f in ipairs(newest.features) do
+            if f.name == "default" then
+                default_feature = f
+                break
+            end
+        end
+
+        M.show_feature_details(crate, newest, default_feature)
+    end
+
     if crate.syntax == "plain" then
         M.show_versions(crate, versions)
     elseif crate.syntax == "table" then
         if line == crate.feat_line then
             show_features()
+        elseif line == crate.def_line then
+            show_default_features()
         else
             M.show_versions(crate, versions)
         end
     elseif crate.syntax == "inline_table" then
         if crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
             show_features()
+        elseif crate.def_text and line == crate.def_line and crate.def_decl_col:contains(col) then
+            show_default_features()
         else
             M.show_versions(crate, versions)
         end

@@ -14,6 +14,11 @@
 ---@field feat_line integer -- 0-indexed
 ---@field feat_col Range
 ---@field feat_decl_col Range
+---@field def boolean
+---@field def_text string
+---@field def_line integer -- 0-indexed
+---@field def_col Range
+---@field def_decl_col Range
 
 ---@class CrateFeature
 ---@field name string
@@ -81,8 +86,28 @@ end
 
 ---@param line string
 ---@return Crate
+function M.parse_crate_table_def(line)
+    local ds, def_text, de = line:match("^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$")
+    if ds and def_text and de then
+        return {
+            def_text = def_text,
+            def_col = Range.new(ds - 1, de - 1),
+            def_decl_col = Range.new(0, line:len()),
+            syntax = "table",
+        }
+    end
+
+    return nil
+end
+
+---@param line string
+---@return Crate
 function M.parse_crate(line)
-    local name, vds, qs, vs, req_text, ve, qe, vde, fds, fs, feat_text, fe, fde
+    local name
+    local vds, qs, vs, req_text, ve, qe, vde
+    local fds, fs, feat_text, fe, fde
+    local dds, ds, def_text, de, dde
+
     -- plain version
     name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if name and qs and vs and req_text and ve then
@@ -117,6 +142,16 @@ function M.parse_crate(line)
         crate.feat_text = feat_text
         crate.feat_col = Range.new(fs - 1, fe - 1)
         crate.feat_decl_col = Range.new(fds - 1, fde - 1)
+        crate.syntax = "inline_table"
+    end
+
+    local def_pat = "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*default[_-]features%s*=%s*()([a-zA-Z]*)()%s*()[,]?.*[}]?%s*$"
+    name, dds, ds, def_text, de, dde = line:match(def_pat)
+    if name and dds and ds and def_text and de and dde then
+        crate.name = name
+        crate.def_text = def_text
+        crate.def_col = Range.new(ds - 1, de - 1)
+        crate.def_decl_col = Range.new(dds - 1, dde - 1)
         crate.syntax = "inline_table"
     end
 
@@ -178,12 +213,20 @@ function M.parse_crates(buf)
                 crate_feat.feat_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_feat)
             end
+
+            local crate_def = M.parse_crate_table_def(l)
+            if crate_def then
+                crate_def.name = dep_table_crate_name
+                crate_def.def_line = i - 1
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_def)
+            end
         elseif in_dep_table then
             local crate = M.parse_crate(l)
             if crate then
                 crate.lines = Range.new(i - 1, i)
                 crate.req_line = i - 1
                 crate.feat_line = i - 1
+                crate.def_line = i - 1
                 table.insert(crates, crate)
             end
         end
@@ -210,6 +253,9 @@ function M.parse_crates(buf)
         end
         if c.feat_text then
             c.feats = M.parse_crate_features(c.feat_text)
+        end
+        if c.def_text then
+            c.def = c.def_text~="false"
         end
     end
 
