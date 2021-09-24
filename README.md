@@ -228,6 +228,23 @@ function! s:show_documentation()
 endfunction
 ```
 
+How you might integrate `show_popup` into your `init.lua`:
+```lua
+vim.api.nvim_set_keymap('n', 'K', ':lua show_documentation()', { noremap = true, silent = true })
+function show_documentation()
+    local filetype = vim.opt.filetype._value
+    if vim.tbl_contains({ 'vim','help' }, filetype) then
+        vim.fn.execute('h '..vim.fn.expand('<cword>'))
+    elseif vim.tbl_contains({ 'man' }, filetype) then
+        vim.fn.execute('Man '..vim.fn.expand('<cword>'))
+    elseif vim.fn.expand('%:t') == 'Cargo.toml' then
+        require('crates').show_popup()
+    else
+        vim.lsp.buf.hover()
+    end
+end
+```
+
 ## TODO
 - select and deselect features in popup
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
