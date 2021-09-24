@@ -231,6 +231,7 @@ endfunction
 ## TODO
 - select and deselect features in popup
 - parse `default_features` and show default features on hover
+- maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
