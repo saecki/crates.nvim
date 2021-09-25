@@ -21,13 +21,13 @@ Feel free to open issues.
     - Select a version by pressing enter (`popup.keys.select`)
 - Open floating window with all features
 
-![](res/virtualtext.png)
+![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
 
 ### Popup
-![](res/popup.png)
+![image](https://user-images.githubusercontent.com/43008152/134776682-c995b48a-cad5-43d4-80e8-ee3637a5a78a.png)
 
 ### Completion
-![](res/cmp.png)
+![image](https://user-images.githubusercontent.com/43008152/134776687-c1359967-4b96-460b-b5f2-2d80b6a09208.png)
 
 ## Setup
 
