@@ -39,9 +39,22 @@ Plug 'saecki/crates.nvim'
 ```
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
-```
+```lua
 use { 'Saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 ```
+
+For lazy loading:
+```lua
+use {
+    '~/Projects/crates.nvim',
+    event = { "BufEnter Cargo.toml" },
+    requires = { { 'nvim-lua/plenary.nvim' } },
+    config = function()
+        require('crates').setup()
+    end,
+}
+```
+
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources:
