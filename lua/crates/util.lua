@@ -34,7 +34,7 @@ function M.get_lines_crates(lines)
     return crate_versions
 end
 
----@param versions Version[]
+---@param versions Version[]|nil
 ---@param avoid_pre boolean
 ---@param reqs Requirement[]|nil
 ---@return Version, Version, Version
