@@ -47,7 +47,7 @@ For lazy loading:
 ```lua
 use {
     '~/Projects/crates.nvim',
-    event = { "BufEnter Cargo.toml" },
+    event = { "BufRead Cargo.toml" },
     requires = { { 'nvim-lua/plenary.nvim' } },
     config = function()
         require('crates').setup()
