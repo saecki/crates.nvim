@@ -102,6 +102,7 @@ function M.complete(_, _, callback)
 
     local crates = util.get_lines_crates(Range.new(line, line + 1))
     if not crates or not crates[1] or not crates[1].versions then
+        callback(nil)
         return
     end
 
