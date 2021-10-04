@@ -9,11 +9,12 @@ local toml = require('crates.toml')
 local util = require('crates.util')
 local Range = require('crates.types').Range
 
+---@param buf integer
 ---@param crate Crate
 ---@param versions Version[]
-function M.display_versions(crate, versions)
+function M.display_versions(buf, crate, versions)
     if not core.visible or not crate.reqs then
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
+        vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
         return
     end
 
@@ -60,15 +61,16 @@ function M.display_versions(crate, versions)
         virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.req_line, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.req_line, virt_text, {})
 end
 
+---@param buf integer
 ---@param crate Crate
-function M.display_loading(crate)
+function M.display_loading(buf, crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_virtual_text(0, M.namespace_id, crate.lines.s, virt_text, {})
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.lines.s, virt_text, {})
 end
 
 ---@param crate Crate
@@ -78,20 +80,18 @@ function M.reload_crate(crate)
             core.vers_cache[crate.name] = versions
         end
 
-        -- get current position of crate
-        local cur_buf = util.current_buf()
-        local buf_crates = core.crate_cache[cur_buf]
-        if not buf_crates then return end
+        for buf,crates in pairs(core.crate_cache) do
+            local c = crates[crate.name]
 
-        local c = buf_crates[crate.name]
-
-        if c then
-            M.display_versions(c, versions)
+            -- only update loaded buffers
+            if c and vim.api.nvim_buf_is_loaded(buf) then
+                M.display_versions(buf, c, versions)
+            end
         end
     end
 
     if core.cfg.loading_indicator then
-        M.display_loading(crate)
+        M.display_loading(0, crate)
     end
 
     api.fetch_crate_versions(crate.name, on_fetched)
@@ -140,7 +140,7 @@ function M.update()
         core.crate_cache[cur_buf][c.name] = c
 
         if versions then
-            M.display_versions(c, versions)
+            M.display_versions(0, c, versions)
         else
             M.reload_crate(c)
         end
