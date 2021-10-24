@@ -29,6 +29,11 @@ Feel free to open issues.
 ### Completion
 ![image](https://user-images.githubusercontent.com/43008152/134776687-c1359967-4b96-460b-b5f2-2d80b6a09208.png)
 
+## Breaking Changes
+- `ab8b2d6` Don't automatically call setup anymore
+- `6690f30` Don't automatically try to add a completion source to nvim-cmp (if that's loaded).
+- `8ecb36d` Renamed `update` text and highlight groups to `upgrade`
+
 ## Setup
 
 ### Installation
