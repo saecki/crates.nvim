@@ -4,6 +4,15 @@ A neovim plugin that helps managing crates.io dependencies.
 This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
+<details>
+<summary style="font-size: 1.4em">!!! Breaking changes !!!</summary>
+
+- `ab8b2d6` Don't automatically call setup anymore
+- `6690f30` Don't automatically try to add a completion source to nvim-cmp (if that's loaded).
+- `8ecb36d` Renamed `update` text and highlight groups to `upgrade`
+
+</details>
+
 ## Features
 - Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
     - Complete crate versions and features
@@ -28,11 +37,6 @@ Feel free to open issues.
 
 ### Completion
 ![image](https://user-images.githubusercontent.com/43008152/134776687-c1359967-4b96-460b-b5f2-2d80b6a09208.png)
-
-## Breaking Changes
-- `ab8b2d6` Don't automatically call setup anymore
-- `6690f30` Don't automatically try to add a completion source to nvim-cmp (if that's loaded).
-- `8ecb36d` Renamed `update` text and highlight groups to `upgrade`
 
 ## Setup
 
