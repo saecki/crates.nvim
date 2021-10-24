@@ -31,29 +31,31 @@ function M.display_versions(buf, crate, versions)
             -- version does not match, upgrade available
             local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate.reqs)
 
+            local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
+
             if match then
                 -- found a match
                 virt_text = {
                     { string.format(core.cfg.text.version, match.num), core.cfg.highlight.version },
-                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
+                    upgrade_text,
                 }
             elseif match_pre then
                 -- found a pre-release match
                 virt_text = {
                     { string.format(core.cfg.text.prerelease, match_pre.num), core.cfg.highlight.prerelease },
-                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
+                    upgrade_text,
                 }
             elseif match_yanked then
                 -- found a yanked match
                 virt_text = {
                     { string.format(core.cfg.text.yanked, match_yanked.num), core.cfg.highlight.yanked },
-                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
+                    upgrade_text,
                 }
             else
                 -- no match found
                 virt_text = {
                     { core.cfg.text.nomatch, core.cfg.highlight.nomatch },
-                    { string.format(core.cfg.text.update, newest.num), core.cfg.highlight.update },
+                    upgrade_text,
                 }
             end
         end

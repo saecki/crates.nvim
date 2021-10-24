@@ -16,7 +16,7 @@
 ---@field prerelease string
 ---@field yanked string
 ---@field nomatch string
----@field update string
+---@field upgrade string
 ---@field error string
 
 ---@class HighlightConfig
@@ -25,7 +25,7 @@
 ---@field prerelease string
 ---@field yanked string
 ---@field nomatch string
----@field update string
+---@field upgrade string
 ---@field error string
 
 ---@class PopupConfig
@@ -85,7 +85,7 @@ function M.default()
             prerelease = "   %s",
             yanked     = "   %s",
             nomatch    = "   No match",
-            update     = "   %s",
+            upgrade     = "   %s",
             error      = "   Error fetching crate",
         },
         highlight = {
@@ -94,7 +94,7 @@ function M.default()
             prerelease = "CratesNvimPreRelease",
             yanked     = "CratesNvimYanked",
             nomatch    = "CratesNvimNoMatch",
-            update     = "CratesNvimUpdate",
+            upgrade     = "CratesNvimUpgrade",
             error      = "CratesNvimError",
         },
         popup = {
