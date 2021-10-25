@@ -8,7 +8,6 @@ Feel free to open issues.
 <summary style="font-size: 1.4em">!!! Breaking changes !!!</summary>
 
 - `ab8b2d6` Don't automatically call setup anymore
-- `6690f30` Don't automatically try to add a completion source to nvim-cmp (if that's loaded).
 - `8ecb36d` Renamed `update` text and highlight groups to `upgrade`
 
 </details>
