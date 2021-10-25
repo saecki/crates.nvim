@@ -85,7 +85,7 @@ function M.default()
             prerelease = "   %s",
             yanked     = "   %s",
             nomatch    = "   No match",
-            upgrade     = "   %s",
+            upgrade    = "   %s",
             error      = "   Error fetching crate",
         },
         highlight = {
@@ -94,7 +94,7 @@ function M.default()
             prerelease = "CratesNvimPreRelease",
             yanked     = "CratesNvimYanked",
             nomatch    = "CratesNvimNoMatch",
-            upgrade     = "CratesNvimUpgrade",
+            upgrade    = "CratesNvimUpgrade",
             error      = "CratesNvimError",
         },
         popup = {

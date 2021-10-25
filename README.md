@@ -106,7 +106,7 @@ require('crates').setup {
         prerelease = "   %s",
         yanked     = "   %s",
         nomatch    = "   No match",
-        upgrade     = "   %s",
+        upgrade    = "   %s",
         error      = "   Error fetching crate",
     },
     highlight = {
@@ -115,7 +115,7 @@ require('crates').setup {
         prerelease = "CratesNvimPreRelease",
         yanked     = "CratesNvimYanked",
         nomatch    = "CratesNvimNoMatch",
-        upgrade     = "CratesNvimUpgrade",
+        upgrade    = "CratesNvimUpgrade",
         error      = "CratesNvimError",
     },
     popup = {
