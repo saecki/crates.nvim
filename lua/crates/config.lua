@@ -46,6 +46,8 @@
 ---@field prerelease string
 ---@field yanked string
 ---@field feature string
+---@field enabled string
+---@field transitive string
 ---@field date string
 
 ---@class PopupHighlightConfig
@@ -54,6 +56,8 @@
 ---@field prerelease string
 ---@field yanked string
 ---@field feature string
+---@field enabled string
+---@field transitive string
 
 ---@class PopupKeyConfig
 ---@field hide string[]
@@ -107,18 +111,26 @@ function M.default()
             min_width = 20,
             text = {
                 title      = "  %s ",
+                -- versions
                 version    = "   %s ",
                 prerelease = "  %s ",
                 yanked     = "  %s ",
+                -- features
                 feature    = "   %s ",
+                enabled   = "  %s ",
+                transitive = "  %s ",
                 date       = " %s ",
             },
             highlight = {
                 title      = "CratesNvimPopupTitle",
+                -- versions
                 version    = "CratesNvimPopupVersion",
                 prerelease = "CratesNvimPopupPreRelease",
                 yanked     = "CratesNvimPopupYanked",
+                -- features
                 feature    = "CratesNvimPopupFeature",
+                enabled    = "CratesNvimPopupEnabled",
+                transitive = "CratesNvimPopupTransitive",
             },
             keys = {
                 hide = { "q", "<esc>" },

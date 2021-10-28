@@ -1,3 +1,7 @@
+---@class HighlightText
+---@field text string
+---@field hi string
+
 local M = {}
 
 local core = require('crates.core')
@@ -100,6 +104,29 @@ function M.hide()
         vim.api.nvim_buf_delete(M.buf, {})
         M.buf = nil
     end
+end
+
+---@param width integer
+---@param height integer
+function M.create_win(width, height)
+    -- create window
+    local opts = {
+        relative = "cursor",
+        col = 0,
+        row = 1,
+        width = width,
+        height = height,
+        style = core.cfg.popup.style,
+        border = core.cfg.popup.border,
+    }
+    M.win = vim.api.nvim_open_win(M.buf, false, opts)
+
+    -- add key mappings
+    local hide_cmd = ":lua require('crates.popup').hide()<cr>"
+    for _,k in ipairs(core.cfg.popup.keys.hide) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, hide_cmd, { noremap = true, silent = true })
+    end
+
 end
 
 
@@ -259,6 +286,53 @@ function M.copy_version(name, index)
 end
 
 
+---@param features Feature[]
+---@param feature Feature
+---@return HighlightText
+local function feature_text(crate, features, feature)
+    local text, hi
+    local enabled, transitive = util.has_feat(crate, features, feature.name)
+    if enabled then
+        text = string.format(core.cfg.popup.text.enabled, feature.name)
+        hi = core.cfg.popup.highlight.enabled
+    elseif transitive then
+        text = string.format(core.cfg.popup.text.transitive, feature.name)
+        hi = core.cfg.popup.highlight.transitive
+    else
+        text = string.format(core.cfg.popup.text.feature, feature.name)
+        hi = core.cfg.popup.highlight.feature
+    end
+    return { text = text, hi = hi }
+end
+
+---@param width integer
+---@param height integer
+---@param title string
+---@param features HighlightText[]
+local function show_feature_popup(width, height, title, features)
+    M.buf = vim.api.nvim_create_buf(false, true)
+    local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
+
+    -- add text and highlights
+    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title, "" })
+    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
+
+    for i,v in ipairs(features) do
+        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
+        vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
+    end
+
+    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
+
+    -- create window
+    M.create_win(width, height)
+
+    -- autofocus
+    if core.cfg.popup.autofocus then
+        M.focus()
+    end
+end
+
 ---@param crate Crate
 ---@param version Version
 function M.show_features(crate, version)
@@ -270,39 +344,19 @@ function M.show_features(crate, version)
     local features_text = {}
 
     for _,f in ipairs(features) do
-        local text = string.format(core.cfg.popup.text.feature, f.name)
-        local hi = core.cfg.popup.highlight.feature
-        table.insert(features_text, { text = text, hi = hi })
-        width = math.max(text:len(), width)
+        local hi_text = feature_text(crate, features, f)
+        table.insert(features_text, hi_text)
+        width = math.max(hi_text.text:len(), width)
     end
 
-    M.buf = vim.api.nvim_create_buf(false, true)
-    local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
-
-    -- add text and highlights
-    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title_text, "" })
-    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
-
-    for i,v in ipairs(features_text) do
-        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
-    end
-
-    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
-
-    -- create window
-    M.create_win(width, height)
-
-    -- autofocus
-    if core.cfg.popup.autofocus then
-        M.focus()
-    end
+    show_feature_popup(width, height, title_text, features_text)
 end
 
 ---@param crate Crate
 ---@param version Version
 ---@param feature Feature
 function M.show_feature_details(crate, version, feature)
+    local features = version.features
     local members = feature.members
     local title_text = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
     local num_versions = vim.tbl_count(members)
@@ -311,56 +365,16 @@ function M.show_feature_details(crate, version, feature)
     local features_text = {}
 
     for _,m in ipairs(members) do
-        local text = string.format(core.cfg.popup.text.feature, m)
-        local hi = core.cfg.popup.highlight.feature
-        table.insert(features_text, { text = text, hi = hi })
-        width = math.max(text:len(), width)
+        local f = util.find_feature(features, m)
+
+        if f then
+            local hi_text = feature_text(crate, features, f)
+            table.insert(features_text, hi_text)
+            width = math.max(hi_text.text:len(), width)
+        end
     end
 
-    M.buf = vim.api.nvim_create_buf(false, true)
-    local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
-
-    -- add text and highlights
-    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title_text, "" })
-    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
-
-    for i,v in ipairs(features_text) do
-        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
-    end
-
-    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
-
-    -- create window
-    M.create_win(width, height)
-
-    -- autofocus
-    if core.cfg.popup.autofocus then
-        M.focus()
-    end
-end
-
----@param width integer
----@param height integer
-function M.create_win(width, height)
-    -- create window
-    local opts = {
-        relative = "cursor",
-        col = 0,
-        row = 1,
-        width = width,
-        height = height,
-        style = core.cfg.popup.style,
-        border = core.cfg.popup.border,
-    }
-    M.win = vim.api.nvim_open_win(M.buf, false, opts)
-
-    -- add key mappings
-    local hide_cmd = ":lua require('crates.popup').hide()<cr>"
-    for _,k in ipairs(core.cfg.popup.keys.hide) do
-        vim.api.nvim_buf_set_keymap(M.buf, "n", k, hide_cmd, { noremap = true, silent = true })
-    end
-
+    show_feature_popup(width, height, title_text, features_text)
 end
 
 return M

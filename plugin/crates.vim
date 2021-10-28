@@ -10,5 +10,8 @@ highlight default link CratesNvimPopupTitle       Title
 highlight default link CratesNvimPopupVersion     None
 highlight default link CratesNvimPopupPreRelease  LspDiagnosticsVirtualTextWarning
 highlight default link CratesNvimPopupYanked      LspDiagnosticsVirtualTextError
+
 highlight default link CratesNvimPopupFeature     None
+highlight default CratesNvimPopupEnabled          ctermfg=2 guifg=#23ab49
+highlight default CratesNvimPopupTransitive       ctermfg=4 guifg=#238bb9
 
