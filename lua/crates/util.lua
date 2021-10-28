@@ -66,29 +66,17 @@ function M.get_newest(versions, avoid_pre, reqs)
 end
 
 ---@param features Feature[]
----@param name string
----@return Feature|nil
-function M.find_feature(features, name)
-    for _,f in ipairs(features) do
-        if f.name == name then
-            return f
-        end
-    end
-    return nil
-end
-
----@param features Feature[]
 ---@param feature Feature
 ---@param name string
 ---@return boolean
-local function has_transitive_feat(features, feature, name)
+local function is_feat_enabled_transitive(features, feature, name)
     if vim.tbl_contains(feature.members, name) then
         return true
     end
 
-    for _,f in ipairs(features) do
+    for _,f in pairs(features) do
         if vim.tbl_contains(feature.members, f.name) then
-            if has_transitive_feat(features, f, name) then
+            if is_feat_enabled_transitive(features, f, name) then
                 return true
             end
         end
@@ -101,22 +89,21 @@ end
 ---@param features Feature[]
 ---@param name string
 ---@return boolean, boolean
-function M.has_feat(crate, features, name)
-    local transitive = false
-    for _,cf in ipairs(crate.feats) do
-        if cf.name == name then
-            return true, false
-        else
-            local f = M.find_feature(features, cf.name)
-            if f then
-                if has_transitive_feat(features, f, name) then
-                    transitive = true
-                end
+function M.is_feat_enabled(crate, features, name)
+    if crate.feats[name] then
+        return true, false
+    end
+
+    for _,cf in pairs(crate.feats) do
+        local f = features[cf.name]
+        if f then
+            if is_feat_enabled_transitive(features, f, name) then
+                return false, true
             end
         end
     end
 
-    return false, transitive
+    return false, false
 end
 
 ---@param buf integer
@@ -312,6 +299,5 @@ function M.update_crates(lines, smart)
         end
     end
 end
-
 
 return M

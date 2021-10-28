@@ -9,7 +9,7 @@
 ---@field req_col Range
 ---@field req_decl_col Range
 ---@field req_quote Quotes
----@field feats CrateFeature[]
+---@field feats table<string, CrateFeature>
 ---@field feat_text string
 ---@field feat_line integer -- 0-indexed
 ---@field feat_col Range
@@ -40,12 +40,12 @@ local Range = require('crates.types').Range
 function M.parse_crate_features(text)
     local feats = {}
     for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()[,]?]]) do
-        table.insert(feats, {
+        feats[f] = {
             name = f,
             col = Range.new(fs - 1, fe - 1),
             decl_col = Range.new(fds - 1, fde - 1),
             quotes = { s = qs, e = qe ~= "" and qe or nil },
-        })
+        }
     end
 
     return feats

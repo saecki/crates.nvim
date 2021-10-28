@@ -1,6 +1,6 @@
 ---@class Version
 ---@field num string
----@field features Feature[]
+---@field features table<string, Feature>
 ---@field yanked boolean
 ---@field parsed SemVer
 ---@field created DateTime
@@ -54,10 +54,10 @@ function M.fetch_crate_versions(name, callback)
                     }
 
                     for n,m in pairs(v.features) do
-                        table.insert(version.features, {
+                        version.features[n] = {
                             name = n,
                             members = m,
-                        })
+                        }
                     end
 
                     table.insert(versions, version)

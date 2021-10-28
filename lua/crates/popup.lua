@@ -33,14 +33,10 @@ function M.show()
 
     local function show_features()
         local feature = nil
-        for _,cf in ipairs(crate.feats) do
+        for _,cf in pairs(crate.feats) do
             if cf.decl_col:contains(col - crate.feat_col.s) then
-                for _,f in ipairs(newest.features) do
-                    if f.name == cf.name then
-                        feature = f
-                        break
-                    end
-                end
+                feature = newest.features[cf.name]
+                break
             end
         end
 
@@ -52,16 +48,10 @@ function M.show()
     end
 
     local function show_default_features()
-        local default_feature = {
+        local default_feature = newest.features["default"] or {
             name = "default",
             members = {},
         }
-        for _,f in ipairs(newest.features) do
-            if f.name == "default" then
-                default_feature = f
-                break
-            end
-        end
 
         M.show_feature_details(crate, newest, default_feature)
     end
@@ -133,7 +123,7 @@ end
 ---@param crate Crate
 ---@param versions Version[]
 function M.show_versions(crate, versions)
-    local title_text = string.format(core.cfg.popup.text.title, crate.name)
+    local title = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
     local width = 0
@@ -169,13 +159,13 @@ function M.show_versions(crate, versions)
         end
     end
 
-    width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title_text))
+    width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title))
 
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
     -- add text and highlights
-    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title_text, "" })
+    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title, "" })
     vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
 
     for i,v in ipairs(versions_text) do
@@ -291,7 +281,7 @@ end
 ---@return HighlightText
 local function feature_text(crate, features, feature)
     local text, hi
-    local enabled, transitive = util.has_feat(crate, features, feature.name)
+    local enabled, transitive = util.is_feat_enabled(crate, features, feature.name)
     if enabled then
         text = string.format(core.cfg.popup.text.enabled, feature.name)
         hi = core.cfg.popup.highlight.enabled
@@ -308,8 +298,8 @@ end
 ---@param width integer
 ---@param height integer
 ---@param title string
----@param features HighlightText[]
-local function show_feature_popup(width, height, title, features)
+---@param features_text HighlightText[]
+local function display_features(width, height, title, features_text)
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
@@ -317,7 +307,7 @@ local function show_feature_popup(width, height, title, features)
     vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title, "" })
     vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
 
-    for i,v in ipairs(features) do
+    for i,v in ipairs(features_text) do
         vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
         vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
     end
@@ -337,19 +327,19 @@ end
 ---@param version Version
 function M.show_features(crate, version)
     local features = version.features
-    local title_text = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
-    local num_versions = vim.tbl_count(features)
-    local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
-    local width = math.max(core.cfg.popup.min_width, title_text:len())
+    local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
+    local num_feats = vim.tbl_count(features)
+    local height = math.min(core.cfg.popup.max_height, num_feats + top_offset)
+    local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
-    for _,f in ipairs(features) do
+    for _,f in pairs(features) do
         local hi_text = feature_text(crate, features, f)
         table.insert(features_text, hi_text)
         width = math.max(hi_text.text:len(), width)
     end
 
-    show_feature_popup(width, height, title_text, features_text)
+    display_features(width, height, title, features_text)
 end
 
 ---@param crate Crate
@@ -358,14 +348,14 @@ end
 function M.show_feature_details(crate, version, feature)
     local features = version.features
     local members = feature.members
-    local title_text = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
-    local num_versions = vim.tbl_count(members)
-    local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
-    local width = math.max(core.cfg.popup.min_width, title_text:len())
+    local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
+    local num_feats = vim.tbl_count(members)
+    local height = math.min(core.cfg.popup.max_height, num_feats + top_offset)
+    local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
     for _,m in ipairs(members) do
-        local f = util.find_feature(features, m)
+        local f = features[m]
 
         if f then
             local hi_text = feature_text(crate, features, f)
@@ -374,7 +364,7 @@ function M.show_feature_details(crate, version, feature)
         end
     end
 
-    show_feature_popup(width, height, title_text, features_text)
+    display_features(width, height, title, features_text)
 end
 
 return M
