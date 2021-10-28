@@ -255,7 +255,7 @@ function M.parse_crates(buf)
             c.feats = M.parse_crate_features(c.feat_text)
         end
         if c.def_text then
-            c.def = c.def_text~="false"
+            c.def = c.def_text ~= "false"
         end
     end
 

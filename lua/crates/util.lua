@@ -90,16 +90,27 @@ end
 ---@param name string
 ---@return boolean, boolean
 function M.is_feat_enabled(crate, features, name)
-    if crate.feats[name] then
+    if crate.feats and crate.feats[name] then
+        return true, false
+    elseif name == "default" and crate.def then
         return true, false
     end
 
-    for _,cf in pairs(crate.feats) do
-        local f = features[cf.name]
-        if f then
-            if is_feat_enabled_transitive(features, f, name) then
-                return false, true
+    if crate.feats then
+        for _,cf in pairs(crate.feats) do
+            local f = features[cf.name]
+            if f then
+                if is_feat_enabled_transitive(features, f, name) then
+                    return false, true
+                end
             end
+        end
+    end
+
+    local default_feature = features["default"]
+    if crate.def and default_feature then
+        if is_feat_enabled_transitive(features, default_feature, name) then
+            return false, true
         end
     end
 
