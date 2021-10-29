@@ -333,19 +333,20 @@ function M.show_feature_details(crate, version, feature)
     local features = version.features
     local members = feature.members
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
-    local num_feats = vim.tbl_count(members)
-    local height = math.min(core.cfg.popup.max_height, num_feats + top_offset)
+    local num_members = vim.tbl_count(members)
+    local height = math.min(core.cfg.popup.max_height, num_members + top_offset)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
     for _,m in ipairs(members) do
-        local f = features[m]
+        local f = features[m] or {
+            name = m,
+            members = {},
+        }
 
-        if f then
-            local hi_text = feature_text(crate, features, f)
-            table.insert(features_text, hi_text)
-            width = math.max(hi_text.text:len(), width)
-        end
+        local hi_text = feature_text(crate, features, f)
+        table.insert(features_text, hi_text)
+        width = math.max(hi_text.text:len(), width)
     end
 
     show_win(width, height, title, features_text)
