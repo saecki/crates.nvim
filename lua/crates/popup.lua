@@ -317,7 +317,7 @@ function M.show_features(crate, version)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
-    for _,f in pairs(features) do
+    for _,f in util.sort_pairs(features) do
         local hi_text = feature_text(crate, features, f)
         table.insert(features_text, hi_text)
         width = math.max(hi_text.text:len(), width)

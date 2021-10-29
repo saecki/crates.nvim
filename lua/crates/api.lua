@@ -54,6 +54,7 @@ function M.fetch_crate_versions(name, callback)
                     }
 
                     for n,m in pairs(v.features) do
+                        table.sort(m)
                         version.features[n] = {
                             name = n,
                             members = m,
