@@ -127,18 +127,26 @@ require('crates').setup {
         min_width = 20,
         text = {
             title      = "  %s ",
+            -- versions
             version    = "   %s ",
             prerelease = "  %s ",
             yanked     = "  %s ",
+            -- features
             feature    = "   %s ",
+            enabled    = "  %s ",
+            transitive = "  %s ",
             date       = " %s ",
         },
         highlight = {
             title      = "CratesNvimPopupTitle",
+            -- versions
             version    = "CratesNvimPopupVersion",
             prerelease = "CratesNvimPopupPreRelease",
             yanked     = "CratesNvimPopupYanked",
+            -- features
             feature    = "CratesNvimPopupFeature",
+            enabled    = "CratesNvimPopupEnabled",
+            transitive = "CratesNvimPopupTransitive",
         },
         keys = {
             hide = { "q", "<esc>" },
@@ -172,10 +180,15 @@ require('crates').setup {
     },
     popup = {
         text = {
-            title   = " # %s ",
-            version = " %s ",
-            yanked  = " %s yanked ",
-            feature = " %s ",
+            title      = " # %s ",
+            -- versions
+            version    = " %s ",
+            prerelease = " %s ",
+            yanked     = " %s yanked ",
+            -- features
+            feature    = "   %s ",
+            enabled    = " + %s ",
+            transitive = " - %s ",
         },
     },
     cmp = {

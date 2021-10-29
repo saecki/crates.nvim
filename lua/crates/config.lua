@@ -117,7 +117,7 @@ function M.default()
                 yanked     = "  %s ",
                 -- features
                 feature    = "   %s ",
-                enabled   = "  %s ",
+                enabled    = "  %s ",
                 transitive = "  %s ",
                 date       = " %s ",
             },
