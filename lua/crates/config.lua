@@ -64,6 +64,8 @@
 ---@field select string[]
 ---@field select_dumb string[]
 ---@field copy_version string[]
+---@field goto_feature string[]
+---@field goback_feature string[]
 
 ---@class CmpConfig
 ---@field text CmpTextConfig
@@ -134,9 +136,13 @@ function M.default()
             },
             keys = {
                 hide = { "q", "<esc>" },
+                -- versions
                 select = { "<cr>" },
                 select_dumb = { "s" },
                 copy_version = { "yy" },
+                -- features
+                goto_feature = { "K" },
+                goback_feature = { "<c-o>" },
             },
         },
         cmp = {
