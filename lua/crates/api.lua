@@ -60,6 +60,18 @@ function M.fetch_crate_versions(name, callback)
                         }
                     end
 
+                    -- add optional dependency members as features
+                    for _,f in pairs(version.features) do
+                        for _,m in ipairs(f.members) do
+                            if not version.features[m] then
+                                version.features[m] = {
+                                    name = m,
+                                    members = {},
+                                }
+                            end
+                        end
+                    end
+
                     table.insert(versions, version)
                 end
             end
