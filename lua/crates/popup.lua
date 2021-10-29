@@ -7,7 +7,15 @@
 ---@field buf integer
 ---@field crate Crate
 ---@field version Version
----@field history Feature[]
+---@field history HistoryEntry[]
+
+---@class HistoryEntry
+---@field feature Feature|nil
+---@field line integer -- 1 indexed
+
+---@class WinOpts
+---@field focus boolean
+---@field line integer -- 1 indexed
 
 ---@class HighlightText
 ---@field text string
@@ -89,11 +97,12 @@ function M.show()
     end
 end
 
-function M.focus()
+---@param line integer
+function M.focus(line)
     if M.win and vim.api.nvim_win_is_valid(M.win) then
         vim.api.nvim_set_current_win(M.win)
-        local linenr = math.min(3, vim.api.nvim_buf_line_count(M.buf))
-        vim.api.nvim_win_set_cursor(M.win, { linenr, 0 })
+        local l = math.min(line or 3, vim.api.nvim_buf_line_count(M.buf))
+        vim.api.nvim_win_set_cursor(M.win, { l, 0 })
     end
 end
 
@@ -129,9 +138,9 @@ end
 ---@param height integer
 ---@param title string
 ---@param text HighlightText[]
----@param focus boolean
+---@param opts WinOpts
 ---@param configure function()
-local function show_win(width, height, title, text, focus, configure)
+local function show_win(width, height, title, text, opts, configure)
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
@@ -160,16 +169,16 @@ local function show_win(width, height, title, text, focus, configure)
     end
 
     -- autofocus
-    if focus or core.cfg.popup.autofocus then
-        M.focus()
+    if opts and opts.focus or core.cfg.popup.autofocus then
+        M.focus(opts and opts.line)
     end
 end
 
 
 ---@param crate Crate
 ---@param versions Version[]
----@param focus boolean
-function M.show_versions(crate, versions, focus)
+---@param opts WinOpts
+function M.show_versions(crate, versions, opts)
     local title = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = vim.tbl_count(versions)
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
@@ -209,7 +218,7 @@ function M.show_versions(crate, versions, focus)
     width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title))
 
 
-    show_win(width, height, title, versions_text, focus, function()
+    show_win(width, height, title, versions_text, opts, function()
         local select_cmd = string.format(
             ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
             util.current_buf(),
@@ -324,21 +333,21 @@ end
 
 ---@param crate Crate
 ---@param version Version
----@param focus boolean
-function M.show_features(crate, version, focus)
+---@param opts WinOpts
+function M.show_features(crate, version, opts)
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
         version = version,
         history = {},
     }
-    M._show_features(crate, version, focus)
+    M._show_features(crate, version, opts)
 end
 
 ---@param crate Crate
 ---@param version Version
----@param focus boolean
-function M._show_features(crate, version, focus)
+---@param opts WinOpts
+function M._show_features(crate, version, opts)
     local features = version.features
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
     local num_feats = vim.tbl_count(features)
@@ -352,7 +361,7 @@ function M._show_features(crate, version, focus)
         width = math.max(hi_text.text:len(), width)
     end
 
-    show_win(width, height, title, features_text, focus, function()
+    show_win(width, height, title, features_text, opts, function()
         local goto_cmd = string.format(
             ":lua require('crates.popup').goto_feature(nil, %s - %d)<cr>",
             "vim.api.nvim_win_get_cursor(0)[1]",
@@ -372,22 +381,22 @@ end
 ---@param crate Crate
 ---@param version Version
 ---@param feature Feature
----@param focus boolean
-function M.show_feature_details(crate, version, feature, focus)
+---@param opts WinOpts
+function M.show_feature_details(crate, version, feature, opts)
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
         version = version,
-        history = { feature },
+        history = { { feature = nil, line = 3 } },
     }
-    M._show_feature_details(crate, version, feature, focus)
+    M._show_feature_details(crate, version, feature, opts)
 end
 
 ---@param crate Crate
 ---@param version Version
 ---@param feature Feature
----@param focus boolean
-function M._show_feature_details(crate, version, feature, focus)
+---@param opts WinOpts
+function M._show_feature_details(crate, version, feature, opts)
     local features = version.features
     local members = feature.members
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
@@ -407,7 +416,7 @@ function M._show_feature_details(crate, version, feature, focus)
         width = math.max(hi_text.text:len(), width)
     end
 
-    show_win(width, height, title, features_text, focus, function()
+    show_win(width, height, title, features_text, opts, function()
         local goto_cmd = string.format(
             ":lua require('crates.popup').goto_feature('%s', %s - %d)<cr>",
             feature.name,
@@ -434,9 +443,10 @@ function M.goto_feature(feature_name, index)
     local version = M.feat_ctx.version
     if not crate or not version then return end
 
+    local feature = nil
     local selected_feature = nil
     if feature_name then
-        local feature = version.features[feature_name]
+        feature = version.features[feature_name]
         if feature then
             local m = feature.members[index]
             if m then
@@ -456,9 +466,12 @@ function M.goto_feature(feature_name, index)
     if not selected_feature then return end
 
     M.hide()
-    M._show_feature_details(crate, version, selected_feature, true)
+    M._show_feature_details(crate, version, selected_feature, { focus = true })
 
-    table.insert(M.feat_ctx.history, selected_feature)
+    table.insert(M.feat_ctx.history, {
+        feature = feature,
+        line = index + top_offset,
+    })
 end
 
 function M.goback_feature()
@@ -471,18 +484,24 @@ function M.goback_feature()
     if hist_count == 0 then
         M.hide()
         return
-    elseif hist_count == 1 then
-        M.feat_ctx.history = {}
-        M.hide()
-        M._show_features(crate, version, true)
-        return
     end
 
-    local feature = M.feat_ctx.history[#M.feat_ctx.history - 1]
-    if not feature then return end
+    if hist_count == 1 then
+        M.hide()
+        M._show_features(crate, version, {
+            focus = true,
+            line = M.feat_ctx.history[1].line,
+        })
+    else
+        local entry = M.feat_ctx.history[hist_count]
+        if not entry then return end
 
-    M.hide()
-    M._show_feature_details(crate, version, feature, true)
+        M.hide()
+        M._show_feature_details(crate, version, entry.feature, {
+            focus = true,
+            line = entry.line,
+        })
+    end
 
     M.feat_ctx.history[#M.feat_ctx.history] = nil
 end
