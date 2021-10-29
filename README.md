@@ -21,13 +21,16 @@ Feel free to open issues.
 - Automatically load when opening a Cargo.toml file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show compatible version
-    - indicate if compatible version is a pre-release
-    - indicate if compatible version is yanked
-    - indicate if no version is compatible
+    - Indicate if compatible version is a pre-release
+    - Indicate if compatible version is yanked
+    - Indicate if no version is compatible
 - Show best upgrade candidate
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
 - Open floating window with all features
+    - Navigate through the feature history
+    - Indicate if a feature is enabled directly
+    - Indicate if a feature is enabled transitively
 
 ![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
 
@@ -150,9 +153,13 @@ require('crates').setup {
         },
         keys = {
             hide = { "q", "<esc>" },
+            -- versions
             select = { "<cr>" },
             select_dumb = { "s" },
             copy_version = { "yy" },
+            -- features
+            goto_feature = { "K", "<c-i>" },
+            goback_feature = { "<c-o>" },
         },
     },
     cmp = {
