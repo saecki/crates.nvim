@@ -114,7 +114,7 @@ function M.is_feat_enabled(crate, features, name)
 
     local default_feature = features["default"]
     if crate.def and default_feature then
-        if is_feat_enabled_transitive(features, default_feature, name) then
+        if is_feat_enabled_transitive(features, default_feature, name, 1) then
             return false, true
         end
     end
