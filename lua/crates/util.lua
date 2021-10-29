@@ -68,15 +68,20 @@ end
 ---@param features Feature[]
 ---@param feature Feature
 ---@param name string
+---@param depth integer
 ---@return boolean
-local function is_feat_enabled_transitive(features, feature, name)
+local function is_feat_enabled_transitive(features, feature, name, depth)
+    if depth > 100 then
+        return false
+    end
+
     if vim.tbl_contains(feature.members, name) then
         return true
     end
 
     for _,f in pairs(features) do
         if vim.tbl_contains(feature.members, f.name) then
-            if is_feat_enabled_transitive(features, f, name) then
+            if is_feat_enabled_transitive(features, f, name, depth + 1) then
                 return true
             end
         end
@@ -100,7 +105,7 @@ function M.is_feat_enabled(crate, features, name)
         for _,cf in pairs(crate.feats) do
             local f = features[cf.name]
             if f then
-                if is_feat_enabled_transitive(features, f, name) then
+                if is_feat_enabled_transitive(features, f, name, 1) then
                     return false, true
                 end
             end
