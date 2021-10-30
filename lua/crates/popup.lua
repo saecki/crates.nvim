@@ -53,7 +53,7 @@ function M.show()
 
     local function show_features()
         local feature = nil
-        for _,cf in pairs(crate.feats) do
+        for _,cf in ipairs(crate.feats) do
             if cf.decl_col:contains(col - crate.feat_col.s) then
                 feature = newest.features[cf.name]
                 break
@@ -139,7 +139,7 @@ end
 ---@param title string
 ---@param text HighlightText[]
 ---@param opts WinOpts
----@param configure function()
+---@param configure fun()
 local function show_win(width, height, title, text, opts, configure)
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
@@ -312,6 +312,7 @@ function M.copy_version(name, index)
 end
 
 
+---@param crate Crate
 ---@param features Feature[]
 ---@param feature Feature
 ---@return HighlightText

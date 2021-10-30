@@ -13,7 +13,7 @@ local Range = M.Range
 ---@param e integer
 ---@return Range
 function Range.new(s, e)
-    return setmetatable({ s = s, e = e }, { __index = Range})
+    return setmetatable({ s = s, e = e }, { __index = Range })
 end
 
 ---@param self Range

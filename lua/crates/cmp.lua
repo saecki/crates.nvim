@@ -71,7 +71,7 @@ local function complete_features(crate, versions)
 
     for _,f in pairs(newest.features) do
         local contains_feature = false
-        for _,cf in pairs(crate.feats) do
+        for _,cf in ipairs(crate.feats) do
             if cf.name == f.name then
                 contains_feature = true
                 break
@@ -112,7 +112,7 @@ function M.complete(_, _, callback)
     if crate.reqs and crate.req_line == line and crate.req_col:moved(0, 1):contains(col) then
         callback(complete_versions(versions))
     elseif crate.feats and crate.feat_line == line and crate.feat_col:moved(0, 1):contains(col) then
-        for _,f in pairs(crate.feats) do
+        for _,f in ipairs(crate.feats) do
             if f.col:moved(0, 1):contains(col - crate.feat_col.s) then
                 callback(complete_features(crate, versions))
                 return

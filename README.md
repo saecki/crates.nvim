@@ -287,6 +287,7 @@ end
 ```
 
 ## TODO
+- make `<c-i>` work as expected (jump forward not goto)
 - select and deselect features in popup
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 

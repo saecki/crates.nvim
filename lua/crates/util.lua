@@ -95,14 +95,14 @@ end
 ---@param name string
 ---@return boolean, boolean
 function M.is_feat_enabled(crate, features, name)
-    if crate.feats and crate.feats[name] then
+    if crate.feats and crate:get_feat(name) then
         return true, false
     elseif name == "default" and crate.def then
         return true, false
     end
 
     if crate.feats then
-        for _,cf in pairs(crate.feats) do
+        for _,cf in ipairs(crate.feats) do
             local f = features[cf.name]
             if f then
                 if is_feat_enabled_transitive(features, f, name, 1) then
@@ -317,7 +317,7 @@ function M.update_crates(lines, smart)
 end
 
 ---@param map table<string, any>
----@return function(): string, any
+---@return fun(): string, any
 function M.sort_pairs(map)
     local keys = {}
     for k in pairs(map) do

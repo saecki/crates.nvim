@@ -2,23 +2,25 @@
 ---@field name string
 ---@field lines Range
 ---@field syntax string
----@field reqs Requirement[]
----@field req_text string
----@field req_has_suffix boolean
----@field req_line integer -- 0-indexed
----@field req_col Range
----@field req_decl_col Range
----@field req_quote Quotes
----@field feats table<string, CrateFeature>
----@field feat_text string
----@field feat_line integer -- 0-indexed
----@field feat_col Range
----@field feat_decl_col Range
----@field def boolean
----@field def_text string
----@field def_line integer -- 0-indexed
----@field def_col Range
----@field def_decl_col Range
+---@field reqs Requirement[]|nil
+---@field req_text string|nil
+---@field req_has_suffix boolean|nil
+---@field req_line integer|nil -- 0-indexed
+---@field req_col Range|nil
+---@field req_decl_col Range|nil
+---@field req_quote Quotes|nil
+---@field feats CrateFeature[]|nil
+---@field feat_text string|nil
+---@field feat_line integer|nil -- 0-indexed
+---@field feat_col Range|nil
+---@field feat_decl_col Range|nil
+---@field def boolean|nil
+---@field def_text string|nil
+---@field def_line integer|nil -- 0-indexed
+---@field def_col Range|nil
+---@field def_decl_col Range|nil
+---@field new fun(obj:any): Crate
+---@field get_feat fun(self:Crate, name:string): CrateFeature
 
 ---@class CrateFeature
 ---@field name string
@@ -35,24 +37,46 @@ local M = {}
 local semver = require('crates.semver')
 local Range = require('crates.types').Range
 
+M.Crate = {}
+local Crate = M.Crate
+
+---@param obj any
+---@return Crate
+function Crate.new(obj)
+    return setmetatable(obj, { __index = Crate })
+end
+
+---@param self Crate
+---@param name string
+---@return CrateFeature|nil
+function Crate:get_feat(name)
+    for _,f in ipairs(self.feats) do
+        if f.name == name then
+            return f
+        end
+    end
+
+    return nil
+end
+
 ---@param text string
 ---@return CrateFeature[]
 function M.parse_crate_features(text)
     local feats = {}
     for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()[,]?]]) do
-        feats[f] = {
+        table.insert(feats, {
             name = f,
             col = Range.new(fs - 1, fe - 1),
             decl_col = Range.new(fds - 1, fde - 1),
             quotes = { s = qs, e = qe ~= "" and qe or nil },
-        }
+        })
     end
 
     return feats
 end
 
 ---@param line string
----@return Crate
+---@return Crate|nil
 function M.parse_crate_table_req(line)
     local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
     if qs and vs and req_text and ve then
@@ -69,7 +93,7 @@ function M.parse_crate_table_req(line)
 end
 
 ---@param line string
----@return Crate
+---@return Crate|nil
 function M.parse_crate_table_feat(line)
     local fs, feat_text, fe = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
     if fs and feat_text and fe then
@@ -85,7 +109,7 @@ function M.parse_crate_table_feat(line)
 end
 
 ---@param line string
----@return Crate
+---@return Crate|nil
 function M.parse_crate_table_def(line)
     local ds, def_text, de = line:match("^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$")
     if ds and def_text and de then
@@ -101,7 +125,7 @@ function M.parse_crate_table_def(line)
 end
 
 ---@param line string
----@return Crate
+---@return Crate|nil
 function M.parse_crate(line)
     local name
     local vds, qs, vs, req_text, ve, qe, vde
@@ -185,7 +209,7 @@ function M.parse_crates(buf)
             -- push pending crate
             if dep_table_crate then
                 dep_table_crate.lines = Range.new(dep_table_start, i - 1)
-                table.insert(crates, dep_table_crate)
+                table.insert(crates, Crate.new(dep_table_crate))
             end
 
             local c = section:match("^.*dependencies(.*)$")
