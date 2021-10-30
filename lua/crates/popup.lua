@@ -55,7 +55,7 @@ function M.show()
         local feature = nil
         for _,cf in ipairs(crate.feats) do
             if cf.decl_col:contains(col - crate.feat_col.s) then
-                feature = newest.features[cf.name]
+                feature = newest.features:get_feat(cf.name)
                 break
             end
         end
@@ -68,7 +68,7 @@ function M.show()
     end
 
     local function show_default_features()
-        local default_feature = newest.features["default"] or {
+        local default_feature = newest.features:get_feat("default") or {
             name = "default",
             members = {},
         }
@@ -180,7 +180,7 @@ end
 ---@param opts WinOpts
 function M.show_versions(crate, versions, opts)
     local title = string.format(core.cfg.popup.text.title, crate.name)
-    local num_versions = vim.tbl_count(versions)
+    local num_versions = #versions
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
     local width = 0
     local versions_text = {}
@@ -267,7 +267,7 @@ function M.select_version(buf, name, index, smart)
     local versions = core.vers_cache[name]
     if not versions then return end
 
-    if index <= 0 or index > vim.tbl_count(versions) then
+    if index <= 0 or index > #versions then
         return
     end
     local version = versions[index]
@@ -303,7 +303,7 @@ function M.copy_version(name, index)
     local versions = core.vers_cache[name]
     if not versions then return end
 
-    if index <= 0 or index > vim.tbl_count(versions) then
+    if index <= 0 or index > #versions then
         return
     end
     local text = versions[index].num
@@ -313,7 +313,7 @@ end
 
 
 ---@param crate Crate
----@param features Feature[]
+---@param features Features
 ---@param feature Feature
 ---@return HighlightText
 local function feature_text(crate, features, feature)
@@ -351,12 +351,12 @@ end
 function M._show_features(crate, version, opts)
     local features = version.features
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
-    local num_feats = vim.tbl_count(features)
+    local num_feats = #features
     local height = math.min(core.cfg.popup.max_height, num_feats + top_offset)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
-    for _,f in util.sort_pairs(features) do
+    for _,f in ipairs(features) do
         local hi_text = feature_text(crate, features, f)
         table.insert(features_text, hi_text)
         width = math.max(hi_text.text:len(), width)
@@ -401,13 +401,13 @@ function M._show_feature_details(crate, version, feature, opts)
     local features = version.features
     local members = feature.members
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
-    local num_members = vim.tbl_count(members)
+    local num_members = #members
     local height = math.min(core.cfg.popup.max_height, num_members + top_offset)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
     for _,m in ipairs(members) do
-        local f = features[m] or {
+        local f = features:get_feat(m) or {
             name = m,
             members = {},
         }
@@ -447,22 +447,15 @@ function M.goto_feature(feature_name, index)
     local feature = nil
     local selected_feature = nil
     if feature_name then
-        feature = version.features[feature_name]
+        feature = version.features:get_feat(feature_name)
         if feature then
             local m = feature.members[index]
             if m then
-                selected_feature = version.features[m]
+                selected_feature = version.features:get_feat(m)
             end
         end
     else
-        local i = 1
-        for _,f in util.sort_pairs(version.features) do
-            if i == index then
-                selected_feature = f
-                break
-            end
-            i = i + 1
-        end
+        selected_feature = version.features[index]
     end
     if not selected_feature then return end
 

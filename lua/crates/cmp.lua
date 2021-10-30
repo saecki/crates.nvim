@@ -69,7 +69,7 @@ local function complete_features(crate, versions)
     local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
     local newest = util.get_newest(versions, avoid_pre, crate.reqs)
 
-    for _,f in pairs(newest.features) do
+    for _,f in ipairs(newest.features) do
         local contains_feature = false
         for _,cf in ipairs(crate.feats) do
             if cf.name == f.name then

@@ -65,7 +65,7 @@ function M.get_newest(versions, avoid_pre, reqs)
     return newest, newest_pre, newest_yanked
 end
 
----@param features Feature[]
+---@param features Features
 ---@param feature Feature
 ---@param name string
 ---@param depth integer
@@ -79,7 +79,7 @@ local function is_feat_enabled_transitive(features, feature, name, depth)
         return true
     end
 
-    for _,f in pairs(features) do
+    for _,f in ipairs(features) do
         if vim.tbl_contains(feature.members, f.name) then
             if is_feat_enabled_transitive(features, f, name, depth + 1) then
                 return true
@@ -91,7 +91,7 @@ local function is_feat_enabled_transitive(features, feature, name, depth)
 end
 
 ---@param crate Crate
----@param features Feature[]
+---@param features Features
 ---@param name string
 ---@return boolean, boolean
 function M.is_feat_enabled(crate, features, name)
@@ -103,7 +103,7 @@ function M.is_feat_enabled(crate, features, name)
 
     if crate.feats then
         for _,cf in ipairs(crate.feats) do
-            local f = features[cf.name]
+            local f = features:get_feat(cf.name)
             if f then
                 if is_feat_enabled_transitive(features, f, name, 1) then
                     return false, true
@@ -112,7 +112,7 @@ function M.is_feat_enabled(crate, features, name)
         end
     end
 
-    local default_feature = features["default"]
+    local default_feature = features:get_feat("default")
     if crate.def and default_feature then
         if is_feat_enabled_transitive(features, default_feature, name, 1) then
             return false, true
@@ -314,29 +314,6 @@ function M.update_crates(lines, smart)
             end
         end
     end
-end
-
----@param map table<string, any>
----@return fun(): string, any
-function M.sort_pairs(map)
-    local keys = {}
-    for k in pairs(map) do
-        table.insert(keys, k)
-    end
-    table.sort(keys)
-
-    local i = 1
-
-    local iter = function()
-        local key = keys[i]
-        if key then
-            local value = map[key]
-            i = i + 1
-            return key, value
-        end
-    end
-
-    return iter
 end
 
 return M

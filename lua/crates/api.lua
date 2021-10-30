@@ -1,15 +1,38 @@
 ---@class Version
 ---@field num string
----@field features table<string, Feature>
+---@field features Features
 ---@field yanked boolean
 ---@field parsed SemVer
 ---@field created DateTime
+
+---@class Features
+---@field get_feat fun(self: Features, name:string): Feature|nil
 
 ---@class Feature
 ---@field name string
 ---@field members string[]
 
 local M = {}
+
+M.Features = {}
+local Features = M.Features
+
+function Features.new(obj)
+    return setmetatable(obj, { __index = Features })
+end
+
+---@param self Features
+---@param name string
+---@return Feature|nil
+function Features:get_feat(name)
+    for _,f in ipairs(self) do
+        if f.name == name then
+            return f
+        end
+    end
+
+    return nil
+end
 
 local job = require('plenary.job')
 local semver = require('crates.semver')
@@ -47,7 +70,7 @@ function M.fetch_crate_versions(name, callback)
                 if v.num then
                     local version = {
                         num = v.num,
-                        features = {},
+                        features = Features.new {},
                         yanked = v.yanked,
                         parsed = semver.parse_version(v.num),
                         created = DateTime.parse_rfc_3339(v.created_at)
@@ -55,14 +78,14 @@ function M.fetch_crate_versions(name, callback)
 
                     for n,m in pairs(v.features) do
                         table.sort(m)
-                        version.features[n] = {
+                        table.insert(version.features, {
                             name = n,
                             members = m,
-                        }
+                        })
                     end
 
                     -- add optional dependency members as features
-                    for _,f in pairs(version.features) do
+                    for _,f in ipairs(version.features) do
                         for _,m in ipairs(f.members) do
                             if not version.features[m] then
                                 version.features[m] = {
@@ -72,6 +95,11 @@ function M.fetch_crate_versions(name, callback)
                             end
                         end
                     end
+
+                    -- sort features alphabetically
+                    table.sort(version.features, function (a, b)
+                        return a.name < b.name
+                    end)
 
                     table.insert(versions, version)
                 end
