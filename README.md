@@ -211,13 +211,10 @@ require('crates').setup {
 ```lua
 -- load and display versions
 require('crates').update()
-
 -- force-reload and display versions (clears cache)
 require('crates').reload()
-
 -- hide versions
 require('crates').hide()
-
 -- show/hide versions
 require('crates').toggle()
 
@@ -236,6 +233,13 @@ require('crates').upgrade_all_crates() -- all in current buffer
 -- show/hide popup with all versions or features
 -- (if `popup.autofocus` is disabled calling this again will focus the popup)
 require('crates').show_popup()
+-- same as `show_popup` but always show versions
+require('crates').show_versions_popup()
+-- same as `show_popup` but always show features
+require('crates').show_features_popup()
+-- focus the popup (jump into the window)
+require('crates').focus_popup()
+-- hide the popup
 require('crates').hide_popup()
 ```
 ### Key mappings

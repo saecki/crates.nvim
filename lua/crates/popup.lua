@@ -2,6 +2,7 @@
 ---@field win integer|nil
 ---@field buf integer|nil
 ---@field namespace_id integer|nil
+---@field type string|nil
 ---@field feat_ctx FeatureContext|nil
 
 ---@class FeatureContext
@@ -132,8 +133,12 @@ end
 
 function M.show_versions()
     if M.win and vim.api.nvim_win_is_valid(M.win) then
-        M.focus() -- TODO check if showing versions
-        return
+        if M.type == "versions" then
+            M.focus()
+            return
+        else
+            M.hide()
+        end
     end
 
     local info = line_crate_info()
@@ -144,8 +149,12 @@ end
 
 function M.show_features()
     if M.win and vim.api.nvim_win_is_valid(M.win) then
-        M.focus() -- TODO check if showing features
-        return
+        if M.type == "features" then
+            M.focus()
+            return
+        else
+            M.hide()
+        end
     end
 
     local info = line_crate_info()
@@ -180,6 +189,7 @@ function M.hide()
     end
     M.buf = nil
     M.namespace_id = nil
+    M.type = nil
 end
 
 ---@param width integer
@@ -243,6 +253,7 @@ end
 ---@param versions Version[]
 ---@param opts WinOpts
 function M.open_versions(crate, versions, opts)
+    M.type = "versions"
     local title = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = #versions
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
@@ -401,6 +412,7 @@ end
 ---@param version Version
 ---@param opts WinOpts
 function M.open_features(crate, version, opts)
+    M.type = "features"
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
@@ -459,6 +471,7 @@ end
 ---@param feature Feature
 ---@param opts WinOpts
 function M.open_feature_details(crate, version, feature, opts)
+    M.type = "features"
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,

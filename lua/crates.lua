@@ -161,6 +161,9 @@ function M.setup(cfg)
 end
 
 M.show_popup = popup.show
+M.show_versions_popup = popup.show_versions
+M.show_features_popup = popup.show_features
+M.focus_popup = popup.focus
 M.hide_popup = popup.hide
 
 return M
