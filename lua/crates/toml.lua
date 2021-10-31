@@ -190,6 +190,13 @@ function M.parse_crate(line)
     end
 end
 
+---@param line string
+---@return string
+function M.trim_comments(line)
+    local uncommented = line:match("^([^#]*)#.*$")
+    return uncommented or line
+end
+
 ---@param buf integer
 ---@return Crate[]
 function M.parse_crates(buf)
@@ -202,10 +209,7 @@ function M.parse_crates(buf)
     local dep_table_crate_name = nil -- [dependencies.<crate>]
 
     for i,l in ipairs(lines) do
-        local uncommented = l:match("^([^#]*)#.*$")
-        if uncommented then
-            l = uncommented
-        end
+        l = M.trim_comments(l)
 
         local section = l:match("^%s*%[(.+)%]%s*$")
 

@@ -97,7 +97,7 @@ end
 function M.is_feat_enabled(crate, features, name)
     if crate.feats and crate:get_feat(name) then
         return true, false
-    elseif name == "default" and crate.def then
+    elseif name == "default" and crate.def ~= false then
         return true, false
     end
 
@@ -318,6 +318,19 @@ end
 
 ---@param buf integer
 ---@param crate Crate
+function M.enable_def_features(buf, crate)
+    -- TODO
+end
+
+---@param buf integer
+---@param crate Crate
+---@param feature CrateFeature|nil
+function M.disable_def_features(buf, crate, feature)
+    -- TODO
+end
+
+---@param buf integer
+---@param crate Crate
 ---@param feature Feature
 ---@return integer
 function M.add_feature(buf, crate, feature)
@@ -334,9 +347,54 @@ function M.add_feature(buf, crate, feature)
             )
             return line
         elseif crate.syntax == "plain" then
-            -- TODO make inline table
+            t = ", features = [" .. t .. "] }"
+            local col = crate.req_col.e
+            if crate.req_quote.e then
+                col = col + 1
+            else
+                t = crate.req_col.s .. t
+            end
+            vim.api.nvim_buf_set_text(
+                buf,
+                crate.req_line,
+                col,
+                crate.req_line,
+                col,
+                { t }
+            )
+
+            vim.api.nvim_buf_set_text(
+                buf,
+                crate.req_line,
+                crate.req_col.s - 1,
+                crate.req_line,
+                crate.req_col.s - 1,
+                { "{ version = " }
+            )
+            return crate.req_line
         elseif crate.syntax == "inline_table" then
-            -- TODO add feature
+            local line = crate.lines.s
+            local req_col_end = 0
+            if crate.req_text then
+                req_col_end = crate.req_col.e
+                if crate.req_quote.e then
+                    req_col_end = req_col_end + 1
+                end
+            end
+            local def_col_end = 0
+            if crate.def_text then
+                def_col_end = crate.def_col.e
+            end
+            local col = math.max(req_col_end, def_col_end)
+            vim.api.nvim_buf_set_text(
+                buf,
+                line,
+                col,
+                line,
+                col,
+                { ", features = [" .. t .. "]" }
+            )
+            return line
         end
     else
         local last_feat = crate.feats[#crate.feats]

@@ -21,6 +21,13 @@
 ---@field text string
 ---@field hi string
 
+---@class LineCrateInfo
+---@field pref string
+---@field crate Crate
+---@field versions Version[]
+---@field newest Version|nil
+---@field feature Feature|nil
+
 ---@type Popup
 local M = {}
 
@@ -32,19 +39,15 @@ local Range = require('crates.types').Range
 
 local top_offset = 2
 
-function M.show()
-    if M.win and vim.api.nvim_win_is_valid(M.win) then
-        M.focus()
-        return
-    end
-
+---@return LineCrateInfo
+local function line_crate_info()
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] - 1
     local col = pos[2]
 
     local crates = util.get_lines_crates(Range.new(line, line + 1))
     if not crates or not crates[1] or not crates[1].versions then
-        return
+        return nil
     end
     local crate = crates[1].crate
     local versions = crates[1].versions
@@ -52,49 +55,107 @@ function M.show()
     local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
     local newest = util.get_newest(versions, avoid_pre, crate.reqs)
 
-    local function show_features()
-        local feature = nil
+    local info = {
+        crate = crate,
+        versions = versions,
+        newest = newest,
+    }
+
+    local function versions_info()
+        info.pref = "versions"
+    end
+
+    local function features_info()
         for _,cf in ipairs(crate.feats) do
             if cf.decl_col:contains(col - crate.feat_col.s) then
-                feature = newest.features:get_feat(cf.name)
+                info.feature = newest.features:get_feat(cf.name)
                 break
             end
         end
 
-        if feature then
-            M.show_feature_details(crate, newest, feature)
+        if info.feature then
+            info.pref = "feature_details"
         else
-            M.show_features(crate, newest)
+            info.pref = "features"
         end
     end
 
-    local function show_default_features()
-        local default_feature = newest.features:get_feat("default") or {
+    local function default_features_info()
+        info.feature = info.newest.features:get_feat("default") or {
             name = "default",
             members = {},
         }
-
-        M.show_feature_details(crate, newest, default_feature)
+        info.pref = "feature_details"
     end
 
     if crate.syntax == "plain" then
-        M.show_versions(crate, versions)
+        versions_info()
     elseif crate.syntax == "table" then
         if line == crate.feat_line then
-            show_features()
+            features_info()
         elseif line == crate.def_line then
-            show_default_features()
+            default_features_info()
         else
-            M.show_versions(crate, versions)
+            versions_info()
         end
     elseif crate.syntax == "inline_table" then
         if crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
-            show_features()
+            features_info()
         elseif crate.def_text and line == crate.def_line and crate.def_decl_col:contains(col) then
-            show_default_features()
+            default_features_info()
         else
-            M.show_versions(crate, versions)
+            versions_info()
         end
+    end
+
+    return info
+end
+
+function M.show()
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
+        M.focus()
+        return
+    end
+
+    local info = line_crate_info()
+    if not info then return end
+
+    if info.pref == "versions" then
+        M.open_versions(info.crate, info.versions)
+    elseif info.pref == "features" then
+        M.open_features(info.crate, info.newest)
+    elseif info.pref == "feature_details" then
+        M.open_feature_details(info.crate, info.newest, info.feature)
+    end
+end
+
+function M.show_versions()
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
+        M.focus() -- TODO check if showing versions
+        return
+    end
+
+    local info = line_crate_info()
+    if not info then return end
+
+    M.open_versions(info.crate, info.versions)
+end
+
+function M.show_features()
+    if M.win and vim.api.nvim_win_is_valid(M.win) then
+        M.focus() -- TODO check if showing features
+        return
+    end
+
+    local info = line_crate_info()
+    if not info then return end
+
+    if info.pref == "features" then
+        M.open_features(info.crate, info.newest)
+    elseif info.pref == "feature_details" then
+        M.open_feature_details(info.crate, info.newest, info.feature)
+    elseif info.newest then
+        M.open_features(info.crate, info.newest)
     end
 end
 
@@ -141,7 +202,7 @@ end
 ---@param text HighlightText[]
 ---@param opts WinOpts
 ---@param configure fun()
-local function show_win(width, height, title, text, opts, configure)
+local function open_win(width, height, title, text, opts, configure)
     M.buf = vim.api.nvim_create_buf(false, true)
     local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
@@ -179,7 +240,7 @@ end
 ---@param crate Crate
 ---@param versions Version[]
 ---@param opts WinOpts
-function M.show_versions(crate, versions, opts)
+function M.open_versions(crate, versions, opts)
     local title = string.format(core.cfg.popup.text.title, crate.name)
     local num_versions = #versions
     local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
@@ -219,7 +280,7 @@ function M.show_versions(crate, versions, opts)
     width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title))
 
 
-    show_win(width, height, title, versions_text, opts, function()
+    open_win(width, height, title, versions_text, opts, function()
         local select_cmd = string.format(
             ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
             util.current_buf(),
@@ -285,6 +346,7 @@ function M.select_version(buf, name, index, smart)
 
     -- update crate position
     local line = vim.api.nvim_buf_get_lines(buf, crate.req_line, crate.req_line + 1, false)[1]
+    line = toml.trim_comments(line)
     local c = nil
     if crate.syntax == "table" then
         c = toml.parse_crate_table_req(line)
@@ -336,20 +398,20 @@ end
 ---@param crate Crate
 ---@param version Version
 ---@param opts WinOpts
-function M.show_features(crate, version, opts)
+function M.open_features(crate, version, opts)
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
         version = version,
         history = {},
     }
-    M._show_features(crate, version, opts)
+    M._open_features(crate, version, opts)
 end
 
 ---@param crate Crate
 ---@param version Version
 ---@param opts WinOpts
-function M._show_features(crate, version, opts)
+function M._open_features(crate, version, opts)
     local features = version.features
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
     local num_feats = #features
@@ -363,7 +425,7 @@ function M._show_features(crate, version, opts)
         width = math.max(hi_text.text:len(), width)
     end
 
-    show_win(width, height, title, features_text, opts, function()
+    open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
             ":lua require('crates.popup').toggle_feature(%d, nil, %s - %d)<cr>",
             util.current_buf(),
@@ -394,21 +456,21 @@ end
 ---@param version Version
 ---@param feature Feature
 ---@param opts WinOpts
-function M.show_feature_details(crate, version, feature, opts)
+function M.open_feature_details(crate, version, feature, opts)
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
         version = version,
         history = { { feature = nil, line = 3 } },
     }
-    M._show_feature_details(crate, version, feature, opts)
+    M._open_feature_details(crate, version, feature, opts)
 end
 
 ---@param crate Crate
 ---@param version Version
 ---@param feature Feature
 ---@param opts WinOpts
-function M._show_feature_details(crate, version, feature, opts)
+function M._open_feature_details(crate, version, feature, opts)
     local features = version.features
     local members = feature.members
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
@@ -428,7 +490,7 @@ function M._show_feature_details(crate, version, feature, opts)
         width = math.max(hi_text.text:len(), width)
     end
 
-    show_win(width, height, title, features_text, opts, function()
+    open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
             ":lua require('crates.popup').toggle_feature(%d, '%s', %s - %d)<cr>",
             util.current_buf(),
@@ -482,15 +544,26 @@ function M.toggle_feature(buf, feature_name, index)
     end
     if not selected_feature then return end
 
-    local crate_feature = crate:get_feat(selected_feature.name)
     local l = nil
-    if crate_feature then
-        util.remove_feature(buf, crate, crate_feature)
-        l = crate.feat_line
+    local crate_feature = crate:get_feat(selected_feature.name)
+    if selected_feature.name == "default" then
+        if crate.def then
+            l = util.enable_def_features(crate, crate_feature)
+        else
+            l = util.disable_def_features(crate)
+        end
     else
-        l = util.add_feature(buf, crate, selected_feature)
+        if crate_feature then
+            util.remove_feature(buf, crate, crate_feature)
+            l = crate.feat_line
+        else
+            l = util.add_feature(buf, crate, selected_feature)
+        end
     end
+
+    -- update crate
     local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+    line = toml.trim_comments(line)
     local c = nil
     if crate.syntax == "table" then
         c = toml.parse_crate_table_feat(line)
@@ -504,15 +577,16 @@ function M.toggle_feature(buf, feature_name, index)
         M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, c))
     end
 
+    -- update popup
     M.hide()
     local opts = {
         focus = true,
         line = index + top_offset,
     }
     if feature then
-        M.show_feature_details(M.feat_ctx.crate, version, feature, opts)
+        M.open_feature_details(M.feat_ctx.crate, version, feature, opts)
     else
-        M.show_features(M.feat_ctx.crate, version, opts)
+        M.open_features(M.feat_ctx.crate, version, opts)
     end
 end
 
@@ -541,7 +615,7 @@ function M.goto_feature(feature_name, index)
     if not selected_feature then return end
 
     M.hide()
-    M._show_feature_details(crate, version, selected_feature, { focus = true })
+    M._open_feature_details(crate, version, selected_feature, { focus = true })
 
     table.insert(M.feat_ctx.history, {
         feature = feature,
@@ -563,7 +637,7 @@ function M.goback_feature()
 
     if hist_count == 1 then
         M.hide()
-        M._show_features(crate, version, {
+        M._open_features(crate, version, {
             focus = true,
             line = M.feat_ctx.history[1].line,
         })
@@ -572,7 +646,7 @@ function M.goback_feature()
         if not entry then return end
 
         M.hide()
-        M._show_feature_details(crate, version, entry.feature, {
+        M._open_feature_details(crate, version, entry.feature, {
             focus = true,
             line = entry.line,
         })
