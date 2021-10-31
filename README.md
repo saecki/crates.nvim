@@ -57,7 +57,7 @@ use { 'Saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 For lazy loading:
 ```lua
 use {
-    '~/Projects/crates.nvim',
+    'Saecki/crates.nvim',
     event = { "BufRead Cargo.toml" },
     requires = { { 'nvim-lua/plenary.nvim' } },
     config = function()
