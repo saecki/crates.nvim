@@ -288,7 +288,7 @@ end
 
 ## TODO
 - make `<c-i>` work as expected (jump forward not goto)
-- select and deselect features in popup
+- better cmp documentation for features
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
