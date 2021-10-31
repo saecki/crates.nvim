@@ -560,7 +560,7 @@ function M.toggle_feature(buf, feature_name, index)
     end
     if not selected_feature then return end
 
-    local l = nil
+    local l
     local crate_feature = crate:get_feat(selected_feature.name)
     if selected_feature.name == "default" then
         if crate.def then
