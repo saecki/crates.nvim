@@ -26,6 +26,7 @@ local M = {}
 
 local core = require('crates.core')
 local toml = require('crates.toml')
+local Crate = toml.Crate
 local util = require('crates.util')
 local Range = require('crates.types').Range
 
@@ -363,6 +364,16 @@ function M._show_features(crate, version, opts)
     end
 
     show_win(width, height, title, features_text, opts, function()
+        local toggle_cmd = string.format(
+            ":lua require('crates.popup').toggle_feature(%d, nil, %s - %d)<cr>",
+            util.current_buf(),
+            "vim.api.nvim_win_get_cursor(0)[1]",
+            top_offset
+        )
+        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
+        end
+
         local goto_cmd = string.format(
             ":lua require('crates.popup').goto_feature(nil, %s - %d)<cr>",
             "vim.api.nvim_win_get_cursor(0)[1]",
@@ -418,6 +429,17 @@ function M._show_feature_details(crate, version, feature, opts)
     end
 
     show_win(width, height, title, features_text, opts, function()
+        local toggle_cmd = string.format(
+            ":lua require('crates.popup').toggle_feature(%d, '%s', %s - %d)<cr>",
+            util.current_buf(),
+            feature.name,
+            "vim.api.nvim_win_get_cursor(0)[1]",
+            top_offset
+        )
+        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
+        end
+
         local goto_cmd = string.format(
             ":lua require('crates.popup').goto_feature('%s', %s - %d)<cr>",
             feature.name,
@@ -433,6 +455,65 @@ function M._show_feature_details(crate, version, feature, opts)
             vim.api.nvim_buf_set_keymap(M.buf, "n", k, goback_cmd, { noremap = true, silent = true })
         end
     end)
+end
+
+---@param buf integer
+---@param feature_name string|nil
+---@param index integer
+function M.toggle_feature(buf, feature_name, index)
+    if not M.feat_ctx then return end
+
+    local crate = M.feat_ctx.crate
+    local version = M.feat_ctx.version
+    if not crate or not version then return end
+
+    local feature = nil
+    local selected_feature = nil
+    if feature_name then
+        feature = version.features:get_feat(feature_name)
+        if feature then
+            local m = feature.members[index]
+            if m then
+                selected_feature = version.features:get_feat(m)
+            end
+        end
+    else
+        selected_feature = version.features[index]
+    end
+    if not selected_feature then return end
+
+    local crate_feature = crate:get_feat(selected_feature.name)
+    local l = nil
+    if crate_feature then
+        util.remove_feature(buf, crate, crate_feature)
+        l = crate.feat_line
+    else
+        l = util.add_feature(buf, crate, selected_feature)
+    end
+    local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+    local c = nil
+    if crate.syntax == "table" then
+        c = toml.parse_crate_table_feat(line)
+    elseif crate.syntax == "plain" then
+        c = toml.parse_crate(line)
+    elseif crate.syntax == "inline_table" then
+        c = toml.parse_crate(line)
+    end
+    if c then
+        c.feats = toml.parse_crate_features(c.feat_text)
+        M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, c))
+    end
+
+    M.hide()
+    local opts = {
+        focus = true,
+        line = index + top_offset,
+    }
+    if feature then
+        M.show_feature_details(M.feat_ctx.crate, version, feature, opts)
+    else
+        M.show_features(M.feat_ctx.crate, version, opts)
+    end
 end
 
 ---@param feature_name string|nil

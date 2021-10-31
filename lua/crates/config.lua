@@ -64,6 +64,7 @@
 ---@field select string[]
 ---@field select_dumb string[]
 ---@field copy_version string[]
+---@field toggle_feature string[]
 ---@field goto_feature string[]
 ---@field goback_feature string[]
 
@@ -141,6 +142,7 @@ function M.default()
                 select_dumb = { "s" },
                 copy_version = { "yy" },
                 -- features
+                toggle_feature = { "<cr>" },
                 goto_feature = { "K", "<c-i>" },
                 goback_feature = { "<c-o>" },
             },

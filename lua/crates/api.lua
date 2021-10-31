@@ -6,7 +6,7 @@
 ---@field created DateTime
 
 ---@class Features
----@field get_feat fun(self: Features, name:string): Feature|nil
+---@field get_feat fun(self: Features, name:string): Feature|nil, integer
 
 ---@class Feature
 ---@field name string
@@ -23,11 +23,11 @@ end
 
 ---@param self Features
 ---@param name string
----@return Feature|nil
+---@return Feature|nil, integer
 function Features:get_feat(name)
-    for _,f in ipairs(self) do
+    for i,f in ipairs(self) do
         if f.name == name then
-            return f
+            return f, i
         end
     end
 

@@ -316,4 +316,96 @@ function M.update_crates(lines, smart)
     end
 end
 
+---@param buf integer
+---@param crate Crate
+---@param feature Feature
+---@return integer
+function M.add_feature(buf, crate, feature)
+    local t = '"' .. feature.name .. '"'
+    if not crate.feat_text then
+        if crate.syntax == "table" then
+            local line = math.max(crate.req_line or 0, crate.def_line or 0) + 1
+            vim.api.nvim_buf_set_lines(
+                buf,
+                line,
+                line,
+                false,
+                { "features = [" .. t .."]" }
+            )
+            return line
+        elseif crate.syntax == "plain" then
+            -- TODO make inline table
+        elseif crate.syntax == "inline_table" then
+            -- TODO add feature
+        end
+    else
+        local last_feat = crate.feats[#crate.feats]
+        if last_feat and not last_feat.comma then
+            t = ", " .. t
+        end
+
+        vim.api.nvim_buf_set_text(
+            buf,
+            crate.feat_line,
+            crate.feat_col.e,
+            crate.feat_line,
+            crate.feat_col.e,
+            { t }
+        )
+        return crate.feat_line
+    end
+end
+
+---@param buf integer
+---@param crate Crate
+---@param feature CrateFeature
+function M.remove_feature(buf, crate, feature)
+    local _, index = crate:get_feat(feature.name)
+
+    local col_start = feature.decl_col.s
+    local col_end = feature.decl_col.e
+    if index == 1 then
+        if #crate.feats > 1 then
+            col_end = crate.feats[2].col.s - 1
+        elseif feature.comma then
+            col_end = col_end + 1
+        end
+    else
+        local prev_feature = crate.feats[index - 1]
+        col_start = prev_feature.col.e + 1
+    end
+
+    vim.api.nvim_buf_set_text(
+        buf,
+        crate.feat_line,
+        crate.feat_col.s + col_start,
+        crate.feat_line,
+        crate.feat_col.s + col_end,
+        { "" }
+    )
+end
+
+---@param map table<string, any>
+---@return function(): string, any
+function M.sort_pairs(map)
+    local keys = {}
+    for k in pairs(map) do
+        table.insert(keys, k)
+    end
+    table.sort(keys)
+
+    local i = 1
+
+    local iter = function()
+        local key = keys[i]
+        if key then
+            local value = map[key]
+            i = i + 1
+            return key, value
+        end
+    end
+
+    return iter
+end
+
 return M

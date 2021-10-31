@@ -20,13 +20,14 @@
 ---@field def_col Range|nil
 ---@field def_decl_col Range|nil
 ---@field new fun(obj:any): Crate
----@field get_feat fun(self:Crate, name:string): CrateFeature
+---@field get_feat fun(self:Crate, name:string): CrateFeature, integer
 
 ---@class CrateFeature
 ---@field name string
 ---@field col Range -- relative to to the start of the features text
 ---@field decl_col Range -- relative to to the start of the features text
 ---@field quote Quotes
+---@field comma boolean
 
 ---@class Quotes
 ---@field s string
@@ -48,11 +49,13 @@ end
 
 ---@param self Crate
 ---@param name string
----@return CrateFeature|nil
+---@return CrateFeature|nil, integer
 function Crate:get_feat(name)
-    for _,f in ipairs(self.feats) do
+    if not self.feats then return nil end
+
+    for i,f in ipairs(self.feats) do
         if f.name == name then
-            return f
+            return f, i
         end
     end
 
@@ -63,12 +66,13 @@ end
 ---@return CrateFeature[]
 function M.parse_crate_features(text)
     local feats = {}
-    for fds, qs, fs, f, fe, qe, fde in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()[,]?]]) do
+    for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
         table.insert(feats, {
             name = f,
             col = Range.new(fs - 1, fe - 1),
             decl_col = Range.new(fds - 1, fde - 1),
             quotes = { s = qs, e = qe ~= "" and qe or nil },
+            comma = c == ",",
         })
     end
 
@@ -251,7 +255,7 @@ function M.parse_crates(buf)
                 crate.req_line = i - 1
                 crate.feat_line = i - 1
                 crate.def_line = i - 1
-                table.insert(crates, crate)
+                table.insert(crates, Crate.new(crate))
             end
         end
     end
@@ -259,7 +263,7 @@ function M.parse_crates(buf)
     -- push pending crate
     if dep_table_crate then
         dep_table_crate.lines = Range.new(dep_table_start, #lines - 1)
-        table.insert(crates, dep_table_crate)
+        table.insert(crates, Crate.new(dep_table_crate))
     end
 
 
