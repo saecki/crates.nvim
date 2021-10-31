@@ -1,6 +1,7 @@
 ---@class Popup
----@field buf integer|nil
 ---@field win integer|nil
+---@field buf integer|nil
+---@field namespace_id integer|nil
 ---@field feat_ctx FeatureContext|nil
 
 ---@class FeatureContext
@@ -178,6 +179,7 @@ function M.hide()
         vim.api.nvim_buf_delete(M.buf, {})
     end
     M.buf = nil
+    M.namespace_id = nil
 end
 
 ---@param width integer
@@ -204,15 +206,15 @@ end
 ---@param configure fun()
 local function open_win(width, height, title, text, opts, configure)
     M.buf = vim.api.nvim_create_buf(false, true)
-    local namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
+    M.namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup")
 
     -- add text and highlights
     vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title, "" })
-    vim.api.nvim_buf_add_highlight(M.buf, namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
+    vim.api.nvim_buf_add_highlight(M.buf, M.namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
 
     for i,v in ipairs(text) do
         vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(M.buf, namespace_id, v.hi, top_offset + i - 1, 0, -1)
+        vim.api.nvim_buf_add_highlight(M.buf, M.namespace_id, v.hi, top_offset + i - 1, 0, -1)
     end
 
     vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
@@ -428,7 +430,7 @@ function M._open_features(crate, version, opts)
     open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
             ":lua require('crates.popup').toggle_feature(%d, nil, %s - %d)<cr>",
-            util.current_buf(),
+            M.feat_ctx.buf,
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
         )
@@ -493,7 +495,7 @@ function M._open_feature_details(crate, version, feature, opts)
     open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
             ":lua require('crates.popup').toggle_feature(%d, '%s', %s - %d)<cr>",
-            util.current_buf(),
+            M.feat_ctx.buf,
             feature.name,
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
@@ -527,20 +529,21 @@ function M.toggle_feature(buf, feature_name, index)
 
     local crate = M.feat_ctx.crate
     local version = M.feat_ctx.version
+    local features = version.features
     if not crate or not version then return end
 
     local feature = nil
     local selected_feature = nil
     if feature_name then
-        feature = version.features:get_feat(feature_name)
+        feature = features:get_feat(feature_name)
         if feature then
             local m = feature.members[index]
             if m then
-                selected_feature = version.features:get_feat(m)
+                selected_feature = features:get_feat(m)
             end
         end
     else
-        selected_feature = version.features[index]
+        selected_feature = features[index]
     end
     if not selected_feature then return end
 
@@ -575,19 +578,34 @@ function M.toggle_feature(buf, feature_name, index)
     if c then
         c.feats = toml.parse_crate_features(c.feat_text)
         M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, c))
+        crate = M.feat_ctx.crate
     end
 
     -- update popup
-    M.hide()
-    local opts = {
-        focus = true,
-        line = index + top_offset,
-    }
+    local features_text = {}
     if feature then
-        M.open_feature_details(M.feat_ctx.crate, version, feature, opts)
+        for _,m in ipairs(feature.members) do
+            local f = features:get_feat(m) or {
+                name = m,
+                members = {},
+            }
+
+            local hi_text = feature_text(crate, features, f)
+            table.insert(features_text, hi_text)
+        end
     else
-        M.open_features(M.feat_ctx.crate, version, opts)
+        for _,f in ipairs(features) do
+            local hi_text = feature_text(crate, features, f)
+            table.insert(features_text, hi_text)
+        end
     end
+
+    vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
+    for i,v in ipairs(features_text) do
+        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
+        vim.api.nvim_buf_add_highlight(M.buf, M.namespace_id, v.hi, top_offset + i - 1, 0, -1)
+    end
+    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
 end
 
 ---@param feature_name string|nil
