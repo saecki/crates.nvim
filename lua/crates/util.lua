@@ -353,7 +353,7 @@ function M.disable_def_features(buf, crate, feature)
         )
     else
         if crate.syntax == "table" then
-            local line = math.max(crate.req_line or 0, crate.def_line or 0) + 1
+            local line = math.max((crate.req_line or 0) + 1, crate.feat_line or 0)
             vim.api.nvim_buf_set_lines(
                 buf,
                 line,
