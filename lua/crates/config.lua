@@ -66,7 +66,8 @@
 ---@field copy_version string[]
 ---@field toggle_feature string[]
 ---@field goto_feature string[]
----@field goback_feature string[]
+---@field jump_forward_feature string[]
+---@field jump_back_feature string[]
 
 ---@class CmpConfig
 ---@field text CmpTextConfig
@@ -143,8 +144,9 @@ function M.default()
                 copy_version = { "yy" },
                 -- features
                 toggle_feature = { "<cr>" },
-                goto_feature = { "K", "<c-i>" },
-                goback_feature = { "<c-o>" },
+                goto_feature = { "K" },
+                jump_forward_feature = { "<c-i>" },
+                jump_back_feature = { "<c-o>" },
             },
         },
         cmp = {

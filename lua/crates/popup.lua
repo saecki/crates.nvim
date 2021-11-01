@@ -10,6 +10,7 @@
 ---@field crate Crate
 ---@field version Version
 ---@field history HistoryEntry[]
+---@field history_index integer
 
 ---@class HistoryEntry
 ---@field feature Feature|nil
@@ -406,6 +407,49 @@ local function feature_text(crate, features, feature)
     return { text = text, hi = hi }
 end
 
+---@param width integer
+---@param height integer
+---@param title string
+---@param text HighlightText[]
+---@param opts WinOpts
+local function open_feat_win(width, height, title, text, opts)
+    open_win(width, height, title, text, opts, function()
+        local toggle_cmd = string.format(
+            ":lua require('crates.popup').toggle_feature(%s - %d)<cr>",
+            "vim.api.nvim_win_get_cursor(0)[1]",
+            top_offset
+        )
+        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
+        end
+
+        local goto_cmd = string.format(
+            ":lua require('crates.popup').goto_feature(%s - %d)<cr>",
+            "vim.api.nvim_win_get_cursor(0)[1]",
+            top_offset
+        )
+        for _,k in ipairs(core.cfg.popup.keys.goto_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
+        end
+
+        local jump_forward_cmd = string.format(
+            ":lua require('crates.popup').jump_forward_feature(%s)<cr>",
+            "vim.api.nvim_win_get_cursor(0)[1]"
+        )
+        for _,k in ipairs(core.cfg.popup.keys.jump_forward_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
+        end
+
+        local jump_back_cmd = string.format(
+            ":lua require('crates.popup').jump_back_feature(%s)<cr>",
+            "vim.api.nvim_win_get_cursor(0)[1]"
+        )
+        for _,k in ipairs(core.cfg.popup.keys.jump_back_feature) do
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
+        end
+    end)
+end
+
 ---@param crate Crate
 ---@param version Version
 ---@param opts WinOpts
@@ -415,7 +459,10 @@ function M.open_features(crate, version, opts)
         buf = util.current_buf(),
         crate = crate,
         version = version,
-        history = {},
+        history = {
+            { feature = nil, line = opts and opts.line or 3 },
+        },
+        history_index = 1,
     }
     M._open_features(crate, version, opts)
 end
@@ -437,30 +484,7 @@ function M._open_features(crate, version, opts)
         width = math.max(hi_text.text:len(), width)
     end
 
-    open_win(width, height, title, features_text, opts, function()
-        local toggle_cmd = string.format(
-            ":lua require('crates.popup').toggle_feature(nil, %s - %d)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
-        end
-
-        local goto_cmd = string.format(
-            ":lua require('crates.popup').goto_feature(nil, %s - %d)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.goto_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
-        end
-
-        local goback_cmd = ":lua require('crates.popup').goback_feature()<cr>"
-        for _,k in ipairs(core.cfg.popup.keys.goback_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goback_cmd, { noremap = true, silent = true })
-        end
-    end)
+    open_feat_win(width, height, title, features_text, opts)
 end
 
 ---@param crate Crate
@@ -473,7 +497,11 @@ function M.open_feature_details(crate, version, feature, opts)
         buf = util.current_buf(),
         crate = crate,
         version = version,
-        history = { { feature = nil, line = 3 } },
+        history = {
+            { feature = nil, line = 3 },
+            { feature = feature, line = opts and opts.line or 3 },
+        },
+        history_index = 2,
     }
     M._open_feature_details(crate, version, feature, opts)
 end
@@ -502,54 +530,25 @@ function M._open_feature_details(crate, version, feature, opts)
         width = math.max(hi_text.text:len(), width)
     end
 
-    open_win(width, height, title, features_text, opts, function()
-        local toggle_cmd = string.format(
-            ":lua require('crates.popup').toggle_feature('%s', %s - %d)<cr>",
-            feature.name,
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
-        end
-
-        local goto_cmd = string.format(
-            ":lua require('crates.popup').goto_feature('%s', %s - %d)<cr>",
-            feature.name,
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.goto_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
-        end
-
-        local goback_cmd = ":lua require('crates.popup').goback_feature()<cr>"
-        for _,k in ipairs(core.cfg.popup.keys.goback_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goback_cmd, { noremap = true, silent = true })
-        end
-    end)
+    open_feat_win(width, height, title, features_text, opts)
 end
 
----@param feature_name string|nil
 ---@param index integer
-function M.toggle_feature(feature_name, index)
+function M.toggle_feature(index)
     if not M.feat_ctx then return end
 
     local buf = M.feat_ctx.buf
     local crate = M.feat_ctx.crate
     local version = M.feat_ctx.version
     local features = version.features
-    if not crate or not version then return end
+    local hist_index = M.feat_ctx.history_index
+    local feature = M.feat_ctx.history[hist_index].feature
 
-    local feature = nil
     local selected_feature = nil
-    if feature_name then
-        feature = features:get_feat(feature_name)
-        if feature then
-            local m = feature.members[index]
-            if m then
-                selected_feature = features:get_feat(m)
-            end
+    if feature then
+        local m = feature.members[index]
+        if m then
+            selected_feature = features:get_feat(m)
         end
     else
         selected_feature = features[index]
@@ -637,24 +636,20 @@ function M.toggle_feature(feature_name, index)
     vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
 end
 
----@param feature_name string|nil
 ---@param index integer
-function M.goto_feature(feature_name, index)
+function M.goto_feature(index)
     if not M.feat_ctx then return end
 
     local crate = M.feat_ctx.crate
     local version = M.feat_ctx.version
-    if not crate or not version then return end
+    local hist_index = M.feat_ctx.history_index
+    local feature = M.feat_ctx.history[hist_index].feature
 
-    local feature = nil
     local selected_feature = nil
-    if feature_name then
-        feature = version.features:get_feat(feature_name)
-        if feature then
-            local m = feature.members[index]
-            if m then
-                selected_feature = version.features:get_feat(m)
-            end
+    if feature then
+        local m = feature.members[index]
+        if m then
+            selected_feature = version.features:get_feat(m)
         end
     else
         selected_feature = version.features[index]
@@ -664,32 +659,50 @@ function M.goto_feature(feature_name, index)
     M.hide()
     M._open_feature_details(crate, version, selected_feature, { focus = true })
 
-    table.insert(M.feat_ctx.history, {
-        feature = feature,
-        line = index + top_offset,
-    })
+    -- update current entry
+    local current = M.feat_ctx.history[hist_index]
+    current.line = index + top_offset
+
+    M.feat_ctx.history_index = hist_index + 1
+    hist_index = M.feat_ctx.history_index
+    for i=hist_index, #M.feat_ctx.history, 1 do
+        M.feat_ctx.history[i] = nil
+    end
+
+    M.feat_ctx.history[hist_index] = {
+        feature = selected_feature,
+        line = 3,
+    }
 end
 
-function M.goback_feature()
+---@param line integer
+function M.jump_back_feature(line)
     if not M.feat_ctx then return end
 
     local crate = M.feat_ctx.crate
     local version = M.feat_ctx.version
+    local hist_index = M.feat_ctx.history_index
 
-    local hist_count = #M.feat_ctx.history
-    if hist_count == 0 then
+    if hist_index == 1 then
         M.hide()
         return
     end
 
-    if hist_count == 1 then
+    -- update current entry
+    local current = M.feat_ctx.history[hist_index]
+    current.line = line
+
+    M.feat_ctx.history_index = hist_index - 1
+    hist_index = M.feat_ctx.history_index
+
+    if hist_index == 1 then
         M.hide()
         M._open_features(crate, version, {
             focus = true,
             line = M.feat_ctx.history[1].line,
         })
     else
-        local entry = M.feat_ctx.history[hist_count]
+        local entry = M.feat_ctx.history[hist_index]
         if not entry then return end
 
         M.hide()
@@ -698,8 +711,35 @@ function M.goback_feature()
             line = entry.line,
         })
     end
+end
 
-    M.feat_ctx.history[#M.feat_ctx.history] = nil
+---@param line integer
+function M.jump_forward_feature(line)
+    if not M.feat_ctx then return end
+
+    local crate = M.feat_ctx.crate
+    local version = M.feat_ctx.version
+    local hist_index = M.feat_ctx.history_index
+
+    if hist_index == #M.feat_ctx.history then
+        return
+    end
+
+    -- update current entry
+    local current = M.feat_ctx.history[hist_index]
+    current.line = line
+
+    M.feat_ctx.history_index = hist_index + 1
+    hist_index = M.feat_ctx.history_index
+
+    local entry = M.feat_ctx.history[hist_index]
+    if not entry then return end
+
+    M.hide()
+    M._open_feature_details(crate, version, entry.feature, {
+        focus = true,
+        line = entry.line,
+    })
 end
 
 return M

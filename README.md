@@ -160,8 +160,9 @@ require('crates').setup {
             copy_version = { "yy" },
             -- features
             toggle_feature = { "<cr>" },
-            goto_feature = { "K", "<c-i>" },
-            goback_feature = { "<c-o>" },
+            goto_feature = { "K" },
+            jump_forward_feature = { "<c-i>" },
+            jump_back_feature = { "<c-o>" },
         },
     },
     cmp = {
@@ -293,7 +294,6 @@ end
 ```
 
 ## TODO
-- make `<c-i>` work as expected (jump forward not goto)
 - better cmp documentation for features
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
