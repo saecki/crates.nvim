@@ -318,22 +318,117 @@ end
 
 ---@param buf integer
 ---@param crate Crate
+---@return integer[]
 function M.enable_def_features(buf, crate)
-    -- TODO
+    vim.api.nvim_buf_set_text(
+        buf,
+        crate.def_line,
+        crate.def_col.s,
+        crate.def_line,
+        crate.def_col.e,
+        { "true" }
+    )
+    return { crate.def_line }
 end
 
 ---@param buf integer
 ---@param crate Crate
 ---@param feature CrateFeature|nil
+---@return integer[]
 function M.disable_def_features(buf, crate, feature)
-    -- TODO
+    local feat_line = nil
+    if feature then
+        feat_line = M.disable_feature(buf, crate, feature)
+    end
+
+    local def_line = nil
+    local line_inserted = false
+    if crate.def_text then
+        vim.api.nvim_buf_set_text(
+            buf,
+            crate.def_line,
+            crate.def_col.s,
+            crate.def_line,
+            crate.def_col.e,
+            { "false" }
+        )
+        def_line = crate.def_line
+    else
+        if crate.syntax == "table" then
+            def_line = math.max(crate.req_line or 0, crate.def_line or 0) + 1
+            vim.api.nvim_buf_set_lines(
+                buf,
+                def_line,
+                def_line,
+                false,
+                { "default_features = false" }
+            )
+            line_inserted = true
+        elseif crate.syntax == "plain" then
+            local t = ", default_features = false }"
+            local col = crate.req_col.e
+            if crate.req_quote.e then
+                col = col + 1
+            else
+                t = crate.req_quote.s .. t
+            end
+            def_line = crate.req_line
+            vim.api.nvim_buf_set_text(
+                buf,
+                def_line,
+                col,
+                def_line,
+                col,
+                { t }
+            )
+
+            vim.api.nvim_buf_set_text(
+                buf,
+                def_line,
+                crate.req_col.s - 1,
+                def_line,
+                crate.req_col.s - 1,
+                { "{ version = " }
+            )
+        elseif crate.syntax == "inline_table" then
+            def_line = crate.lines.s
+            local req_col_end = 0
+            if crate.req_text then
+                req_col_end = crate.req_col.e
+                if crate.req_quote.e then
+                    req_col_end = req_col_end + 1
+                end
+            end
+            local def_col_end = 0
+            if crate.def_text then
+                def_col_end = crate.def_col.e
+            end
+            local col = math.max(req_col_end, def_col_end)
+            vim.api.nvim_buf_set_text(
+                buf,
+                def_line,
+                col,
+                def_line,
+                col,
+                { ", default_features = false" }
+            )
+        end
+    end
+
+    if feat_line and line_inserted and def_line <= feat_line then
+        return { def_line, feat_line + 1 }
+    elseif def_line == feat_line then
+        return { def_line }
+    else
+        return { def_line, feat_line }
+    end
 end
 
 ---@param buf integer
 ---@param crate Crate
 ---@param feature Feature
----@return integer
-function M.add_feature(buf, crate, feature)
+---@return integer[]
+function M.enable_feature(buf, crate, feature)
     local t = '"' .. feature.name .. '"'
     if not crate.feat_text then
         if crate.syntax == "table" then
@@ -345,14 +440,14 @@ function M.add_feature(buf, crate, feature)
                 false,
                 { "features = [" .. t .."]" }
             )
-            return line
+            return { line }
         elseif crate.syntax == "plain" then
             t = ", features = [" .. t .. "] }"
             local col = crate.req_col.e
             if crate.req_quote.e then
                 col = col + 1
             else
-                t = crate.req_col.s .. t
+                t = crate.req_quote.s .. t
             end
             vim.api.nvim_buf_set_text(
                 buf,
@@ -371,7 +466,7 @@ function M.add_feature(buf, crate, feature)
                 crate.req_col.s - 1,
                 { "{ version = " }
             )
-            return crate.req_line
+            return { crate.req_line }
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
             local req_col_end = 0
@@ -394,7 +489,7 @@ function M.add_feature(buf, crate, feature)
                 col,
                 { ", features = [" .. t .. "]" }
             )
-            return line
+            return { line }
         end
     else
         local last_feat = crate.feats[#crate.feats]
@@ -410,14 +505,15 @@ function M.add_feature(buf, crate, feature)
             crate.feat_col.e,
             { t }
         )
-        return crate.feat_line
+        return { crate.feat_line }
     end
 end
 
 ---@param buf integer
 ---@param crate Crate
 ---@param feature CrateFeature
-function M.remove_feature(buf, crate, feature)
+---@return integer[]
+function M.disable_feature(buf, crate, feature)
     local _, index = crate:get_feat(feature.name)
 
     local col_start = feature.decl_col.s
@@ -441,6 +537,7 @@ function M.remove_feature(buf, crate, feature)
         crate.feat_col.s + col_end,
         { "" }
     )
+    return { crate.feat_line }
 end
 
 ---@param map table<string, any>

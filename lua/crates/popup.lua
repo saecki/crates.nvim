@@ -342,10 +342,8 @@ function M.select_version(buf, name, index, smart)
     local versions = core.vers_cache[name]
     if not versions then return end
 
-    if index <= 0 or index > #versions then
-        return
-    end
     local version = versions[index]
+    if not version then return end
 
     if smart == nil then
         smart = core.cfg.smart_insert
@@ -441,8 +439,7 @@ function M._open_features(crate, version, opts)
 
     open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
-            ":lua require('crates.popup').toggle_feature(%d, nil, %s - %d)<cr>",
-            M.feat_ctx.buf,
+            ":lua require('crates.popup').toggle_feature(nil, %s - %d)<cr>",
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
         )
@@ -507,8 +504,7 @@ function M._open_feature_details(crate, version, feature, opts)
 
     open_win(width, height, title, features_text, opts, function()
         local toggle_cmd = string.format(
-            ":lua require('crates.popup').toggle_feature(%d, '%s', %s - %d)<cr>",
-            M.feat_ctx.buf,
+            ":lua require('crates.popup').toggle_feature('%s', %s - %d)<cr>",
             feature.name,
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
@@ -534,12 +530,12 @@ function M._open_feature_details(crate, version, feature, opts)
     end)
 end
 
----@param buf integer
 ---@param feature_name string|nil
 ---@param index integer
-function M.toggle_feature(buf, feature_name, index)
+function M.toggle_feature(feature_name, index)
     if not M.feat_ctx then return end
 
+    local buf = M.feat_ctx.buf
     local crate = M.feat_ctx.crate
     local version = M.feat_ctx.version
     local features = version.features
@@ -560,41 +556,53 @@ function M.toggle_feature(buf, feature_name, index)
     end
     if not selected_feature then return end
 
-    local l
+    local line_nrs
     local crate_feature = crate:get_feat(selected_feature.name)
     if selected_feature.name == "default" then
-        if crate.def then
-            l = util.enable_def_features(crate, crate_feature)
+        if crate_feature or crate.def ~= false then
+            line_nrs = util.disable_def_features(buf, crate, crate_feature)
         else
-            l = util.disable_def_features(crate)
+            line_nrs = util.enable_def_features(buf, crate)
         end
     else
         if crate_feature then
-            util.remove_feature(buf, crate, crate_feature)
-            l = crate.feat_line
+            line_nrs = util.disable_feature(buf, crate, crate_feature)
         else
-            l = util.add_feature(buf, crate, selected_feature)
+            line_nrs = util.enable_feature(buf, crate, selected_feature)
         end
     end
 
     -- update crate
-    local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
-    line = toml.trim_comments(line)
-    local c = nil
-    if crate.syntax == "table" then
-        c = toml.parse_crate_table_feat(line)
-    elseif crate.syntax == "plain" then
-        c = toml.parse_crate(line)
-    elseif crate.syntax == "inline_table" then
-        c = toml.parse_crate(line)
+    local c = {}
+    for _,l in ipairs(line_nrs) do
+        local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+        line = toml.trim_comments(line)
+        if crate.syntax == "table" then
+            local cf = toml.parse_crate_table_feat(line)
+            if cf then
+                cf.feat_line = l
+                table.insert(c, cf)
+            end
+            local cd = toml.parse_crate_table_def(line)
+            if cd then
+                cd.def_line = l
+                table.insert(c, cd)
+            end
+        elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
+            local cf = toml.parse_crate(line)
+            if cf and cf.feat_text then
+                cf.feat_line = l
+            end
+            if cf and cf.def_text then
+                cf.def_line = l
+            end
+            table.insert(c, cf)
+        end
     end
-    if c then
-        c.feats = toml.parse_crate_features(c.feat_text)
-        M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, c))
-        crate = M.feat_ctx.crate
-    end
+    M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, table.unpack(c)))
+    crate = M.feat_ctx.crate
 
-    -- update popup
+    -- update buffer
     local features_text = {}
     if feature then
         for _,m in ipairs(feature.members) do

@@ -16,6 +16,12 @@ function Range.new(s, e)
     return setmetatable({ s = s, e = e }, { __index = Range })
 end
 
+---@param p integer
+---@return Range
+function Range.pos(p)
+    return Range.new(p, p + 1)
+end
+
 ---@param self Range
 ---@param pos integer
 ---@return boolean

@@ -44,6 +44,24 @@ local Crate = M.Crate
 ---@param obj any
 ---@return Crate
 function Crate.new(obj)
+    if obj.req_text then
+        obj.reqs = semver.parse_requirements(obj.req_text)
+
+        obj.req_has_suffix = false
+        for _,r in ipairs(obj.reqs) do
+            if r.vers.suffix then
+                obj.req_has_suffix = true
+                break
+            end
+        end
+    end
+    if obj.feat_text then
+        obj.feats = M.parse_crate_features(obj.feat_text)
+    end
+    if obj.def_text then
+        obj.def = obj.def_text ~= "false"
+    end
+
     return setmetatable(obj, { __index = Crate })
 end
 
@@ -268,27 +286,6 @@ function M.parse_crates(buf)
     if dep_table_crate then
         dep_table_crate.lines = Range.new(dep_table_start, #lines - 1)
         table.insert(crates, Crate.new(dep_table_crate))
-    end
-
-
-    for _,c in ipairs(crates) do
-        if c.req_text then
-            c.reqs = semver.parse_requirements(c.req_text)
-
-            c.req_has_suffix = false
-            for _,r in ipairs(c.reqs) do
-                if r.vers.suffix then
-                    c.req_has_suffix = true
-                    break
-                end
-            end
-        end
-        if c.feat_text then
-            c.feats = M.parse_crate_features(c.feat_text)
-        end
-        if c.def_text then
-            c.def = c.def_text ~= "false"
-        end
     end
 
     return crates
