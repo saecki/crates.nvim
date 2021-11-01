@@ -160,7 +160,7 @@ require('crates').setup {
             copy_version = { "yy" },
             -- features
             toggle_feature = { "<cr>" },
-            goto_feature = { "K" },
+            goto_feature = { "gd", "K" },
             jump_forward_feature = { "<c-i>" },
             jump_back_feature = { "<c-o>" },
         },
