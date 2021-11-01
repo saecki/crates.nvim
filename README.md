@@ -18,7 +18,7 @@ Feel free to open issues.
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
-- Automatically load when opening a Cargo.toml file (`autoload`)
+- Automatically load when opening a `Cargo.toml` file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show compatible version
     - Indicate if compatible version is a pre-release
@@ -28,7 +28,8 @@ Feel free to open issues.
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
 - Open floating window with all features
-    - Navigate through the feature history
+    - Navigate through the feature hierarchy
+    - Enable/disable features
     - Indicate if a feature is enabled directly
     - Indicate if a feature is enabled transitively
 
@@ -99,7 +100,7 @@ require('crates').setup {
     smart_insert = true, -- try to be smart about inserting versions
     avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
     autoload = true, -- automatically run update when opening a Cargo.toml
-    autoupdate = true, -- atomatically update when editing text
+    autoupdate = true, -- automatically update when editing text
     loading_indicator = true, -- show a loading indicator while fetching crate versions
     date_format = "%Y-%m-%d", -- the date format passed to os.date
     text = {
@@ -158,6 +159,7 @@ require('crates').setup {
             select_dumb = { "s" },
             copy_version = { "yy" },
             -- features
+            toggle_feature = { "<cr>" },
             goto_feature = { "K", "<c-i>" },
             goback_feature = { "<c-o>" },
         },
@@ -194,7 +196,7 @@ require('crates').setup {
             yanked     = " %s yanked ",
             -- features
             feature    = "   %s ",
-            enabled    = " + %s ",
+            enabled    = " * %s ",
             transitive = " - %s ",
         },
     },
