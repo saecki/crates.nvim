@@ -84,6 +84,7 @@ function M.toggle()
     end
 end
 
+
 --- upgrade the crate on the current line
 ---@param smart boolean | nil
 function M.upgrade_crate(smart)

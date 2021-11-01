@@ -1,11 +1,10 @@
 ---@class Range
 ---@field s integer -- 0-indexed inclusive
 ---@field e integer -- 0-indexed exclusive
----@field contains fun(self:Range, pos:integer): boolean
----@field moved fun(self:Range, s:integer, e:integer): Range
 
 local M = {}
 
+---@type Range
 M.Range = {}
 local Range = M.Range
 
@@ -30,11 +29,27 @@ function Range:contains(pos)
 end
 
 -- Create a new range with moved start and end bounds
+---@param self Range
 ---@param s integer
 ---@param e integer
 ---@return Range
 function Range:moved(s, e)
     return Range.new(self.s + s, self.e + e)
+end
+
+---@param self Range
+---@return fun(): integer
+function Range:iter()
+    local i = self.s
+    return function()
+        if i >= self.e then
+            return nil
+        end
+
+        local val = i
+        i = i + 1
+        return val
+    end
 end
 
 return M

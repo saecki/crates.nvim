@@ -6,7 +6,6 @@
 ---@field created DateTime
 
 ---@class Features
----@field get_feat fun(self: Features, name:string): Feature|nil, integer
 
 ---@class Feature
 ---@field name string
@@ -14,9 +13,12 @@
 
 local M = {}
 
+---@type Features
 M.Features = {}
 local Features = M.Features
 
+---@param obj table
+---@return Features
 function Features.new(obj)
     return setmetatable(obj, { __index = Features })
 end

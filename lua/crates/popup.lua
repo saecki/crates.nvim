@@ -556,28 +556,33 @@ function M.toggle_feature(feature_name, index)
     end
     if not selected_feature then return end
 
-    local line_nrs
+    local line_range
     local crate_feature = crate:get_feat(selected_feature.name)
     if selected_feature.name == "default" then
         if crate_feature or crate.def ~= false then
-            line_nrs = util.disable_def_features(buf, crate, crate_feature)
+            line_range = util.disable_def_features(buf, crate, crate_feature)
         else
-            line_nrs = util.enable_def_features(buf, crate)
+            line_range = util.enable_def_features(buf, crate)
         end
     else
         if crate_feature then
-            line_nrs = util.disable_feature(buf, crate, crate_feature)
+            line_range = util.disable_feature(buf, crate, crate_feature)
         else
-            line_nrs = util.enable_feature(buf, crate, selected_feature)
+            line_range = util.enable_feature(buf, crate, selected_feature)
         end
     end
 
     -- update crate
     local c = {}
-    for _,l in ipairs(line_nrs) do
+    for l in line_range:iter() do
         local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
         line = toml.trim_comments(line)
         if crate.syntax == "table" then
+            local cr = toml.parse_crate_table_req(line)
+            if cr then
+                cr.req_line = l
+                table.insert(c, cr)
+            end
             local cf = toml.parse_crate_table_feat(line)
             if cf then
                 cf.feat_line = l
@@ -590,6 +595,9 @@ function M.toggle_feature(feature_name, index)
             end
         elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
             local cf = toml.parse_crate(line)
+            if cf and cf.req_text then
+                cf.req_line = l
+            end
             if cf and cf.feat_text then
                 cf.feat_line = l
             end

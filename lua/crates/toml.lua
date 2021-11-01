@@ -19,8 +19,6 @@
 ---@field def_line integer|nil -- 0-indexed
 ---@field def_col Range|nil
 ---@field def_decl_col Range|nil
----@field new fun(obj:any): Crate
----@field get_feat fun(self:Crate, name:string): CrateFeature, integer
 
 ---@class CrateFeature
 ---@field name string
@@ -38,10 +36,11 @@ local M = {}
 local semver = require('crates.semver')
 local Range = require('crates.types').Range
 
+---@type Crate
 M.Crate = {}
 local Crate = M.Crate
 
----@param obj any
+---@param obj table
 ---@return Crate
 function Crate.new(obj)
     if obj.req_text then

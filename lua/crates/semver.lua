@@ -3,7 +3,6 @@
 ---@field minor integer
 ---@field patch integer
 ---@field suffix string
----@field display fun(self:SemVer): string
 
 ---@class Requirement
 ---@field cond string
@@ -15,6 +14,7 @@ local M = {}
 
 local Range = require('crates.types').Range
 
+---@type SemVer
 M.SemVer = {}
 local SemVer = M.SemVer
 

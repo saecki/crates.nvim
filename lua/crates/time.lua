@@ -1,14 +1,16 @@
 ---@class DateTime
 ---@field epoch integer
----@field display function(self:DateTime): string
 
 local M = {}
 
 local core = require('crates.core')
 
+---@type DateTime
 M.DateTime = {}
 local DateTime = M.DateTime
 
+---@param epoch integer
+---@return DateTime
 function DateTime.new(epoch)
     return setmetatable({ epoch = epoch }, { __index = DateTime })
 end
@@ -43,6 +45,8 @@ function DateTime.parse_rfc_3339(str)
     return nil
 end
 
+---@param self DateTime
+---@return string
 function DateTime:display()
     return os.date(core.cfg.date_format, self.epoch)
 end
