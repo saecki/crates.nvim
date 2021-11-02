@@ -2,6 +2,10 @@
 ---@field crate Crate
 ---@field versions Version[]
 
+---@class FeatureInfo
+---@field enabled boolean
+---@field transitive boolean
+
 local M = {}
 
 local core = require('crates.core')
@@ -66,61 +70,63 @@ function M.get_newest(versions, avoid_pre, reqs)
     return newest, newest_pre, newest_yanked
 end
 
----@param features Features
+---@param crate Crate
 ---@param feature Feature
----@param name string
----@param depth integer
 ---@return boolean
-local function is_feat_enabled_transitive(features, feature, name, depth)
-    if depth > 100 then
-        return false
+function M.is_feat_enabled(crate, feature)
+    local enabled = crate:get_feat(feature.name) ~= nil
+    if feature.name == "default" then
+        return enabled or crate.def ~= false
+    else
+        return enabled
     end
-
-    if vim.tbl_contains(feature.members, name) then
-        return true
-    end
-
-    for _,f in ipairs(features) do
-        if vim.tbl_contains(feature.members, f.name) then
-            if is_feat_enabled_transitive(features, f, name, depth + 1) then
-                return true
-            end
-        end
-    end
-
-    return false
 end
 
 ---@param crate Crate
 ---@param features Features
----@param name string
----@return boolean, boolean
-function M.is_feat_enabled(crate, features, name)
-    if crate.feats and crate:get_feat(name) then
-        return true, false
-    elseif name == "default" and crate.def ~= false then
-        return true, false
-    end
+---@return table<string, FeatureInfo>
+function M.features_info(crate, features)
+    local info = {}
 
-    if crate.feats then
-        for _,cf in ipairs(crate.feats) do
-            local f = features:get_feat(cf.name)
-            if f then
-                if is_feat_enabled_transitive(features, f, name, 1) then
-                    return false, true
+    ---@param f Feature
+    local function update_transitive(f)
+        for _,m in ipairs(f.members) do
+            local tf = features:get_feat(m)
+            if tf then
+                local i = info[m]
+                if i then
+                    if not i.transitive then
+                        i.transitive = true
+                    end
+                else
+                    info[m] = {
+                        enabled = false,
+                        transitive = true,
+                    }
+                    update_transitive(tf)
                 end
             end
         end
     end
 
-    local default_feature = features:get_feat("default")
-    if crate.def and default_feature then
-        if is_feat_enabled_transitive(features, default_feature, name, 1) then
-            return false, true
+    for _,f in ipairs(features) do
+        local enabled = M.is_feat_enabled(crate, f)
+        local i = info[f.name]
+        if i then
+            i.enabled = enabled
+        else
+            info[f.name] = {
+                enabled = enabled,
+                transitive = false,
+            }
+        end
+
+        if enabled then
+            update_transitive(f)
         end
     end
 
-    return false, false
+    return info
 end
 
 ---@param buf integer

@@ -387,17 +387,16 @@ function M.copy_version(name, index)
 end
 
 
----@param crate Crate
----@param features Features
+---@param features_info table<string, FeatureInfo>
 ---@param feature Feature
 ---@return HighlightText
-local function feature_text(crate, features, feature)
+local function feature_text(features_info, feature)
     local text, hi
-    local enabled, transitive = util.is_feat_enabled(crate, features, feature.name)
-    if enabled then
+    local info = features_info[feature.name]
+    if info.enabled then
         text = string.format(core.cfg.popup.text.enabled, feature.name)
         hi = core.cfg.popup.highlight.enabled
-    elseif transitive then
+    elseif info.transitive then
         text = string.format(core.cfg.popup.text.transitive, feature.name)
         hi = core.cfg.popup.highlight.transitive
     else
@@ -478,8 +477,9 @@ function M._open_features(crate, version, opts)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
+    local features_info = util.features_info(crate, features)
     for _,f in ipairs(features) do
-        local hi_text = feature_text(crate, features, f)
+        local hi_text = feature_text(features_info, f)
         table.insert(features_text, hi_text)
         width = math.max(hi_text.text:len(), width)
     end
@@ -519,13 +519,14 @@ function M._open_feature_details(crate, version, feature, opts)
     local width = math.max(core.cfg.popup.min_width, title:len())
     local features_text = {}
 
+    local features_info = util.features_info(crate, features)
     for _,m in ipairs(members) do
         local f = features:get_feat(m) or {
             name = m,
             members = {},
         }
 
-        local hi_text = feature_text(crate, features, f)
+        local hi_text = feature_text(features_info, f)
         table.insert(features_text, hi_text)
         width = math.max(hi_text.text:len(), width)
     end
@@ -611,6 +612,7 @@ function M.toggle_feature(index)
 
     -- update buffer
     local features_text = {}
+    local features_info = util.features_info(crate, features)
     if feature then
         for _,m in ipairs(feature.members) do
             local f = features:get_feat(m) or {
@@ -618,12 +620,12 @@ function M.toggle_feature(index)
                 members = {},
             }
 
-            local hi_text = feature_text(crate, features, f)
+            local hi_text = feature_text(features_info, f)
             table.insert(features_text, hi_text)
         end
     else
         for _,f in ipairs(features) do
-            local hi_text = feature_text(crate, features, f)
+            local hi_text = feature_text(features_info, f)
             table.insert(features_text, hi_text)
         end
     end
