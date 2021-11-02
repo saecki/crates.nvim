@@ -13,6 +13,15 @@
 
 local M = {}
 
+local job = require('plenary.job')
+local semver = require('crates.semver')
+local DateTime = require('crates.time').DateTime
+
+local endpoint = "https://crates.io/api/v1"
+local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
+
+M.running_jobs = {}
+
 ---@type Features
 M.Features = {}
 local Features = M.Features
@@ -36,19 +45,10 @@ function Features:get_feat(name)
     return nil
 end
 
-local job = require('plenary.job')
-local semver = require('crates.semver')
-local DateTime = require('crates.time').DateTime
-
-local endpoint = "https://crates.io/api/v1"
-local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
-
-local running_jobs = {}
-
 ---@param name string
 ---@param callback function(versions Version[])
 function M.fetch_crate_versions(name, callback)
-    if running_jobs[name] then
+    if M.running_jobs[name] then
         return
     end
 
@@ -136,7 +136,7 @@ function M.fetch_crate_versions(name, callback)
 
         vim.schedule(parse_json)
 
-        running_jobs[name] = nil
+        M.running_jobs[name] = nil
     end
 
     local j = job:new {
@@ -145,7 +145,7 @@ function M.fetch_crate_versions(name, callback)
         on_exit = vim.schedule_wrap(on_exit),
     }
 
-    running_jobs[name] = j
+    M.running_jobs[name] = j
 
     j:start()
 end
