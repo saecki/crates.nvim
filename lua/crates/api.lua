@@ -89,19 +89,37 @@ function M.fetch_crate_versions(name, callback)
                     -- add optional dependency members as features
                     for _,f in ipairs(version.features) do
                         for _,m in ipairs(f.members) do
-                            if not version.features[m] then
-                                version.features[m] = {
+                            if not version.features:get_feat(m) then
+                                table.insert(version.features, {
                                     name = m,
                                     members = {},
-                                }
+                                })
                             end
                         end
                     end
 
                     -- sort features alphabetically
                     table.sort(version.features, function (a, b)
-                        return a.name < b.name
+                        if a.name == "default" then
+                            return true
+                        elseif b.name == "default" then
+                            return false
+                        else
+                            return a.name < b.name
+                        end
                     end)
+
+                    -- add missing default feature
+                    if not version.features[1] or not version.features[1].name == "default" then
+                        local new = { {
+                            name = "default",
+                            members = {},
+                        } }
+                        for _,f in ipairs(version.features) do
+                            table.insert(new, f)
+                        end
+                        version.features = new
+                    end
 
                     table.insert(versions, version)
                 end
