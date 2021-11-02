@@ -396,22 +396,22 @@ function M.disable_def_features(buf, crate, feature)
             )
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            local req_col_end = 0
             if crate.req_text then
-                req_col_end = crate.req_col.e
+                local col = crate.req_col.e
                 if crate.req_quote.e then
-                    req_col_end = req_col_end + 1
+                    col = col + 1
                 end
+                vim.api.nvim_buf_set_text(
+                    buf, line, col, line, col,
+                    { ", default_features = false" }
+                )
+            elseif crate.feat_text then
+                local col = crate.feat_decl_col.s
+                vim.api.nvim_buf_set_text(
+                    buf, line, col, line, col,
+                    { " default_features = false," }
+                )
             end
-            local def_col_end = 0
-            if crate.def_text then
-                def_col_end = crate.def_col.e
-            end
-            local col = math.max(req_col_end, def_col_end)
-            vim.api.nvim_buf_set_text(
-                buf, line, col, line, col,
-                { ", default_features = false" }
-            )
         end
     end
 
