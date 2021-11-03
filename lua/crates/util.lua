@@ -538,27 +538,4 @@ function M.disable_feature(buf, crate, feature)
     return Range.pos(crate.feat_line)
 end
 
----@param map table<string, any>
----@return function(): string, any
-function M.sort_pairs(map)
-    local keys = {}
-    for k in pairs(map) do
-        table.insert(keys, k)
-    end
-    table.sort(keys)
-
-    local i = 1
-
-    local iter = function()
-        local key = keys[i]
-        if key then
-            local value = map[key]
-            i = i + 1
-            return key, value
-        end
-    end
-
-    return iter
-end
-
 return M

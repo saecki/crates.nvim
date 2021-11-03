@@ -75,7 +75,9 @@ function M.parse_version(str)
 
    major = str:match("^([0-9]+)[%.]?$")
    if major then
-      return SemVer.new({ major = major })
+      return SemVer.new({
+         major = tonumber(major),
+      })
    end
 
    return SemVer.new({})
@@ -175,7 +177,7 @@ end
 function M.parse_requirements(str)
    local requirements = {}
    for rs, r in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
-      local s = tonumber(rs)
+      local s = rs
       local requirement = M.parse_requirement(r)
       requirement.vers_col.s = requirement.vers_col.s + s - 1
       requirement.vers_col.e = requirement.vers_col.e + s - 1

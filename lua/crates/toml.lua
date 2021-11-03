@@ -47,8 +47,8 @@ function M.parse_crate_features(text)
    for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
       table.insert(feats, {
          name = f,
-         col = Range.new(tonumber(fs) - 1, tonumber(fe) - 1),
-         decl_col = Range.new(tonumber(fds) - 1, tonumber(fde) - 1),
+         col = Range.new(fs - 1, fe - 1),
+         decl_col = Range.new(fds - 1, fde - 1),
          quotes = { s = qs, e = qe ~= "" and qe or nil },
          comma = c == ",",
       })
@@ -62,7 +62,7 @@ function M.parse_crate_table_req(line)
    if qs and vs and req_text and ve then
       return {
          req_text = req_text,
-         req_col = Range.new(tonumber(vs) - 1, tonumber(ve) - 1),
+         req_col = Range.new(vs - 1, ve - 1),
          req_decl_col = Range.new(0, line:len()),
          req_quote = { s = qs, e = qe ~= "" and qe or nil },
          syntax = "table",
@@ -112,7 +112,7 @@ function M.parse_crate_table_feat(line)
    if fs and feat_text and fe then
       return {
          feat_text = feat_text,
-         feat_col = Range.new(tonumber(fs) - 1, tonumber(fe) - 1),
+         feat_col = Range.new(fs - 1, fe - 1),
          feat_decl_col = Range.new(0, line:len()),
          syntax = "table",
       }
@@ -126,7 +126,7 @@ function M.parse_crate_table_def(line)
    if ds and def_text and de then
       return {
          def_text = def_text,
-         def_col = Range.new(tonumber(ds) - 1, tonumber(de) - 1),
+         def_col = Range.new(ds - 1, de - 1),
          def_decl_col = Range.new(0, line:len()),
          syntax = "table",
       }
@@ -147,9 +147,9 @@ function M.parse_crate(line)
       return {
          name = name,
          req_text = req_text,
-         req_col = Range.new(tonumber(vs) - 1, tonumber(ve) - 1),
+         req_col = Range.new(vs - 1, ve - 1),
          req_decl_col = Range.new(0, line:len()),
-         req_quote = { s = tonumber(qs), e = tonumber(qe) },
+         req_quote = { s = qs, e = qe },
          syntax = "plain",
       }
    end
@@ -162,8 +162,8 @@ function M.parse_crate(line)
    if name and vds and qs and vs and req_text and ve and qe and vde then
       crate.name = name
       crate.req_text = req_text
-      crate.req_col = Range.new(tonumber(vs) - 1, tonumber(ve) - 1)
-      crate.req_decl_col = Range.new(tonumber(vds) - 1, tonumber(vde) - 1)
+      crate.req_col = Range.new(vs - 1, ve - 1)
+      crate.req_decl_col = Range.new(vds - 1, vde - 1)
       crate.req_quote = { s = qs, e = qe ~= "" and qe or nil }
       crate.syntax = "inline_table"
    end
@@ -173,8 +173,8 @@ function M.parse_crate(line)
    if name and fds and fs and feat_text and fe and fde then
       crate.name = name
       crate.feat_text = feat_text
-      crate.feat_col = Range.new(tonumber(fs) - 1, tonumber(fe) - 1)
-      crate.feat_decl_col = Range.new(tonumber(fds) - 1, tonumber(fde) - 1)
+      crate.feat_col = Range.new(fs - 1, fe - 1)
+      crate.feat_decl_col = Range.new(fds - 1, fde - 1)
       crate.syntax = "inline_table"
    end
 
@@ -183,8 +183,8 @@ function M.parse_crate(line)
    if name and dds and ds and def_text and de and dde then
       crate.name = name
       crate.def_text = def_text
-      crate.def_col = Range.new(tonumber(ds) - 1, tonumber(de) - 1)
-      crate.def_decl_col = Range.new(tonumber(dds) - 1, tonumber(dde) - 1)
+      crate.def_col = Range.new(ds - 1, de - 1)
+      crate.def_decl_col = Range.new(dds - 1, dde - 1)
       crate.syntax = "inline_table"
    end
 

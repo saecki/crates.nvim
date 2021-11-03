@@ -1,8 +1,8 @@
 local record M
     record SemVer
-        major: number
-        minor: number
-        patch: number
+        major: integer
+        minor: integer
+        patch: integer
         suffix: string
     end
 
@@ -49,9 +49,9 @@ function M.parse_version(str: string): SemVer
     major, minor, patch, suffix = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
     if major and minor and patch and suffix then
         return SemVer.new {
-            major = tonumber(major),
-            minor = tonumber(minor),
-            patch = tonumber(patch),
+            major = tonumber(major) as integer,
+            minor = tonumber(minor) as integer,
+            patch = tonumber(patch) as integer,
             suffix = suffix,
         }
     end
@@ -59,32 +59,34 @@ function M.parse_version(str: string): SemVer
     major, minor, patch = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
     if major and minor and patch then
         return SemVer.new {
-            major = tonumber(major),
-            minor = tonumber(minor),
-            patch = tonumber(patch),
+            major = tonumber(major) as integer,
+            minor = tonumber(minor) as integer,
+            patch = tonumber(patch) as integer,
         }
     end
 
     major, minor = str:match("^([0-9]+)%.([0-9]+)[%.]?$")
     if major and minor then
         return SemVer.new {
-            major = tonumber(major),
-            minor = tonumber(minor),
+            major = tonumber(major) as integer,
+            minor = tonumber(minor) as integer,
         }
     end
 
     major = str:match("^([0-9]+)[%.]?$")
     if major then
-        return SemVer.new { major = major }
+        return SemVer.new {
+            major = tonumber(major) as integer,
+        }
     end
 
     return SemVer.new {}
 end
 
 function M.parse_requirement(str: string): Requirement
-    local vs, vers_str, ve, rs, re: number, string, number, number, number
+    local vs, vers_str, ve, rs, re: integer, string, integer, integer, integer
 
-    vs, vers_str, ve = str:match("^=%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^=%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "eq",
@@ -94,7 +96,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^<=%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^<=%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "le",
@@ -104,7 +106,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^<%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^<%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "lt",
@@ -114,7 +116,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^>=%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^>=%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "ge",
@@ -124,7 +126,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^>%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^>%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "gt",
@@ -134,7 +136,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^%~%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^%~%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "tl",
@@ -144,7 +146,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vers_str, rs, re = str:match("^(.+)()%.%*()$") as (string, number, number)
+    vers_str, rs, re = str:match("^(.+)()%.%*()$") as (string, integer, integer)
     if vers_str and rs and re then
         return {
             cond = "wl",
@@ -154,7 +156,7 @@ function M.parse_requirement(str: string): Requirement
         }
     end
 
-    vs, vers_str, ve = str:match("^%^%s*()(.+)()$") as (number, string, number)
+    vs, vers_str, ve = str:match("^%^%s*()(.+)()$") as (integer, string, integer)
     if vs and vers_str and ve then
         return {
             cond = "cr",
@@ -175,7 +177,7 @@ end
 function M.parse_requirements(str: string): {Requirement}
     local requirements = {}
     for rs, r  in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
-        local s = tonumber(rs)
+        local s = rs as integer
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1
         requirement.vers_col.e = requirement.vers_col.e + s - 1

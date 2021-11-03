@@ -1,7 +1,7 @@
 local record Core
     cfg: Config
-    vers_cache: {string, {Version}}
-    crate_cache: {integer, {string, Crate}}
+    vers_cache: {string:{Version}}
+    crate_cache: {integer:{string:Crate}}
     visible: boolean
 end
 
