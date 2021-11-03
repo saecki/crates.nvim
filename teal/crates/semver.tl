@@ -1,8 +1,8 @@
 local record M
     record SemVer
-        major: integer
-        minor: integer
-        patch: integer
+        major: number
+        minor: number
+        patch: number
         suffix: string
     end
 
@@ -82,102 +82,85 @@ function M.parse_version(str: string): SemVer
 end
 
 function M.parse_requirement(str: string): Requirement
-    local vs, vers_str, ve, rs, re: string, string, string, string, string
-    local s, e: integer, integer
+    local vs, vers_str, ve, rs, re: number, string, number, number, number
 
-    vs, vers_str, ve = str:match("^=%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^=%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "eq",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^<=%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^<=%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "le",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^<%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^<%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "lt",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^>=%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^>=%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "ge",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^>%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^>%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "gt",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^%~%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^%~%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "tl",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
-    vers_str, rs, re = str:match("^(.+)()%.%*()$")
-    s = tonumber(rs) as integer
-    e = tonumber(re) as integer
-    if vers_str and s and e then
+    vers_str, rs, re = str:match("^(.+)()%.%*()$") as (string, number, number)
+    if vers_str and rs and re then
         return {
             cond = "wl",
-            cond_col = Range.new(s - 1, e - 1),
+            cond_col = Range.new(rs - 1, re - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(0, s - 1),
+            vers_col = Range.new(0, rs - 1),
         }
     end
 
-    vs, vers_str, ve = str:match("^%^%s*()(.+)()$")
-    s = tonumber(vs) as integer
-    e = tonumber(ve) as integer
-    if s and vers_str and e then
+    vs, vers_str, ve = str:match("^%^%s*()(.+)()$") as (number, string, number)
+    if vs and vers_str and ve then
         return {
             cond = "cr",
-            cond_col = Range.new(0, s - 1),
+            cond_col = Range.new(0, vs - 1),
             vers = M.parse_version(vers_str),
-            vers_col = Range.new(s - 1, e - 1),
+            vers_col = Range.new(vs - 1, ve - 1),
         }
     end
 
@@ -192,7 +175,7 @@ end
 function M.parse_requirements(str: string): {Requirement}
     local requirements = {}
     for rs, r  in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
-        local s = tonumber(rs) as integer
+        local s = tonumber(rs)
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1
         requirement.vers_col.e = requirement.vers_col.e + s - 1
@@ -225,7 +208,7 @@ local function compare_suffixes(a: string, b: string): integer
     end
 end
 
-local function compare_versions(a: SemVer, b: SemVer): integer
+local function compare_versions(a: SemVer, b: SemVer): number
     local major = a.major - b.major
     local minor = a.minor - b.minor
     local patch = a.patch - b.patch

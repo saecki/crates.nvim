@@ -83,101 +83,84 @@ end
 
 function M.parse_requirement(str)
    local vs, vers_str, ve, rs, re
-   local s, e
 
    vs, vers_str, ve = str:match("^=%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "eq",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^<=%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "le",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^<%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "lt",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^>=%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "ge",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^>%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "gt",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^%~%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "tl",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 
    vers_str, rs, re = str:match("^(.+)()%.%*()$")
-   s = tonumber(rs)
-   e = tonumber(re)
-   if vers_str and s and e then
+   if vers_str and rs and re then
       return {
          cond = "wl",
-         cond_col = Range.new(s - 1, e - 1),
+         cond_col = Range.new(rs - 1, re - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(0, s - 1),
+         vers_col = Range.new(0, rs - 1),
       }
    end
 
    vs, vers_str, ve = str:match("^%^%s*()(.+)()$")
-   s = tonumber(vs)
-   e = tonumber(ve)
-   if s and vers_str and e then
+   if vs and vers_str and ve then
       return {
          cond = "cr",
-         cond_col = Range.new(0, s - 1),
+         cond_col = Range.new(0, vs - 1),
          vers = M.parse_version(vers_str),
-         vers_col = Range.new(s - 1, e - 1),
+         vers_col = Range.new(vs - 1, ve - 1),
       }
    end
 

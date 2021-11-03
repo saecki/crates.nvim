@@ -1,32 +1,32 @@
 local record M
     record Range
-        s: integer -- 0-indexed inclusive
-        e: integer -- 0-indexed exclusive
+        s: number -- 0-indexed inclusive
+        e: number -- 0-indexed exclusive
     end
 end
 
 local Range = M.Range
 
-function Range.new(s: integer, e: integer): Range
+function Range.new(s: number, e: number): Range
     return setmetatable({ s = s, e = e }, { __index = Range })
 end
 
-function Range.pos(p: integer): Range
+function Range.pos(p: number): Range
     return Range.new(p, p + 1)
 end
 
-function Range:contains(pos: integer): boolean
+function Range:contains(pos: number): boolean
     return self.s <= pos and pos <  self.e
 end
 
 -- Create a new range with moved start and end bounds
-function Range:moved(s: integer, e: integer): Range
+function Range:moved(s: number, e: number): Range
     return Range.new(self.s + s, self.e + e)
 end
 
-function Range:iter(): function(): integer
+function Range:iter(): function(): number
     local i = self.s
-    return function(): integer
+    return function(): number
         if i >= self.e then
             return nil
         end
