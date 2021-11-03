@@ -1,9 +1,9 @@
-local Core = {}
-
-
-
-
-
+local record Core
+    cfg: Config
+    vers_cache: {string, {Version}}
+    crate_cache: {integer, {string, Crate}}
+    visible: boolean
+end
 
 local Config = require('crates.config')
 local Version = require('crates.api').Version
