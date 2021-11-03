@@ -284,7 +284,8 @@ function M.open_versions(crate, versions, opts)
 
         for i,v in ipairs(versions_text) do
             local diff = orig_width - vim.fn.strdisplaywidth(v.text)
-            local date_text = string.format(core.cfg.popup.text.date, versions[i].created:display())
+            local date = versions[i].created:display(core.cfg.date_format)
+            local date_text = string.format(core.cfg.popup.text.date, date)
             v.text = v.text..string.rep(" ", diff)..date_text
 
             width = math.max(vim.fn.strdisplaywidth(v.text), orig_width)

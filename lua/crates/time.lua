@@ -3,8 +3,6 @@
 
 local M = {}
 
-local core = require('crates.core')
-
 ---@type DateTime
 M.DateTime = {}
 local DateTime = M.DateTime
@@ -46,9 +44,10 @@ function DateTime.parse_rfc_3339(str)
 end
 
 ---@param self DateTime
+---@param format string
 ---@return string
-function DateTime:display()
-    return os.date(core.cfg.date_format, self.epoch)
+function DateTime:display(format)
+    return os.date(format, self.epoch)
 end
 
 return M
