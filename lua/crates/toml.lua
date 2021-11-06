@@ -57,22 +57,6 @@ function M.parse_crate_features(text)
    return feats
 end
 
-function M.parse_crate_table_req(line)
-   local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-   if qs and vs and req_text and ve then
-      return {
-         req_text = req_text,
-         req_col = Range.new(vs - 1, ve - 1),
-         req_decl_col = Range.new(0, line:len()),
-         req_quote = { s = qs, e = qe ~= "" and qe or nil },
-         syntax = "table",
-      }
-   end
-
-   return nil
-end
-
-
 function Crate.new(obj)
    if obj.req_text then
       obj.reqs = semver.parse_requirements(obj.req_text)
@@ -102,6 +86,22 @@ function Crate:get_feat(name)
       if f.name == name then
          return f, i
       end
+   end
+
+   return nil
+end
+
+
+function M.parse_crate_table_req(line)
+   local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+   if qs and vs and req_text and ve then
+      return {
+         req_text = req_text,
+         req_col = Range.new(vs - 1, ve - 1),
+         req_decl_col = Range.new(0, line:len()),
+         req_quote = { s = qs, e = qe ~= "" and qe or nil },
+         syntax = "table",
+      }
    end
 
    return nil

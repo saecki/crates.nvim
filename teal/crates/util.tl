@@ -4,14 +4,14 @@ local record M
         versions: {Version}
     end
 
-    record FeaturesInfo
+    record FeatureInfo
         enabled: boolean
         transitive: boolean
     end
 end
 
 local CrateVersions = M.CrateVersions
-local FeaturesInfo = M.FeaturesInfo
+local FeatureInfo = M.FeatureInfo
 local core = require('crates.core')
 local semver = require('crates.semver')
 local SemVer = semver.SemVer
@@ -84,8 +84,8 @@ function M.is_feat_enabled(crate: Crate, feature: Feature): boolean
     end
 end
 
-function M.features_info(crate: Crate, features: Features): {string:FeaturesInfo}
-    local info: {string:FeaturesInfo} = {}
+function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
+    local info: {string:FeatureInfo} = {}
 
     local function update_transitive(f: Feature)
         for _,m in ipairs(f.members) do

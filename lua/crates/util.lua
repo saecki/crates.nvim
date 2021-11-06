@@ -1,4 +1,4 @@
-local M = {CrateVersions = {}, FeaturesInfo = {}, }
+local M = {CrateVersions = {}, FeatureInfo = {}, }
 
 
 
@@ -11,7 +11,7 @@ local M = {CrateVersions = {}, FeaturesInfo = {}, }
 
 
 local CrateVersions = M.CrateVersions
-local FeaturesInfo = M.FeaturesInfo
+local FeatureInfo = M.FeatureInfo
 local core = require('crates.core')
 local semver = require('crates.semver')
 local SemVer = semver.SemVer

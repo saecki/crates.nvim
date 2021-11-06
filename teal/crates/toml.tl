@@ -57,22 +57,6 @@ function M.parse_crate_features(text: string): {CrateFeature}
     return feats
 end
 
-function M.parse_crate_table_req(line: string): Crate|nil
-    local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-    if qs and vs and req_text and ve then
-        return {
-            req_text = req_text,
-            req_col = Range.new(vs as integer - 1, ve as integer - 1),
-            req_decl_col = Range.new(0, line:len()),
-            req_quote = { s = qs, e = qe ~= "" and qe or nil },
-            syntax = "table",
-        } as Crate
-    end
-
-    return nil
-end
-
-
 function Crate.new(obj: Crate): Crate
     if obj.req_text then
         obj.reqs = semver.parse_requirements(obj.req_text)
@@ -107,7 +91,23 @@ function Crate:get_feat(name: string): CrateFeature|nil, integer
     return nil
 end
 
-function M.parse_crate_table_feat(line: string): Crate|nil
+
+function M.parse_crate_table_req(line: string): Crate
+    local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if qs and vs and req_text and ve then
+        return {
+            req_text = req_text,
+            req_col = Range.new(vs as integer - 1, ve as integer - 1),
+            req_decl_col = Range.new(0, line:len()),
+            req_quote = { s = qs, e = qe ~= "" and qe or nil },
+            syntax = "table",
+        } as Crate
+    end
+
+    return nil
+end
+
+function M.parse_crate_table_feat(line: string): Crate
     local fs, feat_text, fe = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
     if fs and feat_text and fe then
         return {
@@ -121,7 +121,7 @@ function M.parse_crate_table_feat(line: string): Crate|nil
     return nil
 end
 
-function M.parse_crate_table_def(line: string): Crate|nil
+function M.parse_crate_table_def(line: string): Crate
     local ds, def_text, de = line:match("^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$")
     if ds and def_text and de then
         return {
@@ -135,7 +135,7 @@ function M.parse_crate_table_def(line: string): Crate|nil
     return nil
 end
 
-function M.parse_crate(line: string): Crate|nil
+function M.parse_crate(line: string): Crate
     local name: string
     local vds, qs, vs, req_text, ve, qe, vde: string, string, string, string, string, string, string
     local fds, fs, feat_text, fe, fde: string, string, string, string, string
