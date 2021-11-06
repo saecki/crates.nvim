@@ -5,10 +5,21 @@ on:
   pull_request:
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: nebularg/actions-luacheck@v1
+
+    - name: Install lua
+      uses: leafo/gh-actions-lua@v8
       with:
-        files: 'lua'
+        luaVersion: "luajit-2.1.0-beta3"
+    
+    - name: Install luarocks
+      uses: leafo/gh-actions-luarocks@v4
+
+    - name: Install teal
+      run: luarocks install tl
+
+    - name: Build crates.nvim
+      run: tl build
