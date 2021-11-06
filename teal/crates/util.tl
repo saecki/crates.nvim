@@ -260,9 +260,7 @@ function M.set_version_smart(buf: integer, crate: Crate, version: SemVer)
     M.set_version(buf, crate, text)
 end
 
-function M.upgrade_crates(lines: Range, smart: boolean)
-    local crates = M.get_lines_crates(lines)
-
+function M.upgrade_crates(crates: {CrateVersions}, smart: boolean)
     if smart == nil then
         smart = core.cfg.smart_insert
     end
@@ -285,9 +283,7 @@ function M.upgrade_crates(lines: Range, smart: boolean)
     end
 end
 
-function M.update_crates(lines: Range, smart: boolean)
-    local crates = M.get_lines_crates(lines)
-
+function M.update_crates(crates: {CrateVersions}, smart: boolean)
     if smart == nil then
         smart = core.cfg.smart_insert
     end

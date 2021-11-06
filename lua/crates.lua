@@ -95,7 +95,8 @@ end
 
 function M.upgrade_crate(smart)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
-   util.upgrade_crates(Range.pos(linenr - 1), smart)
+   local crates = util.get_lines_crates(Range.pos(linenr - 1))
+   util.upgrade_crates(crates, smart)
 end
 
 
@@ -104,19 +105,32 @@ function M.upgrade_crates(smart)
    vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
-   util.upgrade_crates(lines, smart)
+   local crates = util.get_lines_crates(lines)
+   util.upgrade_crates(crates, smart)
 end
 
 
 function M.upgrade_all_crates(smart)
-   local lines = Range.new(0, vim.api.nvim_buf_line_count(0))
-   util.upgrade_crates(lines, smart)
+   local cur_buf = util.current_buf()
+   local crates = core.crate_cache[cur_buf]
+   if not crates then return end
+
+   local crate_versions = {}
+   for _, c in pairs(crates) do
+      table.insert(crate_versions, {
+         crate = c,
+         versions = core.vers_cache[c.name],
+      })
+   end
+
+   util.upgrade_crates(crate_versions, smart)
 end
 
 
 function M.update_crate(smart)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
-   util.update_crates(Range.pos(linenr - 1), smart)
+   local crates = util.get_lines_crates(Range.pos(linenr - 1))
+   util.update_crates(crates, smart)
 end
 
 
@@ -125,13 +139,25 @@ function M.update_crates(smart)
    vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
-   util.update_crates(lines, smart)
+   local crates = util.get_lines_crates(lines)
+   util.update_crates(crates, smart)
 end
 
 
 function M.update_all_crates(smart)
-   local lines = Range.new(0, vim.api.nvim_buf_line_count(0))
-   util.update_crates(lines, smart)
+   local cur_buf = util.current_buf()
+   local crates = core.crate_cache[cur_buf]
+   if not crates then return end
+
+   local crate_versions = {}
+   for _, c in pairs(crates) do
+      table.insert(crate_versions, {
+         crate = c,
+         versions = core.vers_cache[c.name],
+      })
+   end
+
+   util.update_crates(crate_versions, smart)
 end
 
 

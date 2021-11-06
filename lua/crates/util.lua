@@ -260,9 +260,7 @@ function M.set_version_smart(buf, crate, version)
    M.set_version(buf, crate, text)
 end
 
-function M.upgrade_crates(lines, smart)
-   local crates = M.get_lines_crates(lines)
-
+function M.upgrade_crates(crates, smart)
    if smart == nil then
       smart = core.cfg.smart_insert
    end
@@ -285,9 +283,7 @@ function M.upgrade_crates(lines, smart)
    end
 end
 
-function M.update_crates(lines, smart)
-   local crates = M.get_lines_crates(lines)
-
+function M.update_crates(crates, smart)
    if smart == nil then
       smart = core.cfg.smart_insert
    end

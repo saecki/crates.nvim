@@ -95,7 +95,8 @@ end
 --- upgrade the crate on the current line
 function M.upgrade_crate(smart: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
-    util.upgrade_crates(Range.pos(linenr - 1), smart)
+    local crates = util.get_lines_crates(Range.pos(linenr - 1))
+    util.upgrade_crates(crates, smart)
 end
 
 --- upgrade the crates on the lines visually selected
@@ -104,19 +105,32 @@ function M.upgrade_crates(smart: boolean|nil)
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
-    util.upgrade_crates(lines, smart)
+    local crates = util.get_lines_crates(lines)
+    util.upgrade_crates(crates, smart)
 end
 
 --- upgrade all crates in the buffer
 function M.upgrade_all_crates(smart: boolean|nil)
-    local lines = Range.new(0, vim.api.nvim_buf_line_count(0) as integer)
-    util.upgrade_crates(lines, smart)
+    local cur_buf = util.current_buf()
+    local crates = core.crate_cache[cur_buf]
+    if not crates then return end
+
+    local crate_versions = {}
+    for _,c in pairs(crates) do
+        table.insert(crate_versions, {
+            crate = c,
+            versions = core.vers_cache[c.name]
+        })
+    end
+
+    util.upgrade_crates(crate_versions, smart)
 end
 
 -- update the crate on the current line
 function M.update_crate(smart: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
-    util.update_crates(Range.pos(linenr - 1), smart)
+    local crates = util.get_lines_crates(Range.pos(linenr - 1))
+    util.update_crates(crates, smart)
 end
 
 -- update the crates on the lines visually selected
@@ -125,13 +139,25 @@ function M.update_crates(smart: boolean|nil)
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
-    util.update_crates(lines, smart)
+    local crates = util.get_lines_crates(lines)
+    util.update_crates(crates, smart)
 end
 
 --- update all crates in the buffer
 function M.update_all_crates(smart: boolean|nil)
-    local lines = Range.new(0, vim.api.nvim_buf_line_count(0) as integer)
-    util.update_crates(lines, smart)
+    local cur_buf = util.current_buf()
+    local crates = core.crate_cache[cur_buf]
+    if not crates then return end
+
+    local crate_versions = {}
+    for _,c in pairs(crates) do
+        table.insert(crate_versions, {
+            crate = c,
+            versions = core.vers_cache[c.name]
+        })
+    end
+
+    util.update_crates(crate_versions, smart)
 end
 
 
