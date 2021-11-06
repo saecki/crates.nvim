@@ -262,8 +262,7 @@ end
 function Popup.open_versions(crate, versions, opts)
    Popup.type = "versions"
    local title = string.format(core.cfg.popup.text.title, crate.name)
-   local num_versions = #versions
-   local height = math.min(core.cfg.popup.max_height, num_versions + top_offset)
+   local height = math.min(core.cfg.popup.max_height, #versions + top_offset)
    local width = 0
    local versions_text = {}
 
@@ -459,8 +458,7 @@ end
 function Popup._open_features(crate, version, opts)
    local features = version.features
    local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num)
-   local num_feats = #features
-   local height = math.min(core.cfg.popup.max_height, num_feats + top_offset)
+   local height = math.min(core.cfg.popup.max_height, #features + top_offset)
    local width = math.max(core.cfg.popup.min_width, title:len())
    local features_text = {}
 
@@ -493,8 +491,7 @@ function Popup._open_feature_details(crate, version, feature, opts)
    local features = version.features
    local members = feature.members
    local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num .. " " .. feature.name)
-   local num_members = #members
-   local height = math.min(core.cfg.popup.max_height, num_members + top_offset)
+   local height = math.min(core.cfg.popup.max_height, #members + top_offset)
    local width = math.max(core.cfg.popup.min_width, title:len())
    local features_text = {}
 
