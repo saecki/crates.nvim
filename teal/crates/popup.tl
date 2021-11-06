@@ -6,7 +6,7 @@ local record Popup
     feat_ctx: FeatureContext
 
     show: function()
-    focus: function()
+    focus: function(integer|nil)
     hide: function()
     open_versions: function(Crate, {Version}, WinOpts)
     open_features: function(Crate, Version, WinOpts)
@@ -189,7 +189,7 @@ function Popup.show_features()
     end
 end
 
-function Popup.focus(line: integer)
+function Popup.focus(line: integer|nil)
     if Popup.win and vim.api.nvim_win_is_valid(Popup.win) then
         vim.api.nvim_set_current_win(Popup.win)
         local l = math.min(line or 3, vim.api.nvim_buf_line_count(Popup.buf))

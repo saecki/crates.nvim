@@ -51,6 +51,7 @@ global record vim
       indent: string
       process: function
    end
+   cmd: function(string)
    inspect: function(any, InspectOptions): string
    paste: function({string}, number): boolean
    schedule_wrap: function(function): function
@@ -74,6 +75,7 @@ global record vim
       "force"
    end
    tbl_extend: function(ExtendBehavior, table, table, ...: table): table
+   tbl_deep_extend: function(ExtendBehavior, table, table, ...: table): table
 
    tbl_flatten: function<T>({T|{T}}): {T}
    tbl_flatten: function({any|{any}}): {any}
