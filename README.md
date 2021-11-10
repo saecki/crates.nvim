@@ -294,7 +294,6 @@ end
 ```
 
 ## TODO
-- Add vimdoc (maybe using something similar to what [gitsigns](https://github.com/lewis6991/gitsigns.nvim/blob/main/lua/gitsigns/config.lua) does)
 - better cmp documentation for features
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
