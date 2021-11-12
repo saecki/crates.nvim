@@ -128,6 +128,7 @@ function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
 end
 
 function M.set_version(buf: integer, crate: Crate, text: string)
+    -- TODO: add version requirement if it doesn't exist
     if not crate.req_text then return end
 
     local t = text
