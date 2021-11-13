@@ -2,7 +2,7 @@ local record M
     record Crate -- TODO break up into req, feat, and def records
         name: string
         lines: Range
-        syntax: string
+        syntax: Syntax
         reqs: {Requirement}
         req_text: string
         req_has_suffix: boolean
@@ -20,6 +20,12 @@ local record M
         def_line: integer -- 0-indexed
         def_col: Range
         def_decl_col: Range
+
+        enum Syntax
+            "plain"
+            "inline_table"
+            "table"
+        end
     end
 
     record CrateFeature
@@ -62,7 +68,7 @@ function Crate.new(obj: Crate): Crate
         obj.reqs = semver.parse_requirements(obj.req_text)
 
         obj.req_has_suffix = false
-        for _,r in ipairs(obj.reqs as {Requirement}) do
+        for _,r in ipairs(obj.reqs) do
             if r.vers.suffix then
                 obj.req_has_suffix = true
                 break
@@ -82,7 +88,7 @@ end
 function Crate:get_feat(name: string): CrateFeature|nil, integer
     if not self.feats then return nil end
 
-    for i,f in ipairs(self.feats as {CrateFeature}) do
+    for i,f in ipairs(self.feats) do
         if f.name == name then
             return f, i
         end
@@ -101,7 +107,7 @@ function M.parse_crate_table_req(line: string): Crate
             req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "table",
-        } as Crate
+        }
     end
 
     return nil
@@ -115,7 +121,7 @@ function M.parse_crate_table_feat(line: string): Crate
             feat_col = Range.new(fs as integer - 1, fe as integer - 1),
             feat_decl_col = Range.new(0, line:len()),
             syntax = "table",
-        } as Crate
+        }
     end
 
     return nil
@@ -129,7 +135,7 @@ function M.parse_crate_table_def(line: string): Crate
             def_col = Range.new(ds as integer - 1, de as integer - 1),
             def_decl_col = Range.new(0, line:len()),
             syntax = "table",
-        } as Crate
+        }
     end
 
     return nil
@@ -151,7 +157,7 @@ function M.parse_crate(line: string): Crate
             req_decl_col = Range.new(0, line:len()),
             req_quote = { s = qs as integer, e = qe as integer },
             syntax = "plain",
-        } as Crate
+        }
     end
 
     -- inline table
@@ -233,28 +239,28 @@ function M.parse_crates(buf: integer): {Crate}
                 dep_table_crate_name = nil
             end
         elseif in_dep_table and dep_table_crate_name then
-            local crate_req = M.parse_crate_table_req(l) as Crate
+            local crate_req = M.parse_crate_table_req(l)
             if crate_req then
                 crate_req.name = dep_table_crate_name
                 crate_req.req_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_req as table) as Crate
             end
 
-            local crate_feat = M.parse_crate_table_feat(l) as Crate
+            local crate_feat = M.parse_crate_table_feat(l)
             if crate_feat then
                 crate_feat.name = dep_table_crate_name
                 crate_feat.feat_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_feat as table) as Crate
             end
 
-            local crate_def = M.parse_crate_table_def(l) as Crate
+            local crate_def = M.parse_crate_table_def(l)
             if crate_def then
                 crate_def.name = dep_table_crate_name
                 crate_def.def_line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_def as table) as Crate
             end
         elseif in_dep_table then
-            local crate = M.parse_crate(l) as Crate
+            local crate = M.parse_crate(l)
             if crate then
                 crate.lines = Range.new(i - 1, i)
                 crate.req_line = i - 1
