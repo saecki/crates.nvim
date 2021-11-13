@@ -9,23 +9,23 @@ local Crate = require('crates.toml').Crate
 local Version = require('crates.api').Version
 
 function M.display_versions(buf: integer, crate: Crate, versions: {Version})
-    if not core.visible or not crate.reqs then
+    if not core.visible or not crate.vers then
         vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
         return
     end
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
+    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
 
     local virt_text: {{string, string}}
     if newest then
-        if semver.matches_requirements(newest.parsed, crate.reqs) then
+        if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
             -- version matches, no upgrade available
             virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
         else
             -- version does not match, upgrade available
-            local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate.reqs)
+            local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
             local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
 
@@ -60,7 +60,7 @@ function M.display_versions(buf: integer, crate: Crate, versions: {Version})
     end
 
     vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.req_line, virt_text, {})
+    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.vers.line, virt_text, {})
 end
 
 function M.display_loading(buf: integer, crate: Crate)

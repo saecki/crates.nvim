@@ -7,10 +7,22 @@ local record M
     end
 
     record Requirement
-        cond: string
+        cond: Cond
         cond_col: Range -- relative to to the start of the requirement text
         vers: SemVer
         vers_col: Range -- relative to to the start of the requirement text
+    end
+
+    enum Cond
+        "eq"
+        "lt"
+        "le"
+        "gt"
+        "ge"
+        "cr"
+        "tl"
+        "wl"
+        "bl"
     end
 end
 

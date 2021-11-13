@@ -78,7 +78,7 @@ end
 function M.is_feat_enabled(crate: Crate, feature: Feature): boolean
     local enabled = crate:get_feat(feature.name) ~= nil
     if feature.name == "default" then
-        return enabled or crate.def ~= false
+        return enabled or crate:is_def_enabled()
     else
         return enabled
     end
@@ -128,7 +128,7 @@ function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
 end
 
 function M.set_version(buf: integer, crate: Crate, text: string): Range
-    if not crate.req_text then
+    if not crate.vers then
         if crate.syntax == "table" then
             local line = crate.lines.s + 1
             vim.api.nvim_buf_set_lines(
@@ -139,12 +139,12 @@ function M.set_version(buf: integer, crate: Crate, text: string): Range
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
             local def_col_start = 0
-            if crate.def_text then
-                def_col_start = crate.def_decl_col.s
+            if crate.def then
+                def_col_start = crate.def.decl_col.s
             end
             local feat_col_start = 0
-            if crate.feat_text then
-                feat_col_start = crate.feat_decl_col.s
+            if crate.feat then
+                feat_col_start = crate.feat.decl_col.s
             end
             local col = math.max(def_col_start, feat_col_start)
             vim.api.nvim_buf_set_text(
@@ -157,16 +157,16 @@ function M.set_version(buf: integer, crate: Crate, text: string): Range
         end
     else
         local t = text
-        if not crate.req_quote.e then
-            t = text .. crate.req_quote.s
+        if not crate.vers.quote.e then
+            t = text .. crate.vers.quote.s
         end
-        local line = crate.req_line
+        local line = crate.vers.line
         vim.api.nvim_buf_set_text(
             buf,
             line,
-            crate.req_col.s,
+            crate.vers.col.s,
             line,
-            crate.req_col.e,
+            crate.vers.col.e,
             { t }
         )
         return Range.pos(line)
@@ -186,34 +186,34 @@ local function replace_existing(r: Requirement, version: SemVer): SemVer
 end
 
 function M.set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
-    if not crate.reqs or #crate.reqs == 0 then
+    if not crate:vers_reqs() or #crate:vers_reqs() == 0 then
         return M.set_version(buf, crate, version:display())
     end
 
     local pos = 1
     local text = ""
-    for _,r in ipairs(crate.reqs) do
+    for _,r in ipairs(crate.vers.reqs) do
         if r.cond == "wl" then
             if version.suffix then
-                text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. version:display()
+                text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
             else
                 local v = SemVer.new {
                     major = r.vers.major and version.major or nil,
                     minor = r.vers.minor and version.minor or nil,
                 }
-                local before = string.sub(crate.req_text, pos, r.vers_col.s)
-                local after = string.sub(crate.req_text, r.vers_col.e + 1, r.cond_col.e)
+                local before = string.sub(crate.vers.text, pos, r.vers_col.s)
+                local after = string.sub(crate.vers.text, r.vers_col.e + 1, r.cond_col.e)
                 text = text .. before .. v:display() .. after
             end
         elseif r.cond == "tl" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "cr" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "bl" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "lt" and not semver.matches_requirement(version, r) then
             local v = SemVer.new {
                 major = version.major,
@@ -229,7 +229,7 @@ function M.set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
                 v.major = v.major + 1
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "le" and not semver.matches_requirement(version, r) then
             local v: SemVer
 
@@ -246,7 +246,7 @@ function M.set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
                 end
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "gt" then
             local v = SemVer.new {
                 major = r.vers.major and version.major or nil,
@@ -273,17 +273,17 @@ function M.set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
                 end
             end
 
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "ge" then
             local v = replace_existing(r, version)
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         else
-            text = text .. string.sub(crate.req_text, pos, r.vers_col.e)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.e)
         end
 
         pos = math.max(r.cond_col.e + 1, r.vers_col.e + 1)
     end
-    text = text .. string.sub(crate.req_text, pos)
+    text = text .. string.sub(crate.vers.text, pos)
 
     return M.set_version(buf, crate, text)
 end
@@ -297,7 +297,7 @@ function M.upgrade_crates(crates: {CrateVersions}, smart: boolean)
         local crate = c.crate
         local versions = c.versions
 
-        local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
+        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
         local newest, newest_pre, newest_yanked = M.get_newest(versions, avoid_pre, nil)
         newest = newest or newest_pre or newest_yanked
 
@@ -320,8 +320,8 @@ function M.update_crates(crates: {CrateVersions}, smart: boolean)
         local crate = c.crate
         local versions = c.versions
 
-        local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-        local match, match_pre, match_yanked = M.get_newest(versions, avoid_pre, crate.reqs)
+        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+        local match, match_pre, match_yanked = M.get_newest(versions, avoid_pre, crate:vers_reqs())
         match = match or match_pre or match_yanked
 
         if match then
@@ -336,82 +336,72 @@ end
 
 function M.enable_feature(buf: integer, crate: Crate, feature: Feature): Range
     local t = '"' .. feature.name .. '"'
-    if not crate.feat_text then
+    if not crate.feat then
         if crate.syntax == "table" then
-            local line = math.max(crate.req_line or 0, crate.def_line or 0) + 1
+            local line = math.max(
+                crate.vers and crate.vers.line or 0,
+                crate.def and crate.def.line or 0
+            ) + 1
             vim.api.nvim_buf_set_lines(
-                buf,
-                line,
-                line,
-                false,
+                buf, line, line, false,
                 { "features = [" .. t .."]" }
             )
             return Range.pos(line)
         elseif crate.syntax == "plain" then
             t = ", features = [" .. t .. "] }"
-            local col = crate.req_col.e
-            if crate.req_quote.e then
+            local line = crate.vers.line
+            local col = crate.vers.col.e
+            if crate.vers.quote.e then
                 col = col + 1
             else
-                t = crate.req_quote.s .. t
+                t = crate.vers.quote.s .. t
             end
-            vim.api.nvim_buf_set_text(
-                buf,
-                crate.req_line,
-                col,
-                crate.req_line,
-                col,
-                { t }
-            )
+            vim.api.nvim_buf_set_text(buf, line, col, line, col, { t })
 
             vim.api.nvim_buf_set_text(
                 buf,
-                crate.req_line,
-                crate.req_col.s - 1,
-                crate.req_line,
-                crate.req_col.s - 1,
+                line,
+                crate.vers.col.s - 1,
+                line,
+                crate.vers.col.s - 1,
                 { "{ version = " }
             )
-            return Range.pos(crate.req_line)
+            return Range.pos(line)
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            local req_col_end = 0
-            if crate.req_text then
-                req_col_end = crate.req_col.e
-                if crate.req_quote.e then
-                    req_col_end = req_col_end + 1
+            local vers_col_end = 0
+            if crate.vers then
+                vers_col_end = crate.vers.col.e
+                if crate.vers.quote.e then
+                    vers_col_end = vers_col_end + 1
                 end
             end
             local def_col_end = 0
-            if crate.def_text then
-                def_col_end = crate.def_col.e
+            if crate.def then
+                def_col_end = crate.def.col.e
             end
-            local col = math.max(req_col_end, def_col_end)
+            local col = math.max(vers_col_end, def_col_end)
             vim.api.nvim_buf_set_text(
-                buf,
-                line,
-                col,
-                line,
-                col,
+                buf, line, col, line, col,
                 { ", features = [" .. t .. "]" }
             )
             return Range.pos(line)
         end
     else
-        local last_feat = crate.feats[#crate.feats]
+        local last_feat = crate.feat.items[#crate.feat.items]
         if last_feat and not last_feat.comma then
             t = ", " .. t
         end
 
         vim.api.nvim_buf_set_text(
             buf,
-            crate.feat_line,
-            crate.feat_col.e,
-            crate.feat_line,
-            crate.feat_col.e,
+            crate.feat.line,
+            crate.feat.col.e,
+            crate.feat.line,
+            crate.feat.col.e,
             { t }
         )
-        return Range.pos(crate.feat_line)
+        return Range.pos(crate.feat.line)
     end
 end
 
@@ -421,37 +411,37 @@ function M.disable_feature(buf: integer, crate: Crate, feature: CrateFeature): R
     local col_start = feature.decl_col.s
     local col_end = feature.decl_col.e
     if index == 1 then
-        if #crate.feats > 1 then
-            col_end = crate.feats[2].col.s - 1
+        if #crate.feat.items > 1 then
+            col_end = crate.feat.items[2].col.s - 1
         elseif feature.comma then
             col_end = col_end + 1
         end
     else
-        local prev_feature = crate.feats[index - 1]
+        local prev_feature = crate.feat.items[index - 1]
         col_start = prev_feature.col.e + 1
     end
 
     vim.api.nvim_buf_set_text(
         buf,
-        crate.feat_line,
-        crate.feat_col.s + col_start,
-        crate.feat_line,
-        crate.feat_col.s + col_end,
+        crate.feat.line,
+        crate.feat.col.s + col_start,
+        crate.feat.line,
+        crate.feat.col.s + col_end,
         { "" }
     )
-    return Range.pos(crate.feat_line)
+    return Range.pos(crate.feat.line)
 end
 
 function M.enable_def_features(buf: integer, crate: Crate): Range
     vim.api.nvim_buf_set_text(
         buf,
-        crate.def_line,
-        crate.def_col.s,
-        crate.def_line,
-        crate.def_col.e,
+        crate.def.line,
+        crate.def.col.s,
+        crate.def.line,
+        crate.def.col.e,
         { "true" }
     )
-    return Range.pos(crate.def_line)
+    return Range.pos(crate.def.line)
 end
 
 function M.disable_def_features(buf: integer, crate: Crate, feature: CrateFeature|nil): Range
@@ -459,20 +449,20 @@ function M.disable_def_features(buf: integer, crate: Crate, feature: CrateFeatur
         M.disable_feature(buf, crate, feature)
     end
 
-    if crate.def_text then
-        local line = crate.def_line
+    if crate.def then
+        local line = crate.def.line
         vim.api.nvim_buf_set_text(
             buf,
             line,
-            crate.def_col.s,
+            crate.def.col.s,
             line,
-            crate.def_col.e,
+            crate.def.col.e,
             { "false" }
         )
         return Range.pos(line)
     else
         if crate.syntax == "table" then
-            local line = math.max((crate.req_line or 0) + 1, crate.feat_line or 0)
+            local line = math.max((crate.vers.line or 0) + 1, crate.feat.line or 0)
             vim.api.nvim_buf_set_lines(
                 buf,
                 line,
@@ -483,13 +473,13 @@ function M.disable_def_features(buf: integer, crate: Crate, feature: CrateFeatur
             return crate.lines:moved(0, 1)
         elseif crate.syntax == "plain" then
             local t = ", default_features = false }"
-            local col = crate.req_col.e
-            if crate.req_quote.e then
+            local col = crate.vers.col.e
+            if crate.vers.quote.e then
                 col = col + 1
             else
-                t = crate.req_quote.s .. t
+                t = crate.vers.quote.s .. t
             end
-            local line = crate.req_line
+            local line = crate.vers.line
             vim.api.nvim_buf_set_text(
                 buf,
                 line,
@@ -502,25 +492,25 @@ function M.disable_def_features(buf: integer, crate: Crate, feature: CrateFeatur
             vim.api.nvim_buf_set_text(
                 buf,
                 line,
-                crate.req_col.s - 1,
+                crate.vers.col.s - 1,
                 line,
-                crate.req_col.s - 1,
+                crate.vers.col.s - 1,
                 { "{ version = " }
             )
             return Range.pos(line)
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            if crate.req_text then
-                local col = crate.req_col.e
-                if crate.req_quote.e then
+            if crate.vers then
+                local col = crate.vers.col.e
+                if crate.vers.quote.e then
                     col = col + 1
                 end
                 vim.api.nvim_buf_set_text(
                     buf, line, col, line, col,
                     { ", default_features = false" }
                 )
-            elseif crate.feat_text then
-                local col = crate.feat_decl_col.s
+            elseif crate.feat then
+                local col = crate.feat.decl_col.s
                 vim.api.nvim_buf_set_text(
                     buf, line, col, line, col,
                     { " default_features = false," }

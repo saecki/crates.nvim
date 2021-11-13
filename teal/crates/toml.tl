@@ -1,30 +1,42 @@
 local record M
-    record Crate -- TODO break up into req, feat, and def records
+    record Crate
         name: string
         lines: Range
         syntax: Syntax
-        reqs: {Requirement}
-        req_text: string
-        req_has_suffix: boolean
-        req_line: integer -- 0-indexed
-        req_col: Range
-        req_decl_col: Range
-        req_quote: Quotes
-        feats: {CrateFeature}
-        feat_text: string
-        feat_line: integer -- 0-indexed
-        feat_col: Range
-        feat_decl_col: Range
-        def: boolean
-        def_text: string
-        def_line: integer -- 0-indexed
-        def_col: Range
-        def_decl_col: Range
+        vers: Vers
+        def: Def
+        feat: Feat
 
         enum Syntax
             "plain"
             "inline_table"
             "table"
+        end
+
+        record Vers
+            reqs: {Requirement}
+            text: string
+            has_suffix: boolean
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+            quote: Quotes
+        end
+
+        record Def
+            enabled: boolean
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+        end
+
+        record Feat
+            items: {CrateFeature}
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
         end
     end
 
@@ -38,7 +50,7 @@ local record M
 
     record Quotes
         s: string
-        e: string
+        e: string|nil
     end
 end
 
@@ -64,31 +76,41 @@ function M.parse_crate_features(text: string): {CrateFeature}
 end
 
 function Crate.new(obj: Crate): Crate
-    if obj.req_text then
-        obj.reqs = semver.parse_requirements(obj.req_text)
+    if obj.vers then
+        obj.vers.reqs = semver.parse_requirements(obj.vers.text)
 
-        obj.req_has_suffix = false
-        for _,r in ipairs(obj.reqs) do
+        obj.vers.has_suffix = false
+        for _,r in ipairs(obj.vers.reqs) do
             if r.vers.suffix then
-                obj.req_has_suffix = true
+                obj.vers.has_suffix = true
                 break
             end
         end
     end
-    if obj.feat_text then
-        obj.feats = M.parse_crate_features(obj.feat_text)
+    if obj.feat then
+        obj.feat.items = M.parse_crate_features(obj.feat.text)
     end
-    if obj.def_text then
-        obj.def = obj.def_text ~= "false"
+    if obj.def then
+        obj.def.enabled = obj.def.text ~= "false"
     end
 
     return setmetatable(obj, { __index = Crate })
 end
 
-function Crate:get_feat(name: string): CrateFeature|nil, integer
-    if not self.feats then return nil end
+function Crate:vers_reqs(): {Requirement}|nil
+    return self.vers and self.vers.reqs
+end
 
-    for i,f in ipairs(self.feats) do
+function Crate:vers_has_suffix(): boolean|nil
+    return self.vers and self.vers.has_suffix
+end
+
+function Crate:get_feat(name: string): CrateFeature|nil, integer
+    if not self.feat or not self.feat.items then
+        return nil
+    end
+
+    for i,f in ipairs(self.feat.items) do
         if f.name == name then
             return f, i
         end
@@ -97,16 +119,22 @@ function Crate:get_feat(name: string): CrateFeature|nil, integer
     return nil
 end
 
+function Crate:is_def_enabled(): boolean
+    return not self.def or self.def.enabled
+end
 
-function M.parse_crate_table_req(line: string): Crate
-    local qs, vs, req_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-    if qs and vs and req_text and ve then
+
+function M.parse_crate_table_vers(line: string): Crate
+    local qs, vs, vers_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if qs and vs and vers_text and ve then
         return {
-            req_text = req_text,
-            req_col = Range.new(vs as integer - 1, ve as integer - 1),
-            req_decl_col = Range.new(0, line:len()),
-            req_quote = { s = qs, e = qe ~= "" and qe or nil },
             syntax = "table",
+            vers = {
+                text = vers_text,
+                col = Range.new(vs as integer - 1, ve as integer - 1),
+                decl_col = Range.new(0, line:len()),
+                quote = { s = qs, e = qe ~= "" and qe or nil },
+            }
         }
     end
 
@@ -117,10 +145,12 @@ function M.parse_crate_table_feat(line: string): Crate
     local fs, feat_text, fe = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
     if fs and feat_text and fe then
         return {
-            feat_text = feat_text,
-            feat_col = Range.new(fs as integer - 1, fe as integer - 1),
-            feat_decl_col = Range.new(0, line:len()),
             syntax = "table",
+            feat = {
+                text = feat_text,
+                col = Range.new(fs as integer - 1, fe as integer - 1),
+                decl_col = Range.new(0, line:len()),
+            }
         }
     end
 
@@ -131,10 +161,12 @@ function M.parse_crate_table_def(line: string): Crate
     local ds, def_text, de = line:match("^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$")
     if ds and def_text and de then
         return {
-            def_text = def_text,
-            def_col = Range.new(ds as integer - 1, de as integer - 1),
-            def_decl_col = Range.new(0, line:len()),
             syntax = "table",
+            def = {
+                text = def_text,
+                col = Range.new(ds as integer - 1, de as integer - 1),
+                decl_col = Range.new(0, line:len()),
+            }
         }
     end
 
@@ -143,20 +175,22 @@ end
 
 function M.parse_crate(line: string): Crate
     local name: string
-    local vds, qs, vs, req_text, ve, qe, vde: string, string, string, string, string, string, string
+    local vds, qs, vs, vers_text, ve, qe, vde: string, string, string, string, string, string, string
     local fds, fs, feat_text, fe, fde: string, string, string, string, string
     local dds, ds, def_text, de, dde: string, string, string, string, string
 
     -- plain version
-    name, qs, vs, req_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
-    if name and qs and vs and req_text and ve then
+    name, qs, vs, vers_text, ve, qe = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+    if name and qs and vs and vers_text and ve then
         return {
             name = name,
-            req_text = req_text,
-            req_col = Range.new(vs as integer - 1, ve as integer - 1),
-            req_decl_col = Range.new(0, line:len()),
-            req_quote = { s = qs as integer, e = qe as integer },
             syntax = "plain",
+            vers = {
+                text = vers_text,
+                col = Range.new(vs as integer - 1, ve as integer - 1),
+                decl_col = Range.new(0, line:len()),
+                quote = { s = qs as integer, e = qe as integer },
+            }
         }
     end
 
@@ -164,34 +198,40 @@ function M.parse_crate(line: string): Crate
     local crate: Crate = {}
 
     local vers_pat = [[^%s*([^%s]+)%s*=%s*{.-[,]?()%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
-    name, vds, qs, vs, req_text, ve, qe, vde = line:match(vers_pat)
-    if name and vds and qs and vs and req_text and ve and qe and vde then
+    name, vds, qs, vs, vers_text, ve, qe, vde = line:match(vers_pat)
+    if name and vds and qs and vs and vers_text and ve and qe and vde then
         crate.name = name
-        crate.req_text = req_text
-        crate.req_col = Range.new(vs as integer - 1, ve as integer - 1)
-        crate.req_decl_col = Range.new(vds as integer - 1, vde as integer - 1)
-        crate.req_quote = { s = qs, e = qe ~= "" and qe or nil }
         crate.syntax = "inline_table"
+        crate.vers = {
+            text = vers_text,
+            col = Range.new(vs as integer - 1, ve as integer - 1),
+            decl_col = Range.new(vds as integer - 1, vde as integer - 1),
+            quote = { s = qs, e = qe ~= "" and qe or nil },
+        }
     end
 
     local feat_pat = "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
     name, fds, fs, feat_text, fe, fde = line:match(feat_pat)
     if name and fds and fs and feat_text and fe and fde then
         crate.name = name
-        crate.feat_text = feat_text
-        crate.feat_col = Range.new(fs as integer - 1, fe as integer - 1)
-        crate.feat_decl_col = Range.new(fds as integer - 1, fde as integer - 1)
         crate.syntax = "inline_table"
+        crate.feat = {
+            text = feat_text,
+            col = Range.new(fs as integer - 1, fe as integer - 1),
+            decl_col = Range.new(fds as integer - 1, fde as integer - 1),
+        }
     end
 
     local def_pat = "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*default[_-]features%s*=%s*()([a-zA-Z]*)()%s*()[,]?.*[}]?%s*$"
     name, dds, ds, def_text, de, dde = line:match(def_pat)
     if name and dds and ds and def_text and de and dde then
         crate.name = name
-        crate.def_text = def_text
-        crate.def_col = Range.new(ds as integer - 1, de as integer - 1)
-        crate.def_decl_col = Range.new(dds as integer - 1, dde as integer - 1)
         crate.syntax = "inline_table"
+        crate.def = {
+            text = def_text,
+            col = Range.new(ds as integer - 1, de as integer - 1),
+            decl_col = Range.new(dds as integer - 1, dde as integer - 1),
+        }
     end
 
     if crate.name then
@@ -239,33 +279,39 @@ function M.parse_crates(buf: integer): {Crate}
                 dep_table_crate_name = nil
             end
         elseif in_dep_table and dep_table_crate_name then
-            local crate_req = M.parse_crate_table_req(l)
-            if crate_req then
-                crate_req.name = dep_table_crate_name
-                crate_req.req_line = i - 1
-                dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_req as table) as Crate
+            local crate_vers = M.parse_crate_table_vers(l)
+            if crate_vers then
+                crate_vers.name = dep_table_crate_name
+                crate_vers.vers.line = i - 1
+                dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_vers as table) as Crate
             end
 
             local crate_feat = M.parse_crate_table_feat(l)
             if crate_feat then
                 crate_feat.name = dep_table_crate_name
-                crate_feat.feat_line = i - 1
+                crate_feat.feat.line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_feat as table) as Crate
             end
 
             local crate_def = M.parse_crate_table_def(l)
             if crate_def then
                 crate_def.name = dep_table_crate_name
-                crate_def.def_line = i - 1
+                crate_def.def.line = i - 1
                 dep_table_crate = vim.tbl_extend("keep", dep_table_crate as table or {}, crate_def as table) as Crate
             end
         elseif in_dep_table then
             local crate = M.parse_crate(l)
             if crate then
                 crate.lines = Range.new(i - 1, i)
-                crate.req_line = i - 1
-                crate.feat_line = i - 1
-                crate.def_line = i - 1
+                if crate.vers then
+                    crate.vers.line = i - 1
+                end
+                if crate.def then
+                    crate.def.line = i - 1
+                end
+                if crate.feat then
+                    crate.feat.line = i - 1
+                end
                 table.insert(crates, Crate.new(crate))
             end
         end

@@ -74,8 +74,8 @@ local function line_crate_info()
    local crate = crates[1].crate
    local versions = crates[1].versions
 
-   local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-   local newest = util.get_newest(versions, avoid_pre, crate.reqs)
+   local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+   local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
    local info = {
       crate = crate,
@@ -88,8 +88,8 @@ local function line_crate_info()
    end
 
    local function features_info()
-      for _, cf in ipairs(crate.feats) do
-         if cf.decl_col:contains(col - crate.feat_col.s) then
+      for _, cf in ipairs(crate.feat.items) do
+         if cf.decl_col:contains(col - crate.feat.col.s) then
             info.feature = newest.features:get_feat(cf.name)
             break
          end
@@ -113,17 +113,17 @@ local function line_crate_info()
    if crate.syntax == "plain" then
       versions_info()
    elseif crate.syntax == "table" then
-      if line == crate.feat_line then
+      if line == crate.feat.line then
          features_info()
-      elseif line == crate.def_line then
+      elseif line == crate.def.line then
          default_features_info()
       else
          versions_info()
       end
    elseif crate.syntax == "inline_table" then
-      if crate.feat_text and line == crate.feat_line and crate.feat_decl_col:contains(col) then
+      if crate.feat and line == crate.feat.line and crate.feat.decl_col:contains(col) then
          features_info()
-      elseif crate.def_text and line == crate.def_line and crate.def_decl_col:contains(col) then
+      elseif crate.def and line == crate.def.line and crate.def.decl_col:contains(col) then
          default_features_info()
       else
          versions_info()
@@ -364,24 +364,16 @@ function Popup.select_version(buf, name, index, smart)
       local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
       line = toml.trim_comments(line)
       if crate.syntax == "table" then
-         local c = toml.parse_crate_table_req(line)
+         local c = toml.parse_crate_table_vers(line)
          if c then
-            crate.req_line = l
-            crate.req_text = c.req_text
-            crate.req_has_suffix = c.req_has_suffix
-            crate.req_col = c.req_col
-            crate.req_decl_col = c.req_decl_col
-            crate.req_quote = c.req_quote
+            crate.vers = c.vers
+            crate.vers.line = l
          end
       elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
          local c = toml.parse_crate(line)
-         if c and c.req_text then
-            crate.req_line = l
-            crate.req_text = c.req_text
-            crate.req_has_suffix = c.req_has_suffix
-            crate.req_col = c.req_col
-            crate.req_decl_col = c.req_decl_col
-            crate.req_quote = c.req_quote
+         if c and c.vers then
+            crate.vers = c.vers
+            crate.vers.line = l
          end
       end
    end
@@ -547,7 +539,7 @@ function Popup.toggle_feature(index)
    local line_range
    local crate_feature = crate:get_feat(selected_feature.name)
    if selected_feature.name == "default" then
-      if crate_feature ~= nil or crate.def ~= false then
+      if crate_feature ~= nil or crate:is_def_enabled() then
          line_range = util.disable_def_features(buf, crate, crate_feature)
       else
          line_range = util.enable_def_features(buf, crate)
@@ -566,31 +558,31 @@ function Popup.toggle_feature(index)
       local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
       line = toml.trim_comments(line)
       if crate.syntax == "table" then
-         local cr = toml.parse_crate_table_req(line)
+         local cr = toml.parse_crate_table_vers(line)
          if cr then
-            cr.req_line = l
+            cr.vers.line = l
             table.insert(c, cr)
-         end
-         local cf = toml.parse_crate_table_feat(line)
-         if cf then
-            cf.feat_line = l
-            table.insert(c, cf)
          end
          local cd = toml.parse_crate_table_def(line)
          if cd then
-            cd.def_line = l
+            cd.def.line = l
             table.insert(c, cd)
+         end
+         local cf = toml.parse_crate_table_feat(line)
+         if cf then
+            cf.feat.line = l
+            table.insert(c, cf)
          end
       elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
          local cf = toml.parse_crate(line)
-         if cf and cf.req_text then
-            cf.req_line = l
+         if cf and cf.vers then
+            cf.vers.line = l
          end
-         if cf and cf.feat_text then
-            cf.feat_line = l
+         if cf and cf.def then
+            cf.def.line = l
          end
-         if cf and cf.def_text then
-            cf.def_line = l
+         if cf and cf.feat then
+            cf.feat.line = l
          end
          table.insert(c, cf)
       end

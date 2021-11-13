@@ -61,8 +61,8 @@ end
 local function complete_features(crate: Crate, versions: {Version}): {lsp.CompletionItem}
     local results = {}
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate.req_has_suffix
-    local newest = util.get_newest(versions, avoid_pre, crate.reqs)
+    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+    local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
     for _,f in ipairs(newest.features) do
         local crate_feat = crate:get_feat(f.name)
@@ -97,11 +97,11 @@ function M:complete(_: cmp.SourceCompletionApiParams, callback: function({lsp.Co
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    if crate.reqs and crate.req_line == line and crate.req_col:moved(0, 1):contains(col) then
+    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
         callback(complete_versions(versions))
-    elseif crate.feats and crate.feat_line == line and crate.feat_col:moved(0, 1):contains(col) then
-        for _,f in ipairs(crate.feats) do
-            if f.col:moved(0, 1):contains(col - crate.feat_col.s) then
+    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
+        for _,f in ipairs(crate.feat.items) do
+            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
                 callback(complete_features(crate, versions))
                 return
             end
