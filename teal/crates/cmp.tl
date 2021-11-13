@@ -65,18 +65,13 @@ local function complete_features(crate: Crate, versions: {Version}): {lsp.Comple
     local newest = util.get_newest(versions, avoid_pre, crate.reqs)
 
     for _,f in ipairs(newest.features) do
-        local contains_feature = false
-        for _,cf in ipairs(crate.feats) do
-            if cf.name == f.name then
-                contains_feature = true
-                break
-            end
-        end
-        if not contains_feature then
+        local crate_feat = crate:get_feat(f.name)
+        if not crate_feat then
             local r: lsp.CompletionItem = {
                 label = f.name,
                 kind = cmp.lsp.CompletionItemKind.Value,
                 sortText = f.name,
+                documentation = table.concat(f.members, "\n"),
             }
 
             table.insert(results, r)

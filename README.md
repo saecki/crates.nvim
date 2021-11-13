@@ -294,7 +294,6 @@ end
 ```
 
 ## TODO
-- better cmp documentation for features
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
