@@ -128,20 +128,49 @@ function M.features_info(crate, features)
 end
 
 function M.set_version(buf, crate, text)
-   if not crate.req_text then return end
+   if not crate.req_text then
+      if crate.syntax == "table" then
+         local line = crate.lines.s + 1
+         vim.api.nvim_buf_set_lines(
+         buf, line, line, false,
+         { 'version = "' .. text .. '"' })
 
-   local t = text
-   if not crate.req_quote.e then
-      t = text .. crate.req_quote.s
+         return crate.lines:moved(0, 1)
+      elseif crate.syntax == "inline_table" then
+         local line = crate.lines.s
+         local def_col_start = 0
+         if crate.def_text then
+            def_col_start = crate.def_decl_col.s
+         end
+         local feat_col_start = 0
+         if crate.feat_text then
+            feat_col_start = crate.feat_decl_col.s
+         end
+         local col = math.max(def_col_start, feat_col_start)
+         vim.api.nvim_buf_set_text(
+         buf, line, col, line, col,
+         { ' version = "' .. text .. '",' })
+
+         return Range.pos(line)
+      elseif crate.syntax == "plain" then
+         return Range.empty()
+      end
+   else
+      local t = text
+      if not crate.req_quote.e then
+         t = text .. crate.req_quote.s
+      end
+      local line = crate.req_line
+      vim.api.nvim_buf_set_text(
+      buf,
+      line,
+      crate.req_col.s,
+      line,
+      crate.req_col.e,
+      { t })
+
+      return Range.pos(line)
    end
-   vim.api.nvim_buf_set_text(
-   buf,
-   crate.req_line,
-   crate.req_col.s,
-   crate.req_line,
-   crate.req_col.e,
-   { t })
-
 end
 
 local function replace_existing(r, version)
@@ -157,9 +186,8 @@ local function replace_existing(r, version)
 end
 
 function M.set_version_smart(buf, crate, version)
-   if #crate.reqs == 0 then
-      M.set_version(buf, crate, version:display())
-      return
+   if not crate.reqs or #crate.reqs == 0 then
+      return M.set_version(buf, crate, version:display())
    end
 
    local pos = 1
@@ -257,7 +285,7 @@ function M.set_version_smart(buf, crate, version)
    end
    text = text .. string.sub(crate.req_text, pos)
 
-   M.set_version(buf, crate, text)
+   return M.set_version(buf, crate, text)
 end
 
 function M.upgrade_crates(crates, smart)
@@ -431,16 +459,17 @@ function M.disable_def_features(buf, crate, feature)
       M.disable_feature(buf, crate, feature)
    end
 
-   local line_inserted = false
    if crate.def_text then
+      local line = crate.def_line
       vim.api.nvim_buf_set_text(
       buf,
-      crate.def_line,
+      line,
       crate.def_col.s,
-      crate.def_line,
+      line,
       crate.def_col.e,
       { "false" })
 
+      return Range.pos(line)
    else
       if crate.syntax == "table" then
          local line = math.max((crate.req_line or 0) + 1, crate.feat_line or 0)
@@ -451,7 +480,7 @@ function M.disable_def_features(buf, crate, feature)
          false,
          { "default_features = false" })
 
-         line_inserted = true
+         return crate.lines:moved(0, 1)
       elseif crate.syntax == "plain" then
          local t = ", default_features = false }"
          local col = crate.req_col.e
@@ -478,6 +507,7 @@ function M.disable_def_features(buf, crate, feature)
          crate.req_col.s - 1,
          { "{ version = " })
 
+         return Range.pos(line)
       elseif crate.syntax == "inline_table" then
          local line = crate.lines.s
          if crate.req_text then
@@ -496,13 +526,8 @@ function M.disable_def_features(buf, crate, feature)
             { " default_features = false," })
 
          end
+         return Range.pos(line)
       end
-   end
-
-   if line_inserted then
-      return crate.lines:moved(0, 1)
-   else
-      return crate.lines
    end
 end
 

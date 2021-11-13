@@ -15,6 +15,10 @@ function Range.pos(p: integer): Range
     return Range.new(p, p + 1)
 end
 
+function Range.empty(): Range
+    return Range.new(0, 0)
+end
+
 function Range:contains(pos: integer): boolean
     return self.s <= pos and pos <  self.e
 end

@@ -340,7 +340,7 @@ function Popup.select_version(buf: integer, name: string, index: integer, smart:
     if not crates then return end
 
     local crate = crates[name]
-    if not crate or not crate.reqs then return end
+    if not crate then return end
 
     local versions = core.vers_cache[name]
     if not versions then return end
@@ -352,25 +352,38 @@ function Popup.select_version(buf: integer, name: string, index: integer, smart:
         smart = core.cfg.smart_insert
     end
 
+    local line_range: Range
     if smart then
-        util.set_version_smart(buf, crate, version.parsed)
+        line_range = util.set_version_smart(buf, crate, version.parsed)
     else
-        util.set_version(buf, crate, version.num)
+        line_range = util.set_version(buf, crate, version.num)
     end
 
-    -- update crate position
-    local line = vim.api.nvim_buf_get_lines(buf, crate.req_line, crate.req_line + 1, false)[1]
-    line = toml.trim_comments(line)
-    local c: Crate = nil
-    if crate.syntax == "table" then
-        c = toml.parse_crate_table_req(line)
-    elseif crate.syntax == "plain" then
-        c = toml.parse_crate(line)
-    elseif crate.syntax == "inline_table" then
-        c = toml.parse_crate(line)
-    end
-    if c then
-        crate.req_col = c.req_col
+    -- update crate
+    for l in line_range:iter() do
+        local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+        line = toml.trim_comments(line)
+        if crate.syntax == "table" then
+            local c = toml.parse_crate_table_req(line)
+            if c then
+                crate.req_line = l
+                crate.req_text = c.req_text
+                crate.req_has_suffix = c.req_has_suffix
+                crate.req_col = c.req_col
+                crate.req_decl_col = c.req_decl_col
+                crate.req_quote = c.req_quote
+            end
+        elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
+            local c = toml.parse_crate(line)
+            if c and c.req_text then
+                crate.req_line = l
+                crate.req_text = c.req_text
+                crate.req_has_suffix = c.req_has_suffix
+                crate.req_col = c.req_col
+                crate.req_decl_col = c.req_decl_col
+                crate.req_quote = c.req_quote
+            end
+        end
     end
 end
 
