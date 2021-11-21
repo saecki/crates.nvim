@@ -8,7 +8,7 @@ end
 
 local api = require('crates.api')
 local Version = api.Version
-local Config = require('crates.config')
+local Config = require('crates.config').Config
 local core = require('crates.core')
 local popup = require('crates.popup')
 local toml = require('crates.toml')

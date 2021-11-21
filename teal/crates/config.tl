@@ -1,168 +1,443 @@
-local record Config
-    smart_insert: boolean
-    avoid_prerelease: boolean
-    autoload: boolean
-    autoupdate: boolean
-    loading_indicator: boolean
-    date_format: string
-    text: TextConfig
-    highlight: HighlightConfig
-    popup: PopupConfig
-    cmp: CmpConfig
+local record M
+    schema: {string:SchemaElement|table}
 
-    record TextConfig
-        loading: string
-        version: string
-        prerelease: string
-        yanked: string
-        nomatch: string
-        upgrade: string
-        error: string
+    record Config
+        smart_insert: boolean
+        avoid_prerelease: boolean
+        autoload: boolean
+        autoupdate: boolean
+        loading_indicator: boolean
+        date_format: string
+        text: TextConfig
+        highlight: HighlightConfig
+        popup: PopupConfig
+        cmp: CmpConfig
+
+        record TextConfig
+            loading: string
+            version: string
+            prerelease: string
+            yanked: string
+            nomatch: string
+            upgrade: string
+            error: string
+        end
+
+        record HighlightConfig
+            loading: string
+            version: string
+            prerelease: string
+            yanked: string
+            nomatch: string
+            upgrade: string
+            error: string
+        end
+
+        record PopupConfig
+            autofocus: boolean
+            copy_register: string
+            style: string
+            border: string|{string}
+            version_date: boolean
+            max_height: integer
+            min_width: integer
+            text: PopupTextConfig
+            highlight: PopupHighlightConfig
+            keys: PopupKeyConfig
+
+        end
+
+        record PopupTextConfig
+            title: string
+            version: string
+            prerelease: string
+            yanked: string
+            feature: string
+            enabled: string
+            transitive: string
+            date: string
+        end
+
+        record PopupHighlightConfig
+            title: string
+            version: string
+            prerelease: string
+            yanked: string
+            feature: string
+            enabled: string
+            transitive: string
+        end
+
+        record PopupKeyConfig
+            hide: {string}
+            select: {string}
+            select_dumb: {string}
+            copy_version: {string}
+            toggle_feature: {string}
+            goto_feature: {string}
+            jump_forward_feature: {string}
+            jump_back_feature: {string}
+        end
+
+        record CmpConfig
+            text: CmpTextConfig
+        end
+
+        record CmpTextConfig
+            prerelease: string
+            yanked: string
+        end
     end
 
-    record HighlightConfig
-        loading: string
-        version: string
-        prerelease: string
-        yanked: string
-        nomatch: string
-        upgrade: string
-        error: string
+    enum Type
+        "section"
+        "table"
+        "string"
+        "number"
+        "boolean"
     end
 
-    record PopupConfig
-        autofocus: boolean
-        copy_register: string
-        style: string
-        border: string|{string}
-        version_date: boolean
-        max_height: integer
-        min_width: integer
-        text: PopupTextConfig
-        highlight: PopupHighlightConfig
-        keys: PopupKeyConfig
+    record SchemaElement
+        type: Type|{Type}
+        default: any
+        default_text: string
+        description: string
+        deprecated: Deprecated|boolean
 
-    end
-
-    record PopupTextConfig
-        title: string
-        version: string
-        prerelease: string
-        yanked: string
-        feature: string
-        enabled: string
-        transitive: string
-        date: string
-    end
-
-    record PopupHighlightConfig
-        title: string
-        version: string
-        prerelease: string
-        yanked: string
-        feature: string
-        enabled: string
-        transitive: string
-    end
-
-    record PopupKeyConfig
-        hide: {string}
-        select: {string}
-        select_dumb: {string}
-        copy_version: {string}
-        toggle_feature: {string}
-        goto_feature: {string}
-        jump_forward_feature: {string}
-        jump_back_feature: {string}
-    end
-
-    record CmpConfig
-        text: CmpTextConfig
-    end
-
-    record CmpTextConfig
-        prerelease: string
-        yanked: string
+        record Deprecated
+            new_field: boolean
+            hard: boolean
+        end
     end
 end
 
-function Config.default(): Config
-    return {
-        smart_insert = true, -- try to be smart about inserting versions
-        avoid_prerelease = true, -- don't select a prerelease if the requirement does not have a suffix
-        autoload = true, -- automatically run update when opening a Cargo.toml
-        autoupdate = true, -- automatically update when editing text
-        loading_indicator = true, -- show a loading indicator while fetching crate versions
-        date_format = "%Y-%m-%d", -- the date format passed to os.date
+local Config = M.Config
+local SchemaElement = M.SchemaElement
+
+M.schema = {
+    smart_insert = {
+        type = "boolean",
+        default = true,
+        description = "try to be smart about inserting versions",
+    },
+    avoid_prerelease = {
+        type = "boolean",
+        default = true,
+        description = "don't select a prerelease if the requirement does not have a suffix",
+    },
+    autoload = {
+        type = "boolean",
+        default = true,
+        description = "automatically run update when opening a Cargo.toml",
+    },
+    autoupdate = {
+        type = "boolean",
+        default = true,
+        description = "automatically update when editing text",
+    },
+    loading_indicator = {
+        type = "boolean",
+        default = true,
+        description = "show a loading indicator while fetching crate versions",
+    },
+    date_format = {
+        type = "string",
+        default = "%Y-%m-%d",
+        description = "the date format passed to os.date",
+    },
+    text = {
+        type = "section",
+
+        loading = {
+            type = "string",
+            default = "   Loading",
+        },
+        version = {
+            type = "string",
+            default = "   %s",
+        },
+        prerelease = {
+            type = "string",
+            default = "   %s",
+        },
+        yanked = {
+            type = "string",
+            default = "   %s",
+        },
+        nomatch = {
+            type = "string",
+            default = "   No match",
+        },
+        upgrade = {
+            type = "string",
+            default = "   %s",
+        },
+        error = {
+            type = "string",
+            default = "   Error fetching crate",
+        },
+    },
+    highlight = {
+        type = "section",
+
+        loading = {
+            type = "string",
+            default = "CratesNvimLoading",
+        },
+        version = {
+            type = "string",
+            default = "CratesNvimVersion",
+        },
+        prerelease = {
+            type = "string",
+            default = "CratesNvimPreRelease",
+        },
+        yanked = {
+            type = "string",
+            default = "CratesNvimYanked",
+        },
+        nomatch = {
+            type = "string",
+            default = "CratesNvimNoMatch",
+        },
+        upgrade = {
+            type = "string",
+            default = "CratesNvimUpgrade",
+        },
+        error = {
+            type = "string",
+            default = "CratesNvimError",
+        },
+    },
+    popup = {
+        type = "section",
+
+        autofocus = {
+            type = "boolean",
+            default = false,
+            description = "focus the versions popup when opening it",
+        },
+        copy_register = {
+            type = "string",
+            default = '"',
+            description = "the register into which the version will be copied",
+        },
+        style = {
+            type = "string",
+            default = "minimal",
+            description = "same as nvim_open_win config.style",
+        },
+        border = {
+            type = { "string", "table" },
+            default = "none",
+            description = "same as nvim_open_win config.border",
+        },
+        version_date = {
+            type = "boolean",
+            default = false,
+            description = "display when a version was released",
+        },
+        max_height = {
+            type = "number",
+            default = 30,
+        },
+        min_width = {
+            type = "number",
+            default = 20,
+        },
         text = {
-            loading    = "   Loading",
-            version    = "   %s",
-            prerelease = "   %s",
-            yanked     = "   %s",
-            nomatch    = "   No match",
-            upgrade    = "   %s",
-            error      = "   Error fetching crate",
+            type = "section",
+
+            title = {
+                type = "string",
+                default = "  %s ",
+            },
+            
+            -- versions
+            version = {
+                type = "string",
+                default = "   %s ",
+            },
+            prerelease = {
+                type = "string",
+                default = "  %s ",
+            },
+            yanked = {
+                type = "string",
+                default = "  %s ",
+            },
+            
+            -- features
+            feature = {
+                type = "string",
+                default = "   %s ",
+            },
+            enabled = {
+                type = "string",
+                default = "  %s ",
+            },
+            transitive = {
+                type = "string",
+                default = "  %s ",
+            },
+            date = {
+                type = "string",
+                default = " %s ",
+            },
         },
         highlight = {
-            loading    = "CratesNvimLoading",
-            version    = "CratesNvimVersion",
-            prerelease = "CratesNvimPreRelease",
-            yanked     = "CratesNvimYanked",
-            nomatch    = "CratesNvimNoMatch",
-            upgrade    = "CratesNvimUpgrade",
-            error      = "CratesNvimError",
-        },
-        popup = {
-            autofocus = false, -- focus the versions popup when opening it
-            copy_register = '"', -- the register into which the version will be copied
-            style = "minimal", -- same as nvim_open_win config.style
-            border = "none", -- same as nvim_open_win config.border
-            version_date = false, -- display when a version was released
-            max_height = 30,
-            min_width = 20,
-            text = {
-                title      = "  %s ",
-                -- versions
-                version    = "   %s ",
-                prerelease = "  %s ",
-                yanked     = "  %s ",
-                -- features
-                feature    = "   %s ",
-                enabled    = "  %s ",
-                transitive = "  %s ",
-                date       = " %s ",
+            type = "section",
+
+            title = {
+                type = "string",
+                default = "CratesNvimPopupTitle",
             },
-            highlight = {
-                title      = "CratesNvimPopupTitle",
-                -- versions
-                version    = "CratesNvimPopupVersion",
-                prerelease = "CratesNvimPopupPreRelease",
-                yanked     = "CratesNvimPopupYanked",
-                -- features
-                feature    = "CratesNvimPopupFeature",
-                enabled    = "CratesNvimPopupEnabled",
-                transitive = "CratesNvimPopupTransitive",
+
+            -- versions
+            version = {
+                type = "string",
+                default = "CratesNvimPopupVersion",
             },
-            keys = {
-                hide = { "q", "<esc>" },
-                -- versions
-                select = { "<cr>" },
-                select_dumb = { "s" },
-                copy_version = { "yy" },
-                -- features
-                toggle_feature = { "<cr>" },
-                goto_feature = { "gd", "K" },
-                jump_forward_feature = { "<c-i>" },
-                jump_back_feature = { "<c-o>" },
+            prerelease = {
+                type = "string",
+                default = "CratesNvimPopupPreRelease",
+            },
+            yanked = {
+                type = "string",
+                default = "CratesNvimPopupYanked",
+            },
+
+            -- features
+            feature = {
+                type = "string",
+                default = "CratesNvimPopupFeature",
+            },
+            enabled = {
+                type = "string",
+                default = "CratesNvimPopupEnabled",
+            },
+            transitive = {
+                type = "string",
+                default = "CratesNvimPopupTransitive",
             },
         },
-        cmp = {
-            text = {
-                prerelease = "  pre-release ",
-                yanked     = "  yanked ",
+        keys = {
+            type = "section",
+
+            hide = {
+                type = "table",
+                default = { "q", "<esc>" },
+            },
+
+            -- versions
+            select = {
+                type = "table",
+                default = { "<cr>" },
+            },
+            select_dumb = {
+                type = "table",
+                default = { "s" },
+            },
+            copy_version = {
+                type = "table",
+                default = { "yy" },
+            },
+
+            -- features
+            toggle_feature = {
+                type = "table",
+                default = { "<cr>" },
+            },
+            goto_feature = {
+                type = "table",
+                default = { "gd", "K" },
+            },
+            jump_forward_feature = {
+                type = "table",
+                default = { "<c-i>" },
+            },
+            jump_back_feature = {
+                type = "table",
+                default = { "<c-o>" },
             },
         },
-    }
+    },
+    cmp = {
+        type = "section",
+
+        text = {
+            type = "section",
+
+            prerelease = {
+                type = "string",
+                default = "  pre-release ",
+            },
+            yanked = {
+                type = "string",
+                default = "  yanked ",
+            },
+        },
+    },
+}
+
+local function warn(s: string, ...:any)
+    vim.notify(s:format(...), vim.log.levels.WARN, { title = "crates" })
 end
 
-return Config
+local function validate_schema(path: {string}, schema: {string:SchemaElement}, user_config: {string:any})
+    for k,v in pairs(user_config) do
+        local elem = schema[k]
+        if elem then
+            local value_type = type(v)
+            if elem.type == "section" then
+                local p = {}
+                for i,c in ipairs(path) do
+                    p[i] = c
+                end
+                table.insert(p, k)
+
+                if value_type == "table" then
+                    validate_schema(p, elem as {string:SchemaElement}, v as {string:any})
+                else
+                    warn(
+                        "Config field %s was expected to be of type 'table' but was '%s'",
+                        table.concat(p, "."),
+                        value_type
+                    )
+                end
+            else
+                local elem_types = elem.type
+                if type(elem.type) == "string" then
+                    elem_types = { elem.type }
+                end
+
+                if not vim.tbl_contains(elem_types, value_type) then
+                    warn(
+                        "Config field %s was expected to be of type '%s' but was '%s'",
+                        table.concat(path, ".") .. "." .. k,
+                        table.concat(elem_types, " or "),
+                        value_type
+                    )
+                end
+            end
+        else
+            warn("Ignoring invalid config key '%s'", k)
+        end
+    end
+end
+
+function M.build(user_config: {string:any}): Config
+    user_config = user_config or {}
+    local config_type = type(user_config)
+    if config_type ~= "table" then
+        warn("Expected config of type 'table' found '%s'", config_type)
+        user_config = {}
+    end
+
+    validate_schema({}, M.schema, user_config)
+
+    build_config({}, M.schema, user_config)
+end
+
+
+return M

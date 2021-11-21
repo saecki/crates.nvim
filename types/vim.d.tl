@@ -206,6 +206,18 @@ global record vim
    val_idx: boolean
 
    types: {string|number:string|number}
+   
+   record Log
+      record Levels
+         WARN: string
+         ERROR: string
+      end
+      
+      levels: Levels
+   end
+   log: Log
+
+   notify: function(string, string, {string:any})
 
    record EventData --TODO: this is a vim thing, so types aren't really documented
       abort: any
