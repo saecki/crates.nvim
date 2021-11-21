@@ -1,4 +1,7 @@
 # crates.nvim
+[![CI](https://github.com/Saecki/crates.nvim/actions/workflows/CI.yml/badge.svg)](https://github.com/Saecki/crates.nvim/actions/workflows/CI.yml)
+![LOC](https://tokei.rs/b1/github/saecki/crates.nvim?category=code)
+
 A neovim plugin that helps managing crates.io dependencies.
 
 This project is still in it's infancy, so you might encounter some bugs.
