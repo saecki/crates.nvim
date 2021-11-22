@@ -110,7 +110,7 @@ function M.fetch_crate_versions(name: string, callback: function({Version}))
 
                     -- add missing default feature
                     if not version.features[1] or not (version.features[1].name == "default") then
-                        local new = { {
+                        local new = Features.new { {
                             name = "default",
                             members = {},
                         } }

@@ -110,10 +110,10 @@ function M.fetch_crate_versions(name, callback)
 
 
                if not version.features[1] or not (version.features[1].name == "default") then
-                  local new = { {
+                  local new = Features.new({ {
                      name = "default",
                      members = {},
-                  }, }
+                  }, })
                   for _, f in ipairs(version.features) do
                      table.insert(new, f)
                   end
