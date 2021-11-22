@@ -1,1 +1,3 @@
 require("vim")
+
+global unpack: function<T>({T}, number, number): T...
