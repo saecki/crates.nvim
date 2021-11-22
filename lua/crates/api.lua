@@ -110,14 +110,14 @@ function M.fetch_crate_versions(name, callback)
 
 
                if not version.features[1] or not (version.features[1].name == "default") then
-                  local new = Features.new({ {
+                  for i = #version.features, 1, -1 do
+                     version.features[i + 1] = version.features[i]
+                  end
+
+                  version.features[1] = {
                      name = "default",
                      members = {},
-                  }, })
-                  for _, f in ipairs(version.features) do
-                     table.insert(new, f)
-                  end
-                  version.features = new
+                  }
                end
 
                table.insert(versions, version)
