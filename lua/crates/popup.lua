@@ -587,7 +587,7 @@ function Popup.toggle_feature(index)
          table.insert(c, cf)
       end
    end
-   Popup.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, table.unpack(c)))
+   Popup.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate, unpack(c)))
    crate = Popup.feat_ctx.crate
 
 
