@@ -444,11 +444,7 @@ function M.enable_def_features(buf, crate)
    return Range.pos(crate.def.line)
 end
 
-function M.disable_def_features(buf, crate, feature)
-   if feature then
-      M.disable_feature(buf, crate, feature)
-   end
-
+local function disable_def_features(buf, crate)
    if crate.def then
       local line = crate.def.line
       vim.api.nvim_buf_set_text(
@@ -459,7 +455,7 @@ function M.disable_def_features(buf, crate, feature)
       crate.def.col.e,
       { "false" })
 
-      return Range.pos(line)
+      return crate.lines
    else
       if crate.syntax == "table" then
          local line = math.max((crate.vers.line or 0) + 1, crate.feat.line or 0)
@@ -497,7 +493,7 @@ function M.disable_def_features(buf, crate, feature)
          crate.vers.col.s - 1,
          { "{ version = " })
 
-         return Range.pos(line)
+         return crate.lines
       elseif crate.syntax == "inline_table" then
          local line = crate.lines.s
          if crate.vers then
@@ -516,8 +512,23 @@ function M.disable_def_features(buf, crate, feature)
             { " default_features = false," })
 
          end
-         return Range.pos(line)
+         return crate.lines
       end
+   end
+end
+
+function M.disable_def_features(buf, crate, feature)
+   if feature then
+      if crate.def and crate.def.col.s < crate.feat.col.s then
+         M.disable_feature(buf, crate, feature)
+         return disable_def_features(buf, crate)
+      else
+         local lines = disable_def_features(buf, crate)
+         M.disable_feature(buf, crate, feature)
+         return lines
+      end
+   else
+      return disable_def_features(buf, crate)
    end
 end
 
