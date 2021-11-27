@@ -254,6 +254,10 @@ Some examples of key mappings:
 ```viml
 nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
 nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
+
+nnoremap <silent> <leader>vv :lua require('crates').show_versions_popup()<cr>
+nnoremap <silent> <leader>vf :lua require('crates').show_features_popup()<cr>
+
 nnoremap <silent> <leader>vu :lua require('crates').update_crate()<cr>
 vnoremap <silent> <leader>vu :lua require('crates').update_crates()<cr>
 nnoremap <silent> <leader>va :lua require('crates').update_all_crates()<cr>
