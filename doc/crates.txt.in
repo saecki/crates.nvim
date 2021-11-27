@@ -1,0 +1,48 @@
+*crates.txt* Crates
+*crates.nvim*
+
+Author:   Tobias Schmitz <tobiasschmitz2001@gmail.com>
+Version:  0.1-dev
+Homepage: <https://github.com/saecki/crates.nvim>
+License:  MIT license
+
+==============================================================================
+INTRODUCTION                                                          *crates*
+
+Crates is a plugin that helps managing crates.io dependencies.
+
+==============================================================================
+USAGE                                                           *crates-usage*
+
+Basic setup:
+>
+    require('crates').setup()
+<
+
+==============================================================================
+MAPPINGS                                                     *crates-mappings*
+
+Crates doesn't use any default global mappings.
+
+But here are some recommended ones:
+>
+    nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
+    nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
+    nnoremap <silent> <leader>vu :lua require('crates').update_crate()<cr>
+    vnoremap <silent> <leader>vu :lua require('crates').update_crates()<cr>
+    nnoremap <silent> <leader>va :lua require('crates').update_all_crates()<cr>
+    nnoremap <silent> <leader>vU :lua require('crates').upgrade_crate()<cr>
+    vnoremap <silent> <leader>vU :lua require('crates').upgrade_crates()<cr>
+    nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
+<
+
+==============================================================================
+FUNCTIONS                                                   *crates-functions*
+
+<FUNCTIONS>
+
+==============================================================================
+CONFIGURATION                                                  *crates-config*
+
+<CONFIGURATION>
+
