@@ -102,11 +102,11 @@ local record M
         default: any
         default_text: string
         description: string
-        deprecated: Deprecated|boolean
+        deprecated: Deprecated
         fields: {string:SchemaElement}
 
         record Deprecated
-            new_field: boolean
+            new_field: {string}
             hard: boolean
         end
     end
@@ -179,6 +179,14 @@ M.schema = {
                 type = "string",
                 default = "   Error fetching crate",
             },
+
+            update = {
+                type = "string",
+                deprecated = {
+                    new_field = { "text", "upgrade" },
+                    hard = true,
+                },
+            },
         },
     },
     highlight = {
@@ -212,6 +220,14 @@ M.schema = {
             error = {
                 type = "string",
                 default = "CratesNvimError",
+            },
+
+            update = {
+                type = "string",
+                deprecated = {
+                    new_field = { "highlight", "upgrade" },
+                    hard = true,
+                },
             },
         },
     },
@@ -399,7 +415,7 @@ M.schema = {
 }
 
 local function warn(s: string, ...:any)
-    vim.notify(s:format(...), vim.log.levels.WARN, { title = "crates" })
+    vim.notify(s:format(...), vim.log.levels.WARN, { title = "crates.nvim" })
 end
 
 local function join_path(path: {string}, component: string): {string}
@@ -411,14 +427,72 @@ local function join_path(path: {string}, component: string): {string}
     return p
 end
 
-local function validate_schema(path: {string}, schema: {string:SchemaElement}, user_config: {string:any})
+local function table_set_path(t: {string:any}, path: {string}, value: any)
+    local current = t
+    for i,c in ipairs(path) do
+        if i == #path then
+            current[c] = value
+        elseif type(current[c]) == "table" then
+            current = current[c] as {string:any}
+        elseif current[c] == nil then
+            current[c] = {}
+            current = current[c] as {string:any}
+        else
+            break -- don't overwrite existing value
+        end
+    end
+end
+
+local function handle_deprecated(path: {string}, schema: {string:SchemaElement}, root_config: {string:any}, user_config: {string:any})
     for k,v in pairs(user_config) do
         local elem = schema[k]
+
+        if elem then
+            local p = join_path(path, k)
+            local dep = elem.deprecated
+
+            if dep then
+                if dep.new_field and not dep.hard then
+                    table_set_path(root_config, dep.new_field, v)
+                end
+            elseif elem.type == "section" and type(v) == "table" then
+                handle_deprecated(p, elem.fields, root_config, v as {string:any})
+            end
+        end
+    end
+end
+
+local function validate_schema(path: {string}, schema: {string:SchemaElement}, user_config: {string:any})
+    for k,v in pairs(user_config) do
+        local p = join_path(path, k)
+        local elem = schema[k]
+
         if elem then
             local value_type = type(v)
-            if elem.type == "section" then
-                local p = join_path(path, k)
+            local dep = elem.deprecated
 
+            if dep then
+                if dep.new_field then
+                    local dep_text: string
+                    if dep.hard then
+                        dep_text = "deprecated and won't work anymore"
+                    else
+                        dep_text = "deprecated and will stop working soon"
+                    end
+
+                    warn(
+                        "%s is now %s, please use %s",
+                        table.concat(p, "."),
+                        dep_text,
+                        table.concat(dep.new_field, ".")
+                    )
+                else
+                    warn(
+                        "%s is now deprecated, ignoring",
+                        table.concat(p, ".")
+                    )
+                end
+            elseif elem.type == "section" then
                 if value_type == "table" then
                     validate_schema(p, elem.fields, v as {string:any})
                 else
@@ -436,7 +510,6 @@ local function validate_schema(path: {string}, schema: {string:SchemaElement}, u
                     elem_types = elem.type as { SchemaType }
                 end
 
-                local p = join_path(path, k)
                 if not vim.tbl_contains(elem_types, value_type as SchemaType) then
                     warn(
                         "Config field %s was expected to be of type '%s' but was '%s', using default value.",
@@ -447,7 +520,6 @@ local function validate_schema(path: {string}, schema: {string:SchemaElement}, u
                 end
             end
         else
-            local p = join_path(path, k)
             warn(
                 "Ignoring invalid config key '%s'",
                 table.concat(p, ".")
@@ -495,6 +567,8 @@ function M.build(user_config: {string:any}): Config
         warn("Expected config of type 'table' found '%s'", config_type)
         user_config = {}
     end
+
+    handle_deprecated({}, M.schema, user_config, user_config)
 
     validate_schema({}, M.schema, user_config)
 
