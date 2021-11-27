@@ -252,7 +252,7 @@ M.schema = {
                 type = "string",
                 default = "  %s ",
             },
-            
+
             -- versions
             version = {
                 type = "string",
@@ -266,7 +266,7 @@ M.schema = {
                 type = "string",
                 default = "  %s ",
             },
-            
+
             -- features
             feature = {
                 type = "string",

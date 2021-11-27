@@ -56,7 +56,7 @@ local record cmp
     record SourceBaseApiParams
         option: table
     end
-    
+
     record SourceCompletionApiParams
         context: table
         offset: number
