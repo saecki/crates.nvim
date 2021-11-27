@@ -8,7 +8,8 @@ local M = {}
 
 local api = require('crates.api')
 local Version = api.Version
-local Config = require('crates.config')
+local config = require('crates.config')
+local Config = config.Config
 local core = require('crates.core')
 local popup = require('crates.popup')
 local toml = require('crates.toml')
@@ -162,12 +163,7 @@ end
 
 
 function M.setup(cfg)
-   local default = Config.default()
-   if cfg then
-      core.cfg = vim.tbl_deep_extend("keep", cfg, default)
-   else
-      core.cfg = vim.tbl_deep_extend("keep", core.cfg, default)
-   end
+   core.cfg = config.build(cfg)
 
    vim.cmd("augroup Crates")
    vim.cmd("autocmd!")
