@@ -481,14 +481,14 @@ local function validate_schema(path: {string}, schema: {string:SchemaElement}, u
                     end
 
                     warn(
-                        "%s is now %s, please use %s",
+                        "'%s' is now %s, please use '%s'",
                         table.concat(p, "."),
                         dep_text,
                         table.concat(dep.new_field, ".")
                     )
                 else
                     warn(
-                        "%s is now deprecated, ignoring",
+                        "'%s' is now deprecated, ignoring",
                         table.concat(p, ".")
                     )
                 end
@@ -497,7 +497,7 @@ local function validate_schema(path: {string}, schema: {string:SchemaElement}, u
                     validate_schema(p, elem.fields, v as {string:any})
                 else
                     warn(
-                        "Config field %s was expected to be of type 'table' but was '%s'",
+                        "Config field '%s' was expected to be of type 'table' but was '%s', using default value.",
                         table.concat(p, "."),
                         value_type
                     )
@@ -512,7 +512,7 @@ local function validate_schema(path: {string}, schema: {string:SchemaElement}, u
 
                 if not vim.tbl_contains(elem_types, value_type as SchemaType) then
                     warn(
-                        "Config field %s was expected to be of type '%s' but was '%s', using default value.",
+                        "Config field '%s' was expected to be of type '%s' but was '%s', using default value.",
                         table.concat(p, "."),
                         table.concat(elem_types, " or "),
                         value_type
