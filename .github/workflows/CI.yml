@@ -23,3 +23,7 @@ jobs:
 
     - name: Build crates.nvim
       run: tl build
+
+    - name: Check git status
+      run: if [[ $(git status --short lua) != "" ]]; then exit 1; fi
+
