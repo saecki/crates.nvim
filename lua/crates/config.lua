@@ -120,64 +120,110 @@ M.schema = {
    smart_insert = {
       type = "boolean",
       default = true,
-      description = "try to be smart about inserting versions",
+      description = [[
+            Try to be smart about inserting versions, by respecting existing version requirements.
+
+            Example: ~
+                Existing requirement:
+                `>0.8, <1.3`
+
+                Version to insert:
+                `1.5.4`
+
+                Resulting requirement:
+                `>0.1, <1.6`
+        ]],
    },
    avoid_prerelease = {
       type = "boolean",
       default = true,
-      description = "don't select a prerelease if the requirement does not have a suffix",
+      description = [[
+            Don't select a prerelease if the requirement does not have a suffix.
+        ]],
    },
    autoload = {
       type = "boolean",
       default = true,
-      description = "automatically run update when opening a Cargo.toml",
+      description = [[
+            Automatically run update when opening a Cargo.toml.
+        ]],
    },
    autoupdate = {
       type = "boolean",
       default = true,
-      description = "automatically update when editing text",
+      description = [[
+            Automatically update when editing text.
+        ]],
    },
    loading_indicator = {
       type = "boolean",
       default = true,
-      description = "show a loading indicator while fetching crate versions",
+      description = [[
+            Show a loading indicator while fetching crate versions.
+        ]],
    },
    date_format = {
       type = "string",
       default = "%Y-%m-%d",
-      description = "the date format passed to os.date",
+      description = [[
+            The date format passed to `os.date`.
+        ]],
    },
    text = {
       type = "section",
+      description = [[
+            Strings used to format virtual text.
+        ]],
 
       fields = {
          loading = {
             type = "string",
             default = "   Loading",
+            description = [[
+                    Format string used while loading crate information.
+                ]],
          },
          version = {
             type = "string",
             default = "   %s",
+            description = [[
+                    format string used for the latest compatible version
+                ]],
          },
          prerelease = {
             type = "string",
             default = "   %s",
+            description = [[
+                    Format string used for pre-release versions.
+                ]],
          },
          yanked = {
             type = "string",
             default = "   %s",
+            description = [[
+                    Format string used for yanked versions.
+                ]],
          },
          nomatch = {
             type = "string",
             default = "   No match",
+            description = [[
+                    Format string used when there is no matching version.
+                ]],
          },
          upgrade = {
             type = "string",
             default = "   %s",
+            description = [[
+                    Format string used when there is an upgrade candidate.
+                ]],
          },
          error = {
             type = "string",
             default = "   Error fetching crate",
+            description = [[
+                    Format string used when there was an error loading crate information.
+                ]],
          },
 
          update = {
@@ -186,40 +232,67 @@ M.schema = {
                new_field = { "text", "upgrade" },
                hard = true,
             },
+            description = [[
+                    See *crates-config-text-upgrade*.
+                ]],
          },
       },
    },
    highlight = {
       type = "section",
+      description = [[
+            Highlight groups used for virtual text.
+        ]],
 
       fields = {
          loading = {
             type = "string",
             default = "CratesNvimLoading",
+            description = [[
+                    Highlight group used while loading crate information.
+                ]],
          },
          version = {
             type = "string",
             default = "CratesNvimVersion",
+            description = [[
+                    Highlight group used for the latest compatible version.
+                ]],
          },
          prerelease = {
             type = "string",
             default = "CratesNvimPreRelease",
+            description = [[
+                    Highlight group used for pre-release versions.
+                ]],
          },
          yanked = {
             type = "string",
             default = "CratesNvimYanked",
+            description = [[
+                    Highlight group used for yanked versions.
+                ]],
          },
          nomatch = {
             type = "string",
             default = "CratesNvimNoMatch",
+            description = [[
+                    Highlight group used when there is no matching version.
+                ]],
          },
          upgrade = {
             type = "string",
             default = "CratesNvimUpgrade",
+            description = [[
+                    Highlight group used when there is an upgrade candidate.
+                ]],
          },
          error = {
             type = "string",
             default = "CratesNvimError",
+            description = [[
+                    Highlight group used when there was an error loading crate information.
+                ]],
          },
 
          update = {
@@ -228,165 +301,265 @@ M.schema = {
                new_field = { "highlight", "upgrade" },
                hard = true,
             },
+            description = [[
+                    See *crates-config-highlight-upgrade*.
+                ]],
          },
       },
    },
    popup = {
       type = "section",
+      description = [[
+            popup config
+        ]],
 
       fields = {
          autofocus = {
             type = "boolean",
             default = false,
-            description = "focus the versions popup when opening it",
+            description = [[
+                    Focus the versions popup when opening it.
+                ]],
          },
          copy_register = {
             type = "string",
             default = '"',
-            description = "the register into which the version will be copied",
+            description = [[
+                    The register into which the version will be copied.
+                ]],
          },
          style = {
             type = "string",
             default = "minimal",
-            description = "same as nvim_open_win config.style",
+            description = [[
+                    Same as nvim_open_win config.style.
+                ]],
          },
          border = {
             type = { "string", "table" },
             default = "none",
-            description = "same as nvim_open_win config.border",
+            description = [[
+                    Same as nvim_open_win config.border.
+                ]],
          },
          version_date = {
             type = "boolean",
             default = false,
-            description = "display when a version was released",
+            description = [[
+                    Display when a version was released.
+                ]],
          },
          max_height = {
             type = "number",
             default = 30,
+            description = [[
+                    The maximum height of the popup.
+                ]],
          },
          min_width = {
             type = "number",
             default = 20,
+            description = [[
+                    The minimum width of the popup.
+                ]],
          },
          text = {
             type = "section",
+            description = [[
+                    Strings used to format the text inside the popup.
+                ]],
 
             fields = {
                title = {
                   type = "string",
                   default = "  %s ",
+                  description = [[
+                            Format string used for the popup title.
+                        ]],
                },
 
 
                version = {
                   type = "string",
                   default = "   %s ",
+                  description = [[
+                            Format string used for release versions.
+                        ]],
                },
                prerelease = {
                   type = "string",
                   default = "  %s ",
+                  description = [[
+                            Format string used for prerelease versions.
+                        ]],
                },
                yanked = {
                   type = "string",
                   default = "  %s ",
+                  description = [[
+                            Format string used for yanked versions.
+                        ]],
+               },
+               date = {
+                  type = "string",
+                  default = " %s ",
+                  description = [[
+                            Format string used for appending the version release date.
+                        ]],
                },
 
 
                feature = {
                   type = "string",
                   default = "   %s ",
+                  description = [[
+                            Format string used for disabled features.
+                        ]],
                },
                enabled = {
                   type = "string",
                   default = "  %s ",
+                  description = [[
+                            Format string used for enabled features.
+                        ]],
                },
                transitive = {
                   type = "string",
                   default = "  %s ",
-               },
-               date = {
-                  type = "string",
-                  default = " %s ",
+                  description = [[
+                            Format string used for transitively enabled features.
+                        ]],
                },
             },
          },
          highlight = {
             type = "section",
+            description = [[
+                    Highlight groups for popup elements.
+                ]],
 
             fields = {
                title = {
                   type = "string",
                   default = "CratesNvimPopupTitle",
+                  description = [[
+                            TODO ~
+                        ]],
                },
 
 
                version = {
                   type = "string",
                   default = "CratesNvimPopupVersion",
+                  description = [[
+                            TODO ~
+                        ]],
                },
                prerelease = {
                   type = "string",
                   default = "CratesNvimPopupPreRelease",
+                  description = [[
+                            TODO ~
+                        ]],
                },
                yanked = {
                   type = "string",
                   default = "CratesNvimPopupYanked",
+                  description = [[
+                            TODO ~
+                        ]],
                },
 
 
                feature = {
                   type = "string",
                   default = "CratesNvimPopupFeature",
+                  description = [[
+                            TODO ~
+                        ]],
                },
                enabled = {
                   type = "string",
                   default = "CratesNvimPopupEnabled",
+                  description = [[
+                            TODO ~
+                        ]],
                },
                transitive = {
                   type = "string",
                   default = "CratesNvimPopupTransitive",
+                  description = [[
+                            TODO ~
+                        ]],
                },
             },
          },
          keys = {
             type = "section",
+            description = [[
+                    Key mappings inside the popup.
+                ]],
 
             fields = {
                hide = {
                   type = "table",
                   default = { "q", "<esc>" },
+                  description = [[
+                            Hides the popup.
+                        ]],
                },
 
 
                select = {
                   type = "table",
                   default = { "<cr>" },
+                  description = [[
+                            Insert the version respecting the |crates-config-smart_insert| flag.
+                        ]],
                },
                select_alt = {
                   type = "table",
                   default = { "s" },
+                  description = [[
+                            Insert the version using the opposite of |crates-config-smart_insert| flag.
+                        ]],
                },
                copy_version = {
                   type = "table",
                   default = { "yy" },
+                  description = [[
+                            TODO ~
+                        ]],
                },
 
 
                toggle_feature = {
                   type = "table",
                   default = { "<cr>" },
+                  description = [[
+                            TODO ~
+                        ]],
                },
                goto_feature = {
                   type = "table",
                   default = { "gd", "K" },
+                  description = [[
+                            TODO ~
+                        ]],
                },
                jump_forward_feature = {
                   type = "table",
                   default = { "<c-i>" },
+                  description = [[
+                            TODO ~
+                        ]],
                },
                jump_back_feature = {
                   type = "table",
                   default = { "<c-o>" },
+                  description = [[
+                            TODO ~
+                        ]],
                },
             },
          },
@@ -394,19 +567,31 @@ M.schema = {
    },
    cmp = {
       type = "section",
+      description = [[
+            TODO ~
+        ]],
 
       fields = {
          text = {
             type = "section",
+            description = [[
+                    TODO ~
+                ]],
 
             fields = {
                prerelease = {
                   type = "string",
                   default = "  pre-release ",
+                  description = [[
+                            TODO ~
+                        ]],
                },
                yanked = {
                   type = "string",
                   default = "  yanked ",
+                  description = [[
+                            TODO ~
+                        ]],
                },
             },
          },

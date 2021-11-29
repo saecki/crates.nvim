@@ -32,28 +32,28 @@ local function gen_config_doc(lines, path, schema)
         if s.deprecated then
             if s.deprecated.new_field then
                 local nf = table.concat(s.deprecated.new_field, ".")
-                table.insert(lines, string.format("    DEPRECATED: use %s instead", nf))
+                table.insert(lines, string.format("    DEPRECATED: please use %s", nf))
             else
                 table.insert(lines, "    DEPRECATED")
             end
             table.insert(lines, "")
         end
 
-        table.insert(lines, "    " .. s.description)
-        table.insert(lines, "")
-
-        if s.type ~= "section" then
+        if s.type == "section" then
+            table.insert(lines, "    Type: `section`")
+            table.insert(lines, "")
+        else
             local t = s.type
             if type(t) == "table" then
                 t = table.concat(t, " or ")
             end
-            table.insert(lines, string.format("    Type: `%s`", t))
-
             local d = inspect(s.default)
-            table.insert(lines, string.format("    Default: `%s`", d))
+            table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
             table.insert(lines, "")
         end
 
+        table.insert(lines, (s.description:gsub("^%s*", "    ")))
+        table.insert(lines, "")
 
         if s.type == "section" then
             gen_config_doc(lines, p, s.fields)
