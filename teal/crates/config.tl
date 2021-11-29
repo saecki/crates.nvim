@@ -71,7 +71,7 @@ local record M
         record PopupKeyConfig
             hide: {string}
             select: {string}
-            select_dumb: {string}
+            select_alt: {string}
             copy_version: {string}
             toggle_feature: {string}
             goto_feature: {string}
@@ -362,7 +362,7 @@ M.schema = {
                         type = "table",
                         default = { "<cr>" },
                     },
-                    select_dumb = {
+                    select_alt = {
                         type = "table",
                         default = { "s" },
                     },

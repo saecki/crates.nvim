@@ -312,19 +312,19 @@ function Popup.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
             vim.api.nvim_buf_set_keymap(Popup.buf, "n", k, select_cmd, { noremap = true, silent = true })
         end
 
-        local select_dumb_cmd = string.format(
-            ":lua require('crates.popup').select_version(%d, '%s', %s - %d, false)<cr>",
+        local select_alt_cmd = string.format(
+            ":lua require('crates.popup').select_version(%d, '%s', %s - %d, true)<cr>",
             util.current_buf(),
             crate.name,
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
         )
-        for _,k in ipairs(core.cfg.popup.keys.select_dumb) do
-            vim.api.nvim_buf_set_keymap(Popup.buf, "n", k, select_dumb_cmd, { noremap = true, silent = true })
+        for _,k in ipairs(core.cfg.popup.keys.select_alt) do
+            vim.api.nvim_buf_set_keymap(Popup.buf, "n", k, select_alt_cmd, { noremap = true, silent = true })
         end
 
         local copy_cmd = string.format(
-            ":lua require('crates.popup').copy_version('%s', %s - %d)<cr>",
+            ":lua require('crates.popup').copy_version('%s', %s - %d, true)<cr>",
             crate.name,
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
@@ -335,7 +335,7 @@ function Popup.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
     end)
 end
 
-function Popup.select_version(buf: integer, name: string, index: integer, smart: boolean|nil)
+function Popup.select_version(buf: integer, name: string, index: integer, alt: boolean|nil)
     local crates = core.crate_cache[buf]
     if not crates then return end
 
@@ -348,16 +348,8 @@ function Popup.select_version(buf: integer, name: string, index: integer, smart:
     local version = versions[index]
     if not version then return end
 
-    if smart == nil then
-        smart = core.cfg.smart_insert
-    end
-
     local line_range: Range
-    if smart then
-        line_range = util.set_version_smart(buf, crate, version.parsed)
-    else
-        line_range = util.set_version(buf, crate, version.num)
-    end
+    line_range = util.set_version(buf, crate, version.parsed, alt)
 
     -- update crate
     for l in line_range:iter() do

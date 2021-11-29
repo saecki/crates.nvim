@@ -94,24 +94,24 @@ end
 
 
 
-function M.upgrade_crate(smart)
+function M.upgrade_crate(alt)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
    local crates = util.get_lines_crates(Range.pos(linenr - 1))
-   util.upgrade_crates(crates, smart)
+   util.upgrade_crates(crates, alt)
 end
 
 
-function M.upgrade_crates(smart)
+function M.upgrade_crates(alt)
    local lines = Range.new(
    vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
    local crates = util.get_lines_crates(lines)
-   util.upgrade_crates(crates, smart)
+   util.upgrade_crates(crates, alt)
 end
 
 
-function M.upgrade_all_crates(smart)
+function M.upgrade_all_crates(alt)
    local cur_buf = util.current_buf()
    local crates = core.crate_cache[cur_buf]
    if not crates then return end
@@ -124,28 +124,28 @@ function M.upgrade_all_crates(smart)
       })
    end
 
-   util.upgrade_crates(crate_versions, smart)
+   util.upgrade_crates(crate_versions, alt)
 end
 
 
-function M.update_crate(smart)
+function M.update_crate(alt)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
    local crates = util.get_lines_crates(Range.pos(linenr - 1))
-   util.update_crates(crates, smart)
+   util.update_crates(crates, alt)
 end
 
 
-function M.update_crates(smart)
+function M.update_crates(alt)
    local lines = Range.new(
    vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
    local crates = util.get_lines_crates(lines)
-   util.update_crates(crates, smart)
+   util.update_crates(crates, alt)
 end
 
 
-function M.update_all_crates(smart)
+function M.update_all_crates(alt)
    local cur_buf = util.current_buf()
    local crates = core.crate_cache[cur_buf]
    if not crates then return end
@@ -158,7 +158,7 @@ function M.update_all_crates(smart)
       })
    end
 
-   util.update_crates(crate_versions, smart)
+   util.update_crates(crate_versions, alt)
 end
 
 

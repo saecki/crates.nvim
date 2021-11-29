@@ -362,7 +362,7 @@ M.schema = {
                   type = "table",
                   default = { "<cr>" },
                },
-               select_dumb = {
+               select_alt = {
                   type = "table",
                   default = { "s" },
                },

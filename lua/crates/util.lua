@@ -127,7 +127,7 @@ function M.features_info(crate, features)
    return info
 end
 
-function M.set_version(buf, crate, text)
+local function set_version_dumb(buf, crate, text)
    if not crate.vers then
       if crate.syntax == "table" then
          local line = crate.lines.s + 1
@@ -185,9 +185,9 @@ local function replace_existing(r, version)
    end
 end
 
-function M.set_version_smart(buf, crate, version)
+local function set_version_smart(buf, crate, version)
    if not crate:vers_reqs() or #crate:vers_reqs() == 0 then
-      return M.set_version(buf, crate, version:display())
+      return set_version_dumb(buf, crate, version:display())
    end
 
    local pos = 1
@@ -285,14 +285,25 @@ function M.set_version_smart(buf, crate, version)
    end
    text = text .. string.sub(crate.vers.text, pos)
 
-   return M.set_version(buf, crate, text)
+   return set_version_dumb(buf, crate, text)
 end
 
-function M.upgrade_crates(crates, smart)
-   if smart == nil then
+function M.set_version(buf, crate, version, alt)
+   local smart
+   if alt then
+      smart = not core.cfg.smart_insert
+   else
       smart = core.cfg.smart_insert
    end
 
+   if smart then
+      set_version_smart(buf, crate, version)
+   else
+      set_version_dumb(buf, crate, version:display())
+   end
+end
+
+function M.upgrade_crates(crates, alt)
    for _, c in ipairs(crates) do
       local crate = c.crate
       local versions = c.versions
@@ -302,20 +313,12 @@ function M.upgrade_crates(crates, smart)
       newest = newest or newest_pre or newest_yanked
 
       if newest then
-         if smart then
-            M.set_version_smart(0, crate, newest.parsed)
-         else
-            M.set_version(0, crate, newest.num)
-         end
+         M.set_version(0, crate, newest.parsed, alt)
       end
    end
 end
 
-function M.update_crates(crates, smart)
-   if smart == nil then
-      smart = core.cfg.smart_insert
-   end
-
+function M.update_crates(crates, alt)
    for _, c in ipairs(crates) do
       local crate = c.crate
       local versions = c.versions
@@ -325,11 +328,7 @@ function M.update_crates(crates, smart)
       match = match or match_pre or match_yanked
 
       if match then
-         if smart then
-            M.set_version_smart(0, crate, match.parsed)
-         else
-            M.set_version(0, crate, match.num)
-         end
+         M.set_version(0, crate, match.parsed, alt)
       end
    end
 end

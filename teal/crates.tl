@@ -94,24 +94,24 @@ end
 
 
 --- upgrade the crate on the current line
-function M.upgrade_crate(smart: boolean|nil)
+function M.upgrade_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
-    util.upgrade_crates(crates, smart)
+    util.upgrade_crates(crates, alt)
 end
 
 --- upgrade the crates on the lines visually selected
-function M.upgrade_crates(smart: boolean|nil)
+function M.upgrade_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
     local crates = util.get_lines_crates(lines)
-    util.upgrade_crates(crates, smart)
+    util.upgrade_crates(crates, alt)
 end
 
 --- upgrade all crates in the buffer
-function M.upgrade_all_crates(smart: boolean|nil)
+function M.upgrade_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
     if not crates then return end
@@ -124,28 +124,28 @@ function M.upgrade_all_crates(smart: boolean|nil)
         })
     end
 
-    util.upgrade_crates(crate_versions, smart)
+    util.upgrade_crates(crate_versions, alt)
 end
 
 -- update the crate on the current line
-function M.update_crate(smart: boolean|nil)
+function M.update_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
-    util.update_crates(crates, smart)
+    util.update_crates(crates, alt)
 end
 
 -- update the crates on the lines visually selected
-function M.update_crates(smart: boolean|nil)
+function M.update_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
     local crates = util.get_lines_crates(lines)
-    util.update_crates(crates, smart)
+    util.update_crates(crates, alt)
 end
 
 --- update all crates in the buffer
-function M.update_all_crates(smart: boolean|nil)
+function M.update_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
     if not crates then return end
@@ -158,7 +158,7 @@ function M.update_all_crates(smart: boolean|nil)
         })
     end
 
-    util.update_crates(crate_versions, smart)
+    util.update_crates(crate_versions, alt)
 end
 
 
