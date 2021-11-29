@@ -18,7 +18,7 @@ local util = require('crates.util')
 local ui = require('crates.ui')
 local Range = require('crates.types').Range
 
-function M.reload_crate(crate: Crate)
+local function reload_crate(crate: Crate)
     local function on_fetched(versions: {Version})
         if versions and versions[1] then
             core.vers_cache[crate.name] = versions
@@ -58,7 +58,7 @@ function M.reload()
 
     for _,c in ipairs(crates) do
         core.crate_cache[cur_buf][c.name] = c
-        M.reload_crate(c)
+        reload_crate(c)
     end
 end
 
@@ -79,7 +79,7 @@ function M.update()
         if versions then
             ui.display_versions(0, c, versions)
         else
-            M.reload_crate(c)
+            reload_crate(c)
         end
     end
 end
