@@ -149,6 +149,7 @@ M.schema = {
     },
     text = {
         type = "section",
+        description = "strings used to format virtual text",
 
         fields = {
             loading = {
@@ -191,6 +192,7 @@ M.schema = {
     },
     highlight = {
         type = "section",
+        description = "highlight groups used for virtual text",
 
         fields = {
             loading = {
@@ -233,6 +235,7 @@ M.schema = {
     },
     popup = {
         type = "section",
+        description = "popup config",
 
         fields = {
             autofocus = {
