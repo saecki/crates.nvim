@@ -297,9 +297,9 @@ function M.set_version(buf, crate, version, alt)
    end
 
    if smart then
-      set_version_smart(buf, crate, version)
+      return set_version_smart(buf, crate, version)
    else
-      set_version_dumb(buf, crate, version:display())
+      return set_version_dumb(buf, crate, version:display())
    end
 end
 

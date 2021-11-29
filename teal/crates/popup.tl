@@ -357,15 +357,19 @@ function Popup.select_version(buf: integer, name: string, index: integer, alt: b
         line = toml.trim_comments(line)
         if crate.syntax == "table" then
             local c = toml.parse_crate_table_vers(line)
-            if c then
-                crate.vers = c.vers
+            if c and c.vers then
                 crate.vers.line = l
+                crate.vers.col = c.vers.col
+                crate.vers.decl_col = c.vers.decl_col
+                crate.vers.quote = c.vers.quote
             end
         elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
             local c = toml.parse_crate(line)
             if c and c.vers then
-                crate.vers = c.vers
                 crate.vers.line = l
+                crate.vers.col = c.vers.col
+                crate.vers.decl_col = c.vers.decl_col
+                crate.vers.quote = c.vers.quote
             end
         end
     end
