@@ -98,6 +98,7 @@ local record M
     end
 
     record SchemaElement
+        name: string
         type: SchemaType|{SchemaType}
         default: any
         default_text: string
@@ -116,489 +117,485 @@ local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
 
-M.schema = {
-    smart_insert = {
-        type = "boolean",
-        default = true,
-        description = [[
-            Try to be smart about inserting versions, by respecting existing version requirements.
- 
-            Example: ~
- 
-                Existing requirement:
-                `>0.8, <1.3`
- 
-                Version to insert:
-                `1.5.4`
- 
-                Resulting requirement:
-                `>0.8, <1.6`
-        ]],
+local function entry(schema: {string:SchemaElement}, name: string, elem: SchemaElement)
+    elem.name = name
+    table.insert(schema as {SchemaElement}, elem)
+    schema[name] = elem
+end
+
+M.schema = {}
+entry(M.schema, "smart_insert", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Try to be smart about inserting versions, by respecting existing version requirements.
+
+        Example: ~
+
+            Existing requirement:
+            `>0.8, <1.3`
+
+            Version to insert:
+            `1.5.4`
+
+            Resulting requirement:
+            `>0.8, <1.6`
+    ]],
+})
+entry(M.schema, "avoid_prerelease", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Don't select a prerelease if the requirement does not have a suffix.
+    ]],
+})
+entry(M.schema, "autoload", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Automatically run update when opening a Cargo.toml.
+    ]],
+})
+entry(M.schema, "autoupdate", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Automatically update when editing text.
+    ]],
+})
+entry(M.schema, "loading_indicator", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Show a loading indicator while fetching crate versions.
+    ]],
+})
+entry(M.schema, "date_format", {
+    type = "string",
+    default = "%Y-%m-%d",
+    description = [[
+        The date format passed to `os.date`.
+    ]],
+})
+
+
+entry(M.schema, "text", {
+    type = "section",
+    description = [[
+        Strings used to format virtual text.
+    ]],
+    fields = {}
+})
+local schema_text = M.schema.text.fields
+entry(schema_text, "loading", {
+    type = "string",
+    default = "   Loading",
+    description = [[
+        Format string used while loading crate information.
+    ]],
+})
+entry(schema_text, "version", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        format string used for the latest compatible version
+    ]],
+})
+entry(schema_text, "prerelease", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        Format string used for pre-release versions.
+    ]],
+})
+entry(schema_text, "yanked", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        Format string used for yanked versions.
+    ]],
+})
+entry(schema_text, "nomatch", {
+    type = "string",
+    default = "   No match",
+    description = [[
+        Format string used when there is no matching version.
+    ]],
+})
+entry(schema_text, "upgrade", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        Format string used when there is an upgrade candidate.
+    ]],
+})
+entry(schema_text, "error", {
+    type = "string",
+    default = "   Error fetching crate",
+    description = [[
+        Format string used when there was an error loading crate information.
+    ]],
+})
+entry(schema_text, "update", {
+    type = "string",
+    deprecated = {
+        new_field = { "text", "upgrade" },
+        hard = true,
     },
-    avoid_prerelease = {
-        type = "boolean",
-        default = true,
-        description = [[
-            Don't select a prerelease if the requirement does not have a suffix.
-        ]],
+})
+
+
+entry(M.schema, "highlight", {
+    type = "section",
+    description = [[
+        Highlight groups used for virtual text.
+    ]],
+    fields = {},
+})
+local schema_hi = M.schema.highlight.fields
+entry(schema_hi, "loading", {
+    type = "string",
+    default = "CratesNvimLoading",
+    description = [[
+        Highlight group used while loading crate information.
+    ]],
+})
+entry(schema_hi, "version", {
+    type = "string",
+    default = "CratesNvimVersion",
+    description = [[
+        Highlight group used for the latest compatible version.
+    ]],
+})
+entry(schema_hi, "prerelease", {
+    type = "string",
+    default = "CratesNvimPreRelease",
+    description = [[
+        Highlight group used for pre-release versions.
+    ]],
+})
+entry(schema_hi, "yanked", {
+    type = "string",
+    default = "CratesNvimYanked",
+    description = [[
+        Highlight group used for yanked versions.
+    ]],
+})
+entry(schema_hi, "nomatch", {
+    type = "string",
+    default = "CratesNvimNoMatch",
+    description = [[
+        Highlight group used when there is no matching version.
+    ]],
+})
+entry(schema_hi, "upgrade", {
+    type = "string",
+    default = "CratesNvimUpgrade",
+    description = [[
+        Highlight group used when there is an upgrade candidate.
+    ]],
+})
+entry(schema_hi, "error", {
+    type = "string",
+    default = "CratesNvimError",
+    description = [[
+        Highlight group used when there was an error loading crate information.
+    ]],
+})
+entry(schema_hi, "update", {
+    type = "string",
+    deprecated = {
+        new_field = { "highlight", "upgrade" },
+        hard = true,
     },
-    autoload = {
-        type = "boolean",
-        default = true,
-        description = [[
-            Automatically run update when opening a Cargo.toml.
-        ]],
-    },
-    autoupdate = {
-        type = "boolean",
-        default = true,
-        description = [[
-            Automatically update when editing text.
-        ]],
-    },
-    loading_indicator = {
-        type = "boolean",
-        default = true,
-        description = [[
-            Show a loading indicator while fetching crate versions.
-        ]],
-    },
-    date_format = {
-        type = "string",
-        default = "%Y-%m-%d",
-        description = [[
-            The date format passed to `os.date`.
-        ]],
-    },
-    text = {
-        type = "section",
-        description = [[
-            Strings used to format virtual text.
-        ]],
+})
 
-        fields = {
-            loading = {
-                type = "string",
-                default = "   Loading",
-                description = [[
-                    Format string used while loading crate information.
-                ]],
-            },
-            version = {
-                type = "string",
-                default = "   %s",
-                description = [[
-                    format string used for the latest compatible version
-                ]],
-            },
-            prerelease = {
-                type = "string",
-                default = "   %s",
-                description = [[
-                    Format string used for pre-release versions.
-                ]],
-            },
-            yanked = {
-                type = "string",
-                default = "   %s",
-                description = [[
-                    Format string used for yanked versions.
-                ]],
-            },
-            nomatch = {
-                type = "string",
-                default = "   No match",
-                description = [[
-                    Format string used when there is no matching version.
-                ]],
-            },
-            upgrade = {
-                type = "string",
-                default = "   %s",
-                description = [[
-                    Format string used when there is an upgrade candidate.
-                ]],
-            },
-            error = {
-                type = "string",
-                default = "   Error fetching crate",
-                description = [[
-                    Format string used when there was an error loading crate information.
-                ]],
-            },
 
-            update = {
-                type = "string",
-                deprecated = {
-                    new_field = { "text", "upgrade" },
-                    hard = true,
-                },
-                description = [[
-                    See *crates-config-text-upgrade*.
-                ]],
-            },
-        },
-    },
-    highlight = {
-        type = "section",
-        description = [[
-            Highlight groups used for virtual text.
-        ]],
+entry(M.schema, "popup", {
+    type = "section",
+    description = [[
+        popup config
+    ]],
+    fields = {},
+})
+local schema_popup = M.schema.popup.fields
+entry(schema_popup, "autofocus", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Focus the versions popup when opening it.
+    ]],
+})
+entry(schema_popup, "copy_register", {
+    type = "string",
+    default = '"',
+    description = [[
+        The register into which the version will be copied.
+    ]],
+})
+entry(schema_popup, "style", {
+    type = "string",
+    default = "minimal",
+    description = [[
+        Same as nvim_open_win config.style.
+    ]],
+})
+entry(schema_popup, "border", {
+    type = { "string", "table" },
+    default = "none",
+    description = [[
+        Same as nvim_open_win config.border.
+    ]],
+})
+entry(schema_popup, "version_date", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Display when a version was released.
+    ]],
+})
+entry(schema_popup, "max_height", {
+    type = "number",
+    default = 30,
+    description = [[
+        The maximum height of the popup.
+    ]],
+})
+entry(schema_popup, "min_width", {
+    type = "number",
+    default = 20,
+    description = [[
+        The minimum width of the popup.
+    ]],
+})
 
-        fields = {
-            loading = {
-                type = "string",
-                default = "CratesNvimLoading",
-                description = [[
-                    Highlight group used while loading crate information.
-                ]],
-            },
-            version = {
-                type = "string",
-                default = "CratesNvimVersion",
-                description = [[
-                    Highlight group used for the latest compatible version.
-                ]],
-            },
-            prerelease = {
-                type = "string",
-                default = "CratesNvimPreRelease",
-                description = [[
-                    Highlight group used for pre-release versions.
-                ]],
-            },
-            yanked = {
-                type = "string",
-                default = "CratesNvimYanked",
-                description = [[
-                    Highlight group used for yanked versions.
-                ]],
-            },
-            nomatch = {
-                type = "string",
-                default = "CratesNvimNoMatch",
-                description = [[
-                    Highlight group used when there is no matching version.
-                ]],
-            },
-            upgrade = {
-                type = "string",
-                default = "CratesNvimUpgrade",
-                description = [[
-                    Highlight group used when there is an upgrade candidate.
-                ]],
-            },
-            error = {
-                type = "string",
-                default = "CratesNvimError",
-                description = [[
-                    Highlight group used when there was an error loading crate information.
-                ]],
-            },
 
-            update = {
-                type = "string",
-                deprecated = {
-                    new_field = { "highlight", "upgrade" },
-                    hard = true,
-                },
-                description = [[
-                    See *crates-config-highlight-upgrade*.
-                ]],
-            },
-        },
-    },
-    popup = {
-        type = "section",
-        description = [[
-            popup config
-        ]],
+entry(schema_popup, "text", {
+    type = "section",
+    description = [[
+        Strings used to format the text inside the popup.
+    ]],
+    fields = {},
+})
+local schema_popup_text = schema_popup.text.fields
+entry(schema_popup_text, "title", {
+    type = "string",
+    default = "  %s ",
+    description = [[
+        Format string used for the popup title.
+    ]],
+})
+-- versions
+entry(schema_popup_text, "version", {
+    type = "string",
+    default = "   %s ",
+    description = [[
+        Format string used for release versions.
+    ]],
+})
+entry(schema_popup_text, "prerelease", {
+    type = "string",
+    default = "  %s ",
+    description = [[
+        Format string used for prerelease versions.
+    ]],
+})
+entry(schema_popup_text, "yanked", {
+    type = "string",
+    default = "  %s ",
+    description = [[
+        Format string used for yanked versions.
+    ]],
+})
+entry(schema_popup_text, "date", {
+    type = "string",
+    default = " %s ",
+    description = [[
+        Format string used for appending the version release date.
+    ]],
+})
+-- features
+entry(schema_popup_text, "feature", {
+    type = "string",
+    default = "   %s ",
+    description = [[
+        Format string used for disabled features.
+    ]],
+})
+entry(schema_popup_text, "enabled", {
+    type = "string",
+    default = "  %s ",
+    description = [[
+        Format string used for enabled features.
+    ]],
+})
+entry(schema_popup_text, "transitive", {
+    type = "string",
+    default = "  %s ",
+    description = [[
+        Format string used for transitively enabled features.
+    ]],
+})
 
-        fields = {
-            autofocus = {
-                type = "boolean",
-                default = false,
-                description = [[
-                    Focus the versions popup when opening it.
-                ]],
-            },
-            copy_register = {
-                type = "string",
-                default = '"',
-                description = [[
-                    The register into which the version will be copied.
-                ]],
-            },
-            style = {
-                type = "string",
-                default = "minimal",
-                description = [[
-                    Same as nvim_open_win config.style.
-                ]],
-            },
-            border = {
-                type = { "string", "table" },
-                default = "none",
-                description = [[
-                    Same as nvim_open_win config.border.
-                ]],
-            },
-            version_date = {
-                type = "boolean",
-                default = false,
-                description = [[
-                    Display when a version was released.
-                ]],
-            },
-            max_height = {
-                type = "number",
-                default = 30,
-                description = [[
-                    The maximum height of the popup.
-                ]],
-            },
-            min_width = {
-                type = "number",
-                default = 20,
-                description = [[
-                    The minimum width of the popup.
-                ]],
-            },
-            text = {
-                type = "section",
-                description = [[
-                    Strings used to format the text inside the popup.
-                ]],
 
-                fields = {
-                    title = {
-                        type = "string",
-                        default = "  %s ",
-                        description = [[
-                            Format string used for the popup title.
-                        ]],
-                    },
+entry(schema_popup, "highlight", {
+    type = "section",
+    description = [[
+        Highlight groups for popup elements.
+    ]],
+    fields = {},
+})
+local schema_popup_hi = schema_popup.highlight.fields
+entry(schema_popup_hi, "title", {
+    type = "string",
+    default = "CratesNvimPopupTitle",
+    description = [[
+        Highlight group used for the popup title.
+    ]],
+})
+-- versions
+entry(schema_popup_hi, "version", {
+    type = "string",
+    default = "CratesNvimPopupVersion",
+    description = [[
+        Highlight group used for versions inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "prerelease", {
+    type = "string",
+    default = "CratesNvimPopupPreRelease",
+    description = [[
+        Highlight group used for pre-release versions inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "yanked", {
+    type = "string",
+    default = "CratesNvimPopupYanked",
+    description = [[
+        Highlight group used for yanked versions inside the popup.
+    ]],
+})
+-- features
+entry(schema_popup_hi, "feature", {
+    type = "string",
+    default = "CratesNvimPopupFeature",
+    description = [[
+        Highlight group used for disabled features inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "enabled", {
+    type = "string",
+    default = "CratesNvimPopupEnabled",
+    description = [[
+        Highlight group used for enabled features inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "transitive", {
+    type = "string",
+    default = "CratesNvimPopupTransitive",
+    description = [[
+        Highlight group used for transitively enabled features inside the popup.
+    ]],
+})
 
-                    -- versions
-                    version = {
-                        type = "string",
-                        default = "   %s ",
-                        description = [[
-                            Format string used for release versions.
-                        ]],
-                    },
-                    prerelease = {
-                        type = "string",
-                        default = "  %s ",
-                        description = [[
-                            Format string used for prerelease versions.
-                        ]],
-                    },
-                    yanked = {
-                        type = "string",
-                        default = "  %s ",
-                        description = [[
-                            Format string used for yanked versions.
-                        ]],
-                    },
-                    date = {
-                        type = "string",
-                        default = " %s ",
-                        description = [[
-                            Format string used for appending the version release date.
-                        ]],
-                    },
+entry(schema_popup, "keys", {
+    type = "section",
+    description = [[
+        Key mappings inside the popup.
+    ]],
+    fields = {},
+})
+local schema_popup_keys = schema_popup.keys.fields
+entry(schema_popup_keys, "hide", {
+    type = "table",
+    default = { "q", "<esc>" },
+    description = [[
+        Hides the popup.
+    ]],
+})
+-- versions
+entry(schema_popup_keys, "select", {
+    type = "table",
+    default = { "<cr>" },
+    description = [[
+        Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
+    ]],
+})
+entry(schema_popup_keys, "select_alt", {
+    type = "table",
+    default = { "s" },
+    description = [[
+        Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
+    ]],
+})
+entry(schema_popup_keys, "copy_version", {
+    type = "table",
+    default = { "yy" },
+    description = [[
+        Key mappings to copy the version on the current line inside the popup.
+    ]],
+})
+-- features
+entry(schema_popup_keys, "toggle_feature", {
+    type = "table",
+    default = { "<cr>" },
+    description = [[
+        Key mappings to enable or disable the feature on the currentline inside the popup.
+    ]],
+})
+entry(schema_popup_keys, "goto_feature", {
+    type = "table",
+    default = { "gd", "K" },
+    description = [[
+        Key mappings to go to the feature on the currentline inside the popup.
+    ]],
+})
+entry(schema_popup_keys, "jump_forward_feature", {
+    type = "table",
+    default = { "<c-i>" },
+    description = [[
+        Key mappings to jump forward in the features jump history.
+    ]],
+})
+entry(schema_popup_keys, "jump_back_feature", {
+    type = "table",
+    default = { "<c-o>" },
+    description = [[
+        Key mappings to jump back in the features jump history.
+    ]],
+})
 
-                    -- features
-                    feature = {
-                        type = "string",
-                        default = "   %s ",
-                        description = [[
-                            Format string used for disabled features.
-                        ]],
-                    },
-                    enabled = {
-                        type = "string",
-                        default = "  %s ",
-                        description = [[
-                            Format string used for enabled features.
-                        ]],
-                    },
-                    transitive = {
-                        type = "string",
-                        default = "  %s ",
-                        description = [[
-                            Format string used for transitively enabled features.
-                        ]],
-                    },
-                },
-            },
-            highlight = {
-                type = "section",
-                description = [[
-                    Highlight groups for popup elements.
-                ]],
 
-                fields = {
-                    title = {
-                        type = "string",
-                        default = "CratesNvimPopupTitle",
-                        description = [[
-                            Highlight group used for the popup title.
-                        ]],
-                    },
-
-                    -- versions
-                    version = {
-                        type = "string",
-                        default = "CratesNvimPopupVersion",
-                        description = [[
-                            Highlight group used for versions inside the popup.
-                        ]],
-                    },
-                    prerelease = {
-                        type = "string",
-                        default = "CratesNvimPopupPreRelease",
-                        description = [[
-                            Highlight group used for pre-release versions inside the popup.
-                        ]],
-                    },
-                    yanked = {
-                        type = "string",
-                        default = "CratesNvimPopupYanked",
-                        description = [[
-                            Highlight group used for yanked versions inside the popup.
-                        ]],
-                    },
-
-                    -- features
-                    feature = {
-                        type = "string",
-                        default = "CratesNvimPopupFeature",
-                        description = [[
-                            Highlight group used for disabled features inside the popup.
-                        ]],
-                    },
-                    enabled = {
-                        type = "string",
-                        default = "CratesNvimPopupEnabled",
-                        description = [[
-                            Highlight group used for enabled features inside the popup.
-                        ]],
-                    },
-                    transitive = {
-                        type = "string",
-                        default = "CratesNvimPopupTransitive",
-                        description = [[
-                            Highlight group used for transitively enabled features inside the popup.
-                        ]],
-                    },
-                },
-            },
-            keys = {
-                type = "section",
-                description = [[
-                    Key mappings inside the popup.
-                ]],
-
-                fields = {
-                    hide = {
-                        type = "table",
-                        default = { "q", "<esc>" },
-                        description = [[
-                            Hides the popup.
-                        ]],
-                    },
-
-                    -- versions
-                    select = {
-                        type = "table",
-                        default = { "<cr>" },
-                        description = [[
-                            Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
-                        ]],
-                    },
-                    select_alt = {
-                        type = "table",
-                        default = { "s" },
-                        description = [[
-                            Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
-                        ]],
-                    },
-                    copy_version = {
-                        type = "table",
-                        default = { "yy" },
-                        description = [[
-                            Key mappings to copy the version on the current line inside the popup.
-                        ]],
-                    },
-
-                    -- features
-                    toggle_feature = {
-                        type = "table",
-                        default = { "<cr>" },
-                        description = [[
-                            Key mappings to enable or disable the feature on the currentline inside the popup.
-                        ]],
-                    },
-                    goto_feature = {
-                        type = "table",
-                        default = { "gd", "K" },
-                        description = [[
-                            Key mappings to go to the feature on the currentline inside the popup.
-                        ]],
-                    },
-                    jump_forward_feature = {
-                        type = "table",
-                        default = { "<c-i>" },
-                        description = [[
-                            Key mappings to jump forward in the features jump history.
-                        ]],
-                    },
-                    jump_back_feature = {
-                        type = "table",
-                        default = { "<c-o>" },
-                        description = [[
-                            Key mappings to jump back in the features jump history.
-                        ]],
-                    },
-                },
-            },
-        },
-    },
-    cmp = {
-        type = "section",
-        description = [[
-            Configuration options for the |nvim-cmp| source.
-        ]],
-
-        fields = {
-            text = {
-                type = "section",
-                description = [[
-                    Text shown in the |nvim-cmp| documentation preview.
-                ]],
-
-                fields = {
-                    prerelease = {
-                        type = "string",
-                        default = "  pre-release ",
-                        description = [[
-                            Text shown in the |nvim-cmp| documentation preview for pre-release versions.
-                        ]],
-                    },
-                    yanked = {
-                        type = "string",
-                        default = "  yanked ",
-                        description = [[
-                            Text shown in the |nvim-cmp| documentation preview for pre-release versions.
-                        ]],
-                    },
-                },
-            },
-        },
-    },
-}
+entry(M.schema, "cmp", {
+    type = "section",
+    description = [[
+        Configuration options for the |nvim-cmp| source.
+    ]],
+    fields = {},
+})
+local schema_cmp = M.schema.cmp.fields
+entry(schema_cmp, "text", {
+    type = "section",
+    description = [[
+        Text shown in the |nvim-cmp| documentation preview.
+    ]],
+    fields = {},
+})
+local schema_cmp_text = schema_cmp.text.fields
+entry(schema_cmp_text, "prerelease", {
+    type = "string",
+    default = "  pre-release ",
+    description = [[
+        Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+    ]],
+})
+entry(schema_cmp_text, "yanked", {
+    type = "string",
+    default = "  yanked ",
+    description = [[
+        Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+    ]],
+})
 
 local function warn(s: string, ...:any)
     vim.notify(s:format(...), vim.log.levels.WARN, { title = "crates.nvim" })
