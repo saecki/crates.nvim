@@ -193,7 +193,10 @@ local function set_version_smart(buf: integer, crate: Crate, version: SemVer): R
     local pos = 1
     local text = ""
     for _,r in ipairs(crate.vers.reqs) do
-        if r.cond == "wl" then
+        if r.cond == "eq" then
+            local v = replace_existing(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+        elseif r.cond == "wl" then
             if version.suffix then
                 text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
             else
