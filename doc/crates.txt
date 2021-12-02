@@ -1,0 +1,427 @@
+*crates.txt* Crates
+*crates.nvim*
+
+Author:   Tobias Schmitz <tobiasschmitz2001@gmail.com>
+Version:  0.1.0-pre1
+Homepage: <https://github.com/saecki/crates.nvim>
+License:  MIT license
+
+==============================================================================
+INTRODUCTION                                                          *crates*
+
+Crates is a plugin that helps managing crates.io dependencies.
+
+==============================================================================
+USAGE                                                           *crates-usage*
+
+Basic setup:
+>
+    require('crates').setup()
+<
+
+==============================================================================
+MAPPINGS                                                     *crates-mappings*
+
+Crates doesn't use any default global mappings.
+
+But here are some recommended ones:
+>
+    nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
+    nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
+    nnoremap <silent> <leader>vu :lua require('crates').update_crate()<cr>
+    vnoremap <silent> <leader>vu :lua require('crates').update_crates()<cr>
+    nnoremap <silent> <leader>va :lua require('crates').update_all_crates()<cr>
+    nnoremap <silent> <leader>vU :lua require('crates').upgrade_crate()<cr>
+    vnoremap <silent> <leader>vU :lua require('crates').upgrade_crates()<cr>
+    nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
+<
+
+==============================================================================
+FUNCTIONS                                                   *crates-functions*
+
+TODO
+
+==============================================================================
+CONFIGURATION                                                  *crates-config*
+
+smart_insert                                      *crates-config-smart_insert*
+    Type: `boolean`, Default: `true`
+
+    Try to be smart about inserting versions, by respecting existing version requirements.
+
+    Example: ~
+
+        Existing requirement:
+        `>0.8, <1.3`
+
+        Version to insert:
+        `1.5.4`
+
+        Resulting requirement:
+        `>0.8, <1.6`
+
+
+avoid_prerelease                              *crates-config-avoid_prerelease*
+    Type: `boolean`, Default: `true`
+
+    Don't select a prerelease if the requirement does not have a suffix.
+
+
+autoload                                              *crates-config-autoload*
+    Type: `boolean`, Default: `true`
+
+    Automatically run update when opening a Cargo.toml.
+
+
+autoupdate                                          *crates-config-autoupdate*
+    Type: `boolean`, Default: `true`
+
+    Automatically update when editing text.
+
+
+loading_indicator                            *crates-config-loading_indicator*
+    Type: `boolean`, Default: `true`
+
+    Show a loading indicator while fetching crate versions.
+
+
+date_format                                        *crates-config-date_format*
+    Type: `string`, Default: `"%Y-%m-%d"`
+
+    The date format passed to `os.date`.
+
+
+text                                                      *crates-config-text*
+    Type: `section`
+
+    Strings used to format virtual text.
+
+
+text.loading                                      *crates-config-text-loading*
+    Type: `string`, Default: `"   Loading"`
+
+    Format string used while loading crate information.
+
+
+text.version                                      *crates-config-text-version*
+    Type: `string`, Default: `"   %s"`
+
+    format string used for the latest compatible version
+
+
+text.prerelease                                *crates-config-text-prerelease*
+    Type: `string`, Default: `"   %s"`
+
+    Format string used for pre-release versions.
+
+
+text.yanked                                        *crates-config-text-yanked*
+    Type: `string`, Default: `"   %s"`
+
+    Format string used for yanked versions.
+
+
+text.nomatch                                      *crates-config-text-nomatch*
+    Type: `string`, Default: `"   No match"`
+
+    Format string used when there is no matching version.
+
+
+text.upgrade                                      *crates-config-text-upgrade*
+    Type: `string`, Default: `"   %s"`
+
+    Format string used when there is an upgrade candidate.
+
+
+text.error                                          *crates-config-text-error*
+    Type: `string`, Default: `"   Error fetching crate"`
+
+    Format string used when there was an error loading crate information.
+
+
+text.update                                        *crates-config-text-update*
+    DEPRECATED
+
+    Please use crates-config-text-upgrade instead.
+
+highlight                                            *crates-config-highlight*
+    Type: `section`
+
+    Highlight groups used for virtual text.
+
+
+highlight.loading                            *crates-config-highlight-loading*
+    Type: `string`, Default: `"CratesNvimLoading"`
+
+    Highlight group used while loading crate information.
+
+
+highlight.version                            *crates-config-highlight-version*
+    Type: `string`, Default: `"CratesNvimVersion"`
+
+    Highlight group used for the latest compatible version.
+
+
+highlight.prerelease                      *crates-config-highlight-prerelease*
+    Type: `string`, Default: `"CratesNvimPreRelease"`
+
+    Highlight group used for pre-release versions.
+
+
+highlight.yanked                              *crates-config-highlight-yanked*
+    Type: `string`, Default: `"CratesNvimYanked"`
+
+    Highlight group used for yanked versions.
+
+
+highlight.nomatch                            *crates-config-highlight-nomatch*
+    Type: `string`, Default: `"CratesNvimNoMatch"`
+
+    Highlight group used when there is no matching version.
+
+
+highlight.upgrade                            *crates-config-highlight-upgrade*
+    Type: `string`, Default: `"CratesNvimUpgrade"`
+
+    Highlight group used when there is an upgrade candidate.
+
+
+highlight.error                                *crates-config-highlight-error*
+    Type: `string`, Default: `"CratesNvimError"`
+
+    Highlight group used when there was an error loading crate information.
+
+
+highlight.update                              *crates-config-highlight-update*
+    DEPRECATED
+
+    Please use crates-config-highlight-upgrade instead.
+
+popup                                                    *crates-config-popup*
+    Type: `section`
+
+    popup config
+
+
+popup.autofocus                                *crates-config-popup-autofocus*
+    Type: `boolean`, Default: `false`
+
+    Focus the versions popup when opening it.
+
+
+popup.copy_register                        *crates-config-popup-copy_register*
+    Type: `string`, Default: `'"'`
+
+    The register into which the version will be copied.
+
+
+popup.style                                        *crates-config-popup-style*
+    Type: `string`, Default: `"minimal"`
+
+    Same as nvim_open_win config.style.
+
+
+popup.border                                      *crates-config-popup-border*
+    Type: `string or table`, Default: `"none"`
+
+    Same as nvim_open_win config.border.
+
+
+popup.version_date                          *crates-config-popup-version_date*
+    Type: `boolean`, Default: `false`
+
+    Display when a version was released.
+
+
+popup.max_height                              *crates-config-popup-max_height*
+    Type: `number`, Default: `30`
+
+    The maximum height of the popup.
+
+
+popup.min_width                                *crates-config-popup-min_width*
+    Type: `number`, Default: `20`
+
+    The minimum width of the popup.
+
+
+popup.text                                          *crates-config-popup-text*
+    Type: `section`
+
+    Strings used to format the text inside the popup.
+
+
+popup.text.title                              *crates-config-popup-text-title*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for the popup title.
+
+
+popup.text.version                          *crates-config-popup-text-version*
+    Type: `string`, Default: `"   %s "`
+
+    Format string used for release versions.
+
+
+popup.text.prerelease                    *crates-config-popup-text-prerelease*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for prerelease versions.
+
+
+popup.text.yanked                            *crates-config-popup-text-yanked*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for yanked versions.
+
+
+popup.text.date                                *crates-config-popup-text-date*
+    Type: `string`, Default: `" %s "`
+
+    Format string used for appending the version release date.
+
+
+popup.text.feature                          *crates-config-popup-text-feature*
+    Type: `string`, Default: `"   %s "`
+
+    Format string used for disabled features.
+
+
+popup.text.enabled                          *crates-config-popup-text-enabled*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for enabled features.
+
+
+popup.text.transitive                    *crates-config-popup-text-transitive*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for transitively enabled features.
+
+
+popup.highlight                                *crates-config-popup-highlight*
+    Type: `section`
+
+    Highlight groups for popup elements.
+
+
+popup.highlight.title                    *crates-config-popup-highlight-title*
+    Type: `string`, Default: `"CratesNvimPopupTitle"`
+
+    Highlight group used for the popup title.
+
+
+popup.highlight.version                *crates-config-popup-highlight-version*
+    Type: `string`, Default: `"CratesNvimPopupVersion"`
+
+    Highlight group used for versions inside the popup.
+
+
+popup.highlight.prerelease          *crates-config-popup-highlight-prerelease*
+    Type: `string`, Default: `"CratesNvimPopupPreRelease"`
+
+    Highlight group used for pre-release versions inside the popup.
+
+
+popup.highlight.yanked                  *crates-config-popup-highlight-yanked*
+    Type: `string`, Default: `"CratesNvimPopupYanked"`
+
+    Highlight group used for yanked versions inside the popup.
+
+
+popup.highlight.feature                *crates-config-popup-highlight-feature*
+    Type: `string`, Default: `"CratesNvimPopupFeature"`
+
+    Highlight group used for disabled features inside the popup.
+
+
+popup.highlight.enabled                *crates-config-popup-highlight-enabled*
+    Type: `string`, Default: `"CratesNvimPopupEnabled"`
+
+    Highlight group used for enabled features inside the popup.
+
+
+popup.highlight.transitive          *crates-config-popup-highlight-transitive*
+    Type: `string`, Default: `"CratesNvimPopupTransitive"`
+
+    Highlight group used for transitively enabled features inside the popup.
+
+
+popup.keys                                          *crates-config-popup-keys*
+    Type: `section`
+
+    Key mappings inside the popup.
+
+
+popup.keys.hide                                *crates-config-popup-keys-hide*
+    Type: `table`, Default: `{ "q", "<esc>" }`
+
+    Hides the popup.
+
+
+popup.keys.select                            *crates-config-popup-keys-select*
+    Type: `table`, Default: `{ "<cr>" }`
+
+    Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
+
+
+popup.keys.select_alt                    *crates-config-popup-keys-select_alt*
+    Type: `table`, Default: `{ "s" }`
+
+    Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
+
+
+popup.keys.copy_version                *crates-config-popup-keys-copy_version*
+    Type: `table`, Default: `{ "yy" }`
+
+    Key mappings to copy the version on the current line inside the popup.
+
+
+popup.keys.toggle_feature            *crates-config-popup-keys-toggle_feature*
+    Type: `table`, Default: `{ "<cr>" }`
+
+    Key mappings to enable or disable the feature on the currentline inside the popup.
+
+
+popup.keys.goto_feature                *crates-config-popup-keys-goto_feature*
+    Type: `table`, Default: `{ "gd", "K" }`
+
+    Key mappings to go to the feature on the currentline inside the popup.
+
+
+                               *crates-config-popup-keys-jump_forward_feature*
+popup.keys.jump_forward_feature
+    Type: `table`, Default: `{ "<c-i>" }`
+
+    Key mappings to jump forward in the features jump history.
+
+
+popup.keys.jump_back_feature      *crates-config-popup-keys-jump_back_feature*
+    Type: `table`, Default: `{ "<c-o>" }`
+
+    Key mappings to jump back in the features jump history.
+
+
+cmp                                                        *crates-config-cmp*
+    Type: `section`
+
+    Configuration options for the |nvim-cmp| source.
+
+
+cmp.text                                              *crates-config-cmp-text*
+    Type: `section`
+
+    Text shown in the |nvim-cmp| documentation preview.
+
+
+cmp.text.prerelease                        *crates-config-cmp-text-prerelease*
+    Type: `string`, Default: `"  pre-release "`
+
+    Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+
+
+cmp.text.yanked                                *crates-config-cmp-text-yanked*
+    Type: `string`, Default: `"  yanked "`
+
+    Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+

@@ -6,6 +6,20 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 local doc_file = "doc/crates.txt"
+local doc_file_template = "scripts/crates.txt.in"
+
+local function read_to_string(path)
+    local file = io.open(path, "r")
+    local text = file:read("*a")
+    file:close()
+    return text
+end
+
+local function write_to_path(path, str)
+    local file = io.open(path, "w")
+    file:write(str)
+    file:close()
+end
 
 local function join_path(path, component)
     local p = {}
@@ -31,13 +45,11 @@ local function gen_config_doc(lines, path, schema)
         end
 
         if s.deprecated then
+            table.insert(lines, "    DEPRECATED")
             if s.deprecated.new_field then
                 local nf = "crates-config-" .. table.concat(s.deprecated.new_field, "-")
-                table.insert(lines, "    DEPRECATED")
                 table.insert(lines, "")
                 table.insert(lines, string.format("    Please use %s instead.", nf))
-            else
-                table.insert(lines, "    DEPRECATED")
             end
             table.insert(lines, "")
         else
@@ -66,10 +78,27 @@ local function gen_config_doc(lines, path, schema)
 end
 
 local function gen_doc()
-    local lines = {}
-    gen_config_doc(lines, {}, config.schema)
+    local input = read_to_string(doc_file_template)
 
-    print(table.concat(lines, "\n"))
+    local func_lines = {
+        "==============================================================================",
+        "FUNCTIONS                                                   *crates-functions*",
+        "",
+        "TODO",
+        "\n",
+    }
+    local func_text = table.concat(func_lines, "\n")
+
+    local config_lines = {
+        "==============================================================================",
+        "CONFIGURATION                                                  *crates-config*",
+        "",
+    }
+    gen_config_doc(config_lines, {}, config.schema)
+    local config_text = table.concat(config_lines, "\n")
+
+    local doc = input .. func_text .. config_text
+    write_to_path(doc_file, doc)
 end
 
 gen_doc()
