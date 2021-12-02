@@ -41,11 +41,13 @@ local function reload_crate(crate: Crate)
     api.fetch_crate_versions(crate.name, on_fetched)
 end
 
+-- Hide virtual text.
 function M.hide()
     core.visible = false
     ui.clear()
 end
 
+-- Force-reload and display virtual text (clears cache).
 function M.reload()
     core.visible = true
     core.vers_cache = {}
@@ -62,6 +64,7 @@ function M.reload()
     end
 end
 
+-- Load and display virtual text.
 function M.update()
     core.visible = true
     ui.clear()
@@ -84,6 +87,7 @@ function M.update()
     end
 end
 
+-- Show or hide virtual text.
 function M.toggle()
     if core.visible then
         M.hide()
@@ -93,14 +97,14 @@ function M.toggle()
 end
 
 
---- upgrade the crate on the current line
+-- Upgrade the crate on the current line.
 function M.upgrade_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
     util.upgrade_crates(crates, alt)
 end
 
---- upgrade the crates on the lines visually selected
+-- Upgrade the crates on the lines visually selected.
 function M.upgrade_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
@@ -110,7 +114,7 @@ function M.upgrade_crates(alt: boolean|nil)
     util.upgrade_crates(crates, alt)
 end
 
---- upgrade all crates in the buffer
+-- Upgrade all crates in the buffer.
 function M.upgrade_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
@@ -127,14 +131,14 @@ function M.upgrade_all_crates(alt: boolean|nil)
     util.upgrade_crates(crate_versions, alt)
 end
 
--- update the crate on the current line
+-- Update the crate on the current line.
 function M.update_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
     util.update_crates(crates, alt)
 end
 
--- update the crates on the lines visually selected
+-- Update the crates on the lines visually selected.
 function M.update_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
@@ -144,7 +148,7 @@ function M.update_crates(alt: boolean|nil)
     util.update_crates(crates, alt)
 end
 
---- update all crates in the buffer
+-- Update all crates in the buffer>
 function M.update_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
@@ -161,7 +165,7 @@ function M.update_all_crates(alt: boolean|nil)
     util.update_crates(crate_versions, alt)
 end
 
-
+-- Setup config and auto commands.
 function M.setup(cfg: Config)
     core.cfg = config.build(cfg)
 
@@ -183,10 +187,20 @@ function M.setup(cfg: Config)
     ]])
 end
 
+-- Show/hide popup with all versions or features.
+-- If `popup.autofocus` is disabled calling this again will focus the popup.
 M.show_popup = popup.show
+
+-- Same as `show_popup` but always show versions.
 M.show_versions_popup = popup.show_versions
+
+-- Same as `show_popup` but always show features.
 M.show_features_popup = popup.show_features
+
+-- Focus the popup (jump into the floating window).
 M.focus_popup = popup.focus
+
+-- Hide the popup.
 M.hide_popup = popup.hide
 
 return M

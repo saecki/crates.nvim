@@ -41,10 +41,12 @@ local function reload_crate(crate)
    api.fetch_crate_versions(crate.name, on_fetched)
 end
 
+
 function M.hide()
    core.visible = false
    ui.clear()
 end
+
 
 function M.reload()
    core.visible = true
@@ -61,6 +63,7 @@ function M.reload()
       reload_crate(c)
    end
 end
+
 
 function M.update()
    core.visible = true
@@ -83,6 +86,7 @@ function M.update()
       end
    end
 end
+
 
 function M.toggle()
    if core.visible then
@@ -183,10 +187,20 @@ function M.setup(cfg)
     ]])
 end
 
+
+
 M.show_popup = popup.show
+
+
 M.show_versions_popup = popup.show_versions
+
+
 M.show_features_popup = popup.show_features
+
+
 M.focus_popup = popup.focus
+
+
 M.hide_popup = popup.hide
 
 return M
