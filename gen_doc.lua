@@ -54,7 +54,7 @@ local function gen_config_doc(lines, path, schema)
                 table.insert(lines, "")
             end
 
-            local description = s.description:gsub("^    ", "")
+            local description = s.description:gsub("^    ", ""):gsub("\n    ", "\n")
             table.insert(lines, description)
             table.insert(lines, "")
         end
