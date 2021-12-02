@@ -52,7 +52,12 @@ local function gen_config_doc(lines, path, schema)
             table.insert(lines, "")
         end
 
-        table.insert(lines, (s.description:gsub("^%s*", "    ")))
+        local leading_ws = s.description:match("^%s*()") - 1
+        for l in s.description:gmatch("\n?([^\n]*)\n?") do
+            local line = l:gsub("%s+$", ""):gsub("^" .. string.rep(" ", leading_ws), "    ")
+            table.insert(lines, line)
+        end
+
         table.insert(lines, "")
 
         if s.type == "section" then

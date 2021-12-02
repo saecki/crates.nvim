@@ -122,16 +122,17 @@ M.schema = {
         default = true,
         description = [[
             Try to be smart about inserting versions, by respecting existing version requirements.
-
+ 
             Example: ~
+ 
                 Existing requirement:
                 `>0.8, <1.3`
-
+ 
                 Version to insert:
                 `1.5.4`
-
+ 
                 Resulting requirement:
-                `>0.1, <1.6`
+                `>0.8, <1.6`
         ]],
     },
     avoid_prerelease = {
@@ -443,7 +444,7 @@ M.schema = {
                         type = "string",
                         default = "CratesNvimPopupTitle",
                         description = [[
-                            TODO ~
+                            Highlight group used for the popup title.
                         ]],
                     },
 
@@ -452,21 +453,21 @@ M.schema = {
                         type = "string",
                         default = "CratesNvimPopupVersion",
                         description = [[
-                            TODO ~
+                            Highlight group used for versions inside the popup.
                         ]],
                     },
                     prerelease = {
                         type = "string",
                         default = "CratesNvimPopupPreRelease",
                         description = [[
-                            TODO ~
+                            Highlight group used for pre-release versions inside the popup.
                         ]],
                     },
                     yanked = {
                         type = "string",
                         default = "CratesNvimPopupYanked",
                         description = [[
-                            TODO ~
+                            Highlight group used for yanked versions inside the popup.
                         ]],
                     },
 
@@ -475,21 +476,21 @@ M.schema = {
                         type = "string",
                         default = "CratesNvimPopupFeature",
                         description = [[
-                            TODO ~
+                            Highlight group used for disabled features inside the popup.
                         ]],
                     },
                     enabled = {
                         type = "string",
                         default = "CratesNvimPopupEnabled",
                         description = [[
-                            TODO ~
+                            Highlight group used for enabled features inside the popup.
                         ]],
                     },
                     transitive = {
                         type = "string",
                         default = "CratesNvimPopupTransitive",
                         description = [[
-                            TODO ~
+                            Highlight group used for transitively enabled features inside the popup.
                         ]],
                     },
                 },
@@ -514,21 +515,21 @@ M.schema = {
                         type = "table",
                         default = { "<cr>" },
                         description = [[
-                            Insert the version respecting the |crates-config-smart_insert| flag.
+                            Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
                         ]],
                     },
                     select_alt = {
                         type = "table",
                         default = { "s" },
                         description = [[
-                            Insert the version using the opposite of |crates-config-smart_insert| flag.
+                            Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
                         ]],
                     },
                     copy_version = {
                         type = "table",
                         default = { "yy" },
                         description = [[
-                            TODO ~
+                            Key mappings to copy the version on the current line inside the popup.
                         ]],
                     },
 
@@ -537,28 +538,28 @@ M.schema = {
                         type = "table",
                         default = { "<cr>" },
                         description = [[
-                            TODO ~
+                            Key mappings to enable or disable the feature on the currentline inside the popup.
                         ]],
                     },
                     goto_feature = {
                         type = "table",
                         default = { "gd", "K" },
                         description = [[
-                            TODO ~
+                            Key mappings to go to the feature on the currentline inside the popup.
                         ]],
                     },
                     jump_forward_feature = {
                         type = "table",
                         default = { "<c-i>" },
                         description = [[
-                            TODO ~
+                            Key mappings to jump forward in the features jump history.
                         ]],
                     },
                     jump_back_feature = {
                         type = "table",
                         default = { "<c-o>" },
                         description = [[
-                            TODO ~
+                            Key mappings to jump back in the features jump history.
                         ]],
                     },
                 },
@@ -568,14 +569,14 @@ M.schema = {
     cmp = {
         type = "section",
         description = [[
-            TODO ~
+            Configuration options for the |nvim-cmp| source.
         ]],
 
         fields = {
             text = {
                 type = "section",
                 description = [[
-                    TODO ~
+                    Text shown in the |nvim-cmp| documentation preview.
                 ]],
 
                 fields = {
@@ -583,14 +584,14 @@ M.schema = {
                         type = "string",
                         default = "  pre-release ",
                         description = [[
-                            TODO ~
+                            Text shown in the |nvim-cmp| documentation preview for pre-release versions.
                         ]],
                     },
                     yanked = {
                         type = "string",
                         default = "  yanked ",
                         description = [[
-                            TODO ~
+                            Text shown in the |nvim-cmp| documentation preview for pre-release versions.
                         ]],
                     },
                 },
