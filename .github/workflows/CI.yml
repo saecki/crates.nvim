@@ -13,7 +13,7 @@ jobs:
     - name: Install lua
       uses: leafo/gh-actions-lua@v8
       with:
-        luaVersion: "5.4"
+        luaVersion: "luajit-2.1.0-beta3"
 
     - name: Install luarocks
       uses: leafo/gh-actions-luarocks@v4
