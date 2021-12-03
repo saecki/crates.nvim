@@ -6,19 +6,6 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 
-local function read_to_string(path)
-    local file = io.open(path, "r")
-    local text = file:read("*a")
-    file:close()
-    return text
-end
-
-local function write_to_path(path, str)
-    local file = io.open(path, "w")
-    file:write(str)
-    file:close()
-end
-
 local function format_params(params)
     local text = {}
     for p,t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
@@ -80,6 +67,27 @@ local function join_path(path, component)
     return p
 end
 
+local function gen_def_config_doc(lines, indent, path, schema)
+    local function insert_indent(str)
+        local l = string.rep("    ", #path + indent) .. str
+        table.insert(lines, l)
+    end
+
+    for _,s in ipairs(schema) do
+        local name = s.name
+
+        if s.type == "section" then
+            local p = join_path(path, name)
+            insert_indent(name .. " = {")
+            gen_def_config_doc(lines, indent, p, s.fields)
+            insert_indent("}")
+        else
+            local d = inspect(s.default)
+            insert_indent(name .. " = " .. d)
+        end
+    end
+end
+
 local function gen_config_doc(lines, path, schema)
     for _,s in ipairs(schema) do
         local k = s.name
@@ -128,26 +136,26 @@ local function gen_config_doc(lines, path, schema)
 end
 
 local function gen_doc()
-    local input = read_to_string("scripts/crates.txt.in")
+    local lines = {}
 
-    local func_lines = {
-        "==============================================================================",
-        "FUNCTIONS                                                   *crates-functions*",
-        "",
-    }
-    gen_func_doc(func_lines)
-    local func_text = table.concat(func_lines, "\n")
+    local infile = io.open("scripts/crates.txt.in", "r")
+    for l in infile:lines("*l") do
+        if l == "<DEFAULT_CONFIGURATION>" then
+            gen_def_config_doc(lines, 2, {}, config.schema)
+        elseif l == "<FUNCTIONS>" then
+            gen_func_doc(lines)
+        elseif l == "<CONFIGURATION>" then
+            gen_config_doc(lines, {}, config.schema)
+        else
+            table.insert(lines, l)
+        end
+    end
+    infile:close()
 
-    local config_lines = {
-        "==============================================================================",
-        "CONFIGURATION                                                  *crates-config*",
-        "",
-    }
-    gen_config_doc(config_lines, {}, config.schema)
-    local config_text = table.concat(config_lines, "\n")
-
-    local doc = input .. func_text .. config_text
-    write_to_path("doc/crates.txt", doc)
+    local doc = table.concat(lines, "\n")
+    local outfile = io.open("doc/crates.txt", "w")
+    outfile:write(doc)
+    outfile:close()
 end
 
 gen_doc()

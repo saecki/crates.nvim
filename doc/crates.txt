@@ -19,6 +19,82 @@ Basic setup:
     require('crates').setup()
 <
 
+Setup with default options:
+>
+    require('crates').setup {
+        smart_insert = true
+        avoid_prerelease = true
+        autoload = true
+        autoupdate = true
+        loading_indicator = true
+        date_format = "%Y-%m-%d"
+        text = {
+            loading = "   Loading"
+            version = "   %s"
+            prerelease = "   %s"
+            yanked = "   %s"
+            nomatch = "   No match"
+            upgrade = "   %s"
+            error = "   Error fetching crate"
+            update = nil
+        }
+        highlight = {
+            loading = "CratesNvimLoading"
+            version = "CratesNvimVersion"
+            prerelease = "CratesNvimPreRelease"
+            yanked = "CratesNvimYanked"
+            nomatch = "CratesNvimNoMatch"
+            upgrade = "CratesNvimUpgrade"
+            error = "CratesNvimError"
+            update = nil
+        }
+        popup = {
+            autofocus = false
+            copy_register = '"'
+            style = "minimal"
+            border = "none"
+            version_date = false
+            max_height = 30
+            min_width = 20
+            text = {
+                title = "  %s "
+                version = "   %s "
+                prerelease = "  %s "
+                yanked = "  %s "
+                date = " %s "
+                feature = "   %s "
+                enabled = "  %s "
+                transitive = "  %s "
+            }
+            highlight = {
+                title = "CratesNvimPopupTitle"
+                version = "CratesNvimPopupVersion"
+                prerelease = "CratesNvimPopupPreRelease"
+                yanked = "CratesNvimPopupYanked"
+                feature = "CratesNvimPopupFeature"
+                enabled = "CratesNvimPopupEnabled"
+                transitive = "CratesNvimPopupTransitive"
+            }
+            keys = {
+                hide = { "q", "<esc>" }
+                select = { "<cr>" }
+                select_alt = { "s" }
+                copy_version = { "yy" }
+                toggle_feature = { "<cr>" }
+                goto_feature = { "gd", "K" }
+                jump_forward_feature = { "<c-i>" }
+                jump_back_feature = { "<c-o>" }
+            }
+        }
+        cmp = {
+            text = {
+                prerelease = "  pre-release "
+                yanked = "  yanked "
+            }
+        }
+    }
+<
+
 ==============================================================================
 MAPPINGS                                                     *crates-mappings*
 
@@ -104,6 +180,8 @@ focus_popup({line}: `integer|nil`)              *crates-functions-focus_popup*
 
 hide_popup()                                     *crates-functions-hide_popup*
      Hide the popup.
+
+
 
 ==============================================================================
 CONFIGURATION                                                  *crates-config*
@@ -488,4 +566,5 @@ cmp.text.yanked                                *crates-config-cmp-text-yanked*
     Type: `string`, Default: `"  yanked "`
 
     Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+
 
