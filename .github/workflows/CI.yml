@@ -20,6 +20,8 @@ jobs:
 
     - name: Install teal
       run: luarocks install tl
+    - name: Install inspect
+      run: luarocks install inspect
 
     - name: Build crates.nvim
       run: tl build
