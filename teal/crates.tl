@@ -1,8 +1,41 @@
 local record M
+    -- Setup config and auto commands.
+    setup: function(cfg: Config)
+
+    -- Hide virtual text.
+    hide: function()
+    -- Force-reload and display virtual text (clears cache).
+    reload: function()
+    -- Load and display virtual text.
+    update: function()
+    -- Show or hide virtual text.
+    toggle: function()
+
+    -- Upgrade the crate on the current line.
+    upgrade_crate: function(alt: boolean|nil)
+    -- Upgrade the crates on the lines visually selected.
+    upgrade_crates: function(alt: boolean|nil)
+    -- Upgrade all crates in the buffer.
+    upgrade_all_crates: function()alt: boolean|nil
+
+    -- Update the crate on the current line.
+    update_crate: function(alt: boolean|nil)
+    -- Update the crates on the lines visually selected.
+    update_crates: function(alt: boolean|nil)
+    -- Update all crates in the buffer.
+    update_all_crates: function(alt: boolean|nil)
+
+    -- Show/hide popup with all versions or features.
+    -- If `popup.autofocus` is disabled calling this again will focus the popup.
     show_popup: function()
+    -- Same as `show_popup` but always show versions.
     show_versions_popup: function()
+    -- Same as `show_popup` but always show features.
     show_features_popup: function()
-    focus_popup: function(integer|nil)
+    -- Focus the popup (jump into the floating window).
+    -- Optionally specify the line to jump to, inside the popup.
+    focus_popup: function(line: integer|nil)
+    -- Hide the popup.
     hide_popup: function()
 end
 
@@ -27,7 +60,6 @@ local function reload_crate(crate: Crate)
         for buf,crates in pairs(core.crate_cache) do
             local c = crates[crate.name]
 
-            -- only update loaded buffers
             if c and vim.api.nvim_buf_is_loaded(buf) then
                 ui.display_versions(buf, c, versions)
             end
@@ -41,13 +73,32 @@ local function reload_crate(crate: Crate)
     api.fetch_crate_versions(crate.name, on_fetched)
 end
 
--- Hide virtual text.
+function M.setup(cfg: Config)
+    core.cfg = config.build(cfg)
+
+    vim.cmd("augroup Crates")
+    vim.cmd("autocmd!")
+    if core.cfg.autoload then
+        vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
+    end
+    if core.cfg.autoupdate then
+        vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
+    end
+    vim.cmd("augroup END")
+
+    vim.cmd([[
+        augroup CratesPopup
+        autocmd!
+        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
+        augroup END
+    ]])
+end
+
 function M.hide()
     core.visible = false
     ui.clear()
 end
 
--- Force-reload and display virtual text (clears cache).
 function M.reload()
     core.visible = true
     core.vers_cache = {}
@@ -64,7 +115,6 @@ function M.reload()
     end
 end
 
--- Load and display virtual text.
 function M.update()
     core.visible = true
     ui.clear()
@@ -87,7 +137,6 @@ function M.update()
     end
 end
 
--- Show or hide virtual text.
 function M.toggle()
     if core.visible then
         M.hide()
@@ -97,14 +146,12 @@ function M.toggle()
 end
 
 
--- Upgrade the crate on the current line.
 function M.upgrade_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
     util.upgrade_crates(crates, alt)
 end
 
--- Upgrade the crates on the lines visually selected.
 function M.upgrade_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
@@ -114,7 +161,6 @@ function M.upgrade_crates(alt: boolean|nil)
     util.upgrade_crates(crates, alt)
 end
 
--- Upgrade all crates in the buffer.
 function M.upgrade_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
@@ -131,14 +177,12 @@ function M.upgrade_all_crates(alt: boolean|nil)
     util.upgrade_crates(crate_versions, alt)
 end
 
--- Update the crate on the current line.
 function M.update_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
     util.update_crates(crates, alt)
 end
 
--- Update the crates on the lines visually selected.
 function M.update_crates(alt: boolean|nil)
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
@@ -148,7 +192,6 @@ function M.update_crates(alt: boolean|nil)
     util.update_crates(crates, alt)
 end
 
--- Update all crates in the buffer>
 function M.update_all_crates(alt: boolean|nil)
     local cur_buf = util.current_buf()
     local crates = core.crate_cache[cur_buf]
@@ -165,42 +208,10 @@ function M.update_all_crates(alt: boolean|nil)
     util.update_crates(crate_versions, alt)
 end
 
--- Setup config and auto commands.
-function M.setup(cfg: Config)
-    core.cfg = config.build(cfg)
-
-    vim.cmd("augroup Crates")
-    vim.cmd("autocmd!")
-    if core.cfg.autoload then
-        vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
-    end
-    if core.cfg.autoupdate then
-        vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
-    end
-    vim.cmd("augroup END")
-
-    vim.cmd([[
-        augroup CratesPopup
-        autocmd!
-        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
-        augroup END
-    ]])
-end
-
--- Show/hide popup with all versions or features.
--- If `popup.autofocus` is disabled calling this again will focus the popup.
 M.show_popup = popup.show
-
--- Same as `show_popup` but always show versions.
 M.show_versions_popup = popup.show_versions
-
--- Same as `show_popup` but always show features.
 M.show_features_popup = popup.show_features
-
--- Focus the popup (jump into the floating window).
 M.focus_popup = popup.focus
-
--- Hide the popup.
 M.hide_popup = popup.hide
 
 return M

@@ -6,6 +6,39 @@ local M = {}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local api = require('crates.api')
 local Version = api.Version
 local config = require('crates.config')
@@ -27,7 +60,6 @@ local function reload_crate(crate)
       for buf, crates in pairs(core.crate_cache) do
          local c = crates[crate.name]
 
-
          if c and vim.api.nvim_buf_is_loaded(buf) then
             ui.display_versions(buf, c, versions)
          end
@@ -41,12 +73,31 @@ local function reload_crate(crate)
    api.fetch_crate_versions(crate.name, on_fetched)
 end
 
+function M.setup(cfg)
+   core.cfg = config.build(cfg)
+
+   vim.cmd("augroup Crates")
+   vim.cmd("autocmd!")
+   if core.cfg.autoload then
+      vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
+   end
+   if core.cfg.autoupdate then
+      vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
+   end
+   vim.cmd("augroup END")
+
+   vim.cmd([[
+        augroup CratesPopup
+        autocmd!
+        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
+        augroup END
+    ]])
+end
 
 function M.hide()
    core.visible = false
    ui.clear()
 end
-
 
 function M.reload()
    core.visible = true
@@ -63,7 +114,6 @@ function M.reload()
       reload_crate(c)
    end
 end
-
 
 function M.update()
    core.visible = true
@@ -87,7 +137,6 @@ function M.update()
    end
 end
 
-
 function M.toggle()
    if core.visible then
       M.hide()
@@ -97,13 +146,11 @@ function M.toggle()
 end
 
 
-
 function M.upgrade_crate(alt)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
    local crates = util.get_lines_crates(Range.pos(linenr - 1))
    util.upgrade_crates(crates, alt)
 end
-
 
 function M.upgrade_crates(alt)
    local lines = Range.new(
@@ -113,7 +160,6 @@ function M.upgrade_crates(alt)
    local crates = util.get_lines_crates(lines)
    util.upgrade_crates(crates, alt)
 end
-
 
 function M.upgrade_all_crates(alt)
    local cur_buf = util.current_buf()
@@ -131,13 +177,11 @@ function M.upgrade_all_crates(alt)
    util.upgrade_crates(crate_versions, alt)
 end
 
-
 function M.update_crate(alt)
    local linenr = vim.api.nvim_win_get_cursor(0)[1]
    local crates = util.get_lines_crates(Range.pos(linenr - 1))
    util.update_crates(crates, alt)
 end
-
 
 function M.update_crates(alt)
    local lines = Range.new(
@@ -147,7 +191,6 @@ function M.update_crates(alt)
    local crates = util.get_lines_crates(lines)
    util.update_crates(crates, alt)
 end
-
 
 function M.update_all_crates(alt)
    local cur_buf = util.current_buf()
@@ -165,42 +208,10 @@ function M.update_all_crates(alt)
    util.update_crates(crate_versions, alt)
 end
 
-
-function M.setup(cfg)
-   core.cfg = config.build(cfg)
-
-   vim.cmd("augroup Crates")
-   vim.cmd("autocmd!")
-   if core.cfg.autoload then
-      vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
-   end
-   if core.cfg.autoupdate then
-      vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
-   end
-   vim.cmd("augroup END")
-
-   vim.cmd([[
-        augroup CratesPopup
-        autocmd!
-        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
-        augroup END
-    ]])
-end
-
-
-
 M.show_popup = popup.show
-
-
 M.show_versions_popup = popup.show_versions
-
-
 M.show_features_popup = popup.show_features
-
-
 M.focus_popup = popup.focus
-
-
 M.hide_popup = popup.hide
 
 return M
