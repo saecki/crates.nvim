@@ -39,7 +39,67 @@ But here are some recommended ones:
 ==============================================================================
 FUNCTIONS                                                   *crates-functions*
 
-TODO
+setup({cfg}: `Config`)                                *crates-functions-setup*
+     Setup config and auto commands.
+
+
+hide()                                                 *crates-functions-hide*
+     Hide virtual text.
+
+
+reload()                                             *crates-functions-reload*
+     Force-reload and display virtual text (clears cache).
+
+
+update()                                             *crates-functions-update*
+     Load and display virtual text.
+
+
+toggle()                                             *crates-functions-toggle*
+     Show or hide virtual text.
+
+
+upgrade_crate({alt}: `boolean|nil`)           *crates-functions-upgrade_crate*
+     Upgrade the crate on the current line.
+
+
+upgrade_crates({alt}: `boolean|nil`)         *crates-functions-upgrade_crates*
+     Upgrade the crates on the lines visually selected.
+
+
+update_crate({alt}: `boolean|nil`)             *crates-functions-update_crate*
+     Upgrade all crates in the buffer.
+     Update the crate on the current line.
+
+
+update_crates({alt}: `boolean|nil`)           *crates-functions-update_crates*
+     Update the crates on the lines visually selected.
+
+
+update_all_crates({alt}: `boolean|nil`)   *crates-functions-update_all_crates*
+     Update all crates in the buffer.
+
+
+show_popup()                                     *crates-functions-show_popup*
+     Show/hide popup with all versions or features.
+     If `popup.autofocus` is disabled calling this again will focus the popup.
+
+
+show_versions_popup()                   *crates-functions-show_versions_popup*
+     Same as `show_popup` but always show versions.
+
+
+show_features_popup()                   *crates-functions-show_features_popup*
+     Same as `show_popup` but always show features.
+
+
+focus_popup({line}: `integer|nil`)              *crates-functions-focus_popup*
+     Focus the popup (jump into the floating window).
+     Optionally specify the line to jump to, inside the popup.
+
+
+hide_popup()                                     *crates-functions-hide_popup*
+     Hide the popup.
 
 ==============================================================================
 CONFIGURATION                                                  *crates-config*

@@ -5,8 +5,6 @@ exec lua "$0" "$@"
 
 local inspect = require("inspect")
 local config = require('lua.crates.config')
-local doc_file = "doc/crates.txt"
-local doc_file_template = "scripts/crates.txt.in"
 
 local function read_to_string(path)
     local file = io.open(path, "r")
@@ -18,6 +16,58 @@ end
 local function write_to_path(path, str)
     local file = io.open(path, "w")
     file:write(str)
+    file:close()
+end
+
+local function format_params(params)
+    local text = {}
+    for p,t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
+        local fmt = string.format("{%s}: `%s`", p, t)
+        table.insert(text, fmt)
+    end
+    return table.concat(text, ", ")
+end
+
+local function gen_func_doc(lines)
+    local func_doc = {}
+
+    local file = io.open("teal/crates.tl", "r")
+    for l in file:lines("*l") do
+        if l == "end" then
+            break
+        end
+        if l ~= "" then
+            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)$"
+            local name, params = l:match(pat)
+            if name and params then
+                local doc_params = format_params(params)
+                local doc_title = string.format("%s(%s)", name, doc_params)
+                local doc_key = string.format("*crates-functions-%s*", name)
+
+                local len = string.len(doc_title) + string.len(doc_key)
+                if len < 78 then
+                    local txt = doc_title .. string.rep(" ", 78 - len) .. doc_key
+                    table.insert(lines, txt)
+                else
+                    table.insert(lines, string.format("%78s", doc_key))
+                    table.insert(lines, doc_title)
+                end
+
+                for _,dl in ipairs(func_doc) do
+                    table.insert(lines, "    " .. dl)
+                end
+                table.insert(lines, "")
+                table.insert(lines, "")
+
+                func_doc = {}
+            else
+                local doc = l:match("^%s*%-%-(.*)$")
+                if doc then
+                    table.insert(func_doc, doc)
+                end
+            end
+        end
+    end
     file:close()
 end
 
@@ -78,15 +128,14 @@ local function gen_config_doc(lines, path, schema)
 end
 
 local function gen_doc()
-    local input = read_to_string(doc_file_template)
+    local input = read_to_string("scripts/crates.txt.in")
 
     local func_lines = {
         "==============================================================================",
         "FUNCTIONS                                                   *crates-functions*",
         "",
-        "TODO",
-        "\n",
     }
+    gen_func_doc(func_lines)
     local func_text = table.concat(func_lines, "\n")
 
     local config_lines = {
@@ -98,7 +147,7 @@ local function gen_doc()
     local config_text = table.concat(config_lines, "\n")
 
     local doc = input .. func_text .. config_text
-    write_to_path(doc_file, doc)
+    write_to_path("doc/crates.txt", doc)
 end
 
 gen_doc()
