@@ -20,9 +20,14 @@ jobs:
 
     - name: Install teal
       run: luarocks install tl
+    - name: Install inspect
+      run: luarocks install inspect
 
     - name: Build crates.nvim
       run: tl build
+    
+    - name: Generate docs
+      run: ./scripts/gen_doc.lua
 
     - name: Check git status
       run: if [[ $(git status --short lua) != "" ]]; then exit 1; fi
