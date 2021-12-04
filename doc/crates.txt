@@ -656,5 +656,5 @@ cmp.text.prerelease                        *crates-config-cmp-text-prerelease*
 cmp.text.yanked                                *crates-config-cmp-text-yanked*
     Type: `string`, Default: `"  yanked "`
 
-    Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+    Text shown in the |nvim-cmp| documentation preview for yanked versions.
 

@@ -593,7 +593,7 @@ entry(schema_cmp_text, "yanked", {
     type = "string",
     default = "  yanked ",
     description = [[
-        Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+        Text shown in the |nvim-cmp| documentation preview for yanked versions.
     ]],
 })
 
