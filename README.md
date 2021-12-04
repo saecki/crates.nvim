@@ -93,7 +93,7 @@ autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'cr
 
 ## Config
 
-For more information about the type of some fields see [`lua/crates/config.lua`](lua/crates/config.lua).
+For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
 
 __Default__
 

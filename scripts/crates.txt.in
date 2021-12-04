@@ -21,7 +21,40 @@ Basic setup:
     require('crates').setup()
 <
 
+Setup for plain text (without patched font):
+>
+    require('crates').setup {
+        text = {
+            loading = "  Loading...",
+            version = "  %s",
+            prerelease = "  %s",
+            yanked = "  %s yanked",
+            nomatch = "  Not found",
+            upgrade = "  %s",
+            error = "  Error fetching crate",
+        },
+        popup = {
+            text = {
+                title = " # %s ",
+                version = " %s ",
+                prerelease = " %s ",
+                yanked = " %s yanked ",
+                feature = "   %s ",
+                enabled = " * %s ",
+                transitive = " ~ %s ",
+            },
+        },
+        cmp = {
+            text = {
+                prerelease = " pre-release ",
+                yanked = " yanked ",
+            },
+        },
+    }
+<
+
 Setup with default options.
+Note the icons in the default config require a patched font, use the plain text config.
 For more information about individual config options see |crates-config|.
 >
     require('crates').setup {
