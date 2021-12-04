@@ -10,6 +10,8 @@ License:  MIT license
 INTRODUCTION                                                          *crates*
 
 Crates is a plugin that helps managing crates.io dependencies.
+It can display a crate's versions and features and allows you to update,
+upgrade, select, enable or disable them.
 
 ==============================================================================
 USAGE                                                           *crates-usage*
@@ -19,7 +21,8 @@ Basic setup:
     require('crates').setup()
 <
 
-Setup with default options:
+Setup with default options.
+For more information about individual config options see |crates-config|.
 >
     require('crates').setup {
 <DEFAULT_CONFIGURATION>
@@ -29,9 +32,10 @@ Setup with default options:
 ==============================================================================
 MAPPINGS                                                     *crates-mappings*
 
-Crates doesn't use any default global mappings.
+Note crates doesn't use any global key mappings by default.
 
-But here are some recommended ones:
+But here are some recommended ones.
+For more information about the lua function see |crates-functions|.
 >
     nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
     nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
@@ -47,12 +51,58 @@ But here are some recommended ones:
     nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
 <
 
+To integrate the crates popup in an idiomatic way into your configuration, you
+might want to use one of the following snippets for contextual documentation.
+
+How you might integrate `show_popup` into your `init.vim`:
+>
+    nnoremap <silent> K :call <SID>show_documentation()<cr>
+    function! s:show_documentation()
+        if (index(['vim','help'], &filetype) >= 0)
+            execute 'h '.expand('<cword>')
+        elseif (index(['man'], &filetype) >= 0)
+            execute 'Man '.expand('<cword>')
+        elseif (expand('%:t') == 'Cargo.toml')
+            lua require('crates').show_popup()
+        else
+            lua vim.lsp.buf.hover()
+        endif
+    endfunction
+<
+
+How you might integrate `show_popup` into your `init.lua`.
+>
+    vim.api.nvim_set_keymap('n', 'K', ':lua show_documentation()', { noremap = true, silent = true })
+    function show_documentation()
+        local filetype = vim.bo.filetype
+        if vim.tbl_contains({ 'vim','help' }, filetype) then
+            vim.cmd('h '..vim.fn.expand('<cword>'))
+        elseif vim.tbl_contains({ 'man' }, filetype) then
+            vim.cmd('Man '..vim.fn.expand('<cword>'))
+        elseif vim.fn.expand('%:t') == 'Cargo.toml' then
+            require('crates').show_popup()
+        else
+            vim.lsp.buf.hover()
+        end
+    end
+<
+
 ==============================================================================
 FUNCTIONS                                                   *crates-functions*
 
-<FUNCTIONS>
+All of these functions are members of the `crates` root module.
+They can be accessed like this:
+>
+    require('crates').function_name()
+<
 
+<FUNCTIONS>
 ==============================================================================
 CONFIGURATION                                                  *crates-config*
+
+This section describes the configuration options which can be passed to
+`crates.setup()`. Note the type `section` indicates that the field
+is a table with subfields which will be extended with their default values, if
+not specified.
 
 <CONFIGURATION>

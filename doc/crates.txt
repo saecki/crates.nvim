@@ -10,6 +10,8 @@ License:  MIT license
 INTRODUCTION                                                          *crates*
 
 Crates is a plugin that helps managing crates.io dependencies.
+It can display a crate's versions and features and allows you to update,
+upgrade, select, enable or disable them.
 
 ==============================================================================
 USAGE                                                           *crates-usage*
@@ -19,7 +21,8 @@ Basic setup:
     require('crates').setup()
 <
 
-Setup with default options:
+Setup with default options.
+For more information about individual config options see |crates-config|.
 >
     require('crates').setup {
         smart_insert = true
@@ -96,9 +99,10 @@ Setup with default options:
 ==============================================================================
 MAPPINGS                                                     *crates-mappings*
 
-Crates doesn't use any default global mappings.
+Note crates doesn't use any global key mappings by default.
 
-But here are some recommended ones:
+But here are some recommended ones.
+For more information about the lua function see |crates-functions|.
 >
     nnoremap <silent> <leader>vt :lua require('crates').toggle()<cr>
     nnoremap <silent> <leader>vr :lua require('crates').reload()<cr>
@@ -114,75 +118,121 @@ But here are some recommended ones:
     nnoremap <silent> <leader>vA :lua require('crates').upgrade_all_crates()<cr>
 <
 
+To integrate the crates popup in an idiomatic way into your configuration, you
+might want to use one of the following snippets for contextual documentation.
+
+How you might integrate `show_popup` into your `init.vim`:
+>
+    nnoremap <silent> K :call <SID>show_documentation()<cr>
+    function! s:show_documentation()
+        if (index(['vim','help'], &filetype) >= 0)
+            execute 'h '.expand('<cword>')
+        elseif (index(['man'], &filetype) >= 0)
+            execute 'Man '.expand('<cword>')
+        elseif (expand('%:t') == 'Cargo.toml')
+            lua require('crates').show_popup()
+        else
+            lua vim.lsp.buf.hover()
+        endif
+    endfunction
+<
+
+How you might integrate `show_popup` into your `init.lua`.
+>
+    vim.api.nvim_set_keymap('n', 'K', ':lua show_documentation()', { noremap = true, silent = true })
+    function show_documentation()
+        local filetype = vim.bo.filetype
+        if vim.tbl_contains({ 'vim','help' }, filetype) then
+            vim.cmd('h '..vim.fn.expand('<cword>'))
+        elseif vim.tbl_contains({ 'man' }, filetype) then
+            vim.cmd('Man '..vim.fn.expand('<cword>'))
+        elseif vim.fn.expand('%:t') == 'Cargo.toml' then
+            require('crates').show_popup()
+        else
+            vim.lsp.buf.hover()
+        end
+    end
+<
+
 ==============================================================================
 FUNCTIONS                                                   *crates-functions*
 
-setup({cfg}: `Config`)                                *crates-functions-setup*
+All of these functions are members of the `crates` root module.
+They can be accessed like this:
+>
+    require('crates').function_name()
+<
+
+setup({cfg}: `Config`)                                        *crates.setup()*
      Setup config and auto commands.
 
 
-hide()                                                 *crates-functions-hide*
+hide()                                                         *crates.hide()*
      Hide virtual text.
 
 
-reload()                                             *crates-functions-reload*
+reload()                                                     *crates.reload()*
      Force-reload and display virtual text (clears cache).
 
 
-update()                                             *crates-functions-update*
+update()                                                     *crates.update()*
      Load and display virtual text.
 
 
-toggle()                                             *crates-functions-toggle*
+toggle()                                                     *crates.toggle()*
      Show or hide virtual text.
 
 
-upgrade_crate({alt}: `boolean|nil`)           *crates-functions-upgrade_crate*
+upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*
      Upgrade the crate on the current line.
 
 
-upgrade_crates({alt}: `boolean|nil`)         *crates-functions-upgrade_crates*
+upgrade_crates({alt}: `boolean|nil`)                 *crates.upgrade_crates()*
      Upgrade the crates on the lines visually selected.
 
 
-update_crate({alt}: `boolean|nil`)             *crates-functions-update_crate*
+update_crate({alt}: `boolean|nil`)                     *crates.update_crate()*
      Upgrade all crates in the buffer.
      Update the crate on the current line.
 
 
-update_crates({alt}: `boolean|nil`)           *crates-functions-update_crates*
+update_crates({alt}: `boolean|nil`)                   *crates.update_crates()*
      Update the crates on the lines visually selected.
 
 
-update_all_crates({alt}: `boolean|nil`)   *crates-functions-update_all_crates*
+update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
      Update all crates in the buffer.
 
 
-show_popup()                                     *crates-functions-show_popup*
+show_popup()                                             *crates.show_popup()*
      Show/hide popup with all versions or features.
      If `popup.autofocus` is disabled calling this again will focus the popup.
 
 
-show_versions_popup()                   *crates-functions-show_versions_popup*
+show_versions_popup()                           *crates.show_versions_popup()*
      Same as `show_popup` but always show versions.
 
 
-show_features_popup()                   *crates-functions-show_features_popup*
+show_features_popup()                           *crates.show_features_popup()*
      Same as `show_popup` but always show features.
 
 
-focus_popup({line}: `integer|nil`)              *crates-functions-focus_popup*
+focus_popup({line}: `integer|nil`)                      *crates.focus_popup()*
      Focus the popup (jump into the floating window).
      Optionally specify the line to jump to, inside the popup.
 
 
-hide_popup()                                     *crates-functions-hide_popup*
+hide_popup()                                             *crates.hide_popup()*
      Hide the popup.
-
 
 
 ==============================================================================
 CONFIGURATION                                                  *crates-config*
+
+This section describes the configuration options which can be passed to
+`crates.setup()`. Note the type `section` indicates that the field
+is a table with subfields which will be extended with their default values, if
+not specified.
 
 smart_insert                                      *crates-config-smart_insert*
     Type: `boolean`, Default: `true`

@@ -29,7 +29,7 @@ local function gen_func_doc(lines)
             if name and params then
                 local doc_params = format_params(params)
                 local doc_title = string.format("%s(%s)", name, doc_params)
-                local doc_key = string.format("*crates-functions-%s*", name)
+                local doc_key = string.format("*crates.%s()*", name)
 
                 local len = string.len(doc_title) + string.len(doc_key)
                 if len < 78 then
