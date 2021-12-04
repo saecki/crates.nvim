@@ -164,66 +164,76 @@ They can be accessed like this:
 <
 
 setup({cfg}: `Config`)                                        *crates.setup()*
-     Setup config and auto commands.
+    Setup config and auto commands.
 
 
 hide()                                                         *crates.hide()*
-     Hide virtual text.
+    Hide virtual text.
 
 
 reload()                                                     *crates.reload()*
-     Force-reload and display virtual text (clears cache).
+    Force-reload and display virtual text (clears cache).
 
 
 update()                                                     *crates.update()*
-     Load and display virtual text.
+    Load and display virtual text.
 
 
 toggle()                                                     *crates.toggle()*
-     Show or hide virtual text.
+    Show or hide virtual text.
 
 
 upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*
-     Upgrade the crate on the current line.
+    Upgrade the crate on the current line.
+    If the `alt` flag is passed as true, the opposite of the `smart_insert` config
+    option will be used to insert the version.
 
 
 upgrade_crates({alt}: `boolean|nil`)                 *crates.upgrade_crates()*
-     Upgrade the crates on the lines visually selected.
+    Upgrade the crates on the lines visually selected.
+    See `crates.upgrade_crate()`.
+
+
+upgrade_all_crates({alt}: `boolean|nil`)         *crates.upgrade_all_crates()*
+    Upgrade all crates in the buffer.
+    See `crates.upgrade_crate()`.
 
 
 update_crate({alt}: `boolean|nil`)                     *crates.update_crate()*
-     Upgrade all crates in the buffer.
-     Update the crate on the current line.
+    Update the crate on the current line.
+    See `crates.upgrade_crate()`.
 
 
 update_crates({alt}: `boolean|nil`)                   *crates.update_crates()*
-     Update the crates on the lines visually selected.
+    Update the crates on the lines visually selected.
+    See `crates.upgrade_crate()`.
 
 
 update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
-     Update all crates in the buffer.
+    Update all crates in the buffer.
+    See `crates.upgrade_crate()`.
 
 
 show_popup()                                             *crates.show_popup()*
-     Show/hide popup with all versions or features.
-     If `popup.autofocus` is disabled calling this again will focus the popup.
+    Show/hide popup with all versions, all features or details about one feature.
+    If `popup.autofocus` is disabled calling this again will focus the popup.
 
 
 show_versions_popup()                           *crates.show_versions_popup()*
-     Same as `show_popup` but always show versions.
+    Same as `crates.show_popup()` but always show versions.
 
 
 show_features_popup()                           *crates.show_features_popup()*
-     Same as `show_popup` but always show features.
+    Same as `crates.show_popup()` but always show features or features details.
 
 
 focus_popup({line}: `integer|nil`)                      *crates.focus_popup()*
-     Focus the popup (jump into the floating window).
-     Optionally specify the line to jump to, inside the popup.
+    Focus the popup (jump into the floating window).
+    Optionally specify the line to jump to, inside the popup.
 
 
 hide_popup()                                             *crates.hide_popup()*
-     Hide the popup.
+    Hide the popup.
 
 
 ==============================================================================

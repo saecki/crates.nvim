@@ -12,25 +12,32 @@ local record M
     toggle: function()
 
     -- Upgrade the crate on the current line.
+    -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
+    -- option will be used to insert the version.
     upgrade_crate: function(alt: boolean|nil)
     -- Upgrade the crates on the lines visually selected.
+    -- See `crates.upgrade_crate()`.
     upgrade_crates: function(alt: boolean|nil)
     -- Upgrade all crates in the buffer.
-    upgrade_all_crates: function()alt: boolean|nil
+    -- See `crates.upgrade_crate()`.
+    upgrade_all_crates: function(alt: boolean|nil)
 
     -- Update the crate on the current line.
+    -- See `crates.upgrade_crate()`.
     update_crate: function(alt: boolean|nil)
     -- Update the crates on the lines visually selected.
+    -- See `crates.upgrade_crate()`.
     update_crates: function(alt: boolean|nil)
     -- Update all crates in the buffer.
+    -- See `crates.upgrade_crate()`.
     update_all_crates: function(alt: boolean|nil)
 
-    -- Show/hide popup with all versions or features.
+    -- Show/hide popup with all versions, all features or details about one feature.
     -- If `popup.autofocus` is disabled calling this again will focus the popup.
     show_popup: function()
-    -- Same as `show_popup` but always show versions.
+    -- Same as `crates.show_popup()` but always show versions.
     show_versions_popup: function()
-    -- Same as `show_popup` but always show features.
+    -- Same as `crates.show_popup()` but always show features or features details.
     show_features_popup: function()
     -- Focus the popup (jump into the floating window).
     -- Optionally specify the line to jump to, inside the popup.

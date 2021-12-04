@@ -207,37 +207,50 @@ require('crates').setup {
 
 ### Functions
 ```lua
--- load and display versions
-require('crates').update()
--- force-reload and display versions (clears cache)
-require('crates').reload()
--- hide versions
+-- Setup config and auto commands.
+require('crates').setup(cfg: Config)
+
+-- Hide virtual text.
 require('crates').hide()
--- show/hide versions
+-- Force-reload and display virtual text (clears cache).
+require('crates').reload()
+-- Load and display virtual text.
+require('crates').update()
+-- Show or hide virtual text.
 require('crates').toggle()
 
--- update crates to newest compatible version
--- all of these take an optional `alt` flag that will use the opposite of the `smart_insert` config option
-require('crates').update_crate() -- current line
-require('crates').update_crates() -- visually selected
-require('crates').update_all_crates() -- all in current buffer
+-- Upgrade the crate on the current line.
+-- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
+-- option will be used to insert the version.
+require('crates').upgrade_crate(alt: boolean|nil)
+-- Upgrade the crates on the lines visually selected.
+-- See `crates.upgrade_crate()`.
+require('crates').upgrade_crates(alt: boolean|nil)
+-- Upgrade all crates in the buffer.
+-- See `crates.upgrade_crate()`.
+require('crates').upgrade_all_crates(alt: boolean|nil)
 
--- upgrade crates to newest version
--- all of these take an optional `alt` flag that will use the opposite of the `smart_insert` config option
-require('crates').upgrade_crate() -- current line
-require('crates').upgrade_crates() -- visually selected
-require('crates').upgrade_all_crates() -- all in current buffer
+-- Update the crate on the current line.
+-- See `crates.upgrade_crate()`.
+require('crates').update_crate(alt: boolean|nil)
+-- Update the crates on the lines visually selected.
+-- See `crates.upgrade_crate()`.
+require('crates').update_crates(alt: boolean|nil)
+-- Update all crates in the buffer.
+-- See `crates.upgrade_crate()`.
+require('crates').update_all_crates(alt: boolean|nil)
 
--- show/hide popup with all versions or features
--- (if `popup.autofocus` is disabled calling this again will focus the popup)
+-- Show/hide popup with all versions, all features or details about one feature.
+-- If `popup.autofocus` is disabled calling this again will focus the popup.
 require('crates').show_popup()
--- same as `show_popup` but always show versions
+-- Same as `crates.show_popup()` but always show versions.
 require('crates').show_versions_popup()
--- same as `show_popup` but always show features
+-- Same as `crates.show_popup()` but always show features or features details.
 require('crates').show_features_popup()
--- focus the popup (jump into the window)
-require('crates').focus_popup()
--- hide the popup
+-- Focus the popup (jump into the floating window).
+-- Optionally specify the line to jump to, inside the popup.
+require('crates').focus_popup(line: integer|nil)
+-- Hide the popup.
 require('crates').hide_popup()
 ```
 ### Key mappings

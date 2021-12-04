@@ -6,7 +6,32 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 
-local function format_params(params)
+local function gen_readme_functions(lines)
+    local file = io.open("teal/crates.tl", "r")
+    for l in file:lines("*l") do
+        if l == "end" then
+            break
+        end
+        if l ~= "" then
+            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)$"
+            local name, params = l:match(pat)
+            if name and params then
+                local func_text = string.format("require('crates').%s(%s)", name, params)
+                table.insert(lines, func_text)
+            else
+                local doc = l:match("^%s*%-%-%s*(.*)$")
+                if doc then
+                    table.insert(lines, "-- " .. doc)
+                end
+            end
+        else
+            table.insert(lines, "")
+        end
+    end
+    file:close()
+end
+
+local function format_vimdoc_params(params)
     local text = {}
     for p,t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
         local fmt = string.format("{%s}: `%s`", p, t)
@@ -15,7 +40,7 @@ local function format_params(params)
     return table.concat(text, ", ")
 end
 
-local function gen_func_doc(lines)
+local function gen_vimdoc_funcions(lines)
     local func_doc = {}
 
     local file = io.open("teal/crates.tl", "r")
@@ -27,7 +52,7 @@ local function gen_func_doc(lines)
             local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)$"
             local name, params = l:match(pat)
             if name and params then
-                local doc_params = format_params(params)
+                local doc_params = format_vimdoc_params(params)
                 local doc_title = string.format("%s(%s)", name, doc_params)
                 local doc_key = string.format("*crates.%s()*", name)
 
@@ -48,7 +73,7 @@ local function gen_func_doc(lines)
 
                 func_doc = {}
             else
-                local doc = l:match("^%s*%-%-(.*)$")
+                local doc = l:match("^%s*%-%-%s*(.*)$")
                 if doc then
                     table.insert(func_doc, doc)
                 end
@@ -67,30 +92,7 @@ local function join_path(path, component)
     return p
 end
 
-local function gen_def_config_doc(lines, indent, path, schema)
-    local function insert_indent(str)
-        local l = string.rep("    ", #path + indent) .. str
-        table.insert(lines, l)
-    end
-
-    for _,s in ipairs(schema) do
-        if not s.deprecated then
-            local name = s.name
-
-            if s.type == "section" then
-                local p = join_path(path, name)
-                insert_indent(name .. " = {")
-                gen_def_config_doc(lines, indent, p, s.fields)
-                insert_indent("},")
-            else
-                local d = inspect(s.default)
-                insert_indent(string.format("%s = %s,", name, d))
-            end
-        end
-    end
-end
-
-local function gen_config_doc(lines, path, schema)
+local function gen_vimdoc_config(lines, path, schema)
     for _,s in ipairs(schema) do
         local k = s.name
         local p = join_path(path, k)
@@ -132,7 +134,30 @@ local function gen_config_doc(lines, path, schema)
         end
 
         if s.type == "section" then
-            gen_config_doc(lines, p, s.fields)
+            gen_vimdoc_config(lines, p, s.fields)
+        end
+    end
+end
+
+local function gen_def_config(lines, indent, path, schema)
+    local function insert_indent(str)
+        local l = string.rep("    ", #path + indent) .. str
+        table.insert(lines, l)
+    end
+
+    for _,s in ipairs(schema) do
+        if not s.deprecated then
+            local name = s.name
+
+            if s.type == "section" then
+                local p = join_path(path, name)
+                insert_indent(name .. " = {")
+                gen_def_config(lines, indent, p, s.fields)
+                insert_indent("},")
+            else
+                local d = inspect(s.default)
+                insert_indent(string.format("%s = %s,", name, d))
+            end
         end
     end
 end
@@ -143,11 +168,11 @@ local function gen_vim_doc()
     local infile = io.open("scripts/crates.txt.in", "r")
     for l in infile:lines("*l") do
         if l == "<DEFAULT_CONFIGURATION>" then
-            gen_def_config_doc(lines, 2, {}, config.schema)
+            gen_def_config(lines, 2, {}, config.schema)
         elseif l == "<FUNCTIONS>" then
-            gen_func_doc(lines)
+            gen_vimdoc_funcions(lines)
         elseif l == "<CONFIGURATION>" then
-            gen_config_doc(lines, {}, config.schema)
+            gen_vimdoc_config(lines, {}, config.schema)
         else
             table.insert(lines, l)
         end
@@ -166,7 +191,9 @@ local function gen_readme()
     local infile = io.open("scripts/README.md.in", "r")
     for l in infile:lines("*l") do
         if l == "<DEFAULT_CONFIGURATION>" then
-            gen_def_config_doc(lines, 1, {}, config.schema)
+            gen_def_config(lines, 1, {}, config.schema)
+        elseif l == "<FUNCTIONS>" then
+            gen_readme_functions(lines)
         else
             table.insert(lines, l)
         end
