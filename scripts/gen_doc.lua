@@ -74,16 +74,18 @@ local function gen_def_config_doc(lines, indent, path, schema)
     end
 
     for _,s in ipairs(schema) do
-        local name = s.name
+        if not s.deprecated then
+            local name = s.name
 
-        if s.type == "section" then
-            local p = join_path(path, name)
-            insert_indent(name .. " = {")
-            gen_def_config_doc(lines, indent, p, s.fields)
-            insert_indent("}")
-        else
-            local d = inspect(s.default)
-            insert_indent(name .. " = " .. d)
+            if s.type == "section" then
+                local p = join_path(path, name)
+                insert_indent(name .. " = {")
+                gen_def_config_doc(lines, indent, p, s.fields)
+                insert_indent("}")
+            else
+                local d = inspect(s.default)
+                insert_indent(name .. " = " .. d)
+            end
         end
     end
 end

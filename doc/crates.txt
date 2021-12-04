@@ -36,7 +36,6 @@ Setup with default options:
             nomatch = "   No match"
             upgrade = "   %s"
             error = "   Error fetching crate"
-            update = nil
         }
         highlight = {
             loading = "CratesNvimLoading"
@@ -46,7 +45,6 @@ Setup with default options:
             nomatch = "CratesNvimNoMatch"
             upgrade = "CratesNvimUpgrade"
             error = "CratesNvimError"
-            update = nil
         }
         popup = {
             autofocus = false
@@ -566,5 +564,4 @@ cmp.text.yanked                                *crates-config-cmp-text-yanked*
     Type: `string`, Default: `"  yanked "`
 
     Text shown in the |nvim-cmp| documentation preview for pre-release versions.
-
 
