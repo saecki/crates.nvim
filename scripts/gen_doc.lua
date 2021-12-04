@@ -81,10 +81,10 @@ local function gen_def_config_doc(lines, indent, path, schema)
                 local p = join_path(path, name)
                 insert_indent(name .. " = {")
                 gen_def_config_doc(lines, indent, p, s.fields)
-                insert_indent("}")
+                insert_indent("},")
             else
                 local d = inspect(s.default)
-                insert_indent(name .. " = " .. d)
+                insert_indent(string.format("%s = %s,", name, d))
             end
         end
     end
