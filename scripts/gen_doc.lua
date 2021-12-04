@@ -137,7 +137,7 @@ local function gen_config_doc(lines, path, schema)
     end
 end
 
-local function gen_doc()
+local function gen_vim_doc()
     local lines = {}
 
     local infile = io.open("scripts/crates.txt.in", "r")
@@ -160,4 +160,28 @@ local function gen_doc()
     outfile:close()
 end
 
-gen_doc()
+local function gen_readme()
+    local lines = {}
+
+    local infile = io.open("scripts/README.md.in", "r")
+    for l in infile:lines("*l") do
+        if l == "<DEFAULT_CONFIGURATION>" then
+            gen_def_config_doc(lines, 1, {}, config.schema)
+        else
+            table.insert(lines, l)
+        end
+    end
+    infile:close()
+
+    local doc = table.concat(lines, "\n")
+    local outfile = io.open("README.md", "w")
+    outfile:write(doc)
+    outfile:close()
+end
+
+local function gen_docs()
+    gen_vim_doc()
+    gen_readme()
+end
+
+gen_docs()
