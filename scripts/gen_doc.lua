@@ -6,6 +6,13 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 
+local function format_readme_refs(line)
+    line = line:gsub("`f#([^`]+)`", "`%1`")
+    line = line:gsub("`p#([^`]+)`", "`%1`")
+    line = line:gsub("`c#([^`]+)`", "`%1`")
+    return line
+end
+
 local function gen_readme_functions(lines)
     local file = io.open("teal/crates.tl", "r")
     for l in file:lines("*l") do
@@ -21,7 +28,8 @@ local function gen_readme_functions(lines)
             else
                 local doc = l:match("^%s*%-%-%s*(.*)$")
                 if doc then
-                    table.insert(lines, "-- " .. doc)
+                    local fmt = format_readme_refs(doc)
+                    table.insert(lines, "-- " .. fmt)
                 end
             end
         else
@@ -38,6 +46,20 @@ local function format_vimdoc_params(params)
         table.insert(text, fmt)
     end
     return table.concat(text, ", ")
+end
+
+local function format_vimdoc_refs(line)
+    line = line:gsub("`f#([^`]+)`", "`%1`")
+    line = line:gsub("`p#([^`]+)`", "{%1}")
+    local os, opt, oe = line:match("()`c#([^`]+)`()")
+    if os and opt and oe then
+        local pat = "%s|crates-config-%s|%s"
+        local before = line:sub(0, os - 1)
+        local cfg_opt = opt:gsub("%.", "-")
+        local after = line:sub(oe, #line)
+        line = string.format(pat, before, cfg_opt, after)
+    end
+    return line
 end
 
 local function gen_vimdoc_funcions(lines)
@@ -66,7 +88,8 @@ local function gen_vimdoc_funcions(lines)
                 end
 
                 for _,dl in ipairs(func_doc) do
-                    table.insert(lines, "    " .. dl)
+                    local fmt = format_vimdoc_refs(dl)
+                    table.insert(lines, "    " .. fmt)
                 end
                 table.insert(lines, "")
                 table.insert(lines, "")

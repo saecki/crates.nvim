@@ -185,7 +185,7 @@ toggle()                                                     *crates.toggle()*
 
 upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*
     Upgrade the crate on the current line.
-    If the `alt` flag is passed as true, the opposite of the `smart_insert` config
+    If the {alt} flag is passed as true, the opposite of the |crates-config-smart_insert| config
     option will be used to insert the version.
 
 
@@ -216,7 +216,7 @@ update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
 
 show_popup()                                             *crates.show_popup()*
     Show/hide popup with all versions, all features or details about one feature.
-    If `popup.autofocus` is disabled calling this again will focus the popup.
+    If |crates-config-popup-autofocus| is disabled calling this again will focus the popup.
 
 
 show_versions_popup()                           *crates.show_versions_popup()*
