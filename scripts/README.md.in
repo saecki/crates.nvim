@@ -106,35 +106,33 @@ require('crates').setup {
 
 __Plain text__
 
-Replace these sections if you don't have a patched font:
+Replace these fields if you don't have a patched font:
 ```lua
 require('crates').setup {
     text = {
-        loading    = "  Loading...",
-        version    = "  %s",
+        loading = "  Loading...",
+        version = "  %s",
         prerelease = "  %s",
-        yanked     = "  %s yanked",
-        nomatch    = "  Not found",
-        upgrade    = "  %s",
-        error      = "  Error fetching crate",
+        yanked = "  %s yanked",
+        nomatch = "  Not found",
+        upgrade = "  %s",
+        error = "  Error fetching crate",
     },
     popup = {
         text = {
-            title      = " # %s ",
-            -- versions
-            version    = " %s ",
+            title = " # %s ",
+            version = " %s ",
             prerelease = " %s ",
-            yanked     = " %s yanked ",
-            -- features
-            feature    = "   %s ",
-            enabled    = " * %s ",
-            transitive = " - %s ",
+            yanked = " %s yanked ",
+            feature = "   %s ",
+            enabled = " * %s ",
+            transitive = " ~ %s ",
         },
     },
     cmp = {
         text = {
             prerelease = " pre-release ",
-            yanked     = " yanked ",
+            yanked = " yanked ",
         },
     },
 }
