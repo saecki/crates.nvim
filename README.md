@@ -86,7 +86,6 @@ use {
 }
 ```
 
-
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources:
 ```lua
@@ -322,6 +321,7 @@ end
 ```
 
 ## TODO
+- Make use of neovim `0.6`s `vim.diagnostic`
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
