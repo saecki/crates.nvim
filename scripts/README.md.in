@@ -195,6 +195,7 @@ end
 ```
 
 ## TODO
+- Make use of neovim `0.6`s `vim.diagnostic`
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
