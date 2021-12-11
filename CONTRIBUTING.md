@@ -1,3 +1,5 @@
+# Contributing
+
 ## Requirements
 
 - [Neovim](https://github.com/neovim/neovim)
@@ -12,7 +14,7 @@
     - `luarocks install inspect`
 
 ## Writing code
-__Do not edit files in the lua dir.__
+__Do not edit files in the `lua` dir.__
 
 Instead edit the files inside the `teal` dir
 and compile all teal files to lua by running:
@@ -20,9 +22,15 @@ and compile all teal files to lua by running:
 tl build
 ```
 
-## Generate docs
-After editing the configuration schema in `lua/crates/config.tl` or public api
-functions in `lua/crates.tl` update the docs by running this command:
+## Documentation
+__Do not edit the `README.md` or `doc/crates.txt` files.__
+
+To update the README or vimdoc edit the `scripts/README.md.in` and
+`scripts/crates.txt.in` files instead of their generated counter parts.
+
+After editing one of the above, the configuration schema in
+`lua/crates/config.tl` or public api functions in `lua/crates.tl` update the
+docs by running this command:
 ```
 ./scripts/gen_doc.lua
 ```
