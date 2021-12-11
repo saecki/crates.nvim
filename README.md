@@ -1,5 +1,5 @@
 # crates.nvim
-[![CI](https://github.com/Saecki/crates.nvim/actions/workflows/CI.yml/badge.svg)](https://github.com/Saecki/crates.nvim/actions/workflows/CI.yml)
+[![CI](https://github.com/saecki/crates.nvim/actions/workflows/CI.yml/badge.svg)](https://github.com/saecki/crates.nvim/actions/workflows/CI.yml)
 ![LOC](https://tokei.rs/b1/github/saecki/crates.nvim?category=code)
 
 A neovim plugin that helps managing crates.io dependencies.
@@ -56,7 +56,7 @@ Plug 'saecki/crates.nvim', { 'tag': 'v0.1.0' }
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
 ```lua
 use { 
-    'Saecki/crates.nvim',
+    'saecki/crates.nvim',
     tag = 'v0.1.0',
     requires = { 'nvim-lua/plenary.nvim' },
 }
@@ -71,13 +71,13 @@ Plug 'saecki/crates.nvim'
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
 ```lua
-use { 'Saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+use { 'saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 ```
 
 For lazy loading:
 ```lua
 use {
-    'Saecki/crates.nvim',
+    'saecki/crates.nvim',
     event = { "BufRead Cargo.toml" },
     requires = { { 'nvim-lua/plenary.nvim' } },
     config = function()
