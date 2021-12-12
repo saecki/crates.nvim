@@ -8,6 +8,8 @@ local util = require('crates.util')
 local Crate = require('crates.toml').Crate
 local Version = require('crates.api').Version
 
+M.namespace_id = vim.api.nvim_create_namespace("crates.nvim") as integer
+
 function M.display_versions(buf: integer, crate: Crate, versions: {Version})
     if not core.visible or not crate.vers then
         vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
@@ -70,10 +72,7 @@ function M.display_loading(buf: integer, crate: Crate)
 end
 
 function M.clear()
-    if M.namespace_id then
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-    end
-    M.namespace_id = vim.api.nvim_create_namespace("crates.nvim") as integer
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
 return M
