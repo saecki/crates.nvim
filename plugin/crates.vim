@@ -1,15 +1,15 @@
-highlight default link CratesNvimLoading     LspDiagnosticsVirtualTextInfo
-highlight default link CratesNvimVersion     LspDiagnosticsVirtualTextInfo
-highlight default link CratesNvimPreRelease  LspDiagnosticsVirtualTextWarning
-highlight default link CratesNvimYanked      LspDiagnosticsVirtualTextError
-highlight default link CratesNvimNoMatch     LspDiagnosticsVirtualTextError
-highlight default link CratesNvimUpgrade     LspDiagnosticsVirtualTextWarning
-highlight default link CratesNvimError       LspDiagnosticsVirtualTextError
+highlight default link CratesNvimLoading     DiagnosticVirtualTextInfo
+highlight default link CratesNvimVersion     DiagnosticVirtualTextInfo
+highlight default link CratesNvimPreRelease  DiagnosticVirtualTextWarn
+highlight default link CratesNvimYanked      DiagnosticVirtualTextError
+highlight default link CratesNvimNoMatch     DiagnosticVirtualTextError
+highlight default link CratesNvimUpgrade     DiagnosticVirtualTextWarn
+highlight default link CratesNvimError       DiagnosticVirtualTextError
 
 highlight default link CratesNvimPopupTitle       Title
 highlight default link CratesNvimPopupVersion     None
-highlight default link CratesNvimPopupPreRelease  LspDiagnosticsVirtualTextWarning
-highlight default link CratesNvimPopupYanked      LspDiagnosticsVirtualTextError
+highlight default link CratesNvimPopupPreRelease  DiagnosticVirtualTextWarn
+highlight default link CratesNvimPopupYanked      DiagnosticVirtualTextError
 
 highlight default link CratesNvimPopupFeature     None
 highlight default CratesNvimPopupEnabled          ctermfg=2 guifg=#23ab49
