@@ -3,7 +3,7 @@ name: Bug report
 about: If something isn't working as expected
 title: ''
 labels: 'bug'
-assignees: ''
+assignees: 'Saecki'
 
 ---
 
@@ -17,7 +17,7 @@ assignees: ''
 <!-- Add any other (if any) context about the problem here. -->
 
 #### Possible solution
-<!-- Add any other (if any) context about the problem here. -->
+<!-- Only if you have suggestions on a fix for the bug. -->
 
 #### Neovim version
 <details>
