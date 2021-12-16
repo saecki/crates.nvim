@@ -62,13 +62,21 @@ function M.display_versions(buf: integer, crate: Crate, versions: {Version})
     end
 
     vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.vers.line, virt_text, {})
+    vim.api.nvim_buf_set_extmark(buf, M.namespace_id, crate.vers.line, -1, {
+        virt_text = virt_text,
+        virt_text_pos = "eol",
+        hl_mode = "combine",
+    })
 end
 
 function M.display_loading(buf: integer, crate: Crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
     vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_virtual_text(buf, M.namespace_id, crate.lines.s, virt_text, {})
+    vim.api.nvim_buf_set_extmark(buf, M.namespace_id, crate.vers.line, -1, {
+        virt_text = virt_text,
+        virt_text_pos = "eol",
+        hl_mode = "combine",
+    })
 end
 
 function M.clear()
