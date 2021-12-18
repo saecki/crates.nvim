@@ -3,7 +3,7 @@ local record M
         major: integer
         minor: integer
         patch: integer
-        suffix: string
+        pre: string
     end
 
     record Requirement
@@ -48,23 +48,23 @@ function SemVer:display(): string
         text = text .. "." .. self.patch
     end
 
-    if self.suffix then
-        text = text .. "-" .. self.suffix
+    if self.pre then
+        text = text .. "-" .. self.pre
     end
 
     return text
 end
 
 function M.parse_version(str: string): SemVer
-    local major, minor, patch, suffix: string, string, string, string
+    local major, minor, patch, pre: string, string, string, string
 
-    major, minor, patch, suffix = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
-    if major and minor and patch and suffix then
+    major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
+    if major and minor and patch and pre then
         return SemVer.new {
             major = tonumber(major) as integer,
             minor = tonumber(minor) as integer,
             patch = tonumber(patch) as integer,
-            suffix = suffix,
+            pre = pre,
         }
     end
 
@@ -204,7 +204,7 @@ local function filled_zeros(version: SemVer): SemVer
         major = version.major or 0,
         minor = version.minor or 0,
         patch = version.patch or 0,
-        suffix = version.suffix,
+        pre = version.pre,
     }
 end
 
@@ -226,7 +226,7 @@ local function compare_versions(a: SemVer, b: SemVer): number
     local major = a.major - b.major
     local minor = a.minor - b.minor
     local patch = a.patch - b.patch
-    local suffix = compare_suffixes(a.suffix, b.suffix)
+    local suffix = compare_suffixes(a.pre, b.pre)
 
     if major == 0 then
         if minor == 0 then
@@ -289,7 +289,7 @@ function M.matches_requirement(v: SemVer, r: Requirement): boolean
         if r.vers.patch and r.vers.patch ~= v.patch then
             return false
         end
-        return r.vers.suffix == v.suffix
+        return r.vers.pre == v.pre
     elseif r.cond == "lt" then
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)

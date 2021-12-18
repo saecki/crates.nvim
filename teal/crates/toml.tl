@@ -16,7 +16,7 @@ local record M
         record Vers
             reqs: {Requirement}
             text: string
-            has_suffix: boolean
+            is_pre: boolean
             line: integer -- 0-indexed
             col: Range
             decl_col: Range
@@ -79,10 +79,10 @@ function Crate.new(obj: Crate): Crate
     if obj.vers then
         obj.vers.reqs = semver.parse_requirements(obj.vers.text)
 
-        obj.vers.has_suffix = false
+        obj.vers.is_pre = false
         for _,r in ipairs(obj.vers.reqs) do
-            if r.vers.suffix then
-                obj.vers.has_suffix = true
+            if r.vers.pre then
+                obj.vers.is_pre = true
                 break
             end
         end
@@ -101,8 +101,8 @@ function Crate:vers_reqs(): {Requirement}|nil
     return self.vers and self.vers.reqs
 end
 
-function Crate:vers_has_suffix(): boolean|nil
-    return self.vers and self.vers.has_suffix
+function Crate:vers_is_pre(): boolean|nil
+    return self.vers and self.vers.is_pre
 end
 
 function Crate:get_feat(name: string): CrateFeature|nil, integer

@@ -48,23 +48,23 @@ function SemVer:display()
       text = text .. "." .. self.patch
    end
 
-   if self.suffix then
-      text = text .. "-" .. self.suffix
+   if self.pre then
+      text = text .. "-" .. self.pre
    end
 
    return text
 end
 
 function M.parse_version(str)
-   local major, minor, patch, suffix
+   local major, minor, patch, pre
 
-   major, minor, patch, suffix = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
-   if major and minor and patch and suffix then
+   major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
+   if major and minor and patch and pre then
       return SemVer.new({
          major = tonumber(major),
          minor = tonumber(minor),
          patch = tonumber(patch),
-         suffix = suffix,
+         pre = pre,
       })
    end
 
@@ -204,7 +204,7 @@ local function filled_zeros(version)
       major = version.major or 0,
       minor = version.minor or 0,
       patch = version.patch or 0,
-      suffix = version.suffix,
+      pre = version.pre,
    }
 end
 
@@ -226,7 +226,7 @@ local function compare_versions(a, b)
    local major = a.major - b.major
    local minor = a.minor - b.minor
    local patch = a.patch - b.patch
-   local suffix = compare_suffixes(a.suffix, b.suffix)
+   local suffix = compare_suffixes(a.pre, b.pre)
 
    if major == 0 then
       if minor == 0 then
@@ -289,7 +289,7 @@ function M.matches_requirement(v, r)
       if r.vers.patch and r.vers.patch ~= v.patch then
          return false
       end
-      return r.vers.suffix == v.suffix
+      return r.vers.pre == v.pre
    elseif r.cond == "lt" then
       local a = filled_zeros(v)
       local b = filled_zeros(r.vers)

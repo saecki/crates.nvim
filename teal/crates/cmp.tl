@@ -48,7 +48,7 @@ local function complete_versions(versions: {Version}): {lsp.CompletionItem}
         if v.yanked then
             r.deprecated = true
             r.documentation = core.cfg.cmp.text.yanked
-        elseif v.parsed.suffix then
+        elseif v.parsed.pre then
             r.documentation = core.cfg.cmp.text.prerelease
         end
 
@@ -61,7 +61,7 @@ end
 local function complete_features(crate: Crate, versions: {Version}): {lsp.CompletionItem}
     local results = {}
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
     for _,f in ipairs(newest.features) do

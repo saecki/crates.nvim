@@ -16,7 +16,7 @@ function M.display_versions(buf: integer, crate: Crate, versions: {Version})
         return
     end
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
 

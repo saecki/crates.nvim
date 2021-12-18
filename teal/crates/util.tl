@@ -60,7 +60,7 @@ function M.get_newest(versions: {Version}, avoid_pre: boolean, reqs: {Requiremen
     for _,v in ipairs(versions) do
         if not reqs or semver.matches_requirements(v.parsed, reqs) then
             if not v.yanked then
-                if not avoid_pre or avoid_pre and not v.parsed.suffix then
+                if not avoid_pre or avoid_pre and not v.parsed.pre then
                     newest = v
                     break
                 else
@@ -174,7 +174,7 @@ local function set_version_dumb(buf: integer, crate: Crate, text: string): Range
 end
 
 local function replace_existing(r: Requirement, version: SemVer): SemVer
-    if version.suffix then
+    if version.pre then
         return version
     else
         return SemVer.new {
@@ -197,7 +197,7 @@ local function set_version_smart(buf: integer, crate: Crate, version: SemVer): R
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == "wl" then
-            if version.suffix then
+            if version.pre then
                 text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
             else
                 local v = SemVer.new {
@@ -236,7 +236,7 @@ local function set_version_smart(buf: integer, crate: Crate, version: SemVer): R
         elseif r.cond == "le" and not semver.matches_requirement(version, r) then
             local v: SemVer
 
-            if version.suffix then
+            if version.pre then
                 v = version
             else
                 v =  SemVer.new { major = version.major }
@@ -311,7 +311,7 @@ function M.upgrade_crates(crates: {CrateVersions}, alt: boolean|nil)
         local crate = c.crate
         local versions = c.versions
 
-        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
         local newest, newest_pre, newest_yanked = M.get_newest(versions, avoid_pre, nil)
         newest = newest or newest_pre or newest_yanked
 
@@ -326,7 +326,7 @@ function M.update_crates(crates: {CrateVersions}, alt: boolean|nil)
         local crate = c.crate
         local versions = c.versions
 
-        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+        local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
         local match, match_pre, match_yanked = M.get_newest(versions, avoid_pre, crate:vers_reqs())
         match = match or match_pre or match_yanked
 

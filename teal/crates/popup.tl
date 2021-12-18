@@ -74,7 +74,7 @@ local function line_crate_info(): LineCrateInfo
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_has_suffix()
+    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs()) as Version
 
     local info: LineCrateInfo = {
@@ -271,7 +271,7 @@ function Popup.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
         if v.yanked then
             text = string.format(core.cfg.popup.text.yanked, v.num)
             hi = core.cfg.popup.highlight.yanked
-        elseif v.parsed.suffix then
+        elseif v.parsed.pre then
             text = string.format(core.cfg.popup.text.prerelease, v.num)
             hi = core.cfg.popup.highlight.prerelease
         else
