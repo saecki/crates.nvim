@@ -26,6 +26,7 @@ local M = {SemVer = {}, Requirement = {}, }
 
 
 
+
 local SemVer = M.SemVer
 local Requirement = M.Requirement
 local Range = require('crates.types').Range
@@ -52,14 +53,29 @@ function SemVer:display()
       text = text .. "-" .. self.pre
    end
 
+   if self.meta then
+      text = text .. "+" .. self.meta
+   end
+
    return text
 end
 
 function M.parse_version(str)
-   local major, minor, patch, pre
+   local major, minor, patch, pre, meta
 
-   major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
-   if major and minor and patch and pre then
+   major, minor, patch, pre, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)%+([^%s]+)$")
+   if major then
+      return SemVer.new({
+         major = tonumber(major),
+         minor = tonumber(minor),
+         patch = tonumber(patch),
+         pre = pre,
+         meta = meta,
+      })
+   end
+
+   major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)%+([^%s]+)$")
+   if major then
       return SemVer.new({
          major = tonumber(major),
          minor = tonumber(minor),
@@ -68,8 +84,18 @@ function M.parse_version(str)
       })
    end
 
+   major, minor, patch, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)%+([^%s]+)$")
+   if major then
+      return SemVer.new({
+         major = tonumber(major),
+         minor = tonumber(minor),
+         patch = tonumber(patch),
+         meta = meta,
+      })
+   end
+
    major, minor, patch = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
-   if major and minor and patch then
+   if major then
       return SemVer.new({
          major = tonumber(major),
          minor = tonumber(minor),
@@ -78,7 +104,7 @@ function M.parse_version(str)
    end
 
    major, minor = str:match("^([0-9]+)%.([0-9]+)[%.]?$")
-   if major and minor then
+   if major then
       return SemVer.new({
          major = tonumber(major),
          minor = tonumber(minor),
@@ -208,7 +234,7 @@ local function filled_zeros(version)
    }
 end
 
-local function compare_suffixes(a, b)
+local function compare_pre(a, b)
    if a and b then
       if a < b then return -1
       elseif a == b then return 0
@@ -226,12 +252,12 @@ local function compare_versions(a, b)
    local major = a.major - b.major
    local minor = a.minor - b.minor
    local patch = a.patch - b.patch
-   local suffix = compare_suffixes(a.pre, b.pre)
+   local pre = compare_pre(a.pre, b.pre)
 
    if major == 0 then
       if minor == 0 then
          if patch == 0 then
-            return suffix
+            return pre
          else
             return patch
          end
@@ -289,7 +315,7 @@ function M.matches_requirement(v, r)
       if r.vers.patch and r.vers.patch ~= v.patch then
          return false
       end
-      return r.vers.pre == v.pre
+      return r.vers.pre == v.pre and r.vers.meta == v.meta
    elseif r.cond == "lt" then
       local a = filled_zeros(v)
       local b = filled_zeros(r.vers)

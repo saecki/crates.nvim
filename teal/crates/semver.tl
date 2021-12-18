@@ -4,6 +4,7 @@ local record M
         minor: integer
         patch: integer
         pre: string
+        meta: string
     end
 
     record Requirement
@@ -52,14 +53,29 @@ function SemVer:display(): string
         text = text .. "-" .. self.pre
     end
 
+    if self.meta then
+        text = text .. "+" .. self.meta
+    end
+
     return text
 end
 
 function M.parse_version(str: string): SemVer
-    local major, minor, patch, pre: string, string, string, string
+    local major, minor, patch, pre, meta: string, string, string, string, string
 
-    major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
-    if major and minor and patch and pre then
+    major, minor, patch, pre, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)%+([^%s]+)$")
+    if major then
+        return SemVer.new {
+            major = tonumber(major) as integer,
+            minor = tonumber(minor) as integer,
+            patch = tonumber(patch) as integer,
+            pre = pre,
+            meta = meta,
+        }
+    end
+
+    major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)%+([^%s]+)$")
+    if major then
         return SemVer.new {
             major = tonumber(major) as integer,
             minor = tonumber(minor) as integer,
@@ -67,9 +83,19 @@ function M.parse_version(str: string): SemVer
             pre = pre,
         }
     end
+    
+    major, minor, patch, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)%+([^%s]+)$")
+    if major then
+        return SemVer.new {
+            major = tonumber(major) as integer,
+            minor = tonumber(minor) as integer,
+            patch = tonumber(patch) as integer,
+            meta = meta,
+        }
+    end
 
     major, minor, patch = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
-    if major and minor and patch then
+    if major then
         return SemVer.new {
             major = tonumber(major) as integer,
             minor = tonumber(minor) as integer,
@@ -78,7 +104,7 @@ function M.parse_version(str: string): SemVer
     end
 
     major, minor = str:match("^([0-9]+)%.([0-9]+)[%.]?$")
-    if major and minor then
+    if major then
         return SemVer.new {
             major = tonumber(major) as integer,
             minor = tonumber(minor) as integer,
@@ -208,7 +234,7 @@ local function filled_zeros(version: SemVer): SemVer
     }
 end
 
-local function compare_suffixes(a: string, b: string): integer
+local function compare_pre(a: string, b: string): integer
     if a and b then
         if     a  < b then return -1
         elseif a == b then return 0
@@ -226,12 +252,12 @@ local function compare_versions(a: SemVer, b: SemVer): number
     local major = a.major - b.major
     local minor = a.minor - b.minor
     local patch = a.patch - b.patch
-    local suffix = compare_suffixes(a.pre, b.pre)
+    local pre = compare_pre(a.pre, b.pre)
 
     if major == 0 then
         if minor == 0 then
             if patch == 0 then
-                return suffix
+                return pre
             else
                 return patch
             end
@@ -289,7 +315,7 @@ function M.matches_requirement(v: SemVer, r: Requirement): boolean
         if r.vers.patch and r.vers.patch ~= v.patch then
             return false
         end
-        return r.vers.pre == v.pre
+        return r.vers.pre == v.pre and r.vers.meta == v.meta
     elseif r.cond == "lt" then
         local a = filled_zeros(v)
         local b = filled_zeros(r.vers)
