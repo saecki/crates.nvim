@@ -1,7 +1,7 @@
 local record Popup
     win: integer|nil
     buf: integer|nil
-    namespace_id: integer|nil
+    namespace: integer|nil
     type: string|nil
     feat_ctx: FeatureContext
 
@@ -207,7 +207,7 @@ function Popup.hide()
         vim.api.nvim_buf_delete(Popup.buf, {})
     end
     Popup.buf = nil
-    Popup.namespace_id = nil
+    Popup.namespace = nil
     Popup.type = nil
 end
 
@@ -226,15 +226,15 @@ end
 
 local function open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function())
     Popup.buf = vim.api.nvim_create_buf(false, true) as integer
-    Popup.namespace_id = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
+    Popup.namespace = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
 
     -- add text and highlights
     vim.api.nvim_buf_set_lines(Popup.buf, 0, 2, false, { title, "" })
-    vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace_id, core.cfg.popup.highlight.title, 0, 0, -1)
+    vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace, core.cfg.popup.highlight.title, 0, 0, -1)
 
     for i,v in ipairs(text) do
         vim.api.nvim_buf_set_lines(Popup.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace_id, v.hi, top_offset + i - 1, 0, -1)
+        vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace, v.hi, top_offset + i - 1, 0, -1)
     end
 
     vim.api.nvim_buf_set_option(Popup.buf, "modifiable", false)
@@ -609,7 +609,7 @@ function Popup.toggle_feature(index: integer)
     vim.api.nvim_buf_set_option(Popup.buf, "modifiable", true)
     for i,v in ipairs(features_text) do
         vim.api.nvim_buf_set_lines(Popup.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace_id, v.hi, top_offset + i - 1, 0, -1)
+        vim.api.nvim_buf_add_highlight(Popup.buf, Popup.namespace, v.hi, top_offset + i - 1, 0, -1)
     end
     vim.api.nvim_buf_set_option(Popup.buf, "modifiable", false)
 end

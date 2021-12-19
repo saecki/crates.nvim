@@ -1,5 +1,5 @@
 local record M
-    namespace_id: integer
+    namespace: integer
 end
 
 local core = require('crates.core')
@@ -8,11 +8,11 @@ local util = require('crates.util')
 local Crate = require('crates.toml').Crate
 local Version = require('crates.api').Version
 
-M.namespace_id = vim.api.nvim_create_namespace("crates.nvim") as integer
+M.namespace = vim.api.nvim_create_namespace("crates.nvim") as integer
 
 function M.display_versions(buf: integer, crate: Crate, versions: {Version})
     if not core.visible or not crate.vers then
-        vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
+        vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
         return
     end
 
@@ -61,8 +61,8 @@ function M.display_versions(buf: integer, crate: Crate, versions: {Version})
         virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
     end
 
-    vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, M.namespace_id, crate.vers.line, -1, {
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_set_extmark(buf, M.namespace, crate.vers.line, -1, {
         virt_text = virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
@@ -71,8 +71,8 @@ end
 
 function M.display_loading(buf: integer, crate: Crate)
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(buf, M.namespace_id, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, M.namespace_id, crate.vers.line, -1, {
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_set_extmark(buf, M.namespace, crate.vers.line, -1, {
         virt_text = virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
@@ -80,7 +80,7 @@ function M.display_loading(buf: integer, crate: Crate)
 end
 
 function M.clear()
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+    vim.api.nvim_buf_clear_namespace(0, M.namespace, 0, -1)
 end
 
 return M
