@@ -74,7 +74,7 @@ function M.parse_version(str: string): SemVer
         }
     end
 
-    major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)%+([^%s]+)$")
+    major, minor, patch, pre = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)-([^%s]+)$")
     if major then
         return SemVer.new {
             major = tonumber(major) as integer,
