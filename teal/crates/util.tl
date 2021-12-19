@@ -161,14 +161,17 @@ local function set_version_dumb(buf: integer, crate: Crate, text: string): Range
             t = text .. crate.vers.quote.s
         end
         local line = crate.vers.line
-        vim.api.nvim_buf_set_text(
-            buf,
-            line,
-            crate.vers.col.s,
-            line,
-            crate.vers.col.e,
-            { t }
-        )
+
+        if t ~= crate.vers.text then
+            vim.api.nvim_buf_set_text(
+                buf,
+                line,
+                crate.vers.col.s,
+                line,
+                crate.vers.col.e,
+                { t }
+            )
+        end
         return Range.pos(line)
     end
 end
