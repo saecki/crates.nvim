@@ -62,6 +62,8 @@ local Range = require('crates.types').Range
 
 local top_offset = 2
 
+Popup.namespace = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
+
 local function line_crate_info(): LineCrateInfo
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
@@ -207,7 +209,6 @@ function Popup.hide()
         vim.api.nvim_buf_delete(Popup.buf, {})
     end
     Popup.buf = nil
-    Popup.namespace = nil
     Popup.type = nil
 end
 
@@ -226,7 +227,6 @@ end
 
 local function open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function())
     Popup.buf = vim.api.nvim_create_buf(false, true) as integer
-    Popup.namespace = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
 
     -- add text and highlights
     vim.api.nvim_buf_set_lines(Popup.buf, 0, 2, false, { title, "" })
