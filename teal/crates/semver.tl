@@ -83,7 +83,7 @@ function M.parse_version(str: string): SemVer
             pre = pre,
         }
     end
-    
+
     major, minor, patch, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)%+([^%s]+)$")
     if major then
         return SemVer.new {

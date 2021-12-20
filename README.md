@@ -55,7 +55,7 @@ Plug 'saecki/crates.nvim', { 'tag': 'v0.1.0' }
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
 ```lua
-use { 
+use {
     'saecki/crates.nvim',
     tag = 'v0.1.0',
     requires = { 'nvim-lua/plenary.nvim' },
