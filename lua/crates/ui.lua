@@ -10,6 +10,12 @@ local Version = require('crates.api').Version
 
 M.namespace = vim.api.nvim_create_namespace("crates.nvim")
 
+function M.display_diagnostics(buf, diagnostics)
+   if core.visible then
+      vim.diagnostic.set(M.namespace, buf, diagnostics)
+   end
+end
+
 function M.display_versions(buf, crate, versions)
    if not core.visible or not crate.vers then
       vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)

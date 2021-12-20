@@ -54,6 +54,7 @@ local core = require('crates.core')
 local popup = require('crates.popup')
 local toml = require('crates.toml')
 local Crate = toml.Crate
+local diagnostic = require('crates.diagnostic')
 local util = require('crates.util')
 local ui = require('crates.ui')
 local Range = require('crates.types').Range
@@ -113,13 +114,14 @@ function M.reload()
 
     local cur_buf = util.current_buf()
     local crates = toml.parse_crates(0)
+    local cache, diagnostics = diagnostic.process_items(crates)
 
-    core.crate_cache[cur_buf] = {}
-
-    for _,c in ipairs(crates) do
-        core.crate_cache[cur_buf][c.name] = c
+    ui.display_diagnostics(0, diagnostics)
+    for _,c in pairs(cache) do
         reload_crate(c)
     end
+
+    core.crate_cache[cur_buf] = cache
 end
 
 function M.update()
@@ -128,13 +130,11 @@ function M.update()
 
     local cur_buf = util.current_buf()
     local crates = toml.parse_crates(0)
+    local cache, diagnostics = diagnostic.process_items(crates)
 
-    core.crate_cache[cur_buf] = {}
-
-    for _,c in ipairs(crates) do
+    ui.display_diagnostics(0, diagnostics)
+    for _,c in pairs(cache) do
         local versions = core.vers_cache[c.name]
-
-        core.crate_cache[cur_buf][c.name] = c
 
         if versions then
             ui.display_versions(0, c, versions)
@@ -142,6 +142,8 @@ function M.update()
             reload_crate(c)
         end
     end
+
+    core.crate_cache[cur_buf] = cache
 end
 
 function M.toggle()
