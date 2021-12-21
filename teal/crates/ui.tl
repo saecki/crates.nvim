@@ -11,9 +11,9 @@ local Version = require('crates.api').Version
 M.namespace = vim.api.nvim_create_namespace("crates.nvim") as integer
 
 function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagnostic})
-    if core.visible then
-        vim.diagnostic.set(M.namespace, buf, diagnostics)
-    end
+    if not core.visible then return end
+
+    vim.diagnostic.set(M.namespace, buf, diagnostics)
 end
 
 function M.display_versions(buf: integer, crate: Crate, versions: {Version})
@@ -76,6 +76,8 @@ function M.display_versions(buf: integer, crate: Crate, versions: {Version})
 end
 
 function M.display_loading(buf: integer, crate: Crate)
+    if not core.visible then return end
+
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
     vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
     vim.api.nvim_buf_set_extmark(buf, M.namespace, crate.vers.line, -1, {
@@ -85,8 +87,9 @@ function M.display_loading(buf: integer, crate: Crate)
     })
 end
 
-function M.clear()
-    vim.api.nvim_buf_clear_namespace(0, M.namespace, 0, -1)
+function M.clear(buf: integer)
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace, 0, -1)
+    vim.diagnostic.reset(M.namespace, buf)
 end
 
 return M

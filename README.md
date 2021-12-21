@@ -225,14 +225,16 @@ require('crates').setup {
 -- Setup config and auto commands.
 require('crates').setup(cfg: Config)
 
--- Hide virtual text.
+-- Disable UI elements (virtual text and diagnostics).
 require('crates').hide()
--- Force-reload and display virtual text (clears cache).
-require('crates').reload()
--- Load and display virtual text.
-require('crates').update()
--- Show or hide virtual text.
+-- Enable UI elements (virtual text and diagnostics).
+require('crates').show()
+-- Enable or disable UI elements (virtual text and diagnostics).
 require('crates').toggle()
+-- Update data.
+require('crates').update()
+-- Reload data (clears cache).
+require('crates').reload()
 
 -- Upgrade the crate on the current line.
 -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config

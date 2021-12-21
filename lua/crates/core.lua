@@ -12,6 +12,6 @@ local Crate = require('crates.toml').Crate
 Core.cfg = {}
 Core.vers_cache = {}
 Core.crate_cache = {}
-Core.visible = false
+Core.visible = true
 
 return Core

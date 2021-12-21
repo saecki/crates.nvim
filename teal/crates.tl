@@ -2,14 +2,16 @@ local record M
     -- Setup config and auto commands.
     setup: function(cfg: Config)
 
-    -- Hide virtual text.
+    -- Disable UI elements (virtual text and diagnostics).
     hide: function()
-    -- Force-reload and display virtual text (clears cache).
-    reload: function()
-    -- Load and display virtual text.
-    update: function()
-    -- Show or hide virtual text.
+    -- Enable UI elements (virtual text and diagnostics).
+    show: function()
+    -- Enable or disable UI elements (virtual text and diagnostics).
     toggle: function()
+    -- Update data.
+    update: function()
+    -- Reload data (clears cache).
+    reload: function()
 
     -- Upgrade the crate on the current line.
     -- If the `p#alt` flag is passed as true, the opposite of the `c#smart_insert` config
@@ -81,6 +83,30 @@ local function reload_crate(crate: Crate)
     api.fetch_crate_versions(crate.name, on_fetched)
 end
 
+local function update(reload: boolean)
+    if reload then
+        core.vers_cache = {}
+    end
+    ui.clear(0)
+
+    local cur_buf = util.current_buf()
+    local crates = toml.parse_crates(0)
+    local cache, diagnostics = diagnostic.process_items(crates)
+
+    ui.display_diagnostics(0, diagnostics)
+    for _,c in pairs(cache) do
+        local versions = core.vers_cache[c.name]
+
+        if not reload and versions then
+            ui.display_versions(0, c, versions)
+        else
+            reload_crate(c)
+        end
+    end
+
+    core.crate_cache[cur_buf] = cache
+end
+
 function M.setup(cfg: Config)
     core.cfg = config.build(cfg)
 
@@ -104,54 +130,28 @@ end
 
 function M.hide()
     core.visible = false
-    ui.clear()
+    ui.clear(0)
 end
 
-function M.reload()
+function M.show()
     core.visible = true
-    core.vers_cache = {}
-    ui.clear()
-
-    local cur_buf = util.current_buf()
-    local crates = toml.parse_crates(0)
-    local cache, diagnostics = diagnostic.process_items(crates)
-
-    ui.display_diagnostics(0, diagnostics)
-    for _,c in pairs(cache) do
-        reload_crate(c)
-    end
-
-    core.crate_cache[cur_buf] = cache
-end
-
-function M.update()
-    core.visible = true
-    ui.clear()
-
-    local cur_buf = util.current_buf()
-    local crates = toml.parse_crates(0)
-    local cache, diagnostics = diagnostic.process_items(crates)
-
-    ui.display_diagnostics(0, diagnostics)
-    for _,c in pairs(cache) do
-        local versions = core.vers_cache[c.name]
-
-        if versions then
-            ui.display_versions(0, c, versions)
-        else
-            reload_crate(c)
-        end
-    end
-
-    core.crate_cache[cur_buf] = cache
+    update()
 end
 
 function M.toggle()
     if core.visible then
         M.hide()
     else
-        M.update()
+        M.show()
     end
+end
+
+function M.update()
+    update()
+end
+
+function M.reload()
+    update(true)
 end
 
 

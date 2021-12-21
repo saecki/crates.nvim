@@ -201,19 +201,23 @@ setup({cfg}: `Config`)                                        *crates.setup()*
 
 
 hide()                                                         *crates.hide()*
-    Hide virtual text.
+    Disable UI elements (virtual text and diagnostics).
 
 
-reload()                                                     *crates.reload()*
-    Force-reload and display virtual text (clears cache).
-
-
-update()                                                     *crates.update()*
-    Load and display virtual text.
+show()                                                         *crates.show()*
+    Enable UI elements (virtual text and diagnostics).
 
 
 toggle()                                                     *crates.toggle()*
-    Show or hide virtual text.
+    Enable or disable UI elements (virtual text and diagnostics).
+
+
+update()                                                     *crates.update()*
+    Update data.
+
+
+reload()                                                     *crates.reload()*
+    Reload data (clears cache).
 
 
 upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*
