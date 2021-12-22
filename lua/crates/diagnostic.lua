@@ -86,7 +86,7 @@ function M.process_crate_versions(crate, versions)
          local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
          table.insert(info.diagnostics, M.crate_diagnostic(
          crate,
-         "There is an upgrade available",
+         core.cfg.diagnostic.vers_upgrade,
          vim.diagnostic.severity.WARN,
          "vers"))
 
@@ -105,7 +105,7 @@ function M.process_crate_versions(crate, versions)
             }
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
-            "Requirement only matches a pre-release version",
+            core.cfg.diagnostic.vers_pre,
             vim.diagnostic.severity.WARN,
             "vers"))
 
@@ -117,7 +117,7 @@ function M.process_crate_versions(crate, versions)
             }
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
-            "Requirement only matches a yanked version",
+            core.cfg.diagnostic.vers_yanked,
             vim.diagnostic.severity.ERROR,
             "vers"))
 
@@ -127,9 +127,9 @@ function M.process_crate_versions(crate, versions)
                { core.cfg.text.nomatch, core.cfg.highlight.nomatch },
                upgrade_text,
             }
-            local message = "Requirement doesn't matches a version"
+            local message = core.cfg.diagnostic.vers_nomatch
             if not crate.vers then
-               message = "Missing version requirement"
+               message = core.cfg.diagnostic.crate_novers
             end
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
@@ -143,7 +143,7 @@ function M.process_crate_versions(crate, versions)
       info.virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
       table.insert(info.diagnostics, M.crate_diagnostic(
       crate,
-      "Error fetching crate",
+      core.cfg.diagnostic.crate_error_fetching,
       vim.diagnostic.severity.ERROR,
       "vers"))
 
@@ -160,12 +160,12 @@ function M.process_crates(crates)
       if cache[c.name] then
          table.insert(diagnostics, M.crate_diagnostic(
          cache[c.name],
-         "Original entry is defined here",
+         core.cfg.diagnostic.crate_dup_orig,
          vim.diagnostic.severity.HINT))
 
          table.insert(diagnostics, M.crate_diagnostic(
          c,
-         "Duplicate crate entry",
+         core.cfg.diagnostic.crate_dup,
          vim.diagnostic.severity.ERROR))
 
       else

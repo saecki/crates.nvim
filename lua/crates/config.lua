@@ -1,4 +1,17 @@
-local M = {Config = {TextConfig = {}, HighlightConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, CmpConfig = {}, CmpTextConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, CmpConfig = {}, CmpTextConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -308,6 +321,54 @@ entry(schema_hi, "update", {
       new_field = { "highlight", "upgrade" },
       hard = true,
    },
+})
+
+
+entry(M.schema, "diagnostic", {
+   type = "section",
+   fields = {},
+   hidden = true,
+})
+local schema_diagnostic = M.schema.diagnostic.fields
+entry(schema_diagnostic, "vers_upgrade", {
+   type = "string",
+   default = "There is an upgrade available",
+   hidden = true,
+})
+entry(schema_diagnostic, "vers_pre", {
+   type = "string",
+   default = "Requirement only matches a pre-release version",
+   hidden = true,
+})
+entry(schema_diagnostic, "vers_yanked", {
+   type = "string",
+   default = "Requirement only matches a yanked version",
+   hidden = true,
+})
+entry(schema_diagnostic, "vers_nomatch", {
+   type = "string",
+   default = "Requirement doesn't match a version",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_dup", {
+   type = "string",
+   default = "Duplicate crate entry",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_dup_orig", {
+   type = "string",
+   default = "Original entry is defined here",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_novers", {
+   type = "string",
+   default = "Missing version requirement",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_error_fetching", {
+   type = "string",
+   default = "Error fetching crate information",
+   hidden = true,
 })
 
 

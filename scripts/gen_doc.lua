@@ -62,7 +62,7 @@ local function format_vimdoc_refs(line)
     return line
 end
 
-local function gen_vimdoc_funcions(lines)
+local function gen_vimdoc_functions(lines)
     local func_doc = {}
 
     local file = io.open("teal/crates.tl", "r")
@@ -117,6 +117,10 @@ end
 
 local function gen_vimdoc_config(lines, path, schema)
     for _,s in ipairs(schema) do
+        if s.hidden then
+            goto continue
+        end
+
         local k = s.name
         local p = join_path(path, k)
         local key = table.concat(p, ".")
@@ -159,6 +163,8 @@ local function gen_vimdoc_config(lines, path, schema)
         if s.type == "section" then
             gen_vimdoc_config(lines, p, s.fields)
         end
+
+        ::continue::
     end
 end
 
@@ -169,7 +175,7 @@ local function gen_def_config(lines, indent, path, schema)
     end
 
     for _,s in ipairs(schema) do
-        if not s.deprecated then
+        if not s.hidden and not s.deprecated then
             local name = s.name
 
             if s.type == "section" then
@@ -193,7 +199,7 @@ local function gen_vim_doc()
         if l == "<DEFAULT_CONFIGURATION>" then
             gen_def_config(lines, 2, {}, config.schema)
         elseif l == "<FUNCTIONS>" then
-            gen_vimdoc_funcions(lines)
+            gen_vimdoc_functions(lines)
         elseif l == "<CONFIGURATION>" then
             gen_vimdoc_config(lines, {}, config.schema)
         else
