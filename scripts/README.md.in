@@ -210,7 +210,8 @@ end
 ```
 
 ## TODO
-- Make use of neovim `0.6`s `vim.diagnostic`
+- Use null-ls for code actions
+- Diagnostics for features (duplicates, notfound?)
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
 
 ## Similar projects
