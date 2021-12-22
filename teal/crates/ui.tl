@@ -19,10 +19,7 @@ function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagno
 end
 
 function M.display_crate_info(buf: integer, info: CrateInfo)
-    if not core.visible then
-        vim.api.nvim_buf_clear_namespace(buf, M.namespace, info.lines.s, info.lines.e)
-        return
-    end
+    if not core.visible then return end
 
     M.custom_diagnostics[buf] = M.custom_diagnostics[buf] or {}
     vim.list_extend(M.custom_diagnostics[buf], info.diagnostics)

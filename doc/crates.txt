@@ -212,12 +212,12 @@ toggle()                                                     *crates.toggle()*
     Enable or disable UI elements (virtual text and diagnostics).
 
 
-update()                                                     *crates.update()*
-    Update data.
+update({buf}: `integer|nil`)                                 *crates.update()*
+    Update data. Optionally specify which {buf} to update.
 
 
-reload()                                                     *crates.reload()*
-    Reload data (clears cache).
+reload({buf}: `integer|nil`)                                 *crates.reload()*
+    Reload data (clears cache). Optionally specify which {buf} to reload.
 
 
 upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*

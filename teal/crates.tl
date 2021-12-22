@@ -8,10 +8,10 @@ local record M
     show: function()
     -- Enable or disable UI elements (virtual text and diagnostics).
     toggle: function()
-    -- Update data.
-    update: function()
-    -- Reload data (clears cache).
-    reload: function()
+    -- Update data. Optionally specify which `p#buf` to update.
+    update: function(buf: integer|nil)
+    -- Reload data (clears cache). Optionally specify which `p#buf` to reload.
+    reload: function(buf: integer|nil)
 
     -- Upgrade the crate on the current line.
     -- If the `p#alt` flag is passed as true, the opposite of the `c#smart_insert` config
@@ -84,12 +84,12 @@ local function reload_crate(crate: Crate)
     api.fetch_crate_versions(crate.name, on_fetched)
 end
 
-local function update(reload: boolean)
+local function update(buf: integer|nil, reload: boolean)
     if reload then
         core.vers_cache = {}
     end
 
-    local buf = util.current_buf()
+    buf = buf or util.current_buf()
     local crates = toml.parse_crates(buf)
     local cache, diagnostics = diagnostic.process_crates(crates)
 
@@ -132,12 +132,23 @@ end
 
 function M.hide()
     core.visible = false
-    ui.clear(util.current_buf())
+    for b,_ in pairs(core.crate_cache) do
+        ui.clear(b)
+    end
 end
 
 function M.show()
     core.visible = true
-    update()
+
+    -- make sure we update the current buffer (first)
+    local buf = util.current_buf()
+    update(buf, false)
+
+    for b,_ in pairs(core.crate_cache) do
+        if b ~= buf then
+            update(b, false)
+        end
+    end
 end
 
 function M.toggle()
@@ -148,12 +159,12 @@ function M.toggle()
     end
 end
 
-function M.update()
-    update()
+function M.update(buf: integer|nil)
+    update(buf, false)
 end
 
-function M.reload()
-    update(true)
+function M.reload(buf: integer|nil)
+    update(buf, true)
 end
 
 

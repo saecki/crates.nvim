@@ -231,10 +231,10 @@ require('crates').hide()
 require('crates').show()
 -- Enable or disable UI elements (virtual text and diagnostics).
 require('crates').toggle()
--- Update data.
-require('crates').update()
--- Reload data (clears cache).
-require('crates').reload()
+-- Update data. Optionally specify which `buf` to update.
+require('crates').update(buf: integer|nil)
+-- Reload data (clears cache). Optionally specify which `buf` to reload.
+require('crates').reload(buf: integer|nil)
 
 -- Upgrade the crate on the current line.
 -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config

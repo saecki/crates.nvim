@@ -84,12 +84,12 @@ local function reload_crate(crate)
    api.fetch_crate_versions(crate.name, on_fetched)
 end
 
-local function update(reload)
+local function update(buf, reload)
    if reload then
       core.vers_cache = {}
    end
 
-   local buf = util.current_buf()
+   buf = buf or util.current_buf()
    local crates = toml.parse_crates(buf)
    local cache, diagnostics = diagnostic.process_crates(crates)
 
@@ -132,12 +132,23 @@ end
 
 function M.hide()
    core.visible = false
-   ui.clear(util.current_buf())
+   for b, _ in pairs(core.crate_cache) do
+      ui.clear(b)
+   end
 end
 
 function M.show()
    core.visible = true
-   update()
+
+
+   local buf = util.current_buf()
+   update(buf, false)
+
+   for b, _ in pairs(core.crate_cache) do
+      if b ~= buf then
+         update(b, false)
+      end
+   end
 end
 
 function M.toggle()
@@ -148,12 +159,12 @@ function M.toggle()
    end
 end
 
-function M.update()
-   update()
+function M.update(buf)
+   update(buf, false)
 end
 
-function M.reload()
-   update(true)
+function M.reload(buf)
+   update(buf, true)
 end
 
 
