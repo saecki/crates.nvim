@@ -74,6 +74,7 @@ global record vim
    endswith: function(string, string): boolean
    gsplit: function(string, string, boolean): function(): string
    is_callable: function(any): boolean
+   list_extend: function<T>({T}, {T}, number, number): {T}
    list_extend: function<T, K>({T}, {K}, number, number): {T|K}
    list_slice: function<T>({T}, number, number): {T}
    pesc: function(string): string

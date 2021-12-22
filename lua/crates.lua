@@ -71,7 +71,8 @@ local function reload_crate(crate)
          local c = crates[crate.name]
 
          if c and vim.api.nvim_buf_is_loaded(buf) then
-            ui.display_versions(buf, c, versions)
+            local info = diagnostic.process_crate_versions(c, versions)
+            ui.display_crate_info(buf, info)
          end
       end
    end
@@ -87,24 +88,25 @@ local function update(reload)
    if reload then
       core.vers_cache = {}
    end
-   ui.clear(0)
 
-   local cur_buf = util.current_buf()
-   local crates = toml.parse_crates(0)
-   local cache, diagnostics = diagnostic.process_items(crates)
+   local buf = util.current_buf()
+   local crates = toml.parse_crates(buf)
+   local cache, diagnostics = diagnostic.process_crates(crates)
 
-   ui.display_diagnostics(0, diagnostics)
+   ui.clear(buf)
+   ui.display_diagnostics(buf, diagnostics)
    for _, c in pairs(cache) do
       local versions = core.vers_cache[c.name]
 
       if not reload and versions then
-         ui.display_versions(0, c, versions)
+         local info = diagnostic.process_crate_versions(c, versions)
+         ui.display_crate_info(buf, info)
       else
          reload_crate(c)
       end
    end
 
-   core.crate_cache[cur_buf] = cache
+   core.crate_cache[buf] = cache
 end
 
 function M.setup(cfg)
@@ -130,7 +132,7 @@ end
 
 function M.hide()
    core.visible = false
-   ui.clear(0)
+   ui.clear(util.current_buf())
 end
 
 function M.show()

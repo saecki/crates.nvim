@@ -1,75 +1,36 @@
 local record M
     namespace: integer
+    custom_diagnostics: {integer:{vim.diagnostic.Diagnostic}}
+    diagnostic_namespace: integer
 end
 
 local core = require('crates.core')
-local semver = require('crates.semver')
-local util = require('crates.util')
 local Crate = require('crates.toml').Crate
-local Version = require('crates.api').Version
+local CrateInfo = require('crates.diagnostic').CrateInfo
 
 M.namespace = vim.api.nvim_create_namespace("crates.nvim") as integer
+M.custom_diagnostics = {}
+M.diagnostic_namespace = vim.api.nvim_create_namespace("crates.nvim.diagnostic") as integer
 
 function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagnostic})
     if not core.visible then return end
 
-    vim.diagnostic.set(M.namespace, buf, diagnostics)
+    vim.diagnostic.set(M.diagnostic_namespace, buf, diagnostics)
 end
 
-function M.display_versions(buf: integer, crate: Crate, versions: {Version})
-    if not core.visible or not crate.vers then
-        vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
+function M.display_crate_info(buf: integer, info: CrateInfo)
+    if not core.visible then
+        vim.api.nvim_buf_clear_namespace(buf, M.namespace, info.lines.s, info.lines.e)
         return
     end
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
-    local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
-    newest = newest or newest_pre or newest_yanked
+    M.custom_diagnostics[buf] = M.custom_diagnostics[buf] or {}
+    vim.list_extend(M.custom_diagnostics[buf], info.diagnostics)
 
-    local virt_text: {{string, string}}
-    if newest then
-        if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
-            -- version matches, no upgrade available
-            virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
-        else
-            -- version does not match, upgrade available
-            local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
-
-            local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
-
-            if match then
-                -- found a match
-                virt_text = {
-                    { string.format(core.cfg.text.version, match.num), core.cfg.highlight.version },
-                    upgrade_text,
-                }
-            elseif match_pre then
-                -- found a pre-release match
-                virt_text = {
-                    { string.format(core.cfg.text.prerelease, match_pre.num), core.cfg.highlight.prerelease },
-                    upgrade_text,
-                }
-            elseif match_yanked then
-                -- found a yanked match
-                virt_text = {
-                    { string.format(core.cfg.text.yanked, match_yanked.num), core.cfg.highlight.yanked },
-                    upgrade_text,
-                }
-            else
-                -- no match found
-                virt_text = {
-                    { core.cfg.text.nomatch, core.cfg.highlight.nomatch },
-                    upgrade_text,
-                }
-            end
-        end
-    else
-        virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
-    end
-
-    vim.api.nvim_buf_clear_namespace(buf, M.namespace, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, M.namespace, crate.vers.line, -1, {
-        virt_text = virt_text,
+    vim.diagnostic.set(M.namespace, buf, M.custom_diagnostics[buf], { virtual_text = false })
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace, info.lines.s, info.lines.e)
+    vim.api.nvim_buf_set_extmark(buf, M.namespace, info.vers_line, -1, {
+        virt_text = info.virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
     })
@@ -88,8 +49,10 @@ function M.display_loading(buf: integer, crate: Crate)
 end
 
 function M.clear(buf: integer)
+    M.custom_diagnostics[buf] = nil
     vim.api.nvim_buf_clear_namespace(buf, M.namespace, 0, -1)
     vim.diagnostic.reset(M.namespace, buf)
+    vim.diagnostic.reset(M.diagnostic_namespace, buf)
 end
 
 return M

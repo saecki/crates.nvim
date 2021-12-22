@@ -26,7 +26,7 @@ function M.check()
     else
         health_error("plenary.nvim not found")
     end
-    
+
     health_start("Checking for external dependencies")
     if binary_installed("curl") then
         health_ok("curl installed")
