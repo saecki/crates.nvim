@@ -126,6 +126,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -330,6 +332,26 @@ entry(M.schema, "diagnostic", {
    hidden = true,
 })
 local schema_diagnostic = M.schema.diagnostic.fields
+entry(schema_diagnostic, "crate_dup", {
+   type = "string",
+   default = "Duplicate crate entry",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_dup_orig", {
+   type = "string",
+   default = "Original crate entry is defined here",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_novers", {
+   type = "string",
+   default = "Missing version requirement",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_error_fetching", {
+   type = "string",
+   default = "Error fetching crate information",
+   hidden = true,
+})
 entry(schema_diagnostic, "vers_upgrade", {
    type = "string",
    default = "There is an upgrade available",
@@ -350,24 +372,14 @@ entry(schema_diagnostic, "vers_nomatch", {
    default = "Requirement doesn't match a version",
    hidden = true,
 })
-entry(schema_diagnostic, "crate_dup", {
+entry(schema_diagnostic, "feat_dup", {
    type = "string",
-   default = "Duplicate crate entry",
+   default = "Duplicate feature entry",
    hidden = true,
 })
-entry(schema_diagnostic, "crate_dup_orig", {
+entry(schema_diagnostic, "feat_dup_orig", {
    type = "string",
-   default = "Original entry is defined here",
-   hidden = true,
-})
-entry(schema_diagnostic, "crate_novers", {
-   type = "string",
-   default = "Missing version requirement",
-   hidden = true,
-})
-entry(schema_diagnostic, "crate_error_fetching", {
-   type = "string",
-   default = "Error fetching crate information",
+   default = "Original feature entry is defined here",
    hidden = true,
 })
 

@@ -119,6 +119,10 @@ function Crate:get_feat(name: string): CrateFeature|nil, integer
     return nil
 end
 
+function Crate:feats(): {CrateFeature}
+    return self.feat and self.feat.items or {}
+end
+
 function Crate:is_def_enabled(): boolean
     return not self.def or self.def.enabled
 end

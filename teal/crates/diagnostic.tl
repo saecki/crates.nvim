@@ -17,7 +17,9 @@ local CrateScope = M.CrateScope
 local core = require("crates.core")
 local util = require("crates.util")
 local semver = require("crates.semver")
-local Crate = require("crates.toml").Crate
+local toml = require("crates.toml")
+local Crate = toml.Crate
+local CrateFeature = toml.CrateFeature
 local Version = require("crates.api").Version
 local Range = require("crates.types").Range
 
@@ -62,6 +64,18 @@ function M.crate_diagnostic(crate: Crate, message: string, severity: integer, sc
     end
 
     return d
+end
+
+function M.feat_diagnostic(crate: Crate, feat: CrateFeature, message: string, severity: integer): vim.diagnostic.Diagnostic
+    return {
+        lnum = crate.feat.line,
+        end_lnum = crate.feat.line,
+        col = crate.feat.col.s + feat.col.s,
+        end_col = crate.feat.col.s + feat.col.e,
+        severity = severity,
+        message = message,
+        source = "crates",
+    }
 end
 
 function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo
@@ -170,6 +184,26 @@ function M.process_crates(crates: {Crate}): {string:Crate}, {vim.diagnostic.Diag
             ))
         else
             cache[c.name] = c
+
+            local feats: {string:CrateFeature} = {}
+            for _,f in ipairs(c:feats()) do
+                if feats[f.name] then
+                    table.insert(diagnostics, M.feat_diagnostic(
+                        c,
+                        feats[f.name],
+                        core.cfg.diagnostic.feat_dup_orig,
+                        vim.diagnostic.severity.HINT
+                    ))
+                    table.insert(diagnostics, M.feat_diagnostic(
+                        c,
+                        f,
+                        core.cfg.diagnostic.feat_dup,
+                        vim.diagnostic.severity.WARN
+                    ))
+                else
+                    feats[f.name] = f
+                end
+            end
         end
     end
 
