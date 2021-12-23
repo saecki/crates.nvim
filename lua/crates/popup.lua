@@ -237,6 +237,7 @@ local function open_win(width, height, title, text, opts, configure)
       vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hi, top_offset + i - 1, 0, -1)
    end
 
+   vim.api.nvim_buf_set_name(M.buf, "crates")
    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
 
 
