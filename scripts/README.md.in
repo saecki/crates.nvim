@@ -211,8 +211,8 @@ end
 
 ## TODO
 - Use null-ls for code actions
-- Diagnostics for features (duplicates, notfound?)
 - maybe fetch dependencies (optional dependencies are automatically promoted to features)
+    - Diagnostics for not found features
 
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
