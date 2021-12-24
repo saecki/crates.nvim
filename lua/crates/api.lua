@@ -60,6 +60,18 @@ function Features:get_feat(name)
    return nil, nil
 end
 
+function Features:sort()
+   table.sort(self, function(a, b)
+      if a.name == "default" then
+         return true
+      elseif b.name == "default" then
+         return false
+      else
+         return a.name < b.name
+      end
+   end)
+end
+
 function M.fetch_crate_versions(name, callback)
    if M.running_jobs[name] then
       return
@@ -112,15 +124,7 @@ function M.fetch_crate_versions(name, callback)
                end
 
 
-               table.sort(version.features, function(a, b)
-                  if a.name == "default" then
-                     return true
-                  elseif b.name == "default" then
-                     return false
-                  else
-                     return a.name < b.name
-                  end
-               end)
+               version.features:sort()
 
 
                if not version.features[1] or not (version.features[1].name == "default") then

@@ -66,6 +66,16 @@ local function reload_deps(crate: Crate, versions: {Version}, version: Version)
     local function on_fetched(deps: {Dependency})
         if deps then
             version.deps = deps
+            for _,d in ipairs(deps) do
+                if d.opt and not version.features:get_feat(d.name) then
+                    table.insert(version.features, {
+                        name = d.name,
+                        members = {},
+                    })
+                end
+            end
+            version.features:sort()
+
             for b,crates in pairs(core.crate_cache) do
                 local c = crates[crate.name]
 
