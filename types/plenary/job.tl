@@ -7,6 +7,7 @@ local record Job
 
     new: function(Job, JobArgs): Job
     start: function(Job)
+    shutdown: function(Job, integer, integer)
     result: function(Job): {string}
 end
 

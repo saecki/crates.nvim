@@ -142,7 +142,9 @@ function M.fetch_crate_versions(name, callback)
       callback(versions)
    end
 
-   local function on_exit(j, code, _)
+   local function on_exit(j, code, signal)
+      if signal ~= 0 then return end
+
       if code == 0 then
          resp = table.concat(j:result(), "\n")
       end
@@ -199,7 +201,9 @@ function M.fetch_crate_deps(name, version, callback)
       callback(dependencies)
    end
 
-   local function on_exit(j, code, _)
+   local function on_exit(j, code, signal)
+      if signal ~= 0 then return end
+
       if code == 0 then
          resp = table.concat(j:result(), "\n")
       end
@@ -218,6 +222,13 @@ function M.fetch_crate_deps(name, version, callback)
    M.running_jobs[jobname] = j
 
    j:start()
+end
+
+function M.cancel_jobs()
+   for _, j in pairs(M.running_jobs) do
+      j:shutdown(1, 1)
+   end
+   M.running_jobs = {}
 end
 
 return M

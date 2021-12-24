@@ -142,7 +142,9 @@ function M.fetch_crate_versions(name: string, callback: function({Version}))
         callback(versions)
     end
 
-    local function on_exit(j: Job, code: integer, _: integer)
+    local function on_exit(j: Job, code: integer, signal: integer)
+        if signal ~= 0 then return end
+
         if code == 0 then
             resp = table.concat(j:result(), "\n")
         end
@@ -199,7 +201,9 @@ function M.fetch_crate_deps(name: string, version: string, callback: function({D
         callback(dependencies)
     end
 
-    local function on_exit(j: Job, code: integer, _: integer)
+    local function on_exit(j: Job, code: integer, signal: integer)
+        if signal ~= 0 then return end
+
         if code == 0 then
             resp = table.concat(j:result(), "\n")
         end
@@ -218,6 +222,13 @@ function M.fetch_crate_deps(name: string, version: string, callback: function({D
     M.running_jobs[jobname] = j
 
     j:start()
+end
+
+function M.cancel_jobs()
+    for _,j in pairs(M.running_jobs) do
+        j:shutdown(1, 1)
+    end
+    M.running_jobs = {}
 end
 
 return M

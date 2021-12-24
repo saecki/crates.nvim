@@ -114,6 +114,7 @@ end
 local function update(buf, reload)
    if reload then
       core.vers_cache = {}
+      api.cancel_jobs()
    end
 
    buf = buf or util.current_buf()
