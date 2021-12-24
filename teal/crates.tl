@@ -61,24 +61,24 @@ local util = require('crates.util')
 local ui = require('crates.ui')
 local Range = require('crates.types').Range
 
-local function reload_crate(crate: Crate)
+local function reload_crate(buf: integer, crate: Crate)
     local function on_fetched(versions: {Version})
         if versions and versions[1] then
             core.vers_cache[crate.name] = versions
         end
 
-        for buf,crates in pairs(core.crate_cache) do
+        for b,crates in pairs(core.crate_cache) do
             local c = crates[crate.name]
 
-            if c and vim.api.nvim_buf_is_loaded(buf) then
+            if c and vim.api.nvim_buf_is_loaded(b) then
                 local info = diagnostic.process_crate_versions(c, versions)
-                ui.display_crate_info(buf, info)
+                ui.display_crate_info(b, info)
             end
         end
     end
 
     if core.cfg.loading_indicator then
-        ui.display_loading(0, crate)
+        ui.display_loading(buf, crate)
     end
 
     api.fetch_crate_versions(crate.name, on_fetched)
@@ -102,7 +102,7 @@ local function update(buf: integer|nil, reload: boolean)
             local info = diagnostic.process_crate_versions(c, versions)
             ui.display_crate_info(buf, info)
         else
-            reload_crate(c)
+            reload_crate(buf, c)
         end
     end
 
