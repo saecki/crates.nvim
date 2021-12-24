@@ -6,6 +6,7 @@ local record M
         yanked: boolean
         parsed: SemVer
         created: DateTime
+        deps: {Dependency}|nil
     end
 
     record Features
@@ -16,11 +17,24 @@ local record M
         name: string
         members: {string}
     end
+
+    record Dependency
+        name: string
+        opt: boolean
+        kind: Kind
+
+        enum Kind
+            "normal"
+            "build"
+            "dev"
+        end
+    end
 end
 
 local Version = M.Version
 local Features = M.Features
 local Feature = M.Feature
+local Dependency = M.Dependency
 local Job = require('plenary.job')
 local semver = require('crates.semver')
 local SemVer = semver.SemVer
@@ -133,7 +147,7 @@ function M.fetch_crate_versions(name: string, callback: function({Version}))
             resp = table.concat(j:result(), "\n")
         end
 
-        vim.schedule(parse_json)
+        parse_json()
 
         M.running_jobs[name] = nil
     end
@@ -145,6 +159,63 @@ function M.fetch_crate_versions(name: string, callback: function({Version}))
     }
 
     M.running_jobs[name] = j
+
+    j:start()
+end
+
+function M.fetch_crate_deps(name: string, version: string, callback: function({Dependency}))
+    local jobname = name .. ":" .. version
+    if M.running_jobs[jobname] then
+        return
+    end
+
+    local url = string.format("%s/crates/%s/%s/dependencies", endpoint, name, version)
+    local resp: string = nil
+
+    local function parse_json()
+        if not resp then
+            callback(nil)
+            return
+        end
+
+        local success, data = pcall(vim.fn.json_decode, resp) as (boolean, {string:{table}})
+        if not success then
+            data = nil
+        end
+
+        local dependencies: {Dependency} = {}
+        if data and type(data) == "table" and data.dependencies then
+            for _,d in ipairs(data.dependencies) do
+                if d.name then
+                    table.insert(dependencies, {
+                        name = d.name,
+                        opt = d.optional,
+                        kind = d.kind,
+                    })
+                end
+            end
+        end
+
+        callback(dependencies)
+    end
+
+    local function on_exit(j: Job, code: integer, _: integer)
+        if code == 0 then
+            resp = table.concat(j:result(), "\n")
+        end
+
+        parse_json()
+
+        M.running_jobs[jobname] = nil
+    end
+
+    local j = Job:new {
+        command = "curl",
+        args = { "-sLA", useragent, url },
+        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
+    }
+
+    M.running_jobs[jobname] = j
 
     j:start()
 end

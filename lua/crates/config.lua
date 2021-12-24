@@ -128,6 +128,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -380,6 +381,11 @@ entry(schema_diagnostic, "feat_dup", {
 entry(schema_diagnostic, "feat_dup_orig", {
    type = "string",
    default = "Original feature entry is defined here",
+   hidden = true,
+})
+entry(schema_diagnostic, "feat_invalid", {
+   type = "string",
+   default = "Invalid feature",
    hidden = true,
 })
 

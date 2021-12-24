@@ -4,6 +4,7 @@ local record M
         vers_line: integer
         virt_text: {{string,string}}
         diagnostics: {vim.diagnostic.Diagnostic}
+        version: Version|nil
     end
     enum CrateScope
         "vers"
@@ -20,10 +21,10 @@ local semver = require("crates.semver")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
-local Version = require("crates.api").Version
+local api = require("crates.api")
+local Version = api.Version
+local Dependency = api.Dependency
 local Range = require("crates.types").Range
-
-
 
 function M.crate_diagnostic(crate: Crate, message: string, severity: integer, scope: CrateScope|nil): vim.diagnostic.Diagnostic
     local d = {
@@ -78,15 +79,58 @@ function M.feat_diagnostic(crate: Crate, feat: CrateFeature, message: string, se
     }
 end
 
+function M.process_crates(crates: {Crate}): {string:Crate}, {vim.diagnostic.Diagnostic}
+    local diagnostics = {}
+    local cache: {string:Crate} = {}
+
+    for _,c in ipairs(crates) do
+        if cache[c.name] then
+            table.insert(diagnostics, M.crate_diagnostic(
+                cache[c.name],
+                core.cfg.diagnostic.crate_dup_orig,
+                vim.diagnostic.severity.HINT
+            ))
+            table.insert(diagnostics, M.crate_diagnostic(
+                c,
+                core.cfg.diagnostic.crate_dup,
+                vim.diagnostic.severity.ERROR
+            ))
+        else
+            cache[c.name] = c
+
+            local feats: {string:CrateFeature} = {}
+            for _,f in ipairs(c:feats()) do
+                if feats[f.name] then
+                    table.insert(diagnostics, M.feat_diagnostic(
+                        c,
+                        feats[f.name],
+                        core.cfg.diagnostic.feat_dup_orig,
+                        vim.diagnostic.severity.HINT
+                    ))
+                    table.insert(diagnostics, M.feat_diagnostic(
+                        c,
+                        f,
+                        core.cfg.diagnostic.feat_dup,
+                        vim.diagnostic.severity.WARN
+                    ))
+                else
+                    feats[f.name] = f
+                end
+            end
+        end
+    end
+
+    return cache, diagnostics
+end
+
 function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo
     local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
 
-    local info = {
+    local info: CrateInfo = {
         lines = crate.lines,
         vers_line = crate.vers and crate.vers.line or crate.lines.s,
-        virt_text = {},
         diagnostics = {},
     }
     if newest then
@@ -96,6 +140,7 @@ function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo
         else
             -- version does not match, upgrade available
             local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
+            info.version = match or match_pre or match_yanked
 
             local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
             table.insert(info.diagnostics, M.crate_diagnostic(
@@ -166,48 +211,31 @@ function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo
     return info
 end
 
-function M.process_crates(crates: {Crate}): {string:Crate}, {vim.diagnostic.Diagnostic}
+function M.process_crate_deps(crate: Crate, version: Version, deps: {Dependency}): {vim.diagnostic.Diagnostic}
     local diagnostics = {}
-    local cache: {string:Crate} = {}
 
-    for _,c in ipairs(crates) do
-        if cache[c.name] then
-            table.insert(diagnostics, M.crate_diagnostic(
-                cache[c.name],
-                core.cfg.diagnostic.crate_dup_orig,
-                vim.diagnostic.severity.HINT
-            ))
-            table.insert(diagnostics, M.crate_diagnostic(
-                c,
-                core.cfg.diagnostic.crate_dup,
-                vim.diagnostic.severity.ERROR
-            ))
-        else
-            cache[c.name] = c
-
-            local feats: {string:CrateFeature} = {}
-            for _,f in ipairs(c:feats()) do
-                if feats[f.name] then
-                    table.insert(diagnostics, M.feat_diagnostic(
-                        c,
-                        feats[f.name],
-                        core.cfg.diagnostic.feat_dup_orig,
-                        vim.diagnostic.severity.HINT
-                    ))
-                    table.insert(diagnostics, M.feat_diagnostic(
-                        c,
-                        f,
-                        core.cfg.diagnostic.feat_dup,
-                        vim.diagnostic.severity.WARN
-                    ))
-                else
-                    feats[f.name] = f
-                end
-            end
+    local valid_feats = {}
+    for _,f in ipairs(version.features) do
+        table.insert(valid_feats, f.name)
+    end
+    for _,d in ipairs(deps) do
+        if d.opt then
+            table.insert(valid_feats, d.name)
         end
     end
 
-    return cache, diagnostics
+    for _,f in ipairs(crate:feats()) do
+        if not vim.tbl_contains(valid_feats, f.name) then
+            table.insert(diagnostics, M.feat_diagnostic(
+                crate,
+                f,
+                core.cfg.diagnostic.feat_invalid,
+                vim.diagnostic.severity.ERROR
+            ))
+        end
+    end
+
+    return diagnostics
 end
 
 return M

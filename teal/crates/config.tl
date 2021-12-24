@@ -45,6 +45,7 @@ local record M
             vers_nomatch: string
             feat_dup: string
             feat_dup_orig: string
+            feat_invalid: string
         end
 
         record PopupConfig
@@ -380,6 +381,11 @@ entry(schema_diagnostic, "feat_dup", {
 entry(schema_diagnostic, "feat_dup_orig", {
     type = "string",
     default = "Original feature entry is defined here",
+    hidden = true,
+})
+entry(schema_diagnostic, "feat_invalid", {
+    type = "string",
+    default = "Invalid feature",
     hidden = true,
 })
 

@@ -4,6 +4,7 @@ local M = {}
 
 
 
+
 local core = require('crates.core')
 local Crate = require('crates.toml').Crate
 local CrateInfo = require('crates.diagnostic').CrateInfo
@@ -11,11 +12,15 @@ local CrateInfo = require('crates.diagnostic').CrateInfo
 M.custom_ns = vim.api.nvim_create_namespace("crates.nvim")
 M.custom_diagnostics = {}
 M.diagnostic_ns = vim.api.nvim_create_namespace("crates.nvim.diagnostic")
+M.diagnostics = {}
 
 function M.display_diagnostics(buf, diagnostics)
    if not core.visible then return end
 
-   vim.diagnostic.set(M.diagnostic_ns, buf, diagnostics)
+   M.diagnostics[buf] = M.diagnostics[buf] or {}
+   vim.list_extend(M.diagnostics[buf], diagnostics)
+
+   vim.diagnostic.set(M.diagnostic_ns, buf, M.diagnostics[buf])
 end
 
 function M.display_crate_info(buf, info)
@@ -47,6 +52,8 @@ end
 
 function M.clear(buf)
    M.custom_diagnostics[buf] = nil
+   M.diagnostics[buf] = nil
+
    vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, 0, -1)
    vim.diagnostic.reset(M.custom_ns, buf)
    vim.diagnostic.reset(M.diagnostic_ns, buf)

@@ -1,4 +1,17 @@
-local M = {Version = {}, Features = {}, Feature = {}, }
+local M = {Version = {}, Features = {}, Feature = {}, Dependency = {}, }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -21,6 +34,7 @@ local M = {Version = {}, Features = {}, Feature = {}, }
 local Version = M.Version
 local Features = M.Features
 local Feature = M.Feature
+local Dependency = M.Dependency
 local Job = require('plenary.job')
 local semver = require('crates.semver')
 local SemVer = semver.SemVer
@@ -133,7 +147,7 @@ function M.fetch_crate_versions(name, callback)
          resp = table.concat(j:result(), "\n")
       end
 
-      vim.schedule(parse_json)
+      parse_json()
 
       M.running_jobs[name] = nil
    end
@@ -145,6 +159,63 @@ function M.fetch_crate_versions(name, callback)
    })
 
    M.running_jobs[name] = j
+
+   j:start()
+end
+
+function M.fetch_crate_deps(name, version, callback)
+   local jobname = name .. ":" .. version
+   if M.running_jobs[jobname] then
+      return
+   end
+
+   local url = string.format("%s/crates/%s/%s/dependencies", endpoint, name, version)
+   local resp = nil
+
+   local function parse_json()
+      if not resp then
+         callback(nil)
+         return
+      end
+
+      local success, data = pcall(vim.fn.json_decode, resp)
+      if not success then
+         data = nil
+      end
+
+      local dependencies = {}
+      if data and type(data) == "table" and data.dependencies then
+         for _, d in ipairs(data.dependencies) do
+            if d.name then
+               table.insert(dependencies, {
+                  name = d.name,
+                  opt = d.optional,
+                  kind = d.kind,
+               })
+            end
+         end
+      end
+
+      callback(dependencies)
+   end
+
+   local function on_exit(j, code, _)
+      if code == 0 then
+         resp = table.concat(j:result(), "\n")
+      end
+
+      parse_json()
+
+      M.running_jobs[jobname] = nil
+   end
+
+   local j = Job:new({
+      command = "curl",
+      args = { "-sLA", useragent, url },
+      on_exit = vim.schedule_wrap(on_exit),
+   })
+
+   M.running_jobs[jobname] = j
 
    j:start()
 end
