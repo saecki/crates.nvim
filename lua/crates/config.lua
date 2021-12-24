@@ -129,6 +129,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -371,6 +372,11 @@ entry(schema_diagnostic, "vers_yanked", {
 entry(schema_diagnostic, "vers_nomatch", {
    type = "string",
    default = "Requirement doesn't match a version",
+   hidden = true,
+})
+entry(schema_diagnostic, "def_invalid", {
+   type = "string",
+   default = "Invalid boolean value",
    hidden = true,
 })
 entry(schema_diagnostic, "feat_dup", {

@@ -98,6 +98,17 @@ function M.process_crates(crates)
       else
          cache[c.name] = c
 
+         if c.def then
+            if c.def.text ~= "false" and c.def.text ~= "true" then
+               table.insert(diagnostics, M.crate_diagnostic(
+               c,
+               core.cfg.diagnostic.def_invalid,
+               vim.diagnostic.severity.ERROR,
+               "def"))
+
+            end
+         end
+
          local feats = {}
          for _, f in ipairs(c:feats()) do
             if feats[f.name] then
