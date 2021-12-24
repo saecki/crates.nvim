@@ -324,8 +324,6 @@ end
 
 ## TODO
 - Use null-ls for code actions
-- maybe fetch dependencies (optional dependencies are automatically promoted to features)
-    - Diagnostics for not found features
 
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
