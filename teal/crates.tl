@@ -90,7 +90,7 @@ local function reload_deps(crate: Crate, versions: {Version}, version: Version)
             end
         end
     end
-    
+
     api.fetch_crate_deps(crate.name, version.num, on_fetched)
 end
 
@@ -106,7 +106,7 @@ local function reload_crate(buf: integer, crate: Crate)
             if c and vim.api.nvim_buf_is_loaded(b) then
                 local info = diagnostic.process_crate_versions(c, versions)
                 ui.display_crate_info(b, info)
-                
+
                 if versions and versions[1] then
                     reload_deps(c, versions, info.version or versions[1])
                 end

@@ -16,7 +16,7 @@ M.diagnostics = {}
 
 function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagnostic})
     if not core.visible then return end
-    
+
     M.diagnostics[buf] = M.diagnostics[buf] or {}
     vim.list_extend(M.diagnostics[buf], diagnostics)
 
