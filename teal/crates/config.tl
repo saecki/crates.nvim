@@ -96,6 +96,7 @@ local record M
         end
 
         record CmpConfig
+            closing_quote: boolean
             text: CmpTextConfig
         end
 
@@ -659,6 +660,13 @@ entry(M.schema, "cmp", {
     fields = {},
 })
 local schema_cmp = M.schema.cmp.fields
+entry(schema_cmp, "closing_quote", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Insert a closing quote on completion if there is none.
+    ]],
+})
 entry(schema_cmp, "text", {
     type = "section",
     description = [[

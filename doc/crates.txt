@@ -121,6 +121,7 @@ For more information about individual config options see |crates-config|.
             },
         },
         cmp = {
+            closing_quote = true,
             text = {
                 prerelease = "  pre-release ",
                 yanked = "  yanked ",
@@ -643,6 +644,12 @@ cmp                                                        *crates-config-cmp*
     Type: `section`
 
     Configuration options for the |nvim-cmp| source.
+
+
+cmp.closing_quote                            *crates-config-cmp-closing_quote*
+    Type: `boolean`, Default: `true`
+
+    Insert a closing quote on completion if there is none.
 
 
 cmp.text                                              *crates-config-cmp-text*

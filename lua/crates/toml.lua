@@ -193,7 +193,7 @@ function M.parse_crate(line)
             text = vers_text,
             col = Range.new(vs - 1, ve - 1),
             decl_col = Range.new(0, line:len()),
-            quote = { s = qs, e = qe },
+            quote = { s = qs, e = qe ~= "" and qe or nil },
          },
       }
    end

@@ -130,6 +130,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -659,6 +660,13 @@ entry(M.schema, "cmp", {
    fields = {},
 })
 local schema_cmp = M.schema.cmp.fields
+entry(schema_cmp, "closing_quote", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Insert a closing quote on completion if there is none.
+    ]],
+})
 entry(schema_cmp, "text", {
    type = "section",
    description = [[

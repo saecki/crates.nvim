@@ -36,7 +36,7 @@ function M:get_trigger_characters(_)
    return { '"', "'", ".", "<", ">", "=", "^", "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
 end
 
-local function complete_versions(versions)
+local function complete_versions(crate, versions)
    local results = {}
 
    for i, v in ipairs(versions) do
@@ -45,6 +45,11 @@ local function complete_versions(versions)
          kind = cmp.lsp.CompletionItemKind.Value,
          sortText = string.format("%04d", i),
       }
+      if core.cfg.cmp.closing_quote then
+         if crate.vers and not crate.vers.quote.e then
+            r.insertText = v.num .. crate.vers.quote.s
+         end
+      end
       if v.yanked then
          r.deprecated = true
          r.documentation = core.cfg.cmp.text.yanked
@@ -98,7 +103,7 @@ function M:complete(_, callback)
    local versions = crates[1].versions
 
    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
-      callback(complete_versions(versions))
+      callback(complete_versions(crate, versions))
    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
       for _, f in ipairs(crate.feat.items) do
          if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
