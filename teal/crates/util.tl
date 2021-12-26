@@ -253,7 +253,7 @@ local function set_version_smart(buf: integer, crate: Crate, version: SemVer): R
             end
 
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "gt" then
+        elseif r.cond == "gt" and not semver.matches_requirement(version, r) then
             local v = SemVer.new {
                 major = r.vers.major and version.major or nil,
                 minor = r.vers.minor and version.minor or nil,
