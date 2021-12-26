@@ -99,6 +99,23 @@ local function complete_features(crate: Crate, versions: {Version}): lsp.Complet
     }
 end
 
+local function complete(callback: function(lsp.CompletionList|nil), crate: Crate, versions: {Version}, line: integer, col: integer)
+    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
+        callback(complete_versions(crate, versions))
+    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
+        for _,f in ipairs(crate.feat.items) do
+            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
+                callback(complete_features(crate, versions))
+                return
+            end
+        end
+
+        callback(nil)
+    else
+        callback(nil)
+    end
+end
+
 ---Invoke completion (required).
 ---  If you want to abort completion, just call the callback without arguments.
 function M:complete(_: cmp.SourceCompletionApiParams, callback: function(lsp.CompletionList|nil))
@@ -119,26 +136,13 @@ function M:complete(_: cmp.SourceCompletionApiParams, callback: function(lsp.Com
             if cancelled then
                 callback({isIncomplete = true, items = nil})
             else
-                callback(complete_versions(crate, items))
+                complete(callback, crate, items, line, col)
             end
         end)
         return
     end
 
-    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
-        callback(complete_versions(crate, versions))
-    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
-        for _,f in ipairs(crate.feat.items) do
-            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
-                callback(complete_features(crate, versions))
-                return
-            end
-        end
-
-        callback(nil)
-    else
-        callback(nil)
-    end
+    complete(callback, crate, versions, line, col)
 end
 
 return M
