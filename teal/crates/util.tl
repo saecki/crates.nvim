@@ -189,13 +189,13 @@ local function replace_existing(r: Requirement, version: SemVer): SemVer
 end
 
 local function set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
-    if not crate:vers_reqs() or #crate:vers_reqs() == 0 then
+    if #crate:vers_reqs() == 0 then
         return set_version_dumb(buf, crate, version:display())
     end
 
     local pos = 1
     local text = ""
-    for _,r in ipairs(crate.vers.reqs) do
+    for _,r in ipairs(crate:vers_reqs()) do
         if r.cond == "eq" then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()

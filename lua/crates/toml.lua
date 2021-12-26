@@ -98,7 +98,7 @@ function Crate.new(obj)
 end
 
 function Crate:vers_reqs()
-   return self.vers and self.vers.reqs
+   return self.vers and self.vers.reqs or {}
 end
 
 function Crate:vers_is_pre()

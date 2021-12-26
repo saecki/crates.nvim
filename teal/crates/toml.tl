@@ -97,8 +97,8 @@ function Crate.new(obj: Crate): Crate
     return setmetatable(obj, { __index = Crate })
 end
 
-function Crate:vers_reqs(): {Requirement}|nil
-    return self.vers and self.vers.reqs
+function Crate:vers_reqs(): {Requirement}
+    return self.vers and self.vers.reqs or {}
 end
 
 function Crate:vers_is_pre(): boolean|nil

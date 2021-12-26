@@ -82,7 +82,7 @@ local function reload_deps(crate: Crate, versions: {Version}, version: Version)
                 local c = crates[crate.name]
 
                 local avoid_pre = core.cfg.avoid_prerelease and not c:vers_is_pre()
-                local m, p, y = util.get_newest(versions, avoid_pre, c.vers.reqs)
+                local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
                 local match = m or p or y
 
                 if c and c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
