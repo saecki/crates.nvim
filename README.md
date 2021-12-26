@@ -178,7 +178,7 @@ require('crates').setup {
         },
     },
     cmp = {
-        closing_quote = true,
+        insert_closing_quote = true,
         text = {
             prerelease = "  pre-release ",
             yanked = "  yanked ",

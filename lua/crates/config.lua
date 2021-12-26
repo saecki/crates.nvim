@@ -660,7 +660,7 @@ entry(M.schema, "cmp", {
    fields = {},
 })
 local schema_cmp = M.schema.cmp.fields
-entry(schema_cmp, "closing_quote", {
+entry(schema_cmp, "insert_closing_quote", {
    type = "boolean",
    default = true,
    description = [[

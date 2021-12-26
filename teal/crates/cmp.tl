@@ -46,7 +46,7 @@ local function complete_versions(crate: Crate, versions: {Version}): lsp.Complet
             kind = cmp.lsp.CompletionItemKind.Value,
             sortText = string.format("%04d", i),
         }
-        if core.cfg.cmp.closing_quote then
+        if core.cfg.cmp.insert_closing_quote then
             if crate.vers and not crate.vers.quote.e then
                 r.insertText = v.num .. crate.vers.quote.s
             end
