@@ -43,7 +43,8 @@ function M.display_loading(buf: integer, crate: Crate)
 
     local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
     vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, crate.lines.s, crate.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, M.custom_ns, crate.vers.line, -1, {
+    local vers_line = crate.vers and crate.vers.line or crate.lines.s
+    vim.api.nvim_buf_set_extmark(buf, M.custom_ns, vers_line, -1, {
         virt_text = virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
