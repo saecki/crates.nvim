@@ -67,7 +67,7 @@ function M.parse_crate_features(text: string): {CrateFeature}
             name = f,
             col = Range.new(fs as integer - 1, fe as integer - 1),
             decl_col = Range.new(fds as integer - 1, fde as integer - 1),
-            quotes = { s = qs, e = qe ~= "" and qe or nil },
+            quote = { s = qs, e = qe ~= "" and qe or nil },
             comma = c == ",",
         })
     end

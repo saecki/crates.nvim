@@ -7,7 +7,9 @@ local util = require('crates.util')
 local api = require('crates.api')
 local Range = require('crates.types').Range
 local Version = require('crates.api').Version
-local Crate = require('crates.toml').Crate
+local toml = require('crates.toml')
+local Crate = toml.Crate
+local CrateFeature = toml.CrateFeature
 
 ---Source constructor.
 function M.new(): M
@@ -67,7 +69,7 @@ local function complete_versions(crate: Crate, versions: {Version}): lsp.Complet
     }
 end
 
-local function complete_features(crate: Crate, versions: {Version}): lsp.CompletionList
+local function complete_features(crate: Crate, cf: CrateFeature, versions: {Version}): lsp.CompletionList
     local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
@@ -88,6 +90,11 @@ local function complete_features(crate: Crate, versions: {Version}): lsp.Complet
                 sortText = f.name,
                 documentation = table.concat(f.members, "\n"),
             }
+            if core.cfg.cmp.insert_closing_quote then
+                if not cf.quote.e then
+                    r.insertText = f.name .. cf.quote.s
+                end
+            end
 
             table.insert(items, r)
         end
@@ -105,7 +112,7 @@ local function complete(callback: function(lsp.CompletionList|nil), crate: Crate
     elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
         for _,f in ipairs(crate.feat.items) do
             if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
-                callback(complete_features(crate, versions))
+                callback(complete_features(crate, f, versions))
                 return
             end
         end
