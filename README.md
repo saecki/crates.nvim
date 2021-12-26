@@ -325,6 +325,7 @@ end
 
 ## TODO
 - Use null-ls for code actions
+- `insert_missing_quote` for features
 
 ## Similar projects
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
