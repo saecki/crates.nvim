@@ -9,6 +9,7 @@ local record Job
     start: function(Job)
     shutdown: function(Job, integer, integer)
     result: function(Job): {string}
+    after: function(Job, function)
 end
 
 return Job

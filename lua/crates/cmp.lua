@@ -4,6 +4,7 @@ local cmp = require('cmp')
 local lsp = cmp.lsp
 local core = require('crates.core')
 local util = require('crates.util')
+local api = require('crates.api')
 local Range = require('crates.types').Range
 local Version = require('crates.api').Version
 local Crate = require('crates.toml').Crate
@@ -37,7 +38,7 @@ function M:get_trigger_characters(_)
 end
 
 local function complete_versions(crate, versions)
-   local results = {}
+   local items = {}
 
    for i, v in ipairs(versions) do
       local r = {
@@ -57,18 +58,27 @@ local function complete_versions(crate, versions)
          r.documentation = core.cfg.cmp.text.prerelease
       end
 
-      table.insert(results, r)
+      table.insert(items, r)
    end
 
-   return results
+   return {
+      isIncomplete = false,
+      items = items,
+   }
 end
 
 local function complete_features(crate, versions)
-   local results = {}
-
    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
    local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
+   if not newest then
+      return {
+         isIncomplete = false,
+         items = {},
+      }
+   end
+
+   local items = {}
    for _, f in ipairs(newest.features) do
       local crate_feat = crate:get_feat(f.name)
       if not crate_feat then
@@ -79,11 +89,14 @@ local function complete_features(crate, versions)
             documentation = table.concat(f.members, "\n"),
          }
 
-         table.insert(results, r)
+         table.insert(items, r)
       end
    end
 
-   return results
+   return {
+      isIncomplete = not newest.deps,
+      items = items,
+   }
 end
 
 
@@ -94,13 +107,23 @@ function M:complete(_, callback)
    local col = pos[2]
 
    local crates = util.get_lines_crates(Range.new(line, line + 1))
-   if not crates or not crates[1] or not crates[1].versions then
+   if not crates or not crates[1] then
       callback(nil)
       return
    end
 
    local crate = crates[1].crate
    local versions = crates[1].versions
+   if not versions and api.is_fetching_vers(crate.name) then
+      api.add_vers_callback(crate.name, function(items, cancelled)
+         if cancelled then
+            callback({ isIncomplete = true, items = nil })
+         else
+            callback(complete_versions(crate, items))
+         end
+      end)
+      return
+   end
 
    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
       callback(complete_versions(crate, versions))

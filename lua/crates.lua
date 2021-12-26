@@ -63,7 +63,9 @@ local ui = require('crates.ui')
 local Range = require('crates.types').Range
 
 local function reload_deps(crate, versions, version)
-   local function on_fetched(deps)
+   local function on_fetched(deps, cancelled)
+      if cancelled then return end
+
       if deps then
          version.deps = deps
          for _, d in ipairs(deps) do
@@ -95,7 +97,9 @@ local function reload_deps(crate, versions, version)
 end
 
 local function reload_crate(buf, crate)
-   local function on_fetched(versions)
+   local function on_fetched(versions, cancelled)
+      if cancelled then return end
+
       if versions and versions[1] then
          core.vers_cache[crate.name] = versions
       end

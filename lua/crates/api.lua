@@ -1,4 +1,16 @@
-local M = {Version = {}, Features = {}, Feature = {}, Dependency = {}, }
+local M = {Version = {}, VersJob = {}, DepsJob = {}, Features = {}, Feature = {}, Dependency = {}, }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -43,7 +55,8 @@ local DateTime = require('crates.time').DateTime
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
 
-M.running_jobs = {}
+M.vers_jobs = {}
+M.deps_jobs = {}
 
 
 function Features.new(obj)
@@ -72,90 +85,97 @@ function Features:sort()
    end)
 end
 
+
+local function parse_versions(json)
+   if not json then
+      return nil
+   end
+
+   local success, data = pcall(vim.fn.json_decode, json)
+   if not success then
+      data = nil
+   end
+
+   local versions = {}
+   if data and type(data) == "table" and data.versions then
+      for _, v in ipairs(data.versions) do
+         if v.num then
+            local version = {
+               num = v.num,
+               features = Features.new({}),
+               yanked = v.yanked,
+               parsed = semver.parse_version(v.num),
+               created = DateTime.parse_rfc_3339(v.created_at),
+            }
+
+            for n, m in pairs(v.features) do
+               table.sort(m)
+               table.insert(version.features, {
+                  name = n,
+                  members = m,
+               })
+            end
+
+
+            for _, f in ipairs(version.features) do
+               for _, m in ipairs(f.members) do
+                  if not version.features:get_feat(m) then
+                     table.insert(version.features, {
+                        name = m,
+                        members = {},
+                     })
+                  end
+               end
+            end
+
+
+            version.features:sort()
+
+
+            if not version.features[1] or not (version.features[1].name == "default") then
+               for i = #version.features, 1, -1 do
+                  version.features[i + 1] = version.features[i]
+               end
+
+               version.features[1] = {
+                  name = "default",
+                  members = {},
+               }
+            end
+
+            table.insert(versions, version)
+         end
+      end
+   end
+
+   return versions
+end
+
 function M.fetch_crate_versions(name, callback)
-   if M.running_jobs[name] then
+   if M.vers_jobs[name] then
       return
    end
 
+   local callbacks = { callback }
    local url = string.format("%s/crates/%s/versions", endpoint, name)
-   local resp = nil
-
-   local function parse_json()
-      if not resp then
-         callback(nil)
-         return
-      end
-
-      local success, data = pcall(vim.fn.json_decode, resp)
-      if not success then
-         data = nil
-      end
-
-      local versions = {}
-      if data and type(data) == "table" and data.versions then
-         for _, v in ipairs(data.versions) do
-            if v.num then
-               local version = {
-                  num = v.num,
-                  features = Features.new({}),
-                  yanked = v.yanked,
-                  parsed = semver.parse_version(v.num),
-                  created = DateTime.parse_rfc_3339(v.created_at),
-               }
-
-               for n, m in pairs(v.features) do
-                  table.sort(m)
-                  table.insert(version.features, {
-                     name = n,
-                     members = m,
-                  })
-               end
-
-
-               for _, f in ipairs(version.features) do
-                  for _, m in ipairs(f.members) do
-                     if not version.features:get_feat(m) then
-                        table.insert(version.features, {
-                           name = m,
-                           members = {},
-                        })
-                     end
-                  end
-               end
-
-
-               version.features:sort()
-
-
-               if not version.features[1] or not (version.features[1].name == "default") then
-                  for i = #version.features, 1, -1 do
-                     version.features[i + 1] = version.features[i]
-                  end
-
-                  version.features[1] = {
-                     name = "default",
-                     members = {},
-                  }
-               end
-
-               table.insert(versions, version)
-            end
-         end
-      end
-
-      callback(versions)
-   end
 
    local function on_exit(j, code, signal)
-      if signal ~= 0 then return end
+      local cancelled = signal ~= 0
 
+      local json = nil
       if code == 0 then
-         resp = table.concat(j:result(), "\n")
+         json = table.concat(j:result(), "\n")
       end
 
-      parse_json()
+      local versions = nil
+      if not cancelled then
+         versions = parse_versions(json)
+      end
+      for _, c in ipairs(callbacks) do
+         c(versions, cancelled)
+      end
 
-      M.running_jobs[name] = nil
+      M.vers_jobs[name] = nil
    end
 
    local j = Job:new({
@@ -164,57 +184,66 @@ function M.fetch_crate_versions(name, callback)
       on_exit = vim.schedule_wrap(on_exit),
    })
 
-   M.running_jobs[name] = j
+   M.vers_jobs[name] = {
+      job = j,
+      callbacks = callbacks,
+   }
 
    j:start()
+end
+
+local function parse_deps(json)
+   if not json then
+      return nil
+   end
+
+   local success, data = pcall(vim.fn.json_decode, json)
+   if not success then
+      data = nil
+   end
+
+   local dependencies = {}
+   if data and type(data) == "table" and data.dependencies then
+      for _, d in ipairs(data.dependencies) do
+         if d.name then
+            table.insert(dependencies, {
+               name = d.name,
+               opt = d.optional,
+               kind = d.kind,
+            })
+         end
+      end
+   end
+
+   return dependencies
 end
 
 function M.fetch_crate_deps(name, version, callback)
    local jobname = name .. ":" .. version
-   if M.running_jobs[jobname] then
+   if M.deps_jobs[jobname] then
       return
    end
 
+   local callbacks = { callback }
    local url = string.format("%s/crates/%s/%s/dependencies", endpoint, name, version)
-   local resp = nil
-
-   local function parse_json()
-      if not resp then
-         callback(nil)
-         return
-      end
-
-      local success, data = pcall(vim.fn.json_decode, resp)
-      if not success then
-         data = nil
-      end
-
-      local dependencies = {}
-      if data and type(data) == "table" and data.dependencies then
-         for _, d in ipairs(data.dependencies) do
-            if d.name then
-               table.insert(dependencies, {
-                  name = d.name,
-                  opt = d.optional,
-                  kind = d.kind,
-               })
-            end
-         end
-      end
-
-      callback(dependencies)
-   end
 
    local function on_exit(j, code, signal)
-      if signal ~= 0 then return end
+      local cancelled = signal ~= 0
 
+      local json = nil
       if code == 0 then
-         resp = table.concat(j:result(), "\n")
+         json = table.concat(j:result(), "\n")
       end
 
-      parse_json()
+      local deps = nil
+      if not cancelled then
+         deps = parse_deps(json)
+      end
+      for _, c in ipairs(callbacks) do
+         c(deps, cancelled)
+      end
 
-      M.running_jobs[jobname] = nil
+      M.deps_jobs[jobname] = nil
    end
 
    local j = Job:new({
@@ -223,16 +252,45 @@ function M.fetch_crate_deps(name, version, callback)
       on_exit = vim.schedule_wrap(on_exit),
    })
 
-   M.running_jobs[jobname] = j
+   M.deps_jobs[jobname] = {
+      job = j,
+      callbacks = callbacks,
+   }
 
    j:start()
 end
 
+function M.is_fetching_vers(name)
+   return M.vers_jobs[name] ~= nil
+end
+
+function M.is_fetching_deps(name)
+   return M.vers_jobs[name] ~= nil
+end
+
+function M.add_vers_callback(job_name, callback)
+   table.insert(
+   M.vers_jobs[job_name].callbacks,
+   callback)
+
+end
+
+function M.add_deps_callback(job_name, callback)
+   table.insert(
+   M.deps_jobs[job_name].callbacks,
+   callback)
+
+end
+
 function M.cancel_jobs()
-   for _, j in pairs(M.running_jobs) do
-      j:shutdown(1, 1)
+   for _, r in pairs(M.vers_jobs) do
+      r.job:shutdown(1, 1)
    end
-   M.running_jobs = {}
+   for _, r in pairs(M.deps_jobs) do
+      r.job:shutdown(1, 1)
+   end
+   M.vers_jobs = {}
+   M.deps_jobs = {}
 end
 
 return M

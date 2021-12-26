@@ -48,6 +48,11 @@ local record lsp
         filterText: string|nil
         insertText: string|nil
     end
+
+    record CompletionList
+        isIncomplete: boolean
+        items: {CompletionItem}
+    end
 end
 
 local record cmp
