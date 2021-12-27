@@ -131,6 +131,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -158,6 +159,13 @@ entry(M.schema, "smart_insert", {
 
             Resulting requirement:
             `>0.8, <1.6`
+    ]],
+})
+entry(M.schema, "insert_closing_quote", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Insert a closing quote when updating or upgrading a version, if there is none.
     ]],
 })
 entry(M.schema, "avoid_prerelease", {

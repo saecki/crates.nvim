@@ -157,7 +157,7 @@ local function set_version_dumb(buf, crate, text)
       end
    else
       local t = text
-      if not crate.vers.quote.e then
+      if core.cfg.insert_closing_quote and not crate.vers.quote.e then
          t = text .. crate.vers.quote.s
       end
       local line = crate.vers.line
