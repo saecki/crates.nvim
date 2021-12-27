@@ -394,8 +394,13 @@ function M.enable_feature(buf, crate, feature)
       end
    else
       local last_feat = crate.feat.items[#crate.feat.items]
-      if last_feat and not last_feat.comma then
-         t = ", " .. t
+      if last_feat then
+         if not last_feat.comma then
+            t = ", " .. t
+         end
+         if not last_feat.quote.e then
+            t = last_feat.quote.s .. t
+         end
       end
 
       vim.api.nvim_buf_set_text(
