@@ -116,6 +116,7 @@ The icons in the default configuration require a patched font:
 ```lua
 require('crates').setup {
     smart_insert = true,
+    insert_closing_quote = true,
     avoid_prerelease = true,
     autoload = true,
     autoupdate = true,

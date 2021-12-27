@@ -59,6 +59,7 @@ For more information about individual config options see |crates-config|.
 >
     require('crates').setup {
         smart_insert = true,
+        insert_closing_quote = true,
         avoid_prerelease = true,
         autoload = true,
         autoupdate = true,
@@ -297,6 +298,12 @@ smart_insert                                      *crates-config-smart_insert*
 
         Resulting requirement:
         `>0.8, <1.6`
+
+
+insert_closing_quote                      *crates-config-insert_closing_quote*
+    Type: `boolean`, Default: `true`
+
+    Insert a closing quote when updating or upgrading a version, if there is none.
 
 
 avoid_prerelease                              *crates-config-avoid_prerelease*
