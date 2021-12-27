@@ -129,6 +129,7 @@ function M:complete(_: cmp.SourceCompletionApiParams, callback: function(lsp.Com
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
     local col = pos[2] as integer
+    local buf = util.current_buf()
 
     local crates = util.get_lines_crates(Range.new(line, line + 1))
     if not crates or not crates[1] then
@@ -140,8 +141,18 @@ function M:complete(_: cmp.SourceCompletionApiParams, callback: function(lsp.Com
     local versions = crates[1].versions
     if not versions and api.is_fetching_vers(crate.name) then
         api.add_vers_callback(crate.name, function(items: {Version}, cancelled: boolean)
-            if cancelled then
-                callback({isIncomplete = true, items = nil})
+            if buf ~= util.current_buf() then
+                callback(nil)
+                return
+            end
+
+            pos = vim.api.nvim_win_get_cursor(0)
+            line = pos[1] as integer - 1
+            col = pos[2] as integer
+            crates = util.get_lines_crates(Range.new(line, line + 1))
+
+            if cancelled or not crates or not crates[1] then
+                callback(nil)
             else
                 complete(callback, crate, items, line, col)
             end
