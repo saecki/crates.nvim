@@ -48,9 +48,13 @@ Feel free to open issues.
 
 ### Installation
 To use with neovim 0.5 or to stay on a stable release use:
+
+[__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
 Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim', { 'tag': 'v0.1.0' }
+
+lua require('crates').setup()
 ```
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
@@ -59,19 +63,31 @@ use {
     'saecki/crates.nvim',
     tag = 'v0.1.0',
     requires = { 'nvim-lua/plenary.nvim' },
+    config = function()
+        require('crates').setup()
+    end,
 }
 ```
 
 If you're feeling adventurous and want to use the newest features use:
+
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
 Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim'
+
+lua require('crates').setup()
 ```
 
 [__packer.nvim__](https://github.com/wbthomason/packer.nvim)
 ```lua
-use { 'saecki/crates.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+use {
+    'saecki/crates.nvim',
+    requires = { 'nvim-lua/plenary.nvim' },
+    config = function()
+        require('crates').setup()
+    end,
+}
 ```
 
 For lazy loading:
