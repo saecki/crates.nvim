@@ -155,13 +155,13 @@ function M.fetch_crate_versions(name: string, callback: function({Version}, bool
     if M.vers_jobs[name] then
         return
     end
-    
+
     local callbacks = { callback }
     local url = string.format("%s/crates/%s/versions", endpoint, name)
 
     local function on_exit(j: Job, code: integer, signal: integer)
         local cancelled = signal ~= 0
-        
+
         local json: string = nil
         if code == 0 then
             json = table.concat(j:result(), "\n")
@@ -191,7 +191,7 @@ function M.fetch_crate_versions(name: string, callback: function({Version}, bool
 
     j:start()
 end
-    
+
 local function parse_deps(json: string): {Dependency}
     if not json then
         return nil
