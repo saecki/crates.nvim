@@ -23,18 +23,15 @@ Feel free to open issues.
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
 - Automatically load when opening a `Cargo.toml` file (`autoload`)
 - Live update while editing (`autoupdate`)
-- Show compatible version
-    - Indicate if compatible version is a pre-release
-    - Indicate if compatible version is yanked
+- Show version and upgrade candidates
+    - Indicate if compatible version is a pre-release or yanked
     - Indicate if no version is compatible
-- Show best upgrade candidate
 - Open floating window with all versions
     - Select a version by pressing enter (`popup.keys.select`)
 - Open floating window with all features
     - Navigate through the feature hierarchy
     - Enable/disable features
-    - Indicate if a feature is enabled directly
-    - Indicate if a feature is enabled transitively
+    - Indicate if a feature is enabled directly or transitively
 
 ![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
 
