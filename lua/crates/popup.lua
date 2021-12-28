@@ -115,9 +115,9 @@ local function line_crate_info()
    if crate.syntax == "plain" then
       versions_info()
    elseif crate.syntax == "table" then
-      if line == crate.feat.line then
+      if crate.feat and line == crate.feat.line then
          features_info()
-      elseif line == crate.def.line then
+      elseif crate.def and line == crate.def.line then
          default_features_info()
       else
          versions_info()
