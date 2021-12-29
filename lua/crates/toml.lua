@@ -1,4 +1,4 @@
-local M = {Crate = {Vers = {}, Def = {}, Feat = {}, }, CrateFeature = {}, Quotes = {}, }
+local M = {Section = {}, Crate = {Vers = {}, Def = {}, Feat = {}, }, CrateFeature = {}, Quotes = {}, }
 
 
 
@@ -54,6 +54,22 @@ local M = {Crate = {Vers = {}, Def = {}, Feat = {}, }, CrateFeature = {}, Quotes
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local Section = M.Section
 local Crate = M.Crate
 local CrateFeature = M.CrateFeature
 local semver = require('crates.semver')
@@ -125,6 +141,10 @@ end
 
 function Crate:is_def_enabled()
    return not self.def or self.def.enabled
+end
+
+function Crate:cache_key()
+   return string.format("%s:%s:%s", self.section.target or "", self.section.kind, self.name)
 end
 
 
@@ -253,11 +273,11 @@ end
 function M.parse_crates(buf)
    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
+   local sections = {}
    local crates = {}
-   local in_dep_table = false
-   local dep_table_start = 0
-   local dep_table_crate = nil
-   local dep_table_crate_name = nil
+
+   local dep_section = nil
+   local dep_section_crate = nil
 
    for i, l in ipairs(lines) do
       l = M.trim_comments(l)
@@ -265,45 +285,82 @@ function M.parse_crates(buf)
       local section = l:match("^%s*%[(.+)%]%s*$")
 
       if section then
+         if dep_section then
 
-         if dep_table_crate then
-            dep_table_crate.lines = Range.new(dep_table_start, i - 1)
-            table.insert(crates, Crate.new(dep_table_crate))
+            dep_section.lines.e = i - 1
+
+
+            if dep_section_crate then
+               dep_section_crate.lines = dep_section.lines
+               table.insert(crates, Crate.new(dep_section_crate))
+            end
          end
 
-         local c = section:match("^.*dependencies(.*)$")
-         if c then
-            in_dep_table = true
-            dep_table_start = i - 1
-            dep_table_crate = nil
-            dep_table_crate_name = c:match("^%.(.+)$")
+         local spec, name = section:match("^(.*)dependencies(.*)$")
+         if spec and name then
+            local target = spec
+            local kind = "default"
+
+            local dev_target = spec:match("^(.*)dev%-$")
+            if dev_target then
+               target = dev_target
+               kind = "dev"
+            end
+
+            local build_target = spec:match("^(.*)build%-$")
+            if build_target then
+               target = build_target
+               kind = "build"
+            end
+
+            if target then
+               target = target:match("^target%s*%.(.+)%.%s*$")
+               target = target and vim.trim(target)
+            end
+
+            if name then
+               name = name:match("^%s*%.(.+)$")
+               name = name and vim.trim(name)
+            end
+
+            dep_section_crate = nil
+            dep_section = {
+               text = section,
+               target = target,
+               kind = kind,
+               name = name,
+               lines = Range.new(i - 1, nil),
+            }
+            table.insert(sections, dep_section)
          else
-            in_dep_table = false
-            dep_table_crate = nil
-            dep_table_crate_name = nil
+            dep_section = nil
+            dep_section_crate = nil
          end
-      elseif in_dep_table and dep_table_crate_name then
+      elseif dep_section and dep_section.name then
          local crate_vers = M.parse_crate_table_vers(l)
          if crate_vers then
-            crate_vers.name = dep_table_crate_name
+            crate_vers.name = dep_section.name
             crate_vers.vers.line = i - 1
-            dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_vers)
+            crate_vers.section = dep_section
+            dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_vers)
          end
 
          local crate_feat = M.parse_crate_table_feat(l)
          if crate_feat then
-            crate_feat.name = dep_table_crate_name
+            crate_feat.name = dep_section.name
             crate_feat.feat.line = i - 1
-            dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_feat)
+            crate_feat.section = dep_section
+            dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_feat)
          end
 
          local crate_def = M.parse_crate_table_def(l)
          if crate_def then
-            crate_def.name = dep_table_crate_name
+            crate_def.name = dep_section.name
             crate_def.def.line = i - 1
-            dep_table_crate = vim.tbl_extend("keep", dep_table_crate or {}, crate_def)
+            crate_def.section = dep_section
+            dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_def)
          end
-      elseif in_dep_table then
+      elseif dep_section then
          local crate = M.parse_crate(l)
          if crate then
             crate.lines = Range.new(i - 1, i)
@@ -316,18 +373,24 @@ function M.parse_crates(buf)
             if crate.feat then
                crate.feat.line = i - 1
             end
+            crate.section = dep_section
             table.insert(crates, Crate.new(crate))
          end
       end
    end
 
+   if dep_section then
 
-   if dep_table_crate then
-      dep_table_crate.lines = Range.new(dep_table_start, #lines - 1)
-      table.insert(crates, Crate.new(dep_table_crate))
+      dep_section.lines.e = #lines
+
+
+      if dep_section_crate then
+         dep_section_crate.lines = dep_section.lines
+         table.insert(crates, Crate.new(dep_section_crate))
+      end
    end
 
-   return crates
+   return sections, crates
 end
 
 return M

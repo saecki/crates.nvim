@@ -305,7 +305,7 @@ function M.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
         local select_cmd = string.format(
             ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
             util.current_buf(),
-            crate.name,
+            crate:cache_key(),
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
         )
@@ -316,7 +316,7 @@ function M.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
         local select_alt_cmd = string.format(
             ":lua require('crates.popup').select_version(%d, '%s', %s - %d, true)<cr>",
             util.current_buf(),
-            crate.name,
+            crate:cache_key(),
             "vim.api.nvim_win_get_cursor(0)[1]",
             top_offset
         )
@@ -336,14 +336,14 @@ function M.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
     end)
 end
 
-function M.select_version(buf: integer, name: string, index: integer, alt: boolean|nil)
+function M.select_version(buf: integer, key: string, index: integer, alt: boolean|nil)
     local crates = core.crate_cache[buf]
     if not crates then return end
 
-    local crate = crates[name]
+    local crate = crates[key]
     if not crate then return end
 
-    local versions = core.vers_cache[name]
+    local versions = core.vers_cache[crate.name]
     if not versions then return end
 
     local version = versions[index]
