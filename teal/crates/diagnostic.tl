@@ -19,6 +19,7 @@ local core = require("crates.core")
 local util = require("crates.util")
 local semver = require("crates.semver")
 local toml = require("crates.toml")
+local Section = toml.Section
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 local api = require("crates.api")
@@ -26,8 +27,21 @@ local Version = api.Version
 local Dependency = api.Dependency
 local Range = require("crates.types").Range
 
+function M.section_diagnostic(section: Section, message: string, severity: integer): vim.diagnostic.Diagnostic
+    local d: vim.diagnostic.Diagnostic = {
+        lnum = section.lines.s,
+        end_lnum = section.lines.e,
+        col = 0,
+        end_col = 0,
+        severity = severity,
+        message = message,
+        source = "crates",
+    }
+    return d
+end
+
 function M.crate_diagnostic(crate: Crate, message: string, severity: integer, scope: CrateScope|nil): vim.diagnostic.Diagnostic
-    local d = {
+    local d: vim.diagnostic.Diagnostic = {
         lnum = crate.lines.s,
         end_lnum = crate.lines.e,
         col = 0,
@@ -68,7 +82,7 @@ function M.crate_diagnostic(crate: Crate, message: string, severity: integer, sc
 end
 
 function M.feat_diagnostic(crate: Crate, feat: CrateFeature, message: string, severity: integer): vim.diagnostic.Diagnostic
-    return {
+    local d: vim.diagnostic.Diagnostic = {
         lnum = crate.feat.line,
         end_lnum = crate.feat.line,
         col = crate.feat.col.s + feat.col.s,
@@ -77,16 +91,37 @@ function M.feat_diagnostic(crate: Crate, feat: CrateFeature, message: string, se
         message = message,
         source = "crates",
     }
+    return d
 end
 
-function M.process_crates(crates: {Crate}): {string:Crate}, {vim.diagnostic.Diagnostic}
+function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate}, {vim.diagnostic.Diagnostic}
     local diagnostics = {}
+    local s_cache: {string:Section} = {}
     local cache: {string:Crate} = {}
 
+    for _,s in ipairs(sections) do
+        local key = s.text:gsub("%s+", "")
+        if s_cache[key] then
+            table.insert(diagnostics, M.section_diagnostic(
+                s_cache[key],
+                "TODO: original section",
+                vim.diagnostic.severity.HINT
+            ))
+            table.insert(diagnostics, M.section_diagnostic(
+                s,
+                "TODO: duplicate section",
+                vim.diagnostic.severity.ERROR
+            ))
+        else
+            s_cache[key] = s
+        end
+    end
+
     for _,c in ipairs(crates) do
-        if cache[c.name] then
+        local key = c:cache_key()
+        if cache[key] then
             table.insert(diagnostics, M.crate_diagnostic(
-                cache[c.name],
+                cache[key],
                 core.cfg.diagnostic.crate_dup_orig,
                 vim.diagnostic.severity.HINT
             ))
@@ -96,7 +131,7 @@ function M.process_crates(crates: {Crate}): {string:Crate}, {vim.diagnostic.Diag
                 vim.diagnostic.severity.ERROR
             ))
         else
-            cache[c.name] = c
+            cache[key] = c
 
             if c.def then
                 if c.def.text ~= "false" and c.def.text ~= "true" then

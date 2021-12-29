@@ -79,15 +79,17 @@ local function reload_deps(crate, versions, version)
          version.features:sort()
 
          for b, crates in pairs(core.crate_cache) do
-            local c = crates[crate.name]
+            for _, c in pairs(crates) do
+               if c.name == crate.name then
+                  local avoid_pre = core.cfg.avoid_prerelease and not c:vers_is_pre()
+                  local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
+                  local match = m or p or y
 
-            local avoid_pre = core.cfg.avoid_prerelease and not c:vers_is_pre()
-            local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
-            local match = m or p or y
-
-            if c and c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
-               local diagnostics = diagnostic.process_crate_deps(c, version, deps)
-               ui.display_diagnostics(b, diagnostics)
+                  if c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
+                     local diagnostics = diagnostic.process_crate_deps(c, version, deps)
+                     ui.display_diagnostics(b, diagnostics)
+                  end
+               end
             end
          end
       end
@@ -105,14 +107,15 @@ local function reload_crate(buf, crate)
       end
 
       for b, crates in pairs(core.crate_cache) do
-         local c = crates[crate.name]
+         for _, c in pairs(crates) do
 
-         if c and vim.api.nvim_buf_is_loaded(b) then
-            local info = diagnostic.process_crate_versions(c, versions)
-            ui.display_crate_info(b, info)
+            if c.name == crate.name and vim.api.nvim_buf_is_loaded(b) then
+               local info = diagnostic.process_crate_versions(c, versions)
+               ui.display_crate_info(b, info)
 
-            if versions and versions[1] then
-               reload_deps(c, versions, info.version or versions[1])
+               if versions and versions[1] then
+                  reload_deps(c, versions, info.version or versions[1])
+               end
             end
          end
       end
@@ -132,8 +135,8 @@ local function update(buf, reload)
    end
 
    buf = buf or util.current_buf()
-   local crates = toml.parse_crates(buf)
-   local cache, diagnostics = diagnostic.process_crates(crates)
+   local sections, crates = toml.parse_crates(buf)
+   local cache, diagnostics = diagnostic.process_crates(sections, crates)
 
    ui.clear(buf)
    ui.display_diagnostics(buf, diagnostics)
