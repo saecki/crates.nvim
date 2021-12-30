@@ -6,6 +6,9 @@ local record M
         diagnostics: {vim.diagnostic.Diagnostic}
         version: Version|nil
     end
+    enum SectionScope
+        "header"
+    end
     enum CrateScope
         "vers"
         "def"
@@ -14,6 +17,7 @@ local record M
 end
 
 local CrateInfo = M.CrateInfo
+local SectionScope = M.SectionScope
 local CrateScope = M.CrateScope
 local core = require("crates.core")
 local util = require("crates.util")
@@ -27,7 +31,7 @@ local Version = api.Version
 local Dependency = api.Dependency
 local Range = require("crates.types").Range
 
-function M.section_diagnostic(section: Section, message: string, severity: integer): vim.diagnostic.Diagnostic
+function M.section_diagnostic(section: Section, message: string, severity: integer, scope: SectionScope|nil): vim.diagnostic.Diagnostic
     local d: vim.diagnostic.Diagnostic = {
         lnum = section.lines.s,
         end_lnum = section.lines.e,
@@ -37,6 +41,11 @@ function M.section_diagnostic(section: Section, message: string, severity: integ
         message = message,
         source = "crates",
     }
+
+    if scope == "header" then
+        d.end_lnum = d.lnum + 1
+    end
+
     return d
 end
 
@@ -105,18 +114,19 @@ function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate},
         if s.invalid then
             table.insert(diagnostics, M.section_diagnostic(
                 s,
-                "TODO: invalid dependency section",
+                core.cfg.diagnostic.section_invalid,
                 vim.diagnostic.severity.WARN
             ))
         elseif s_cache[key] then
             table.insert(diagnostics, M.section_diagnostic(
                 s_cache[key],
-                "TODO: original section",
-                vim.diagnostic.severity.HINT
+                core.cfg.diagnostic.section_dup_original,
+                vim.diagnostic.severity.HINT,
+                "header"
             ))
             table.insert(diagnostics, M.section_diagnostic(
                 s,
-                "TODO: duplicate section",
+                core.cfg.diagnostic.section_dup,
                 vim.diagnostic.severity.ERROR
             ))
         else
