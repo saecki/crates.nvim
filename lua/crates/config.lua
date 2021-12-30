@@ -132,6 +132,9 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -343,6 +346,21 @@ entry(M.schema, "diagnostic", {
    hidden = true,
 })
 local schema_diagnostic = M.schema.diagnostic.fields
+entry(schema_diagnostic, "section_invalid", {
+   type = "string",
+   default = "Invalid dependency",
+   hidden = true,
+})
+entry(schema_diagnostic, "section_dup", {
+   type = "string",
+   default = "Duplicate dependency section",
+   hidden = true,
+})
+entry(schema_diagnostic, "section_dup_original", {
+   type = "string",
+   default = "Original dependency section is defined here",
+   hidden = true,
+})
 entry(schema_diagnostic, "crate_dup", {
    type = "string",
    default = "Duplicate crate entry",
