@@ -1,6 +1,7 @@
 local record M
     record Section
         text: string
+        invalid: boolean
         target: string|nil
         kind: Kind
         name: string|nil
@@ -296,36 +297,43 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 end
             end
 
-            local spec, name = section:match("^(.*)dependencies(.*)$")
-            if spec and name then
-                local target = spec
+            local prefix, suffix = section:match("^(.*)dependencies(.*)$")
+            if prefix and suffix then
+                prefix = vim.trim(prefix)
+                suffix = vim.trim(suffix)
+                local target = prefix
+                local name = suffix
                 local kind: Section.Kind = "default"
                 
-                local dev_target = spec:match("^(.*)dev%-$")
+                local dev_target = prefix:match("^(.*)dev%-$")
                 if dev_target then
                     target = dev_target
                     kind = "dev"
                 end
                 
-                local build_target = spec:match("^(.*)build%-$")
+                local build_target = prefix:match("^(.*)build%-$")
                 if build_target then
                     target = build_target
                     kind = "build"
                 end
 
                 if target then
-                    target = target:match("^target%s*%.(.+)%.%s*$")
+                    target = target:match("^target%s*%.(.+)%.$")
                     target = target and vim.trim(target)
                 end
 
-                if name then
-                    name = name:match("^%s*%.(.+)$")
+                if suffix then
+                    name = name:match("^%.(.+)$")
                     name = name and vim.trim(name)
                 end
+
+                local invalid = prefix ~= "" and not target and kind == "default"
+                    or suffix ~= "" and not name
 
                 dep_section_crate = nil
                 dep_section = {
                     text = section,
+                    invalid = invalid,
                     target = target,
                     kind = kind,
                     name = name,
