@@ -101,7 +101,14 @@ function M.process_crates(sections, crates)
 
    for _, s in ipairs(sections) do
       local key = s.text:gsub("%s+", "")
-      if s_cache[key] then
+
+      if s.invalid then
+         table.insert(diagnostics, M.section_diagnostic(
+         s,
+         "TODO: invalid dependency section",
+         vim.diagnostic.severity.WARN))
+
+      elseif s_cache[key] then
          table.insert(diagnostics, M.section_diagnostic(
          s_cache[key],
          "TODO: original section",
@@ -119,6 +126,10 @@ function M.process_crates(sections, crates)
 
    for _, c in ipairs(crates) do
       local key = c:cache_key()
+      if c.section.invalid then
+         goto continue
+      end
+
       if cache[key] then
          table.insert(diagnostics, M.crate_diagnostic(
          cache[key],
@@ -164,6 +175,8 @@ function M.process_crates(sections, crates)
             end
          end
       end
+
+      ::continue::
    end
 
    return cache, diagnostics
