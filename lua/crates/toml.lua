@@ -149,6 +149,50 @@ function Crate:cache_key()
 end
 
 
+function M.parse_section(text)
+   local prefix, suffix = text:match("^(.*)dependencies(.*)$")
+   if prefix and suffix then
+      prefix = vim.trim(prefix)
+      suffix = vim.trim(suffix)
+      local section = {
+         text = text,
+         invalid = false,
+         kind = "default",
+      }
+
+      local target = prefix
+      local dev_target = prefix:match("^(.*)dev%-$")
+      if dev_target then
+         target = vim.trim(dev_target)
+         section.kind = "dev"
+      end
+
+      local build_target = prefix:match("^(.*)build%-$")
+      if build_target then
+         target = vim.trim(build_target)
+         section.kind = "build"
+      end
+
+      if target then
+         local t = target:match("^target%s*%.(.+)%.$")
+         section.target = t and vim.trim(t)
+      end
+
+      if suffix then
+         local n = suffix:match("^%.(.+)$")
+         section.name = n and vim.trim(n)
+      end
+
+      section.invalid = prefix ~= "" and not section.target and section.kind == "default" or
+      target ~= "" and not section.target or
+      suffix ~= "" and not section.name
+
+      return section
+   end
+
+   return nil
+end
+
 function M.parse_crate_table_vers(line)
    local qs, vs, vers_text, ve, qe = line:match([[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
    if qs and vs and vers_text and ve then
@@ -283,9 +327,9 @@ function M.parse_crates(buf)
    for i, l in ipairs(lines) do
       l = M.trim_comments(l)
 
-      local section = l:match("^%s*%[(.+)%]%s*$")
+      local section_text = l:match("^%s*%[(.+)%]%s*$")
 
-      if section then
+      if section_text then
          if dep_section then
 
             dep_section.lines.e = i - 1
@@ -297,48 +341,12 @@ function M.parse_crates(buf)
             end
          end
 
-         local prefix, suffix = section:match("^(.*)dependencies(.*)$")
-         if prefix and suffix then
-            prefix = vim.trim(prefix)
-            suffix = vim.trim(suffix)
-            local target = prefix
-            local name = suffix
-            local kind = "default"
+         local section = M.parse_section(section_text)
 
-            local dev_target = prefix:match("^(.*)dev%-$")
-            if dev_target then
-               target = dev_target
-               kind = "dev"
-            end
-
-            local build_target = prefix:match("^(.*)build%-$")
-            if build_target then
-               target = build_target
-               kind = "build"
-            end
-
-            if target then
-               target = target:match("^target%s*%.(.+)%.$")
-               target = target and vim.trim(target)
-            end
-
-            if suffix then
-               name = name:match("^%.(.+)$")
-               name = name and vim.trim(name)
-            end
-
-            local invalid = prefix ~= "" and not target and kind == "default" or
-            suffix ~= "" and not name
-
+         if section then
+            section.lines = Range.new(i - 1, nil)
+            dep_section = section
             dep_section_crate = nil
-            dep_section = {
-               text = section,
-               invalid = invalid,
-               target = target,
-               kind = kind,
-               name = name,
-               lines = Range.new(i - 1, nil),
-            }
             table.insert(sections, dep_section)
          else
             dep_section = nil
