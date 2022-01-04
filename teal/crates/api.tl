@@ -205,11 +205,11 @@ local function parse_deps(json: string): {Dependency}
     local dependencies: {Dependency} = {}
     if data and type(data) == "table" and data.dependencies then
         for _,d in ipairs(data.dependencies) do
-            if d.name then
+            if d.crate_id then
                 table.insert(dependencies, {
-                    name = d.name,
-                    opt = d.optional,
-                    kind = d.kind,
+                    name = d.crate_id,
+                    opt = d.optional or false,
+                    kind = d.kind or "normal",
                 })
             end
         end
