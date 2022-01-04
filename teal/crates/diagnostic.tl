@@ -206,6 +206,7 @@ function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo
         if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
             -- version matches, no upgrade available
             info.virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
+            info.version = newest
         else
             -- version does not match, upgrade available
             local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
