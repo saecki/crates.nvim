@@ -139,3 +139,13 @@ is a table with subfields which will be extended with their default values, if
 not specified.
 
 <CONFIGURATION>
+
+==============================================================================
+HIGHLIGHTS                                                 *crates-highlights*
+
+This is a list of the default highlight groups used by crates.nvim. To change
+them, you can either overwrite them or use different ones in
+|crates-config-highlight| and |crates-config-popup-highlight|.
+
+<HIGHLIGHTS>
+

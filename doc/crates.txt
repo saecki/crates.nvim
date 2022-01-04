@@ -676,3 +676,54 @@ cmp.text.yanked                                *crates-config-cmp-text-yanked*
 
     Text shown in the |nvim-cmp| documentation preview for yanked versions.
 
+
+
+==============================================================================
+HIGHLIGHTS                                                 *crates-highlights*
+
+This is a list of the default highlight groups used by crates.nvim. To change
+them, you can either overwrite them or use different ones in
+|crates-config-highlight| and |crates-config-popup-highlight|.
+
+CratesNvimLoading                                *crates-hl-CratesNvimLoading*
+    Default: links to |DiagnosticVirtualTextInfo|
+
+CratesNvimVersion                                *crates-hl-CratesNvimVersion*
+    Default: links to |DiagnosticVirtualTextInfo|
+
+CratesNvimPreRelease                          *crates-hl-CratesNvimPreRelease*
+    Default: links to |DiagnosticVirtualTextWarn|
+
+CratesNvimYanked                                  *crates-hl-CratesNvimYanked*
+    Default: links to |DiagnosticVirtualTextError|
+
+CratesNvimNoMatch                                *crates-hl-CratesNvimNoMatch*
+    Default: links to |DiagnosticVirtualTextError|
+
+CratesNvimUpgrade                                *crates-hl-CratesNvimUpgrade*
+    Default: links to |DiagnosticVirtualTextWarn|
+
+CratesNvimError                                    *crates-hl-CratesNvimError*
+    Default: links to |DiagnosticVirtualTextError|
+
+CratesNvimPopupTitle                          *crates-hl-CratesNvimPopupTitle*
+    Default: links to |Title|
+
+CratesNvimPopupVersion                      *crates-hl-CratesNvimPopupVersion*
+    Default: links to |None|
+
+CratesNvimPopupPreRelease                *crates-hl-CratesNvimPopupPreRelease*
+    Default: links to |DiagnosticVirtualTextWarn|
+
+CratesNvimPopupYanked                        *crates-hl-CratesNvimPopupYanked*
+    Default: links to |DiagnosticVirtualTextError|
+
+CratesNvimPopupFeature                      *crates-hl-CratesNvimPopupFeature*
+    Default: links to |None|
+
+CratesNvimPopupEnabled                      *crates-hl-CratesNvimPopupEnabled*
+    Default: `ctermfg=2 guifg=#23ab49`
+
+CratesNvimPopupTransitive                *crates-hl-CratesNvimPopupTransitive*
+    Default: `ctermfg=4 guifg=#238bb9`
+

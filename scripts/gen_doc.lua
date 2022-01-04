@@ -106,6 +106,39 @@ local function gen_vimdoc_functions(lines)
     file:close()
 end
 
+local function gen_vimdoc_highlights(lines)
+    local file = io.open("plugin/crates.vim", "r")
+    for l in file:lines("*l") do
+        if l ~= "" then
+            local lname, link = l:match("^highlight default link ([^%s]+)%s+(.+)$")
+            local cname, colors = l:match("^highlight default ([^%s]+)%s+(.+)$")
+            local name = lname or cname
+            if name then
+                local doc_title = name
+                local doc_key = string.format("*crates-hl-%s*", name)
+
+                local len = string.len(doc_title) + string.len(doc_key)
+                if len < 78 then
+                    local txt = doc_title .. string.rep(" ", 78 - len) .. doc_key
+                    table.insert(lines, txt)
+                else
+                    table.insert(lines, string.format("%78s", doc_key))
+                    table.insert(lines, doc_title)
+                end
+
+                if link then
+                    table.insert(lines, string.format("    Default: links to |%s|", link))
+                    table.insert(lines, "")
+                elseif colors then
+                    table.insert(lines, string.format("    Default: `%s`", colors))
+                    table.insert(lines, "")
+                end
+            end
+        end
+    end
+    file:close()
+end
+
 local function join_path(path, component)
     local p = {}
     for i,c in ipairs(path) do
@@ -202,6 +235,8 @@ local function gen_vim_doc()
             gen_vimdoc_functions(lines)
         elseif l == "<CONFIGURATION>" then
             gen_vimdoc_config(lines, {}, config.schema)
+        elseif l == "<HIGHLIGHTS>" then
+            gen_vimdoc_highlights(lines)
         else
             table.insert(lines, l)
         end
