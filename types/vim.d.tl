@@ -830,5 +830,19 @@ global record vim
       nvim_win_set_width: function(integer--[[Window]], integer--[[Integer]])--[[void]]
    end
 
+
+   record json
+      record DecodeOpts
+         record Luanil
+            object: boolean
+            array: boolean
+         end
+
+         luanil: Luanil
+      end
+
+      encode: function(string)
+      decode: function(string, DecodeOpts)
+   end
 end
 
