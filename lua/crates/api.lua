@@ -54,6 +54,7 @@ local DateTime = require('crates.time').DateTime
 
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
+local json_decode_opts = { luanil = { object = true, array = true } }
 
 M.vers_jobs = {}
 M.deps_jobs = {}
@@ -91,7 +92,7 @@ local function parse_versions(json)
       return nil
    end
 
-   local success, data = pcall(vim.fn.json_decode, json)
+   local success, data = pcall(vim.json.decode, json, json_decode_opts)
    if not success then
       data = nil
    end
@@ -197,7 +198,7 @@ local function parse_deps(json)
       return nil
    end
 
-   local success, data = pcall(vim.fn.json_decode, json)
+   local success, data = pcall(vim.json.decode, json, json_decode_opts)
    if not success then
       data = nil
    end
