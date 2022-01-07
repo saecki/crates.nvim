@@ -159,14 +159,14 @@ function M.parse_section(text: string): Section
             invalid = false,
             kind = "default",
         }
-        
+
         local target = prefix
         local dev_target = prefix:match("^(.*)dev%-$")
         if dev_target then
             target = vim.trim(dev_target)
             section.kind = "dev"
         end
-        
+
         local build_target = prefix:match("^(.*)build%-$")
         if build_target then
             target = vim.trim(build_target)
@@ -340,7 +340,7 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                     table.insert(crates, Crate.new(dep_section_crate))
                 end
             end
-        
+
             local section = M.parse_section(section_text)
 
             if section then
