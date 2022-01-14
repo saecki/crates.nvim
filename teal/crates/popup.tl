@@ -50,15 +50,15 @@ local HistoryEntry = M.HistoryEntry
 local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 local LineCrateInfo = M.LineCrateInfo
-local core = require('crates.core')
-local api = require('crates.api')
+local core = require("crates.core")
+local api = require("crates.api")
 local Version = api.Version
 local Feature = api.Feature
-local toml = require('crates.toml')
+local toml = require("crates.toml")
 local Crate = toml.Crate
-local util = require('crates.util')
+local util = require("crates.util")
 local FeatureInfo = util.FeatureInfo
-local Range = require('crates.types').Range
+local Range = require("crates.types").Range
 
 local top_offset = 2
 

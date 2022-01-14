@@ -1,13 +1,13 @@
 local M = {}
 
-local cmp = require('cmp')
+local cmp = require("cmp")
 local lsp = cmp.lsp
-local core = require('crates.core')
-local util = require('crates.util')
-local api = require('crates.api')
-local Range = require('crates.types').Range
-local Version = require('crates.api').Version
-local toml = require('crates.toml')
+local core = require("crates.core")
+local util = require("crates.util")
+local api = require("crates.api")
+local Range = require("crates.types").Range
+local Version = require("crates.api").Version
+local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 
@@ -18,7 +18,7 @@ end
 
 
 function M.get_debug_name()
-   return 'crates'
+   return "crates"
 end
 
 

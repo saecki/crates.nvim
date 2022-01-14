@@ -29,7 +29,7 @@ local M = {SemVer = {}, Requirement = {}, }
 
 local SemVer = M.SemVer
 local Requirement = M.Requirement
-local Range = require('crates.types').Range
+local Range = require("crates.types").Range
 
 function SemVer.new(obj)
    return setmetatable(obj, { __index = SemVer })

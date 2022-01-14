@@ -47,10 +47,10 @@ local Version = M.Version
 local Features = M.Features
 local Feature = M.Feature
 local Dependency = M.Dependency
-local Job = require('plenary.job')
-local semver = require('crates.semver')
+local Job = require("plenary.job")
+local semver = require("crates.semver")
 local SemVer = semver.SemVer
-local DateTime = require('crates.time').DateTime
+local DateTime = require("crates.time").DateTime
 
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)") as string

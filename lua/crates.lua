@@ -48,19 +48,19 @@ local M = {}
 
 
 
-local api = require('crates.api')
+local api = require("crates.api")
 local Version = api.Version
 local Dependency = api.Dependency
-local config = require('crates.config')
+local config = require("crates.config")
 local Config = config.Config
-local core = require('crates.core')
-local popup = require('crates.popup')
-local toml = require('crates.toml')
+local core = require("crates.core")
+local popup = require("crates.popup")
+local toml = require("crates.toml")
 local Crate = toml.Crate
-local diagnostic = require('crates.diagnostic')
-local util = require('crates.util')
-local ui = require('crates.ui')
-local Range = require('crates.types').Range
+local diagnostic = require("crates.diagnostic")
+local util = require("crates.util")
+local ui = require("crates.ui")
+local Range = require("crates.types").Range
 
 local function reload_deps(crate, versions, version)
    local function on_fetched(deps, cancelled)
@@ -178,7 +178,7 @@ function M.setup(cfg)
    vim.cmd([[
         augroup CratesPopup
         autocmd!
-        autocmd CursorMoved,CursorMovedI Cargo.toml lua require('crates.popup').hide()
+        autocmd CursorMoved,CursorMovedI Cargo.toml lua require("crates.popup").hide()
         augroup END
     ]])
 end

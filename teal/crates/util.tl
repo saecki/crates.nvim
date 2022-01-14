@@ -12,18 +12,18 @@ end
 
 local CrateVersions = M.CrateVersions
 local FeatureInfo = M.FeatureInfo
-local core = require('crates.core')
-local semver = require('crates.semver')
+local core = require("crates.core")
+local semver = require("crates.semver")
 local SemVer = semver.SemVer
 local Requirement = semver.Requirement
-local api = require('crates.api')
+local api = require("crates.api")
 local Version = api.Version
 local Features = api.Features
 local Feature = api.Feature
-local toml = require('crates.toml')
+local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
-local Range = require('crates.types').Range
+local Range = require("crates.types").Range
 
 function M.current_buf(): integer
     return vim.api.nvim_get_current_buf() as integer
