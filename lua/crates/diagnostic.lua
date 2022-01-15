@@ -294,14 +294,16 @@ function M.process_crate_deps(crate, version, deps)
       end
    end
 
-   for _, f in ipairs(crate:feats()) do
-      if not vim.tbl_contains(valid_feats, f.name) then
-         table.insert(diagnostics, M.feat_diagnostic(
-         crate,
-         f,
-         core.cfg.diagnostic.feat_invalid,
-         vim.diagnostic.severity.ERROR))
+   if not core.cfg.disable_invalid_feature_diagnostic then
+      for _, f in ipairs(crate:feats()) do
+         if not vim.tbl_contains(valid_feats, f.name) then
+            table.insert(diagnostics, M.feat_diagnostic(
+            crate,
+            f,
+            core.cfg.diagnostic.feat_invalid,
+            vim.diagnostic.severity.ERROR))
 
+         end
       end
    end
 
