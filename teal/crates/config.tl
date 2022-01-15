@@ -9,6 +9,7 @@ local record M
         autoupdate: boolean
         loading_indicator: boolean
         date_format: string
+        disable_invalid_feature_diagnostic: boolean
         text: TextConfig
         highlight: HighlightConfig
         diagnostic: DiagnosticConfig
@@ -204,6 +205,15 @@ entry(M.schema, "date_format", {
     default = "%Y-%m-%d",
     description = [[
         The date format passed to `os.date`.
+    ]],
+})
+-- TODO: use cargo metadata to get feature renames
+entry(M.schema, "disable_invalid_feature_diagnostic", {
+    type = "boolean",
+    default = false,
+    description = [[
+        This is a temporary solution for:
+        https://github.com/Saecki/crates.nvim/issues/14
     ]],
 })
 

@@ -135,6 +135,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -204,6 +205,15 @@ entry(M.schema, "date_format", {
    default = "%Y-%m-%d",
    description = [[
         The date format passed to `os.date`.
+    ]],
+})
+
+entry(M.schema, "disable_invalid_feature_diagnostic", {
+   type = "boolean",
+   default = false,
+   description = [[
+        This is a temporary solution for:
+        https://github.com/Saecki/crates.nvim/issues/14
     ]],
 })
 
