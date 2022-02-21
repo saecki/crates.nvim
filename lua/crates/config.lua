@@ -142,6 +142,17 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 local Config = M.Config
 local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
@@ -281,6 +292,7 @@ entry(schema_text, "error", {
         Format string used when there was an error loading crate information.
     ]],
 })
+
 entry(schema_text, "update", {
    type = "string",
    deprecated = {
@@ -347,6 +359,7 @@ entry(schema_hi, "error", {
         Highlight group used when there was an error loading crate information.
     ]],
 })
+
 entry(schema_hi, "update", {
    type = "string",
    deprecated = {
@@ -513,6 +526,13 @@ entry(schema_popup_text, "title", {
         Format string used for the popup title.
     ]],
 })
+entry(schema_popup_text, "date", {
+   type = "string",
+   default = " %s ",
+   description = [[
+        Format string used for appending the version release date.
+    ]],
+})
 
 entry(schema_popup_text, "version", {
    type = "string",
@@ -535,13 +555,6 @@ entry(schema_popup_text, "yanked", {
         Format string used for yanked versions.
     ]],
 })
-entry(schema_popup_text, "date", {
-   type = "string",
-   default = " %s ",
-   description = [[
-        Format string used for appending the version release date.
-    ]],
-})
 
 entry(schema_popup_text, "feature", {
    type = "string",
@@ -562,6 +575,28 @@ entry(schema_popup_text, "transitive", {
    default = "  %s ",
    description = [[
         Format string used for transitively enabled features.
+    ]],
+})
+
+entry(schema_popup_text, "dependency", {
+   type = "string",
+   default = "   %s ",
+   description = [[
+        Format string used for dependencies and their version requirement.
+    ]],
+})
+entry(schema_popup_text, "optional", {
+   type = "string",
+   default = "  %s ",
+   description = [[
+        Format string used for optional dependencies and their version requirement.
+    ]],
+})
+entry(schema_popup_text, "req", {
+   type = "string",
+   default = " %s ",
+   description = [[
+        TODO
     ]],
 })
 
@@ -625,6 +660,20 @@ entry(schema_popup_hi, "transitive", {
         Highlight group used for transitively enabled features inside the popup.
     ]],
 })
+entry(schema_popup_hi, "dependency", {
+   type = "string",
+   default = "CratesNvimPopupDependency",
+   description = [[
+        Highlight group used for dependencies inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "optional", {
+   type = "string",
+   default = "CratesNvimPopupOptional",
+   description = [[
+        TODO
+    ]],
+})
 
 entry(schema_popup, "keys", {
    type = "section",
@@ -671,26 +720,46 @@ entry(schema_popup_keys, "toggle_feature", {
         Key mappings to enable or disable the feature on the currentline inside the popup.
     ]],
 })
-entry(schema_popup_keys, "goto_feature", {
+
+entry(schema_popup_keys, "goto_item", {
    type = "table",
    default = { "gd", "K" },
    description = [[
-        Key mappings to go to the feature on the currentline inside the popup.
+        Key mappings to go to the item on the current line inside the popup.
     ]],
 })
-entry(schema_popup_keys, "jump_forward_feature", {
+entry(schema_popup_keys, "jump_forward", {
    type = "table",
    default = { "<c-i>" },
    description = [[
-        Key mappings to jump forward in the features jump history.
+        Key mappings to jump forward in the popup jump history.
     ]],
 })
-entry(schema_popup_keys, "jump_back_feature", {
+entry(schema_popup_keys, "jump_back", {
    type = "table",
    default = { "<c-o>" },
    description = [[
-        Key mappings to jump back in the features jump history.
+        Key mappings to go back in the popup jump history.
     ]],
+})
+
+entry(schema_popup_keys, "goto_feature", {
+   type = "table",
+   deprecated = {
+      new_field = { "popup", "keys", "goto_item" },
+   },
+})
+entry(schema_popup_keys, "jump_forward_feature", {
+   type = "table",
+   deprecated = {
+      new_field = { "popup", "keys", "jump_forward" },
+   },
+})
+entry(schema_popup_keys, "jump_back_feature", {
+   type = "table",
+   deprecated = {
+      new_field = { "popup", "keys", "jump_back" },
+   },
 })
 
 

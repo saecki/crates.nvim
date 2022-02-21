@@ -34,11 +34,17 @@ local record M
         name: string
         opt: boolean
         kind: Kind
+        vers: Vers
 
         enum Kind
             "normal"
             "build"
             "dev"
+        end
+
+        record Vers
+            reqs: {Requirement}
+            text: string
         end
     end
 end
@@ -50,6 +56,7 @@ local Dependency = M.Dependency
 local Job = require("plenary.job")
 local semver = require("crates.semver")
 local SemVer = semver.SemVer
+local Requirement = semver.Requirement
 local DateTime = require("crates.time").DateTime
 
 local endpoint = "https://crates.io/api/v1"
@@ -211,6 +218,10 @@ local function parse_deps(json: string): {Dependency}
                     name = d.crate_id,
                     opt = d.optional or false,
                     kind = d.kind or "normal",
+                    vers = {
+                        text = d.req,
+                        reqs = semver.parse_requirements(d.req as string),
+                    },
                 })
             end
         end
