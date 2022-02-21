@@ -48,6 +48,8 @@ local M = {}
 
 
 
+
+
 local api = require("crates.api")
 local Version = api.Version
 local Dependency = api.Dependency
@@ -290,6 +292,7 @@ end
 M.show_popup = popup.show
 M.show_versions_popup = popup.show_versions
 M.show_features_popup = popup.show_features
+M.show_dependencies_popup = popup.show_dependencies
 M.focus_popup = popup.focus
 M.hide_popup = popup.hide
 

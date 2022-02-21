@@ -41,6 +41,8 @@ local record M
     show_versions_popup: function()
     -- Same as `f#crates.show_popup()` but always show features or features details.
     show_features_popup: function()
+    -- Same as `f#crates.show_popup()` but always show depedencies.
+    show_dependencies_popup: function()
     -- Focus the popup (jump into the floating window).
     -- Optionally specify the line to jump to, inside the popup.
     focus_popup: function(line: integer|nil)
@@ -290,6 +292,7 @@ end
 M.show_popup = popup.show
 M.show_versions_popup = popup.show_versions
 M.show_features_popup = popup.show_features
+M.show_dependencies_popup = popup.show_dependencies
 M.focus_popup = popup.focus
 M.hide_popup = popup.hide
 
