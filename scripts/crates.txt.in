@@ -16,12 +16,12 @@ upgrade, select, enable or disable them.
 ==============================================================================
 USAGE                                                           *crates-usage*
 
-Basic setup:
+Basic setup.
 >
     require('crates').setup()
 <
 
-Setup for plain text (without patched font):
+Setup for plain text (without patched font).
 >
     require('crates').setup {
         text = {
@@ -54,7 +54,8 @@ Setup for plain text (without patched font):
 <
 
 Setup with default options.
-Note the icons in the default config require a patched font, use the plain text config.
+Note the icons in the default config require a patched font, if you don't have
+one use the plain text config.
 For more information about individual config options see |crates-config|.
 >
     require('crates').setup {
@@ -87,7 +88,7 @@ For more information about the lua function see |crates-functions|.
 To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
-How you might integrate `show_popup` into your `init.vim`:
+How you might integrate `show_popup` into your `init.vim`.
 >
     nnoremap <silent> K :call <SID>show_documentation()<cr>
     function! s:show_documentation()
@@ -124,7 +125,7 @@ How you might integrate `show_popup` into your `init.lua`.
 FUNCTIONS                                                   *crates-functions*
 
 All of these functions are members of the `crates` root module.
-They can be accessed like this:
+They can be accessed like this.
 >
     require('crates').function_name()
 <

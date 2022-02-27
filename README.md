@@ -36,7 +36,7 @@ Feel free to open issues.
 ## Setup
 
 ### Installation
-To use with neovim 0.5 or to stay on a stable release use:
+To use with neovim 0.5 or to stay on a stable release.
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
@@ -58,7 +58,7 @@ use {
 }
 ```
 
-If you're feeling adventurous and want to use the newest features use:
+If you're feeling adventurous and want to use the newest features.
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
@@ -79,7 +79,7 @@ use {
 }
 ```
 
-For lazy loading:
+For lazy loading.
 ```lua
 use {
     'saecki/crates.nvim',
@@ -92,7 +92,7 @@ use {
 ```
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
-Just add it to your list of sources:
+Just add it to your list of sources.
 ```lua
 require('cmp').setup {
     ...
@@ -106,7 +106,7 @@ require('cmp').setup {
 }
 ```
 
-Or add it lazily:
+Or add it lazily.
 ```viml
 autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
 ```
@@ -117,7 +117,8 @@ For more information about the type of some fields see [`teal/crates/config.tl`]
 
 __Default__
 
-The icons in the default configuration require a patched font:
+The icons in the default configuration require a patched font.  
+Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 ```lua
 require('crates').setup {
     smart_insert = true,
@@ -127,6 +128,7 @@ require('crates').setup {
     autoupdate = true,
     loading_indicator = true,
     date_format = "%Y-%m-%d",
+    disable_invalid_feature_diagnostic = false,
     text = {
         loading = "   Loading",
         version = "   %s",
@@ -195,7 +197,7 @@ require('crates').setup {
 
 __Plain text__
 
-Replace these fields if you don't have a patched font:
+Replace these fields if you don't have a patched font.
 ```lua
 require('crates').setup {
     text = {
@@ -277,10 +279,10 @@ require('crates').focus_popup(line: integer|nil)
 -- Hide the popup.
 require('crates').hide_popup()
 ```
-### Key mappings
 
-Some examples of key mappings:
-```viml
+### Key mappings
+Some examples of key mappings.
+```vim
 nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
 nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
 
@@ -296,8 +298,8 @@ nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
 ```
 
 ### Show appropriate documentation in `Cargo.toml`
-How you might integrate `show_popup` into your `init.vim`:
-```viml
+How you might integrate `show_popup` into your `init.vim`.
+```vim
 nnoremap <silent> K :call <SID>show_documentation()<cr>
 function! s:show_documentation()
     if (index(['vim','help'], &filetype) >= 0)
@@ -312,7 +314,7 @@ function! s:show_documentation()
 endfunction
 ```
 
-How you might integrate `show_popup` into your `init.lua`:
+How you might integrate `show_popup` into your `init.lua`.
 ```lua
 vim.api.nvim_set_keymap('n', 'K', ':lua show_documentation()', { noremap = true, silent = true })
 function show_documentation()
@@ -332,7 +334,8 @@ end
 ## TODO
 - Use null-ls for code actions
 
-## Similar projects
+## Related projects
+- [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
 - [shift-d/crates.nvim](https://github.com/shift-d/crates.nvim)
 - [kahgeh/ls-crates.nvim](https://github.com/kahgeh/ls-crates.nvim)
