@@ -1,4 +1,10 @@
-local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, CmpConfig = {}, CmpTextConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, SrcConfig = {}, SrcTextConfig = {}, CoqConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+
+
+
+
+
+
 
 
 
@@ -688,41 +694,64 @@ entry(schema_popup_keys, "jump_back_feature", {
 })
 
 
-entry(M.schema, "cmp", {
+entry(M.schema, "src", {
    type = "section",
    description = [[
-        Configuration options for the |nvim-cmp| source.
+        Configuration options for completion sources.
     ]],
    fields = {},
 })
-local schema_cmp = M.schema.cmp.fields
-entry(schema_cmp, "insert_closing_quote", {
+local schema_src = M.schema.src.fields
+entry(schema_src, "insert_closing_quote", {
    type = "boolean",
    default = true,
    description = [[
         Insert a closing quote on completion if there is none.
     ]],
 })
-entry(schema_cmp, "text", {
+entry(schema_src, "text", {
    type = "section",
    description = [[
-        Text shown in the |nvim-cmp| documentation preview.
+        Text shown in the completion source documentation preview.
     ]],
    fields = {},
 })
-local schema_cmp_text = schema_cmp.text.fields
-entry(schema_cmp_text, "prerelease", {
+local schema_src_text = schema_src.text.fields
+entry(schema_src_text, "prerelease", {
    type = "string",
    default = "  pre-release ",
    description = [[
-        Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+        Text shown in the completion source documentation preview for pre-release versions.
     ]],
 })
-entry(schema_cmp_text, "yanked", {
+entry(schema_src_text, "yanked", {
    type = "string",
    default = "  yanked ",
    description = [[
-        Text shown in the |nvim-cmp| documentation preview for yanked versions.
+        Text shown in the completion source documentation preview for yanked versions.
+    ]],
+})
+
+entry(schema_src, "coq", {
+   type = "section",
+   description = [[
+        Configuration options for the |coq_nvim| completion source.
+    ]],
+   fields = {},
+})
+local schema_src_coq = schema_src.coq.fields
+entry(schema_src_coq, "enabled", {
+   type = "boolean",
+   default = false,
+   description = [[
+        Whether to load and register the |coq_nvim| source.
+    ]],
+})
+entry(schema_src_coq, "name", {
+   type = "string",
+   default = "Crates",
+   description = [[
+        The source name displayed by |coq_nvim|.
     ]],
 })
 

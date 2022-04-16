@@ -14,9 +14,7 @@ local function new_uid(map)
    return key
 end
 
-M.name = "crates"
-
-function M.fn(_, callback)
+function M.complete(_, callback)
    if vim.fn.expand("%:t") ~= "Cargo.toml" then
       callback(nil)
       return
@@ -25,9 +23,12 @@ function M.fn(_, callback)
    src.complete(callback)
 end
 
-function M.setup()
+function M.setup(name)
    COQsources = COQsources or {}
-   COQsources[new_uid(COQsources)] = M
+   COQsources[new_uid(COQsources)] = {
+      name = name,
+      fn = M.complete,
+   }
 end
 
 return M

@@ -38,16 +38,16 @@ local function complete_versions(crate, versions)
          kind = VALUE_KIND,
          sortText = string.format("%04d", i),
       }
-      if core.cfg.cmp.insert_closing_quote then
+      if core.cfg.src.insert_closing_quote then
          if crate.vers and not crate.vers.quote.e then
             r.insertText = v.num .. crate.vers.quote.s
          end
       end
       if v.yanked then
          r.deprecated = true
-         r.documentation = core.cfg.cmp.text.yanked
+         r.documentation = core.cfg.src.text.yanked
       elseif v.parsed.pre then
-         r.documentation = core.cfg.cmp.text.prerelease
+         r.documentation = core.cfg.src.text.prerelease
       end
 
       table.insert(items, r)
@@ -80,7 +80,7 @@ local function complete_features(crate, cf, versions)
             sortText = f.name,
             documentation = table.concat(f.members, "\n"),
          }
-         if core.cfg.cmp.insert_closing_quote then
+         if core.cfg.src.insert_closing_quote then
             if not cf.quote.e then
                r.insertText = f.name .. cf.quote.s
             end
