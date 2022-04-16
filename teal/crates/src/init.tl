@@ -1,51 +1,41 @@
-local record M end
+local record M
+    record CompletionList
+        isIncomplete: boolean
+        items: {CompletionItem}
+    end
 
-local cmp = require("cmp")
-local lsp = cmp.lsp
+    record CompletionItem
+        label: string
+        kind: integer|nil -- CompletionItemKind|nil
+        detail: string|nil
+        documentation: string|nil
+        deprecated: boolean|nil
+        sortText: string|nil
+        insertText: string|nil
+    end
+end
+
+local CompletionItem = M.CompletionItem
+local CompletionList = M.CompletionList
+
 local core = require("crates.core")
 local util = require("crates.util")
 local api = require("crates.api")
+local Version = api.Version
 local Range = require("crates.types").Range
-local Version = require("crates.api").Version
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 
----Source constructor.
-function M.new(): M
-    return setmetatable({}, { __index = M })
-end
+local VALUE_KIND = 12
 
----Return the source name for some information.
-function M.get_debug_name(): string
-    return "crates"
-end
-
----Return the source is available or not.
-function M:is_available(): boolean
-    return vim.fn.expand("%:t") == "Cargo.toml"
-end
-
----Return keyword pattern which will be used...
----  1. Trigger keyword completion
----  2. Detect menu start offset
----  3. Reset completion state
-function M:get_keyword_pattern(_: cmp.SourceBaseApiParams): string
-    return [[\([^"'\%^<>=~,\s]\)*]]
-end
-
----Return trigger characters.
-function M:get_trigger_characters(_: cmp.SourceBaseApiParams): {string}
-    return { '"', "'", ".", "<", ">", "=", "^", "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
-end
-
-local function complete_versions(crate: Crate, versions: {Version}): lsp.CompletionList
+local function complete_versions(crate: Crate, versions: {Version}): CompletionList
     local items = {}
 
     for i,v in ipairs(versions) do
-        local r: lsp.CompletionItem = {
+        local r: CompletionItem = {
             label = v.num,
-            kind = cmp.lsp.CompletionItemKind.Value,
+            kind = VALUE_KIND,
             sortText = string.format("%04d", i),
         }
         if core.cfg.cmp.insert_closing_quote then
@@ -69,7 +59,7 @@ local function complete_versions(crate: Crate, versions: {Version}): lsp.Complet
     }
 end
 
-local function complete_features(crate: Crate, cf: CrateFeature, versions: {Version}): lsp.CompletionList
+local function complete_features(crate: Crate, cf: CrateFeature, versions: {Version}): CompletionList
     local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
@@ -84,9 +74,9 @@ local function complete_features(crate: Crate, cf: CrateFeature, versions: {Vers
     for _,f in ipairs(newest.features) do
         local crate_feat = crate:get_feat(f.name)
         if not crate_feat then
-            local r: lsp.CompletionItem = {
+            local r: CompletionItem = {
                 label = f.name,
-                kind = cmp.lsp.CompletionItemKind.Value,
+                kind = VALUE_KIND,
                 sortText = f.name,
                 documentation = table.concat(f.members, "\n"),
             }
@@ -106,7 +96,7 @@ local function complete_features(crate: Crate, cf: CrateFeature, versions: {Vers
     }
 end
 
-local function complete(callback: function(lsp.CompletionList|nil), crate: Crate, versions: {Version}, line: integer, col: integer)
+local function complete(callback: function(CompletionList|nil), crate: Crate, versions: {Version}, line: integer, col: integer)
     if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
         callback(complete_versions(crate, versions))
     elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
@@ -123,9 +113,7 @@ local function complete(callback: function(lsp.CompletionList|nil), crate: Crate
     end
 end
 
----Invoke completion (required).
----  If you want to abort completion, just call the callback without arguments.
-function M:complete(_: cmp.SourceCompletionApiParams, callback: function(lsp.CompletionList|nil))
+function M.complete(callback: function(CompletionList|nil))
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
     local col = pos[2] as integer
