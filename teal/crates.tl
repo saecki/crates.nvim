@@ -181,6 +181,10 @@ function M.setup(cfg: Config)
         autocmd CursorMoved,CursorMovedI Cargo.toml lua require("crates.popup").hide()
         augroup END
     ]])
+
+    if core.cfg.src.coq.enabled then
+        require("crates.src.coq").setup(core.cfg.src.coq.name)
+    end
 end
 
 function M.hide()
