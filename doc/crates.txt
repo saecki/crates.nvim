@@ -123,11 +123,15 @@ For more information about individual config options see |crates-config|.
                 jump_back_feature = { "<c-o>" },
             },
         },
-        cmp = {
+        src = {
             insert_closing_quote = true,
             text = {
                 prerelease = "  pre-release ",
                 yanked = "  yanked ",
+            },
+            coq = {
+                enabled = false,
+                name = "Crates",
             },
         },
     }
@@ -657,34 +661,52 @@ popup.keys.jump_back_feature      *crates-config-popup-keys-jump_back_feature*
     Key mappings to jump back in the features jump history.
 
 
-cmp                                                        *crates-config-cmp*
+src                                                        *crates-config-src*
     Type: `section`
 
-    Configuration options for the |nvim-cmp| source.
+    Configuration options for completion sources.
 
 
-cmp.insert_closing_quote              *crates-config-cmp-insert_closing_quote*
+src.insert_closing_quote              *crates-config-src-insert_closing_quote*
     Type: `boolean`, Default: `true`
 
     Insert a closing quote on completion if there is none.
 
 
-cmp.text                                              *crates-config-cmp-text*
+src.text                                              *crates-config-src-text*
     Type: `section`
 
-    Text shown in the |nvim-cmp| documentation preview.
+    Text shown in the completion source documentation preview.
 
 
-cmp.text.prerelease                        *crates-config-cmp-text-prerelease*
+src.text.prerelease                        *crates-config-src-text-prerelease*
     Type: `string`, Default: `"  pre-release "`
 
-    Text shown in the |nvim-cmp| documentation preview for pre-release versions.
+    Text shown in the completion source documentation preview for pre-release versions.
 
 
-cmp.text.yanked                                *crates-config-cmp-text-yanked*
+src.text.yanked                                *crates-config-src-text-yanked*
     Type: `string`, Default: `"  yanked "`
 
-    Text shown in the |nvim-cmp| documentation preview for yanked versions.
+    Text shown in the completion source documentation preview for yanked versions.
+
+
+src.coq                                                *crates-config-src-coq*
+    Type: `section`
+
+    Configuration options for the |coq_nvim| completion source.
+
+
+src.coq.enabled                                *crates-config-src-coq-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to load and register the |coq_nvim| source.
+
+
+src.coq.name                                      *crates-config-src-coq-name*
+    Type: `string`, Default: `"Crates"`
+
+    The source name displayed by |coq_nvim|.
 
 
 
