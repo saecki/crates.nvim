@@ -8,8 +8,10 @@ This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features
-- Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
-    - Complete crate versions and features
+- Complete crate versions and features
+- Completion sources for:
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
@@ -109,6 +111,21 @@ require('cmp').setup {
 Or add it lazily.
 ```viml
 autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
+```
+
+### [coq.nvim](https://github.com/ms-jpq/coq_nvim)
+Enable it in the setup, and optionally change the display name:
+```lua
+require('crates').setup {
+    ...
+    src = {
+        ...
+        coq = {
+            enabled = true,
+            name = "crates.nvim",
+        },
+    },
+}
 ```
 
 ## Config

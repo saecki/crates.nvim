@@ -8,8 +8,10 @@ This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features
-- Completion source for [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
-    - Complete crate versions and features
+- Complete crate versions and features
+- Completion sources for:
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
@@ -111,6 +113,21 @@ Or add it lazily.
 autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
 ```
 
+### [coq.nvim](https://github.com/ms-jpq/coq_nvim)
+Enable it in the setup, and optionally change the display name:
+```lua
+require('crates').setup {
+    ...
+    src = {
+        ...
+        coq = {
+            enabled = true,
+            name = "crates.nvim",
+        },
+    },
+}
+```
+
 ## Config
 
 For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
@@ -185,11 +202,15 @@ require('crates').setup {
             jump_back_feature = { "<c-o>" },
         },
     },
-    cmp = {
+    src = {
         insert_closing_quote = true,
         text = {
             prerelease = "  pre-release ",
             yanked = "  yanked ",
+        },
+        coq = {
+            enabled = false,
+            name = "Crates",
         },
     },
 }
