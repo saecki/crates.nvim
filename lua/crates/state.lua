@@ -11,7 +11,7 @@ local ui = require("crates.ui")
 local diagnostic = require("crates.diagnostic")
 
 function M.reload_deps(crate_name, versions, version)
-   local function on_fetched(deps, cancelled)
+   api.fetch_crate_deps(crate_name, version.num, function(deps, cancelled)
       if cancelled then return end
 
       if deps then
@@ -28,26 +28,26 @@ function M.reload_deps(crate_name, versions, version)
          version.features:sort()
 
          for b, crates in pairs(core.crate_cache) do
-            local c = crates[crate_name]
-            if c then
-               local avoid_pre = core.cfg.avoid_prerelease and not c:vers_is_pre()
-               local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
-               local match = m or p or y
 
-               if c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
-                  local diagnostics = diagnostic.process_crate_deps(c, version, deps)
-                  ui.display_diagnostics(b, diagnostics)
+            for _, c in pairs(crates) do
+               if c.name == crate_name then
+                  local avoid_pre = core.cfg.avoid_prerelease and not c:vers_is_pre()
+                  local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
+                  local match = m or p or y
+
+                  if c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
+                     local diagnostics = diagnostic.process_crate_deps(c, version, deps)
+                     ui.display_diagnostics(b, diagnostics)
+                  end
                end
             end
          end
       end
-   end
-
-   api.fetch_crate_deps(crate_name, version.num, on_fetched)
+   end)
 end
 
 function M.reload_crate(crate_name)
-   local function on_fetched(versions, cancelled)
+   api.fetch_crate_versions(crate_name, function(versions, cancelled)
       if cancelled then return end
 
       if versions and versions[1] then
@@ -55,8 +55,8 @@ function M.reload_crate(crate_name)
       end
 
       for b, crates in pairs(core.crate_cache) do
-         for _, c in pairs(crates) do
 
+         for _, c in pairs(crates) do
             if c.name == crate_name and vim.api.nvim_buf_is_loaded(b) then
                local info = diagnostic.process_crate_versions(c, versions)
                ui.display_crate_info(b, info)
@@ -67,9 +67,7 @@ function M.reload_crate(crate_name)
             end
          end
       end
-   end
-
-   api.fetch_crate_versions(crate_name, on_fetched)
+   end)
 end
 
 local function reload_crate(buf, crate)
