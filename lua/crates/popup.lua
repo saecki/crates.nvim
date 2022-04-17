@@ -894,14 +894,57 @@ function M.goto_dep(index)
    end
 end
 
-function M.jump_back_dep(_line)
+function M.jump_back_dep(line)
+   if not M.deps_ctx then return end
 
-   vim.notify("Not yet implemented", vim.log.levels.INFO, { title = "crates.nvim" })
+   local hist_index = M.deps_ctx.history_index
+
+   if hist_index == 1 then
+      M.hide()
+      return
+   end
+
+
+   local current = M.deps_ctx.history[hist_index]
+   current.line = line
+
+   M.deps_ctx.history_index = hist_index - 1
+   hist_index = M.deps_ctx.history_index
+
+   local entry = M.deps_ctx.history[hist_index]
+   if not entry then return end
+
+   M.hide()
+   M._open_deps(entry.crate_name, entry.version, {
+      focus = true,
+      line = entry.line,
+   })
 end
 
-function M.jump_forward_dep(_line)
+function M.jump_forward_dep(line)
+   if not M.deps_ctx then return end
 
-   vim.notify("Not yet implemented", vim.log.levels.INFO, { title = "crates.nvim" })
+   local hist_index = M.deps_ctx.history_index
+
+   if hist_index == #M.deps_ctx.history then
+      return
+   end
+
+
+   local current = M.deps_ctx.history[hist_index]
+   current.line = line
+
+   M.deps_ctx.history_index = hist_index + 1
+   hist_index = M.deps_ctx.history_index
+
+   local entry = M.deps_ctx.history[hist_index]
+   if not entry then return end
+
+   M.hide()
+   M._open_deps(entry.crate_name, entry.version, {
+      focus = true,
+      line = entry.line,
+   })
 end
 
 return M
