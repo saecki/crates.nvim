@@ -39,9 +39,14 @@ Setup for plain text (without patched font).
                 version = " %s ",
                 prerelease = " %s ",
                 yanked = " %s yanked ",
+                version_date = " %s ",
                 feature = "   %s ",
                 enabled = " * %s ",
                 transitive = " ~ %s ",
+                dependency = "   %s ",
+                optional = " ? %s ",
+                dependency_version = " %s ",
+                loading = "...",
             },
         },
         cmp = {
@@ -150,3 +155,4 @@ them, you can either overwrite them or use different ones in
 
 <HIGHLIGHTS>
 
+vim:tw=78:ts=8:ft=help:norl:
