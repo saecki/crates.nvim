@@ -82,7 +82,7 @@ local record M
 
             dependency: string
             optional: string
-            dep: string
+            loading: string
         end
 
         record PopupHighlightConfig
@@ -98,6 +98,7 @@ local record M
 
             dependency: string
             optional: string
+            loading: string
         end
 
         record PopupKeyConfig
@@ -592,11 +593,11 @@ entry(schema_popup_text, "optional", {
         Format string used for optional dependencies and their version requirement.
     ]],
 })
-entry(schema_popup_text, "req", {
+entry(schema_popup_text, "loading", {
     type = "string",
-    default = " %s ",
+    default = " ",
     description = [[
-        TODO
+        Format string used as a loading indicator when fetching dependencies.
     ]],
 })
 
@@ -671,9 +672,17 @@ entry(schema_popup_hi, "optional", {
     type = "string",
     default = "CratesNvimPopupOptional",
     description = [[
-        TODO
+        Highlight group used for optional dependencies inside the popup.
     ]],
 })
+entry(schema_popup_hi, "loading", {
+    type = "string",
+    default = "CratesNvimPopupLoading",
+    description = [[
+        Highlight group for the loading indicator inside the popup.
+    ]],
+})
+
 
 entry(schema_popup, "keys", {
     type = "section",
@@ -800,6 +809,7 @@ entry(schema_src_text, "yanked", {
         Text shown in the completion source documentation preview for yanked versions.
     ]],
 })
+
 
 entry(schema_src, "coq", {
     type = "section",

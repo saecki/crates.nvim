@@ -239,7 +239,6 @@ function M.focus(line)
    end
 end
 
-
 function M.hide()
    if M.win and vim.api.nvim_win_is_valid(M.win) then
       vim.api.nvim_win_close(M.win, false)
@@ -876,18 +875,35 @@ function M.goto_dep(index)
       local crate_name = selected_dependency.name
 
 
+      local line = index + top_offset - 1
+      vim.api.nvim_buf_set_extmark(M.buf, M.namespace, line, -1, {
+         virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
+         virt_text_pos = "eol",
+         hl_mode = "combine",
+      })
+
       if not api.is_fetching_vers(crate_name) then
          state.reload_crate(crate_name)
       end
 
-      api.add_vers_callback(crate_name, function(fetched_versions, _cancelled)
-         local m, p, y = util.get_newest(fetched_versions, false, selected_dependency.vers.reqs)
+      api.add_vers_callback(crate_name, function(versions, cancelled)
+         if cancelled then
+            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, line, line + 1)
+            return
+         end
+
+         local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
          local match = m or p or y
 
          if not api.is_fetching_deps(crate_name, match.num) then
-            state.reload_deps(crate_name, fetched_versions, match)
+            state.reload_deps(crate_name, versions, match)
          end
-         api.add_deps_callback(crate_name, match.num, function(_deps, _cancelled)
+         api.add_deps_callback(crate_name, match.num, function(_deps, cancelled)
+            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, line, line + 1)
+            if cancelled then return end
+
+
+
             goto_dep(selected_dependency.name, match)
          end)
       end)
