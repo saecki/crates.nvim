@@ -276,20 +276,20 @@ function M.is_fetching_vers(name: string): boolean
     return M.vers_jobs[name] ~= nil
 end
 
-function M.is_fetching_deps(name: string): boolean
-    return M.vers_jobs[name] ~= nil
+function M.is_fetching_deps(name: string, version: string): boolean
+    return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
-function M.add_vers_callback(job_name: string, callback: function({Version}, boolean))
+function M.add_vers_callback(name: string, callback: function({Version}, boolean))
     table.insert(
-        M.vers_jobs[job_name].callbacks,
+        M.vers_jobs[name].callbacks,
         callback
     )
 end
 
-function M.add_deps_callback(job_name: string, callback: function({Dependency}, boolean))
+function M.add_deps_callback(name: string, version: string, callback: function({Dependency}, boolean))
     table.insert(
-        M.deps_jobs[job_name].callbacks,
+        M.deps_jobs[name .. ":" .. version].callbacks,
         callback
     )
 end
