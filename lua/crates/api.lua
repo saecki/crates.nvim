@@ -276,20 +276,20 @@ function M.is_fetching_vers(name)
    return M.vers_jobs[name] ~= nil
 end
 
-function M.is_fetching_deps(name)
-   return M.vers_jobs[name] ~= nil
+function M.is_fetching_deps(name, version)
+   return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
-function M.add_vers_callback(job_name, callback)
+function M.add_vers_callback(name, callback)
    table.insert(
-   M.vers_jobs[job_name].callbacks,
+   M.vers_jobs[name].callbacks,
    callback)
 
 end
 
-function M.add_deps_callback(job_name, callback)
+function M.add_deps_callback(name, version, callback)
    table.insert(
-   M.deps_jobs[job_name].callbacks,
+   M.deps_jobs[name .. ":" .. version].callbacks,
    callback)
 
 end
