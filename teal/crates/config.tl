@@ -59,22 +59,22 @@ local record M
             copy_register: string
             style: string
             border: string|{string}
-            version_date: boolean
+            show_version_date: boolean
+            show_dependency_version: boolean
             max_height: integer
             min_width: integer
             text: PopupTextConfig
             highlight: PopupHighlightConfig
             keys: PopupKeyConfig
-
         end
 
         record PopupTextConfig
             title: string
-            date: string
 
             version: string
             prerelease: string
             yanked: string
+            version_date: string
 
             feature: string
             enabled: string
@@ -82,6 +82,7 @@ local record M
 
             dependency: string
             optional: string
+            dependency_version: string
             loading: string
         end
 
@@ -91,6 +92,7 @@ local record M
             version: string
             prerelease: string
             yanked: string
+            version_date: string
 
             feature: string
             enabled: string
@@ -98,6 +100,7 @@ local record M
 
             dependency: string
             optional: string
+            dependency_version: string
             loading: string
         end
 
@@ -489,9 +492,16 @@ entry(schema_popup, "border", {
         Same as nvim_open_win config.border.
     ]],
 })
-entry(schema_popup, "version_date", {
+entry(schema_popup, "show_version_date", {
     type = "boolean",
     default = false,
+    description = [[
+        Display when a version was released.
+    ]],
+})
+entry(schema_popup, "show_dependency_version", {
+    type = "boolean",
+    default = true,
     description = [[
         Display when a version was released.
     ]],
@@ -510,6 +520,13 @@ entry(schema_popup, "min_width", {
         The minimum width of the popup.
     ]],
 })
+-- deprecated
+entry(schema_popup, "version_date", {
+    type = "boolean",
+    deprecated = {
+        new_field = { "popup", "show_version_date" },
+    }
+})
 
 
 entry(schema_popup, "text", {
@@ -525,13 +542,6 @@ entry(schema_popup_text, "title", {
     default = "  %s ",
     description = [[
         Format string used for the popup title.
-    ]],
-})
-entry(schema_popup_text, "date", {
-    type = "string",
-    default = " %s ",
-    description = [[
-        Format string used for appending the version release date.
     ]],
 })
 -- versions
@@ -554,6 +564,13 @@ entry(schema_popup_text, "yanked", {
     default = "  %s ",
     description = [[
         Format string used for yanked versions.
+    ]],
+})
+entry(schema_popup_text, "version_date", {
+    type = "string",
+    default = " %s ",
+    description = [[
+        Format string used for appending the version release date.
     ]],
 })
 -- features
@@ -593,12 +610,26 @@ entry(schema_popup_text, "optional", {
         Format string used for optional dependencies and their version requirement.
     ]],
 })
+entry(schema_popup_text, "dependency_version", {
+    type = "string",
+    default = " %s ",
+    description = [[
+        Format string used for appending the dependency version.
+    ]],
+})
 entry(schema_popup_text, "loading", {
     type = "string",
     default = " ",
     description = [[
         Format string used as a loading indicator when fetching dependencies.
     ]],
+})
+-- deprecated
+entry(schema_popup_text, "date", {
+    type = "string",
+    deprecated = {
+        new_field = { "popup", "text", "version_date" }
+    }
 })
 
 
@@ -639,6 +670,13 @@ entry(schema_popup_hi, "yanked", {
         Highlight group used for yanked versions inside the popup.
     ]],
 })
+entry(schema_popup_hi, "version_date", {
+    type = "string",
+    default = "CratesNvimPopupVersionDate",
+    description = [[
+        Highlight group used for the version date inside the popup.
+    ]],
+})
 -- features
 entry(schema_popup_hi, "feature", {
     type = "string",
@@ -661,6 +699,7 @@ entry(schema_popup_hi, "transitive", {
         Highlight group used for transitively enabled features inside the popup.
     ]],
 })
+-- dependencies
 entry(schema_popup_hi, "dependency", {
     type = "string",
     default = "CratesNvimPopupDependency",
@@ -673,6 +712,13 @@ entry(schema_popup_hi, "optional", {
     default = "CratesNvimPopupOptional",
     description = [[
         Highlight group used for optional dependencies inside the popup.
+    ]],
+})
+entry(schema_popup_hi, "dependency_version", {
+    type = "string",
+    default = "CratesNvimPopupDependencyVersion",
+    description = [[
+        Highlight group used for the dependency version inside the popup.
     ]],
 })
 entry(schema_popup_hi, "loading", {

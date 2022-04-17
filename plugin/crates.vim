@@ -6,14 +6,15 @@ highlight default link CratesNvimNoMatch     DiagnosticVirtualTextError
 highlight default link CratesNvimUpgrade     DiagnosticVirtualTextWarn
 highlight default link CratesNvimError       DiagnosticVirtualTextError
 
-highlight default link CratesNvimPopupTitle       Title
-highlight default link CratesNvimPopupVersion     None
-highlight default link CratesNvimPopupPreRelease  DiagnosticVirtualTextWarn
-highlight default link CratesNvimPopupYanked      DiagnosticVirtualTextError
-highlight default link CratesNvimPopupFeature     None
-highlight default CratesNvimPopupEnabled          ctermfg=2 guifg=#23ab49
-highlight default CratesNvimPopupTransitive       ctermfg=4 guifg=#238bb9
-highlight default link CratesNvimPopupDependency  None
-highlight default link CratesNvimPopupOptional    Comment
-highlight default link CratesNvimPopupLoading     None
-
+highlight default link CratesNvimPopupTitle              Title
+highlight default link CratesNvimPopupVersion            None
+highlight default link CratesNvimPopupPreRelease         DiagnosticVirtualTextWarn
+highlight default link CratesNvimPopupYanked             DiagnosticVirtualTextError
+highlight default link CratesNvimPopupVersionDate        Comment
+highlight default link CratesNvimPopupFeature            None
+highlight default CratesNvimPopupEnabled                 ctermfg=2 guifg=#23ab49
+highlight default CratesNvimPopupTransitive              ctermfg=4 guifg=#238bb9
+highlight default link CratesNvimPopupDependency         None
+highlight default link CratesNvimPopupOptional           Comment
+highlight default link CratesNvimPopupDependencyVersion  String
+highlight default link CratesNvimPopupLoading            Special
