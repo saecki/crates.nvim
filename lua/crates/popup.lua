@@ -69,11 +69,11 @@ local M = {FeatureContext = {}, FeatHistoryEntry = {}, DepsContext = {}, DepsHis
 
 
 local FeatHistoryEntry = M.FeatHistoryEntry
-local DepsHistoryEntry = M.DepsHistoryEntry
 local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 local LineCrateInfo = M.LineCrateInfo
 local core = require("crates.core")
+local state = require("crates.state")
 local api = require("crates.api")
 local Version = api.Version
 local Feature = api.Feature
@@ -873,7 +873,24 @@ function M.goto_dep(index)
 
       goto_dep(selected_dependency.name, match)
    else
+      local crate_name = selected_dependency.name
 
+
+      if not api.is_fetching_vers(crate_name) then
+         state.reload_crate(crate_name)
+      end
+
+      api.add_vers_callback(crate_name, function(fetched_versions, _cancelled)
+         local m, p, y = util.get_newest(fetched_versions, false, selected_dependency.vers.reqs)
+         local match = m or p or y
+
+         if not api.is_fetching_deps(crate_name, match.num) then
+            state.reload_deps(crate_name, fetched_versions, match)
+         end
+         api.add_deps_callback(crate_name, match.num, function(_deps, _cancelled)
+            goto_dep(selected_dependency.name, match)
+         end)
+      end)
    end
 end
 
