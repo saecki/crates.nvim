@@ -40,7 +40,7 @@ local record M
             decl_col: Range
             quote: Quotes
         end
-        
+
         record Pkg
             text: string
             line: integer -- 0-indexed
@@ -330,7 +330,7 @@ function M.parse_crate(line: string): Crate
             decl_col = Range.new(dds as integer - 1, dde as integer - 1),
         }
     end
-    
+
     local pkg_pat = [[^%s*([^%s]+)%s*=%s*{.-[,]?()%s*package%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
     name, pds, qs, ps, pkg_text, pe, qe, pde = line:match(pkg_pat)
     if name and pds and qs and ps and pkg_text and pe and qe and pde then
@@ -418,7 +418,7 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 crate_def.section = dep_section
                 dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_def) as Crate
             end
-            
+
             local crate_pkg = M.parse_crate_table_pkg(l)
             if crate_pkg then
                 local crate = dep_section_crate or {}
