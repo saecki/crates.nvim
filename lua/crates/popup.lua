@@ -68,6 +68,8 @@ local M = {FeatureContext = {}, FeatHistoryEntry = {}, DepsContext = {}, DepsHis
 
 
 
+
+
 local FeatHistoryEntry = M.FeatHistoryEntry
 local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
@@ -252,17 +254,12 @@ function M.hide()
    M.type = nil
 end
 
-local function create_win(width, height)
-   local opts = {
-      relative = "cursor",
-      col = 0,
-      row = 1,
-      width = width,
-      height = height,
-      style = core.cfg.popup.style,
-      border = core.cfg.popup.border,
-   }
-   M.win = vim.api.nvim_open_win(M.buf, false, opts)
+local function win_width(title, content_width)
+   return math.max(
+   vim.fn.strdisplaywidth(title) + vim.fn.strdisplaywidth(core.cfg.popup.text.loading),
+   content_width,
+   core.cfg.popup.min_width)
+
 end
 
 local function open_win(width, height, title, text, opts, configure)
@@ -273,15 +270,26 @@ local function open_win(width, height, title, text, opts, configure)
    vim.api.nvim_buf_add_highlight(M.buf, M.namespace, core.cfg.popup.highlight.title, 0, 0, -1)
 
    for i, v in ipairs(text) do
-      vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-      vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hi, top_offset + i - 1, 0, -1)
+      vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text .. v.suffix or "" })
+      vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hl, top_offset + i - 1, 0, v.text:len())
+      if v.suffix_hl then
+         vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.suffix_hl, top_offset + i - 1, v.text:len(), -1)
+      end
    end
 
    vim.api.nvim_buf_set_name(M.buf, "crates")
    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
 
 
-   create_win(width, height)
+   M.win = vim.api.nvim_open_win(M.buf, false, {
+      relative = "cursor",
+      col = 0,
+      row = 1,
+      width = width,
+      height = height,
+      style = core.cfg.popup.style,
+      border = core.cfg.popup.border,
+   })
 
 
    local hide_cmd = ":lua require('crates.popup').hide()<cr>"
@@ -304,43 +312,40 @@ function M.open_versions(crate, versions, opts)
    M.type = "versions"
    local title = string.format(core.cfg.popup.text.title, crate.name)
    local height = math.min(core.cfg.popup.max_height, #versions + top_offset)
-   local width = 0
+   local vers_width = 0
    local versions_text = {}
 
    for _, v in ipairs(versions) do
-      local text, hi
+      local text, hl
       if v.yanked then
          text = string.format(core.cfg.popup.text.yanked, v.num)
-         hi = core.cfg.popup.highlight.yanked
+         hl = core.cfg.popup.highlight.yanked
       elseif v.parsed.pre then
          text = string.format(core.cfg.popup.text.prerelease, v.num)
-         hi = core.cfg.popup.highlight.prerelease
+         hl = core.cfg.popup.highlight.prerelease
       else
          text = string.format(core.cfg.popup.text.version, v.num)
-         hi = core.cfg.popup.highlight.version
+         hl = core.cfg.popup.highlight.version
       end
 
-
-      table.insert(versions_text, { text = text, hi = hi })
-      width = math.max(vim.fn.strdisplaywidth(text), width)
+      table.insert(versions_text, { text = text, hl = hl })
+      vers_width = math.max(vim.fn.strdisplaywidth(text), vers_width)
    end
 
-   if core.cfg.popup.version_date then
-      local orig_width = width
-
+   local date_width = 0
+   if core.cfg.popup.show_version_date then
       for i, v in ipairs(versions_text) do
-         local diff = orig_width - vim.fn.strdisplaywidth(v.text)
+         local diff = vers_width - vim.fn.strdisplaywidth(v.text)
          local date = versions[i].created:display(core.cfg.date_format)
-         local date_text = string.format(core.cfg.popup.text.date, date)
-         v.text = v.text .. string.rep(" ", diff) .. date_text
+         v.text = v.text .. string.rep(" ", diff)
+         v.suffix = string.format(core.cfg.popup.text.version_date, date)
+         v.suffix_hl = core.cfg.popup.highlight.version_date
 
-         width = math.max(vim.fn.strdisplaywidth(v.text), orig_width)
+         date_width = math.max(vim.fn.strdisplaywidth(v.suffix), date_width)
       end
    end
 
-   width = math.max(width, core.cfg.popup.min_width, vim.fn.strdisplaywidth(title))
-
-
+   local width = win_width(title, vers_width + date_width)
    open_win(width, height, title, versions_text, opts, function()
       local select_cmd = string.format(
       ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
@@ -430,19 +435,19 @@ end
 
 
 local function feature_text(features_info, feature)
-   local text, hi
+   local text, hl
    local info = features_info[feature.name]
    if info.enabled then
       text = string.format(core.cfg.popup.text.enabled, feature.name)
-      hi = core.cfg.popup.highlight.enabled
+      hl = core.cfg.popup.highlight.enabled
    elseif info.transitive then
       text = string.format(core.cfg.popup.text.transitive, feature.name)
-      hi = core.cfg.popup.highlight.transitive
+      hl = core.cfg.popup.highlight.transitive
    else
       text = string.format(core.cfg.popup.text.feature, feature.name)
-      hi = core.cfg.popup.highlight.feature
+      hl = core.cfg.popup.highlight.feature
    end
-   return { text = text, hi = hi }
+   return { text = text, hl = hl }
 end
 
 local function open_feat_win(width, height, title, text, opts)
@@ -501,16 +506,17 @@ function M._open_features(crate, version, opts)
    local features = version.features
    local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num)
    local height = math.min(core.cfg.popup.max_height, #features + top_offset)
-   local width = math.max(core.cfg.popup.min_width, title:len())
+   local feat_width = 0
    local features_text = {}
 
    local features_info = util.features_info(crate, features)
    for _, f in ipairs(features) do
       local hi_text = feature_text(features_info, f)
       table.insert(features_text, hi_text)
-      width = math.max(hi_text.text:len(), width)
+      feat_width = math.max(vim.fn.strdisplaywidth(hi_text.text), feat_width)
    end
 
+   local width = win_width(title, feat_width)
    open_feat_win(width, height, title, features_text, opts)
 end
 
@@ -534,7 +540,7 @@ function M._open_feature_details(crate, version, feature, opts)
    local members = feature.members
    local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num .. " " .. feature.name)
    local height = math.min(core.cfg.popup.max_height, #members + top_offset)
-   local width = math.max(core.cfg.popup.min_width, title:len())
+   local feat_width = 0
    local features_text = {}
 
    local features_info = util.features_info(crate, features)
@@ -546,9 +552,10 @@ function M._open_feature_details(crate, version, feature, opts)
 
       local hi_text = feature_text(features_info, f)
       table.insert(features_text, hi_text)
-      width = math.max(hi_text.text:len(), width)
+      feat_width = math.max(hi_text.text:len(), feat_width)
    end
 
+   local width = win_width(title, feat_width)
    open_feat_win(width, height, title, features_text, opts)
 end
 
@@ -650,7 +657,7 @@ function M.toggle_feature(index)
    vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
    for i, v in ipairs(features_text) do
       vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text })
-      vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hi, top_offset + i - 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hl, top_offset + i - 1, 0, -1)
    end
    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
 end
@@ -759,20 +766,56 @@ function M.jump_forward_feature(line)
 end
 
 
-local function dep_text(dep)
-   local text, hi
-   if dep.opt then
-      text = string.format(core.cfg.popup.text.optional, dep.name)
-      hi = core.cfg.popup.highlight.optional
-   else
-      text = string.format(core.cfg.popup.text.dependency, dep.name)
-      hi = core.cfg.popup.highlight.dependency
-   end
-   return { text = text, hi = hi }
+function M.open_deps(crate_name, version, opts)
+   M.type = "dependencies"
+   M.deps_ctx = {
+      buf = util.current_buf(),
+      history = {
+         { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
+      },
+      history_index = 1,
+   }
+   M._open_deps(crate_name, version, opts)
 end
 
-local function open_deps_win(width, height, title, text, opts)
-   open_win(width, height, title, text, opts, function()
+function M._open_deps(crate_name, version, opts)
+   local deps = version.deps
+   if not deps then return end
+
+   local title = string.format(core.cfg.popup.text.title, crate_name .. " " .. version.num)
+   local height = math.min(core.cfg.popup.max_height, #deps + top_offset)
+   local deps_width = 0
+   local deps_text = {}
+
+   for _, d in ipairs(deps) do
+      local text, hl
+      if d.opt then
+         text = string.format(core.cfg.popup.text.optional, d.name)
+         hl = core.cfg.popup.highlight.optional
+      else
+         text = string.format(core.cfg.popup.text.dependency, d.name)
+         hl = core.cfg.popup.highlight.dependency
+      end
+
+      table.insert(deps_text, { text = text, hl = hl })
+      deps_width = math.max(vim.fn.strdisplaywidth(text), deps_width)
+   end
+
+   local vers_width = 0
+   if core.cfg.popup.show_dependency_version then
+      for i, d in ipairs(deps_text) do
+         local diff = deps_width - vim.fn.strdisplaywidth(d.text)
+         local date = deps[i].vers.text
+         d.text = d.text .. string.rep(" ", diff)
+         d.suffix = string.format(core.cfg.popup.text.dependency_version, date)
+         d.suffix_hl = core.cfg.popup.highlight.dependency_version
+
+         vers_width = math.max(vim.fn.strdisplaywidth(d.suffix), vers_width)
+      end
+   end
+
+   local width = win_width(title, deps_width + vers_width)
+   open_win(width, height, title, deps_text, opts, function()
       local goto_cmd = string.format(
       ":lua require('crates.popup').goto_dep(%s - %d)<cr>",
       "vim.api.nvim_win_get_cursor(0)[1]",
@@ -798,36 +841,6 @@ local function open_deps_win(width, height, title, text, opts)
          vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
       end
    end)
-end
-
-function M.open_deps(crate_name, version, opts)
-   M.type = "dependencies"
-   M.deps_ctx = {
-      buf = util.current_buf(),
-      history = {
-         { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
-      },
-      history_index = 1,
-   }
-   M._open_deps(crate_name, version, opts)
-end
-
-function M._open_deps(crate_name, version, opts)
-   local deps = version.deps
-   if not deps then return end
-
-   local title = string.format(core.cfg.popup.text.title, crate_name .. " " .. version.num)
-   local height = math.min(core.cfg.popup.max_height, #deps + top_offset)
-   local width = math.max(core.cfg.popup.min_width, title:len())
-   local deps_text = {}
-
-   for _, d in ipairs(deps) do
-      local hi_text = dep_text(d)
-      table.insert(deps_text, hi_text)
-      width = math.max(hi_text.text:len(), width)
-   end
-
-   open_deps_win(width, height, title, deps_text, opts)
 end
 
 local function goto_dep(crate_name, version)
@@ -875,10 +888,9 @@ function M.goto_dep(index)
       local crate_name = selected_dependency.name
 
 
-      local line = index + top_offset - 1
-      vim.api.nvim_buf_set_extmark(M.buf, M.namespace, line, -1, {
+      vim.api.nvim_buf_set_extmark(M.buf, M.namespace, 0, -1, {
          virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
-         virt_text_pos = "eol",
+         virt_text_pos = "right_align",
          hl_mode = "combine",
       })
 
@@ -888,7 +900,7 @@ function M.goto_dep(index)
 
       api.add_vers_callback(crate_name, function(versions, cancelled)
          if cancelled then
-            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, line, line + 1)
+            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
             return
          end
 
@@ -899,7 +911,7 @@ function M.goto_dep(index)
             state.reload_deps(crate_name, versions, match)
          end
          api.add_deps_callback(crate_name, match.num, function(_deps, cancelled)
-            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, line, line + 1)
+            vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
             if cancelled then return end
 
 
