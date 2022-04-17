@@ -723,7 +723,7 @@ entry(schema_popup_keys, "toggle_feature", {
 
 entry(schema_popup_keys, "goto_item", {
    type = "table",
-   default = { "gd", "K" },
+   default = { "gd", "K", "<C-LeftMouse>" },
    description = [[
         Key mappings to go to the item on the current line inside the popup.
     ]],
@@ -737,7 +737,7 @@ entry(schema_popup_keys, "jump_forward", {
 })
 entry(schema_popup_keys, "jump_back", {
    type = "table",
-   default = { "<c-o>" },
+   default = { "<c-o>", "<C-RightMouse>" },
    description = [[
         Key mappings to go back in the popup jump history.
     ]],
