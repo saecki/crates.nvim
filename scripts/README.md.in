@@ -20,12 +20,15 @@ Feel free to open issues.
 - Show version and upgrade candidates
     - Indicate if compatible version is a pre-release or yanked
     - Indicate if no version is compatible
-- Open floating window with all versions
+- Open floating window with crate versions
     - Select a version by pressing enter (`popup.keys.select`)
-- Open floating window with all features
-    - Navigate through the feature hierarchy
+- Open floating window with crate features
+    - Navigate the feature hierarchy
     - Enable/disable features
     - Indicate if a feature is enabled directly or transitively
+- Open floating window with crate dependencies
+    - Navigate the dependency hierarchy
+    - Indicate if a dependency is optional
 
 ![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
 

@@ -20,12 +20,15 @@ Feel free to open issues.
 - Show version and upgrade candidates
     - Indicate if compatible version is a pre-release or yanked
     - Indicate if no version is compatible
-- Open floating window with all versions
+- Open floating window with crate versions
     - Select a version by pressing enter (`popup.keys.select`)
-- Open floating window with all features
-    - Navigate through the feature hierarchy
+- Open floating window with crate features
+    - Navigate the feature hierarchy
     - Enable/disable features
     - Indicate if a feature is enabled directly or transitively
+- Open floating window with crate dependencies
+    - Navigate the dependency hierarchy
+    - Indicate if a dependency is optional
 
 ![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
 
@@ -169,7 +172,8 @@ require('crates').setup {
         copy_register = '"',
         style = "minimal",
         border = "none",
-        version_date = false,
+        show_version_date = false,
+        show_dependency_version = true,
         max_height = 30,
         min_width = 20,
         text = {
@@ -177,19 +181,28 @@ require('crates').setup {
             version = "   %s ",
             prerelease = "  %s ",
             yanked = "  %s ",
-            date = " %s ",
+            version_date = " %s ",
             feature = "   %s ",
             enabled = "  %s ",
             transitive = "  %s ",
+            dependency = "   %s ",
+            optional = "  %s ",
+            dependency_version = " %s ",
+            loading = " ",
         },
         highlight = {
             title = "CratesNvimPopupTitle",
             version = "CratesNvimPopupVersion",
             prerelease = "CratesNvimPopupPreRelease",
             yanked = "CratesNvimPopupYanked",
+            version_date = "CratesNvimPopupVersionDate",
             feature = "CratesNvimPopupFeature",
             enabled = "CratesNvimPopupEnabled",
             transitive = "CratesNvimPopupTransitive",
+            dependency = "CratesNvimPopupDependency",
+            optional = "CratesNvimPopupOptional",
+            dependency_version = "CratesNvimPopupDependencyVersion",
+            loading = "CratesNvimPopupLoading",
         },
         keys = {
             hide = { "q", "<esc>" },
@@ -197,9 +210,9 @@ require('crates').setup {
             select_alt = { "s" },
             copy_version = { "yy" },
             toggle_feature = { "<cr>" },
-            goto_feature = { "gd", "K" },
-            jump_forward_feature = { "<c-i>" },
-            jump_back_feature = { "<c-o>" },
+            goto_item = { "gd", "K", "<C-LeftMouse>" },
+            jump_forward = { "<c-i>" },
+            jump_back = { "<c-o>", "<C-RightMouse>" },
         },
     },
     src = {
@@ -294,6 +307,8 @@ require('crates').show_popup()
 require('crates').show_versions_popup()
 -- Same as `crates.show_popup()` but always show features or features details.
 require('crates').show_features_popup()
+-- Same as `crates.show_popup()` but always show depedencies.
+require('crates').show_dependencies_popup()
 -- Focus the popup (jump into the floating window).
 -- Optionally specify the line to jump to, inside the popup.
 require('crates').focus_popup(line: integer|nil)

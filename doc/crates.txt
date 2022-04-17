@@ -39,9 +39,14 @@ Setup for plain text (without patched font).
                 version = " %s ",
                 prerelease = " %s ",
                 yanked = " %s yanked ",
+                version_date = " %s ",
                 feature = "   %s ",
                 enabled = " * %s ",
                 transitive = " ~ %s ",
+                dependency = "   %s ",
+                optional = " ? %s ",
+                dependency_version = " %s ",
+                loading = "...",
             },
         },
         cmp = {
@@ -90,7 +95,8 @@ For more information about individual config options see |crates-config|.
             copy_register = '"',
             style = "minimal",
             border = "none",
-            version_date = false,
+            show_version_date = false,
+            show_dependency_version = true,
             max_height = 30,
             min_width = 20,
             text = {
@@ -98,19 +104,28 @@ For more information about individual config options see |crates-config|.
                 version = "   %s ",
                 prerelease = "  %s ",
                 yanked = "  %s ",
-                date = " %s ",
+                version_date = " %s ",
                 feature = "   %s ",
                 enabled = "  %s ",
                 transitive = "  %s ",
+                dependency = "   %s ",
+                optional = "  %s ",
+                dependency_version = " %s ",
+                loading = " ",
             },
             highlight = {
                 title = "CratesNvimPopupTitle",
                 version = "CratesNvimPopupVersion",
                 prerelease = "CratesNvimPopupPreRelease",
                 yanked = "CratesNvimPopupYanked",
+                version_date = "CratesNvimPopupVersionDate",
                 feature = "CratesNvimPopupFeature",
                 enabled = "CratesNvimPopupEnabled",
                 transitive = "CratesNvimPopupTransitive",
+                dependency = "CratesNvimPopupDependency",
+                optional = "CratesNvimPopupOptional",
+                dependency_version = "CratesNvimPopupDependencyVersion",
+                loading = "CratesNvimPopupLoading",
             },
             keys = {
                 hide = { "q", "<esc>" },
@@ -118,9 +133,9 @@ For more information about individual config options see |crates-config|.
                 select_alt = { "s" },
                 copy_version = { "yy" },
                 toggle_feature = { "<cr>" },
-                goto_feature = { "gd", "K" },
-                jump_forward_feature = { "<c-i>" },
-                jump_back_feature = { "<c-o>" },
+                goto_item = { "gd", "K", "<C-LeftMouse>" },
+                jump_forward = { "<c-i>" },
+                jump_back = { "<c-o>", "<C-RightMouse>" },
             },
         },
         src = {
@@ -270,6 +285,10 @@ show_versions_popup()                           *crates.show_versions_popup()*
 
 show_features_popup()                           *crates.show_features_popup()*
     Same as `crates.show_popup()` but always show features or features details.
+
+
+show_dependencies_popup()                   *crates.show_dependencies_popup()*
+    Same as `crates.show_popup()` but always show depedencies.
 
 
 focus_popup({line}: `integer|nil`)                      *crates.focus_popup()*
@@ -486,8 +505,14 @@ popup.border                                      *crates-config-popup-border*
     Same as nvim_open_win config.border.
 
 
-popup.version_date                          *crates-config-popup-version_date*
+popup.show_version_date                *crates-config-popup-show_version_date*
     Type: `boolean`, Default: `false`
+
+    Display when a version was released.
+
+
+popup.show_dependency_version    *crates-config-popup-show_dependency_version*
+    Type: `boolean`, Default: `true`
 
     Display when a version was released.
 
@@ -503,6 +528,11 @@ popup.min_width                                *crates-config-popup-min_width*
 
     The minimum width of the popup.
 
+
+popup.version_date                          *crates-config-popup-version_date*
+    DEPRECATED
+
+    Please use crates-config-popup-show_version_date instead.
 
 popup.text                                          *crates-config-popup-text*
     Type: `section`
@@ -534,7 +564,7 @@ popup.text.yanked                            *crates-config-popup-text-yanked*
     Format string used for yanked versions.
 
 
-popup.text.date                                *crates-config-popup-text-date*
+popup.text.version_date                *crates-config-popup-text-version_date*
     Type: `string`, Default: `" %s "`
 
     Format string used for appending the version release date.
@@ -557,6 +587,35 @@ popup.text.transitive                    *crates-config-popup-text-transitive*
 
     Format string used for transitively enabled features.
 
+
+popup.text.dependency                    *crates-config-popup-text-dependency*
+    Type: `string`, Default: `"   %s "`
+
+    Format string used for dependencies and their version requirement.
+
+
+popup.text.optional                        *crates-config-popup-text-optional*
+    Type: `string`, Default: `"  %s "`
+
+    Format string used for optional dependencies and their version requirement.
+
+
+popup.text.dependency_version    *crates-config-popup-text-dependency_version*
+    Type: `string`, Default: `" %s "`
+
+    Format string used for appending the dependency version.
+
+
+popup.text.loading                          *crates-config-popup-text-loading*
+    Type: `string`, Default: `" "`
+
+    Format string used as a loading indicator when fetching dependencies.
+
+
+popup.text.date                                *crates-config-popup-text-date*
+    DEPRECATED
+
+    Please use crates-config-popup-text-version_date instead.
 
 popup.highlight                                *crates-config-popup-highlight*
     Type: `section`
@@ -588,6 +647,12 @@ popup.highlight.yanked                  *crates-config-popup-highlight-yanked*
     Highlight group used for yanked versions inside the popup.
 
 
+popup.highlight.version_date      *crates-config-popup-highlight-version_date*
+    Type: `string`, Default: `"CratesNvimPopupVersionDate"`
+
+    Highlight group used for the version date inside the popup.
+
+
 popup.highlight.feature                *crates-config-popup-highlight-feature*
     Type: `string`, Default: `"CratesNvimPopupFeature"`
 
@@ -604,6 +669,31 @@ popup.highlight.transitive          *crates-config-popup-highlight-transitive*
     Type: `string`, Default: `"CratesNvimPopupTransitive"`
 
     Highlight group used for transitively enabled features inside the popup.
+
+
+popup.highlight.dependency          *crates-config-popup-highlight-dependency*
+    Type: `string`, Default: `"CratesNvimPopupDependency"`
+
+    Highlight group used for dependencies inside the popup.
+
+
+popup.highlight.optional              *crates-config-popup-highlight-optional*
+    Type: `string`, Default: `"CratesNvimPopupOptional"`
+
+    Highlight group used for optional dependencies inside the popup.
+
+
+                            *crates-config-popup-highlight-dependency_version*
+popup.highlight.dependency_version
+    Type: `string`, Default: `"CratesNvimPopupDependencyVersion"`
+
+    Highlight group used for the dependency version inside the popup.
+
+
+popup.highlight.loading                *crates-config-popup-highlight-loading*
+    Type: `string`, Default: `"CratesNvimPopupLoading"`
+
+    Highlight group for the loading indicator inside the popup.
 
 
 popup.keys                                          *crates-config-popup-keys*
@@ -642,24 +732,39 @@ popup.keys.toggle_feature            *crates-config-popup-keys-toggle_feature*
     Key mappings to enable or disable the feature on the currentline inside the popup.
 
 
+popup.keys.goto_item                      *crates-config-popup-keys-goto_item*
+    Type: `table`, Default: `{ "gd", "K", "<C-LeftMouse>" }`
+
+    Key mappings to go to the item on the current line inside the popup.
+
+
+popup.keys.jump_forward                *crates-config-popup-keys-jump_forward*
+    Type: `table`, Default: `{ "<c-i>" }`
+
+    Key mappings to jump forward in the popup jump history.
+
+
+popup.keys.jump_back                      *crates-config-popup-keys-jump_back*
+    Type: `table`, Default: `{ "<c-o>", "<C-RightMouse>" }`
+
+    Key mappings to go back in the popup jump history.
+
+
 popup.keys.goto_feature                *crates-config-popup-keys-goto_feature*
-    Type: `table`, Default: `{ "gd", "K" }`
+    DEPRECATED
 
-    Key mappings to go to the feature on the currentline inside the popup.
-
+    Please use crates-config-popup-keys-goto_item instead.
 
                                *crates-config-popup-keys-jump_forward_feature*
 popup.keys.jump_forward_feature
-    Type: `table`, Default: `{ "<c-i>" }`
+    DEPRECATED
 
-    Key mappings to jump forward in the features jump history.
-
+    Please use crates-config-popup-keys-jump_forward instead.
 
 popup.keys.jump_back_feature      *crates-config-popup-keys-jump_back_feature*
-    Type: `table`, Default: `{ "<c-o>" }`
+    DEPRECATED
 
-    Key mappings to jump back in the features jump history.
-
+    Please use crates-config-popup-keys-jump_back instead.
 
 src                                                        *crates-config-src*
     Type: `section`
@@ -750,6 +855,9 @@ CratesNvimPopupPreRelease                *crates-hl-CratesNvimPopupPreRelease*
 CratesNvimPopupYanked                        *crates-hl-CratesNvimPopupYanked*
     Default: links to |DiagnosticVirtualTextError|
 
+CratesNvimPopupVersionDate              *crates-hl-CratesNvimPopupVersionDate*
+    Default: links to |Comment|
+
 CratesNvimPopupFeature                      *crates-hl-CratesNvimPopupFeature*
     Default: links to |None|
 
@@ -759,3 +867,17 @@ CratesNvimPopupEnabled                      *crates-hl-CratesNvimPopupEnabled*
 CratesNvimPopupTransitive                *crates-hl-CratesNvimPopupTransitive*
     Default: `ctermfg=4 guifg=#238bb9`
 
+CratesNvimPopupDependency                *crates-hl-CratesNvimPopupDependency*
+    Default: links to |None|
+
+CratesNvimPopupOptional                    *crates-hl-CratesNvimPopupOptional*
+    Default: links to |Comment|
+
+CratesNvimPopupDependencyVersion  *crates-hl-CratesNvimPopupDependencyVersion*
+    Default: links to |String|
+
+CratesNvimPopupLoading                      *crates-hl-CratesNvimPopupLoading*
+    Default: links to |Special|
+
+
+vim:tw=78:ts=8:ft=help:norl:
