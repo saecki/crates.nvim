@@ -931,6 +931,41 @@ local function goto_dep(crate_name: string, version: Version)
     }
 end
 
+local function show_loading_indicator()
+    vim.api.nvim_buf_set_extmark(M.buf, M.namespace, 0, -1, {
+        virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
+        virt_text_pos = "right_align",
+        hl_mode = "combine",
+    })
+end
+
+local function hide_loading_indicator()
+    if M.buf then
+        vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
+    end
+end
+
+local function fetch_deps(
+    crate_name: string,
+    versions: {Version},
+    version: Version,
+    deps_ctx: DepsContext,
+    transaction: number
+)
+    if not api.is_fetching_deps(crate_name, version.num) then
+        state.reload_deps(crate_name, versions, version)
+    end
+    api.add_deps_callback(crate_name, version.num, function(_deps: {Dependency}, cancelled: boolean)
+        hide_loading_indicator()
+        if cancelled then return end
+
+        -- only goto dependency if the user hasn't taken other actions
+        if M.deps_ctx == deps_ctx and deps_ctx.transaction == transaction then
+            goto_dep(crate_name, version)
+        end
+    end)
+end
+
 function M.goto_dep(index: integer)
     if not M.deps_ctx then return end
     local deps_ctx = M.deps_ctx as DepsContext
@@ -946,24 +981,25 @@ function M.goto_dep(index: integer)
     local current = deps_ctx.history[hist_index]
     current.line = index + top_offset
 
-    local versions = core.vers_cache[selected_dependency.name]
+    local crate_name = selected_dependency.name
+    local versions = core.vers_cache[crate_name]
     if versions then
         local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
         local match = m or p or y
 
-        goto_dep(selected_dependency.name, match)
+        if match.deps then
+            goto_dep(crate_name, match)
+        else
+            local transaction = math.random()
+            deps_ctx.transaction = transaction
+            show_loading_indicator()
+            fetch_deps(crate_name, versions, match, deps_ctx, transaction)
+        end
     else
-        local crate_name = selected_dependency.name
-
-        -- show loading indicator
-        vim.api.nvim_buf_set_extmark(M.buf, M.namespace, 0, -1, {
-            virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
-            virt_text_pos = "right_align",
-            hl_mode = "combine",
-        })
-
         local transaction = math.random()
         deps_ctx.transaction = transaction
+
+        show_loading_indicator()
 
         if not api.is_fetching_vers(crate_name) then
             state.reload_crate(crate_name)
@@ -971,31 +1007,14 @@ function M.goto_dep(index: integer)
 
         api.add_vers_callback(crate_name, function(versions: {Version}, cancelled: boolean)
             if cancelled then
-                -- hide loading indicator
-                if M.buf then
-                    vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
-                end
+                hide_loading_indicator()
                 return
             end
 
             local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
             local match = m or p or y
 
-            if not api.is_fetching_deps(crate_name, match.num) then
-                state.reload_deps(crate_name, versions, match)
-            end
-            api.add_deps_callback(crate_name, match.num, function(_deps: {Dependency}, cancelled: boolean)
-                -- hide loading indicator
-                if M.buf then
-                    vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
-                end
-                if cancelled then return end
-
-                -- only goto dependency if the user hasn't taken other actions
-                if M.deps_ctx == deps_ctx and deps_ctx.transaction == transaction then
-                    goto_dep(selected_dependency.name, match)
-                end
-            end)
+            fetch_deps(crate_name, versions, match, deps_ctx, transaction)
         end)
     end
 end
