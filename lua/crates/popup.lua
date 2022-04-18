@@ -333,7 +333,11 @@ local function open_win(width, height, title, text, opts, configure)
 
    local hide_cmd = ":lua require('crates.popup').hide()<cr>"
    for _, k in ipairs(core.cfg.popup.keys.hide) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, hide_cmd, { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, hide_cmd, {
+         noremap = true,
+         silent = true,
+         desc = "Hide popup",
+      })
    end
 
    if configure then
@@ -394,7 +398,11 @@ function M.open_versions(crate, versions, opts)
       top_offset)
 
       for _, k in ipairs(core.cfg.popup.keys.select) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_cmd, { noremap = true, silent = true })
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_cmd, {
+            noremap = true,
+            silent = true,
+            desc = "Select version",
+         })
       end
 
       local select_alt_cmd = string.format(
@@ -405,7 +413,11 @@ function M.open_versions(crate, versions, opts)
       top_offset)
 
       for _, k in ipairs(core.cfg.popup.keys.select_alt) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_alt_cmd, { noremap = true, silent = true })
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_alt_cmd, {
+            noremap = true,
+            silent = true,
+            desc = "Select version alt",
+         })
       end
 
       local copy_cmd = string.format(
@@ -415,7 +427,11 @@ function M.open_versions(crate, versions, opts)
       top_offset)
 
       for _, k in ipairs(core.cfg.popup.keys.copy_version) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, copy_cmd, { noremap = true, silent = true })
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, copy_cmd, {
+            noremap = true,
+            silent = true,
+            desc = "Copy version",
+         })
       end
    end)
 end
@@ -496,7 +512,11 @@ local function config_feat_win()
    top_offset)
 
    for _, k in ipairs(core.cfg.popup.keys.toggle_feature) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, {
+         noremap = true,
+         silent = true,
+         desc = "Toggle feature",
+      })
    end
 
    local goto_cmd = string.format(
@@ -505,7 +525,11 @@ local function config_feat_win()
    top_offset)
 
    for _, k in ipairs(core.cfg.popup.keys.goto_item) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, {
+         noremap = true,
+         silent = true,
+         desc = "Goto feature",
+      })
    end
 
    local jump_forward_cmd = string.format(
@@ -513,7 +537,11 @@ local function config_feat_win()
    "vim.api.nvim_win_get_cursor(0)[1]")
 
    for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, {
+         noremap = true,
+         silent = true,
+         desc = "Jump forward",
+      })
    end
 
    local jump_back_cmd = string.format(
@@ -521,7 +549,11 @@ local function config_feat_win()
    "vim.api.nvim_win_get_cursor(0)[1]")
 
    for _, k in ipairs(core.cfg.popup.keys.jump_back) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, {
+         noremap = true,
+         silent = true,
+         desc = "Jump back",
+      })
    end
 end
 
@@ -882,7 +914,11 @@ function M._open_deps(crate_name, version, opts)
          top_offset)
 
          for _, k in ipairs(core.cfg.popup.keys.goto_item) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, {
+               noremap = true,
+               silent = true,
+               desc = "Goto dependency",
+            })
          end
 
          local jump_forward_cmd = string.format(
@@ -890,7 +926,11 @@ function M._open_deps(crate_name, version, opts)
          "vim.api.nvim_win_get_cursor(0)[1]")
 
          for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, {
+               noremap = true,
+               silent = true,
+               desc = "Jump forward",
+            })
          end
 
          local jump_back_cmd = string.format(
@@ -898,7 +938,11 @@ function M._open_deps(crate_name, version, opts)
          "vim.api.nvim_win_get_cursor(0)[1]")
 
          for _, k in ipairs(core.cfg.popup.keys.jump_back) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, {
+               noremap = true,
+               silent = true,
+               desc = "Jump back",
+            })
          end
       end)
    end
