@@ -116,7 +116,7 @@ Or add it lazily.
 autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
 ```
 
-### [coq.nvim](https://github.com/ms-jpq/coq_nvim)
+### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name:
 ```lua
 require('crates').setup {
