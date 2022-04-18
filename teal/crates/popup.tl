@@ -1,10 +1,10 @@
 local record M
+    namespace: integer
     win: integer|nil
     buf: integer|nil
-    namespace: integer|nil
     type: Type|nil
-    feat_ctx: FeatureContext
-    deps_ctx: DepsContext
+    feat_ctx: FeatureContext|nil
+    deps_ctx: DepsContext|nil
 
     show: function()
     focus: function(integer|nil)
@@ -39,6 +39,7 @@ local record M
 
     record DepsContext
         buf: integer
+        transaction: number|nil
         history: {DepsHistoryEntry}
         history_index: integer
     end
@@ -52,6 +53,7 @@ local record M
     record WinOpts
         focus: boolean
         line: integer -- 1 indexed
+        update: boolean
     end
 
     record HighlightText
@@ -70,7 +72,9 @@ local record M
     end
 end
 
+local FeatureContext = M.FeatureContext
 local FeatHistoryEntry = M.FeatHistoryEntry
+local DepsContext = M.DepsContext
 local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 local LineCrateInfo = M.LineCrateInfo
@@ -173,9 +177,11 @@ function M.show()
     if info.pref == "versions" then
         M.open_versions(info.crate, info.versions)
     elseif info.pref == "features" then
-        M.open_features(info.crate, info.newest)
+        M.open_features(info.crate, info.newest, {})
     elseif info.pref == "feature_details" then
-        M.open_feature_details(info.crate, info.newest, info.feature)
+        M.open_feature_details(info.crate, info.newest, info.feature, {})
+    elseif info.pref == "dependencies" then
+        M.open_deps(info.crate.name, info.newest, {})
     end
 end
 
@@ -209,11 +215,11 @@ function M.show_features()
     if not info then return end
 
     if info.pref == "features" then
-        M.open_features(info.crate, info.newest)
+        M.open_features(info.crate, info.newest, {})
     elseif info.pref == "feature_details" then
-        M.open_feature_details(info.crate, info.newest, info.feature)
+        M.open_feature_details(info.crate, info.newest, info.feature, {})
     elseif info.newest then
-        M.open_features(info.crate, info.newest)
+        M.open_features(info.crate, info.newest, {})
     end
 end
 
@@ -230,7 +236,7 @@ function M.show_dependencies()
     local info = line_crate_info()
     if not info then return end
 
-    M.open_deps(info.crate.name, info.newest)
+    M.open_deps(info.crate.name, info.newest, {})
 end
 
 function M.focus(line: integer|nil)
@@ -252,6 +258,15 @@ function M.hide()
     end
     M.buf = nil
     M.type = nil
+    M.feat_ctx = nil
+    M.deps_ctx = nil
+end
+
+local function win_height<T>(entries: {T}): integer
+    return math.min(
+        #entries + top_offset,
+        core.cfg.popup.max_height
+    )
 end
 
 local function win_width(title: string, content_width: integer): integer
@@ -262,23 +277,47 @@ local function win_width(title: string, content_width: integer): integer
     )
 end
 
+local function set_buf_content(buf: integer, title: string, text: {HighlightText})
+    vim.api.nvim_buf_set_option(buf, "modifiable", true)
+
+    -- clear buffer
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+    vim.api.nvim_buf_clear_namespace(buf, M.namespace, 0, -1)
+
+    -- clear buffer
+    vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title, "" })
+    vim.api.nvim_buf_add_highlight(buf, M.namespace, core.cfg.popup.highlight.title, 0, 0, -1)
+
+    for i,v in ipairs(text) do
+        vim.api.nvim_buf_set_lines(buf, top_offset + i - 1, top_offset + i, false, { v.text .. (v.suffix or "") })
+        vim.api.nvim_buf_add_highlight(buf, M.namespace, v.hl, top_offset + i - 1, 0, v.text:len())
+        if v.suffix_hl then
+            vim.api.nvim_buf_add_highlight(buf, M.namespace, v.suffix_hl, top_offset + i - 1, v.text:len(), -1)
+        end
+    end
+
+    vim.api.nvim_buf_set_name(buf, "crates")
+    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+end
+
+local function update_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts)
+    -- resize window
+    vim.api.nvim_win_set_width(M.win, width)
+    vim.api.nvim_win_set_height(M.win, height)
+
+    -- update text and highlights
+    set_buf_content(M.buf, title, text)
+
+    -- set line
+    local l = math.min(opts.line or 3, vim.api.nvim_buf_line_count(M.buf))
+    vim.api.nvim_win_set_cursor(M.win, { l, 0 })
+end
+
 local function open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function())
     M.buf = vim.api.nvim_create_buf(false, true) as integer
 
     -- add text and highlights
-    vim.api.nvim_buf_set_lines(M.buf, 0, 2, false, { title, "" })
-    vim.api.nvim_buf_add_highlight(M.buf, M.namespace, core.cfg.popup.highlight.title, 0, 0, -1)
-
-    for i,v in ipairs(text) do
-        vim.api.nvim_buf_set_lines(M.buf, top_offset + i - 1, top_offset + i, false, { v.text .. v.suffix or "" })
-        vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.hl, top_offset + i - 1, 0, v.text:len())
-        if v.suffix_hl then
-            vim.api.nvim_buf_add_highlight(M.buf, M.namespace, v.suffix_hl, top_offset + i - 1, v.text:len(), -1)
-        end
-    end
-
-    vim.api.nvim_buf_set_name(M.buf, "crates")
-    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
+    set_buf_content(M.buf, title, text)
 
     -- create window
     M.win = vim.api.nvim_open_win(M.buf, false, {
@@ -311,7 +350,6 @@ end
 function M.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
     M.type = "versions"
     local title = string.format(core.cfg.popup.text.title, crate.name)
-    local height = math.min(core.cfg.popup.max_height, #versions + top_offset)
     local vers_width = 0
     local versions_text: {HighlightText} = {}
 
@@ -344,8 +382,9 @@ function M.open_versions(crate: Crate, versions: {Version}, opts: WinOpts)
             date_width = math.max(vim.fn.strdisplaywidth(v.suffix) as integer, date_width)
         end
     end
-    
+
     local width = win_width(title, vers_width + date_width)
+    local height = win_height(versions)
     open_win(width, height, title, versions_text, opts, function()
         local select_cmd = string.format(
             ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
@@ -450,46 +489,43 @@ local function feature_text(features_info: {string:FeatureInfo}, feature: Featur
     return { text = text, hl = hl }
 end
 
-local function open_feat_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts)
-    open_win(width, height, title, text, opts, function()
-        local toggle_cmd = string.format(
-            ":lua require('crates.popup').toggle_feature(%s - %d)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
-        end
+local function config_feat_win()
+    local toggle_cmd = string.format(
+        ":lua require('crates.popup').toggle_feature(%s - %d)<cr>",
+        "vim.api.nvim_win_get_cursor(0)[1]",
+        top_offset
+    )
+    for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, { noremap = true, silent = true })
+    end
 
-        local goto_cmd = string.format(
-            ":lua require('crates.popup').goto_feature(%s - %d)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.goto_item) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
-        end
+    local goto_cmd = string.format(
+        ":lua require('crates.popup').goto_feature(%s - %d)<cr>",
+        "vim.api.nvim_win_get_cursor(0)[1]",
+        top_offset
+    )
+    for _,k in ipairs(core.cfg.popup.keys.goto_item) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
+    end
 
-        local jump_forward_cmd = string.format(
-            ":lua require('crates.popup').jump_forward_feature(%s)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]"
-        )
-        for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
-        end
+    local jump_forward_cmd = string.format(
+        ":lua require('crates.popup').jump_forward_feature(%s)<cr>",
+        "vim.api.nvim_win_get_cursor(0)[1]"
+    )
+    for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
+    end
 
-        local jump_back_cmd = string.format(
-            ":lua require('crates.popup').jump_back_feature(%s)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]"
-        )
-        for _,k in ipairs(core.cfg.popup.keys.jump_back) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
-        end
-    end)
+    local jump_back_cmd = string.format(
+        ":lua require('crates.popup').jump_back_feature(%s)<cr>",
+        "vim.api.nvim_win_get_cursor(0)[1]"
+    )
+    for _,k in ipairs(core.cfg.popup.keys.jump_back) do
+        vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
+    end
 end
 
 function M.open_features(crate: Crate, version: Version, opts: WinOpts)
-    M.type = "features"
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
@@ -503,9 +539,10 @@ function M.open_features(crate: Crate, version: Version, opts: WinOpts)
 end
 
 function M._open_features(crate: Crate, version: Version, opts: WinOpts)
+    M.type = "features"
+
     local features = version.features
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num)
-    local height = math.min(core.cfg.popup.max_height, #features + top_offset)
     local feat_width = 0
     local features_text = {}
 
@@ -515,13 +552,18 @@ function M._open_features(crate: Crate, version: Version, opts: WinOpts)
         table.insert(features_text, hi_text)
         feat_width = math.max(vim.fn.strdisplaywidth(hi_text.text) as integer, feat_width)
     end
-    
+
     local width = win_width(title, feat_width)
-    open_feat_win(width, height, title, features_text, opts)
+    local height = win_height(features)
+
+    if opts.update then
+        update_win(width, height, title, features_text, opts)
+    else
+        open_win(width, height, title, features_text, opts, config_feat_win)
+    end
 end
 
 function M.open_feature_details(crate: Crate, version: Version, feature: Feature, opts: WinOpts)
-    M.type = "features"
     M.feat_ctx = {
         buf = util.current_buf(),
         crate = crate,
@@ -536,10 +578,11 @@ function M.open_feature_details(crate: Crate, version: Version, feature: Feature
 end
 
 function M._open_feature_details(crate: Crate, version: Version, feature: Feature, opts: WinOpts)
+    M.type = "features"
+
     local features = version.features
     local members = feature.members
     local title = string.format(core.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
-    local height = math.min(core.cfg.popup.max_height, #members + top_offset)
     local feat_width = 0
     local features_text = {}
 
@@ -556,18 +599,25 @@ function M._open_feature_details(crate: Crate, version: Version, feature: Featur
     end
 
     local width = win_width(title, feat_width)
-    open_feat_win(width, height, title, features_text, opts)
+    local height = win_height(members)
+
+    if opts.update then
+        update_win(width, height, title, features_text, opts)
+    else
+        open_win(width, height, title, features_text, opts, config_feat_win)
+    end
 end
 
 function M.toggle_feature(index: integer)
     if not M.feat_ctx then return end
+    local feat_ctx = M.feat_ctx as FeatureContext
 
-    local buf = M.feat_ctx.buf
-    local crate = M.feat_ctx.crate
-    local version = M.feat_ctx.version
+    local buf = feat_ctx.buf
+    local crate = feat_ctx.crate
+    local version = feat_ctx.version
     local features = version.features
-    local hist_index = M.feat_ctx.history_index
-    local feature = M.feat_ctx.history[hist_index].feature
+    local hist_index = feat_ctx.history_index
+    local feature = feat_ctx.history[hist_index].feature
 
     local selected_feature: Feature
     if feature then
@@ -631,8 +681,8 @@ function M.toggle_feature(index: integer)
             table.insert(c, cf)
         end
     end
-    M.feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate as table, unpack(c) as table) as Crate)
-    crate = M.feat_ctx.crate
+    feat_ctx.crate = Crate.new(vim.tbl_extend("force", crate as table, unpack(c) as table) as Crate)
+    crate = feat_ctx.crate
 
     -- update buffer
     local features_text = {}
@@ -664,11 +714,12 @@ end
 
 function M.goto_feature(index: integer)
     if not M.feat_ctx then return end
+    local feat_ctx = M.feat_ctx as FeatureContext
 
-    local crate = M.feat_ctx.crate
-    local version = M.feat_ctx.version
-    local hist_index = M.feat_ctx.history_index
-    local feature = M.feat_ctx.history[hist_index].feature
+    local crate = feat_ctx.crate
+    local version = feat_ctx.version
+    local hist_index = feat_ctx.history_index
+    local feature = feat_ctx.history[hist_index].feature
 
     local selected_feature: Feature = nil
     if feature then
@@ -681,20 +732,22 @@ function M.goto_feature(index: integer)
     end
     if not selected_feature then return end
 
-    M.hide()
-    M._open_feature_details(crate, version, selected_feature, { focus = true })
+    M._open_feature_details(crate, version, selected_feature, {
+        focus = true,
+        update = true,
+    })
 
     -- update current entry
-    local current = M.feat_ctx.history[hist_index]
+    local current = feat_ctx.history[hist_index]
     current.line = index + top_offset
 
-    M.feat_ctx.history_index = hist_index + 1
-    hist_index = M.feat_ctx.history_index
-    for i=hist_index, #M.feat_ctx.history, 1 do
-        M.feat_ctx.history[i] = nil
+    feat_ctx.history_index = hist_index + 1
+    hist_index = feat_ctx.history_index
+    for i=hist_index, #feat_ctx.history, 1 do
+        feat_ctx.history[i] = nil
     end
 
-    M.feat_ctx.history[hist_index] = {
+    feat_ctx.history[hist_index] = {
         feature = selected_feature,
         line = 3,
     }
@@ -702,10 +755,11 @@ end
 
 function M.jump_back_feature(line: integer)
     if not M.feat_ctx then return end
+    local feat_ctx = M.feat_ctx as FeatureContext
 
-    local crate = M.feat_ctx.crate
-    local version = M.feat_ctx.version
-    local hist_index = M.feat_ctx.history_index
+    local crate = feat_ctx.crate
+    local version = feat_ctx.version
+    local hist_index = feat_ctx.history_index
 
     if hist_index == 1 then
         M.hide()
@@ -713,61 +767,61 @@ function M.jump_back_feature(line: integer)
     end
 
     -- update current entry
-    local current = M.feat_ctx.history[hist_index]
+    local current = feat_ctx.history[hist_index]
     current.line = line
 
-    M.feat_ctx.history_index = hist_index - 1
-    hist_index = M.feat_ctx.history_index
+    feat_ctx.history_index = hist_index - 1
+    hist_index = feat_ctx.history_index
 
     if hist_index == 1 then
-        M.hide()
         M._open_features(crate, version, {
             focus = true,
-            line = M.feat_ctx.history[1].line,
+            line = feat_ctx.history[1].line,
+            update = true,
         })
     else
-        local entry = M.feat_ctx.history[hist_index]
+        local entry = feat_ctx.history[hist_index]
         if not entry then return end
 
-        M.hide()
         M._open_feature_details(crate, version, entry.feature, {
             focus = true,
             line = entry.line,
+            update = true,
         })
     end
 end
 
 function M.jump_forward_feature(line: integer)
     if not M.feat_ctx then return end
+    local feat_ctx = M.feat_ctx as FeatureContext
 
-    local crate = M.feat_ctx.crate
-    local version = M.feat_ctx.version
-    local hist_index = M.feat_ctx.history_index
+    local crate = feat_ctx.crate
+    local version = feat_ctx.version
+    local hist_index = feat_ctx.history_index
 
-    if hist_index == #M.feat_ctx.history then
+    if hist_index == #feat_ctx.history then
         return
     end
 
     -- update current entry
-    local current = M.feat_ctx.history[hist_index]
+    local current = feat_ctx.history[hist_index]
     current.line = line
 
-    M.feat_ctx.history_index = hist_index + 1
-    hist_index = M.feat_ctx.history_index
+    feat_ctx.history_index = hist_index + 1
+    hist_index = feat_ctx.history_index
 
-    local entry = M.feat_ctx.history[hist_index]
+    local entry = feat_ctx.history[hist_index]
     if not entry then return end
 
-    M.hide()
     M._open_feature_details(crate, version, entry.feature, {
         focus = true,
         line = entry.line,
+        update = true,
     })
 end
 
 
 function M.open_deps(crate_name: string, version: Version, opts: WinOpts)
-    M.type = "dependencies"
     M.deps_ctx = {
         buf = util.current_buf(),
         history = {
@@ -779,11 +833,12 @@ function M.open_deps(crate_name: string, version: Version, opts: WinOpts)
 end
 
 function M._open_deps(crate_name: string, version: Version, opts: WinOpts)
+    M.type = "dependencies"
+
     local deps = version.deps as {Dependency}
     if not deps then return end
 
     local title = string.format(core.cfg.popup.text.title, crate_name.." "..version.num)
-    local height = math.min(core.cfg.popup.max_height, #deps + top_offset)
     local deps_width = 0
     local deps_text: {HighlightText} = {}
 
@@ -800,7 +855,7 @@ function M._open_deps(crate_name: string, version: Version, opts: WinOpts)
         table.insert(deps_text, { text = text, hl = hl })
         deps_width = math.max(vim.fn.strdisplaywidth(text) as integer, deps_width)
     end
-    
+
     local vers_width = 0
     if core.cfg.popup.show_dependency_version then
         for i,d in ipairs(deps_text) do
@@ -813,51 +868,63 @@ function M._open_deps(crate_name: string, version: Version, opts: WinOpts)
             vers_width = math.max(vim.fn.strdisplaywidth(d.suffix) as integer, vers_width)
         end
     end
-    
+
     local width = win_width(title, deps_width + vers_width)
-    open_win(width, height, title, deps_text, opts, function()
-        local goto_cmd = string.format(
-            ":lua require('crates.popup').goto_dep(%s - %d)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]",
-            top_offset
-        )
-        for _,k in ipairs(core.cfg.popup.keys.goto_item) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
-        end
+    local height = win_height(deps)
 
-        local jump_forward_cmd = string.format(
-            ":lua require('crates.popup').jump_forward_dep(%s)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]"
-        )
-        for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
-        end
+    if opts.update then
+        update_win(width, height, title, deps_text, opts)
+    else
+        open_win(width, height, title, deps_text, opts, function()
+            local goto_cmd = string.format(
+                ":lua require('crates.popup').goto_dep(%s - %d)<cr>",
+                "vim.api.nvim_win_get_cursor(0)[1]",
+                top_offset
+            )
+            for _,k in ipairs(core.cfg.popup.keys.goto_item) do
+                vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, { noremap = true, silent = true })
+            end
 
-        local jump_back_cmd = string.format(
-            ":lua require('crates.popup').jump_back_dep(%s)<cr>",
-            "vim.api.nvim_win_get_cursor(0)[1]"
-        )
-        for _,k in ipairs(core.cfg.popup.keys.jump_back) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
-        end
-    end)
+            local jump_forward_cmd = string.format(
+                ":lua require('crates.popup').jump_forward_dep(%s)<cr>",
+                "vim.api.nvim_win_get_cursor(0)[1]"
+            )
+            for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
+                vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, { noremap = true, silent = true })
+            end
+
+            local jump_back_cmd = string.format(
+                ":lua require('crates.popup').jump_back_dep(%s)<cr>",
+                "vim.api.nvim_win_get_cursor(0)[1]"
+            )
+            for _,k in ipairs(core.cfg.popup.keys.jump_back) do
+                vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, { noremap = true, silent = true })
+            end
+        end)
+    end
 end
 
 local function goto_dep(crate_name: string, version: Version)
     if not M.deps_ctx then return end
+    local deps_ctx = M.deps_ctx as DepsContext
 
-    local hist_index = M.deps_ctx.history_index
+    local hist_index = deps_ctx.history_index
 
-    M.hide()
-    M._open_deps(crate_name, version, { focus = true })
+    M._open_deps(crate_name, version, {
+        focus = true,
+        update = true,
+    })
 
-    M.deps_ctx.history_index = hist_index + 1
-    hist_index = M.deps_ctx.history_index
-    for i=hist_index, #M.deps_ctx.history, 1 do
-        M.deps_ctx.history[i] = nil
+    deps_ctx.history_index = hist_index + 1
+    hist_index = deps_ctx.history_index
+    for i=hist_index, #deps_ctx.history, 1 do
+        deps_ctx.history[i] = nil
     end
 
-    M.deps_ctx.history[hist_index] = {
+    -- omit loading transaction if any
+    deps_ctx.transaction = nil
+
+    deps_ctx.history[hist_index] = {
         crate_name = crate_name,
         version = version,
         line = 3,
@@ -866,16 +933,17 @@ end
 
 function M.goto_dep(index: integer)
     if not M.deps_ctx then return end
+    local deps_ctx = M.deps_ctx as DepsContext
 
-    local hist_index = M.deps_ctx.history_index
-    local hist_entry = M.deps_ctx.history[hist_index]
+    local hist_index = deps_ctx.history_index
+    local hist_entry = deps_ctx.history[hist_index]
     local deps = hist_entry.version.deps as {Dependency}
 
     if not deps or not deps[index] then return end
     local selected_dependency = deps[index]
 
     -- update current entry
-    local current = M.deps_ctx.history[hist_index]
+    local current = deps_ctx.history[hist_index]
     current.line = index + top_offset
 
     local versions = core.vers_cache[selected_dependency.name]
@@ -894,13 +962,19 @@ function M.goto_dep(index: integer)
             hl_mode = "combine",
         })
 
+        local transaction = math.random()
+        deps_ctx.transaction = transaction
+
         if not api.is_fetching_vers(crate_name) then
             state.reload_crate(crate_name)
         end
 
         api.add_vers_callback(crate_name, function(versions: {Version}, cancelled: boolean)
             if cancelled then
-                vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
+                -- hide loading indicator
+                if M.buf then
+                    vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
+                end
                 return
             end
 
@@ -911,12 +985,16 @@ function M.goto_dep(index: integer)
                 state.reload_deps(crate_name, versions, match)
             end
             api.add_deps_callback(crate_name, match.num, function(_deps: {Dependency}, cancelled: boolean)
-                vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
+                -- hide loading indicator
+                if M.buf then
+                    vim.api.nvim_buf_clear_namespace(M.buf, M.namespace, 0, 1)
+                end
                 if cancelled then return end
 
-                -- TODO: don't show if window was hidden
-                -- cancel this if the user selects another dependency
-                goto_dep(selected_dependency.name, match)
+                -- only goto dependency if the user hasn't taken other actions
+                if M.deps_ctx == deps_ctx and deps_ctx.transaction == transaction then
+                    goto_dep(selected_dependency.name, match)
+                end
             end)
         end)
     end
@@ -924,8 +1002,9 @@ end
 
 function M.jump_back_dep(line: integer)
     if not M.deps_ctx then return end
+    local deps_ctx = M.deps_ctx as DepsContext
 
-    local hist_index = M.deps_ctx.history_index
+    local hist_index = deps_ctx.history_index
 
     if hist_index == 1 then
         M.hide()
@@ -933,45 +1012,52 @@ function M.jump_back_dep(line: integer)
     end
 
     -- update current entry
-    local current = M.deps_ctx.history[hist_index]
+    local current = deps_ctx.history[hist_index]
     current.line = line
 
-    M.deps_ctx.history_index = hist_index - 1
-    hist_index = M.deps_ctx.history_index
+    deps_ctx.history_index = hist_index - 1
+    hist_index = deps_ctx.history_index
 
-    local entry = M.deps_ctx.history[hist_index]
+    local entry = deps_ctx.history[hist_index]
     if not entry then return end
 
-    M.hide()
+    -- omit loading transaction if any
+    deps_ctx.transaction = nil
+
     M._open_deps(entry.crate_name, entry.version, {
         focus = true,
         line = entry.line,
+        update = true,
     })
 end
 
 function M.jump_forward_dep(line: integer)
     if not M.deps_ctx then return end
+    local deps_ctx = M.deps_ctx as DepsContext
 
-    local hist_index = M.deps_ctx.history_index
+    local hist_index = deps_ctx.history_index
 
-    if hist_index == #M.deps_ctx.history then
+    if hist_index == #deps_ctx.history then
         return
     end
 
     -- update current entry
-    local current = M.deps_ctx.history[hist_index]
+    local current = deps_ctx.history[hist_index]
     current.line = line
 
-    M.deps_ctx.history_index = hist_index + 1
-    hist_index = M.deps_ctx.history_index
+    deps_ctx.history_index = hist_index + 1
+    hist_index = deps_ctx.history_index
 
-    local entry = M.deps_ctx.history[hist_index]
+    local entry = deps_ctx.history[hist_index]
     if not entry then return end
 
-    M.hide()
+    -- omit loading transaction if any
+    deps_ctx.transaction = nil
+
     M._open_deps(entry.crate_name, entry.version, {
         focus = true,
         line = entry.line,
+        update = true,
     })
 end
 
