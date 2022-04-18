@@ -41,12 +41,12 @@ Feel free to open issues.
 ## Setup
 
 ### Installation
-To use with neovim 0.5 or to stay on a stable release.
+To use with neovim 0.6 or to stay on a stable release.
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
 Plug 'nvim-lua/plenary.nvim'
-Plug 'saecki/crates.nvim', { 'tag': 'v0.1.0' }
+Plug 'saecki/crates.nvim', { 'tag': 'v0.2.0' }
 
 lua require('crates').setup()
 ```
@@ -55,7 +55,7 @@ lua require('crates').setup()
 ```lua
 use {
     'saecki/crates.nvim',
-    tag = 'v0.1.0',
+    tag = 'v0.2.0',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
