@@ -1,18 +1,4 @@
-local M = {DepsContext = {}, DepsHistoryEntry = {}, WinOpts = {}, HighlightText = {}, }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+local M = {WinOpts = {}, HighlightText = {}, }
 
 
 
@@ -45,8 +31,6 @@ local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 
 local core = require("crates.core")
-local api = require("crates.api")
-local Version = api.Version
 
 M.TOP_OFFSET = 2
 M.NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup")
@@ -70,7 +54,6 @@ function M.hide()
    end
    M.buf = nil
    M.type = nil
-   M.deps_ctx = nil
 end
 
 function M.win_height(entries)

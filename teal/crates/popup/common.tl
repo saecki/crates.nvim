@@ -5,26 +5,12 @@ local record M
     win: integer|nil
     buf: integer|nil
     type: Type|nil
-    deps_ctx: DepsContext|nil
 
     enum Type
         "versions"
         "features"
         "feature_details"
         "dependencies"
-    end
-
-    record DepsContext
-        buf: integer
-        transaction: number|nil
-        history: {DepsHistoryEntry}
-        history_index: integer
-    end
-
-    record DepsHistoryEntry
-        crate_name: string
-        version: Version
-        line: integer -- 1 indexed
     end
 
     record WinOpts
@@ -45,8 +31,6 @@ local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 
 local core = require("crates.core")
-local api = require("crates.api")
-local Version = api.Version
 
 M.TOP_OFFSET = 2
 M.NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
@@ -70,7 +54,6 @@ function M.hide()
     end
     M.buf = nil
     M.type = nil
-    M.deps_ctx = nil
 end
 
 function M.win_height<T>(entries: {T}): integer
