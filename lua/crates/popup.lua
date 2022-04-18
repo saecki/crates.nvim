@@ -72,6 +72,17 @@ local M = {FeatureContext = {}, FeatHistoryEntry = {}, DepsContext = {}, DepsHis
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 local FeatureContext = M.FeatureContext
 local FeatHistoryEntry = M.FeatHistoryEntry
 local DepsContext = M.DepsContext
@@ -331,9 +342,11 @@ local function open_win(width, height, title, text, opts, configure)
    })
 
 
-   local hide_cmd = ":lua require('crates.popup').hide()<cr>"
    for _, k in ipairs(core.cfg.popup.keys.hide) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, hide_cmd, {
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+         callback = function()
+            M.hide()
+         end,
          noremap = true,
          silent = true,
          desc = "Hide popup",
@@ -390,44 +403,45 @@ function M.open_versions(crate, versions, opts)
    local width = win_width(title, vers_width + date_width)
    local height = win_height(versions)
    open_win(width, height, title, versions_text, opts, function()
-      local select_cmd = string.format(
-      ":lua require('crates.popup').select_version(%d, '%s', %s - %d)<cr>",
-      util.current_buf(),
-      crate:cache_key(),
-      "vim.api.nvim_win_get_cursor(0)[1]",
-      top_offset)
-
+      local buf = util.current_buf()
       for _, k in ipairs(core.cfg.popup.keys.select) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_cmd, {
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+            callback = function()
+               M.select_version(
+               buf,
+               crate,
+               versions,
+               vim.api.nvim_win_get_cursor(0)[1] - top_offset)
+
+            end,
             noremap = true,
             silent = true,
             desc = "Select version",
          })
       end
 
-      local select_alt_cmd = string.format(
-      ":lua require('crates.popup').select_version(%d, '%s', %s - %d, true)<cr>",
-      util.current_buf(),
-      crate:cache_key(),
-      "vim.api.nvim_win_get_cursor(0)[1]",
-      top_offset)
-
       for _, k in ipairs(core.cfg.popup.keys.select_alt) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, select_alt_cmd, {
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+            callback = function()
+               M.select_version(
+               buf,
+               crate,
+               versions,
+               vim.api.nvim_win_get_cursor(0)[1] - top_offset,
+               true)
+
+            end,
             noremap = true,
             silent = true,
             desc = "Select version alt",
          })
       end
 
-      local copy_cmd = string.format(
-      ":lua require('crates.popup').copy_version('%s', %s - %d, true)<cr>",
-      crate.name,
-      "vim.api.nvim_win_get_cursor(0)[1]",
-      top_offset)
-
       for _, k in ipairs(core.cfg.popup.keys.copy_version) do
-         vim.api.nvim_buf_set_keymap(M.buf, "n", k, copy_cmd, {
+         vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+            callback = function()
+               M.copy_version(versions, vim.api.nvim_win_get_cursor(0)[1] - top_offset)
+            end,
             noremap = true,
             silent = true,
             desc = "Copy version",
@@ -436,16 +450,7 @@ function M.open_versions(crate, versions, opts)
    end)
 end
 
-function M.select_version(buf, key, index, alt)
-   local crates = core.crate_cache[buf]
-   if not crates then return end
-
-   local crate = crates[key]
-   if not crate then return end
-
-   local versions = core.vers_cache[crate.name]
-   if not versions then return end
-
+function M.select_version(buf, crate, versions, index, alt)
    local version = versions[index]
    if not version then return end
 
@@ -476,16 +481,11 @@ function M.select_version(buf, key, index, alt)
    end
 end
 
-function M.copy_version(name, index)
-   local versions = core.vers_cache[name]
-   if not versions then return end
+function M.copy_version(versions, index)
+   local version = versions[index]
+   if not version then return end
 
-   if index <= 0 or index > #versions then
-      return
-   end
-   local text = versions[index].num
-
-   vim.fn.setreg(core.cfg.popup.copy_register, text)
+   vim.fn.setreg(core.cfg.popup.copy_register, version.num)
 end
 
 
@@ -506,50 +506,44 @@ local function feature_text(features_info, feature)
 end
 
 local function config_feat_win()
-   local toggle_cmd = string.format(
-   ":lua require('crates.popup').toggle_feature(%s - %d)<cr>",
-   "vim.api.nvim_win_get_cursor(0)[1]",
-   top_offset)
-
    for _, k in ipairs(core.cfg.popup.keys.toggle_feature) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, toggle_cmd, {
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+         callback = function()
+            M.toggle_feature(vim.api.nvim_win_get_cursor(0)[1] - top_offset)
+         end,
          noremap = true,
          silent = true,
          desc = "Toggle feature",
       })
    end
 
-   local goto_cmd = string.format(
-   ":lua require('crates.popup').goto_feature(%s - %d)<cr>",
-   "vim.api.nvim_win_get_cursor(0)[1]",
-   top_offset)
-
    for _, k in ipairs(core.cfg.popup.keys.goto_item) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, {
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+         callback = function()
+            M.goto_feature(vim.api.nvim_win_get_cursor(0)[1] - top_offset)
+         end,
          noremap = true,
          silent = true,
          desc = "Goto feature",
       })
    end
 
-   local jump_forward_cmd = string.format(
-   ":lua require('crates.popup').jump_forward_feature(%s)<cr>",
-   "vim.api.nvim_win_get_cursor(0)[1]")
-
    for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, {
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+         callback = function()
+            M.jump_forward_feature(vim.api.nvim_win_get_cursor(0)[1])
+         end,
          noremap = true,
          silent = true,
          desc = "Jump forward",
       })
    end
 
-   local jump_back_cmd = string.format(
-   ":lua require('crates.popup').jump_back_feature(%s)<cr>",
-   "vim.api.nvim_win_get_cursor(0)[1]")
-
    for _, k in ipairs(core.cfg.popup.keys.jump_back) do
-      vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, {
+      vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+         callback = function()
+            M.jump_back_feature(vim.api.nvim_win_get_cursor(0)[1])
+         end,
          noremap = true,
          silent = true,
          desc = "Jump back",
@@ -908,37 +902,33 @@ function M._open_deps(crate_name, version, opts)
       update_win(width, height, title, deps_text, opts)
    else
       open_win(width, height, title, deps_text, opts, function()
-         local goto_cmd = string.format(
-         ":lua require('crates.popup').goto_dep(%s - %d)<cr>",
-         "vim.api.nvim_win_get_cursor(0)[1]",
-         top_offset)
-
          for _, k in ipairs(core.cfg.popup.keys.goto_item) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, goto_cmd, {
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+               callback = function()
+                  M.goto_dep(vim.api.nvim_win_get_cursor(0)[1] - top_offset)
+               end,
                noremap = true,
                silent = true,
                desc = "Goto dependency",
             })
          end
 
-         local jump_forward_cmd = string.format(
-         ":lua require('crates.popup').jump_forward_dep(%s)<cr>",
-         "vim.api.nvim_win_get_cursor(0)[1]")
-
          for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_forward_cmd, {
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+               callback = function()
+                  M.jump_forward_dep(vim.api.nvim_win_get_cursor(0)[1])
+               end,
                noremap = true,
                silent = true,
                desc = "Jump forward",
             })
          end
 
-         local jump_back_cmd = string.format(
-         ":lua require('crates.popup').jump_back_dep(%s)<cr>",
-         "vim.api.nvim_win_get_cursor(0)[1]")
-
          for _, k in ipairs(core.cfg.popup.keys.jump_back) do
-            vim.api.nvim_buf_set_keymap(M.buf, "n", k, jump_back_cmd, {
+            vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
+               callback = function()
+                  M.jump_back_dep(vim.api.nvim_win_get_cursor(0)[1])
+               end,
                noremap = true,
                silent = true,
                desc = "Jump back",
