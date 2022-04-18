@@ -62,22 +62,32 @@ local Range = require("crates.types").Range
 function M.setup(cfg: Config)
     core.cfg = config.build(cfg)
 
-    vim.cmd("augroup Crates")
-    vim.cmd("autocmd!")
+    local group = vim.api.nvim_create_augroup("Crates", {})
     if core.cfg.autoload then
-        vim.cmd("autocmd BufRead Cargo.toml lua require('crates').update()")
+        vim.api.nvim_create_autocmd("BufRead", {
+            group = group,
+            pattern = "Cargo.toml",
+            callback = function()
+                M.update()
+            end,
+        })
     end
     if core.cfg.autoupdate then
-        vim.cmd("autocmd TextChanged,TextChangedI,TextChangedP Cargo.toml lua require('crates').update()")
+        vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
+            group = group,
+            pattern = "Cargo.toml",
+            callback = function()
+                M.update()
+            end,
+        })
     end
-    vim.cmd("augroup END")
-
-    vim.cmd([[
-        augroup CratesPopup
-        autocmd!
-        autocmd CursorMoved,CursorMovedI Cargo.toml lua require("crates.popup").hide()
-        augroup END
-    ]])
+    vim.api.nvim_create_autocmd({ "CursorMoved" ,"CursorMovedI" }, {
+        group = group,
+        pattern = "Cargo.toml",
+        callback = function()
+            popup.hide()
+        end,
+    })
 
     if core.cfg.src.coq.enabled then
         require("crates.src.coq").setup(core.cfg.src.coq.name)
