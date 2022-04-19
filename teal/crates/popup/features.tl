@@ -48,17 +48,15 @@ local function feature_text(features_info: {string:FeatureInfo}, feature: Featur
     return { text = text, hl = hl }
 end
 
-local function toggle_feature(ctx: FeatureContext, index: integer)
-    local buf = ctx.buf
-    local crate = ctx.crate
-    local version = ctx.version
-    local features = version.features
+local function toggle_feature(ctx: FeatureContext, line: integer)
+    local index = line - popup.TOP_OFFSET
+    local features = ctx.version.features
     local hist_index = ctx.history_index
-    local feature = ctx.history[hist_index].feature
+    local entry = ctx.history[hist_index]
 
     local selected_feature: Feature
-    if feature then
-        local m = feature.members[index]
+    if entry.feature then
+        local m = entry.feature.members[index]
         if m then
             selected_feature = features:get_feat(m)
         end
@@ -68,27 +66,27 @@ local function toggle_feature(ctx: FeatureContext, index: integer)
     if not selected_feature then return end
 
     local line_range: Range
-    local crate_feature = crate:get_feat(selected_feature.name)
+    local crate_feature = ctx.crate:get_feat(selected_feature.name)
     if selected_feature.name == "default" then
-        if crate_feature ~= nil or crate:is_def_enabled() then
-            line_range = util.disable_def_features(buf, crate, crate_feature)
+        if crate_feature ~= nil or ctx.crate:is_def_enabled() then
+            line_range = util.disable_def_features(ctx.buf, ctx.crate, crate_feature)
         else
-            line_range = util.enable_def_features(buf, crate)
+            line_range = util.enable_def_features(ctx.buf, ctx.crate)
         end
     else
         if crate_feature then
-            line_range = util.disable_feature(buf, crate, crate_feature)
+            line_range = util.disable_feature(ctx.buf, ctx.crate, crate_feature)
         else
-            line_range = util.enable_feature(buf, crate, selected_feature)
+            line_range = util.enable_feature(ctx.buf, ctx.crate, selected_feature)
         end
     end
 
-    -- update crate
+    -- update crate position
     local c = {}
     for l in line_range:iter() do
-        local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+        local line = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
         line = toml.trim_comments(line)
-        if crate.syntax == "table" then
+        if ctx.crate.syntax == "table" then
             local cr = toml.parse_crate_table_vers(line)
             if cr then
                 cr.vers.line = l
@@ -104,7 +102,7 @@ local function toggle_feature(ctx: FeatureContext, index: integer)
                 cf.feat.line = l
                 table.insert(c, cf)
             end
-        elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
+        elseif ctx.crate.syntax == "plain" or ctx.crate.syntax == "inline_table" then
             local cf = toml.parse_crate(line)
             if cf and cf.vers then
                 cf.vers.line = l
@@ -118,14 +116,13 @@ local function toggle_feature(ctx: FeatureContext, index: integer)
             table.insert(c, cf)
         end
     end
-    ctx.crate = Crate.new(vim.tbl_extend("force", crate as table, unpack(c) as table) as Crate)
-    crate = ctx.crate
+    ctx.crate = Crate.new(vim.tbl_extend("force", ctx.crate as table, unpack(c) as table) as Crate)
 
     -- update buffer
     local features_text = {}
-    local features_info = util.features_info(crate, features)
-    if feature then
-        for _,m in ipairs(feature.members) do
+    local features_info = util.features_info(ctx.crate, features)
+    if entry.feature then
+        for _,m in ipairs(entry.feature.members) do
             local f = features:get_feat(m) or {
                 name = m,
                 members = {},
@@ -149,7 +146,8 @@ local function toggle_feature(ctx: FeatureContext, index: integer)
     vim.api.nvim_buf_set_option(popup.buf, "modifiable", false)
 end
 
-local function goto_feature(ctx: FeatureContext, index: integer)
+local function goto_feature(ctx: FeatureContext, line: integer)
+    local index = line - popup.TOP_OFFSET
     local crate = ctx.crate
     local version = ctx.version
     local hist_index = ctx.history_index
@@ -173,7 +171,7 @@ local function goto_feature(ctx: FeatureContext, index: integer)
 
     -- update current entry
     local current = ctx.history[hist_index]
-    current.line = index + popup.TOP_OFFSET
+    current.line = line
 
     ctx.history_index = hist_index + 1
     hist_index = ctx.history_index
@@ -253,7 +251,7 @@ local function config_feat_win(ctx: FeatureContext): function()
         for _,k in ipairs(core.cfg.popup.keys.toggle_feature) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                 callback = function()
-                    toggle_feature(ctx, vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
+                    toggle_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
                 end,
                 noremap = true,
                 silent = true,
@@ -264,7 +262,7 @@ local function config_feat_win(ctx: FeatureContext): function()
         for _,k in ipairs(core.cfg.popup.keys.goto_item) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                 callback = function()
-                    goto_feature(ctx, vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
+                    goto_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
                 end,
                 noremap = true,
                 silent = true,

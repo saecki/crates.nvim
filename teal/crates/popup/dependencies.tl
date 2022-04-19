@@ -85,7 +85,8 @@ local function fetch_deps(
     end)
 end
 
-local function goto_dep(ctx: DepsContext, index: integer)
+local function goto_dep(ctx: DepsContext, line: integer)
+    local index = line - popup.TOP_OFFSET
     local hist_index = ctx.history_index
     local hist_entry = ctx.history[hist_index]
     local deps = hist_entry.version.deps as {Dependency}
@@ -95,7 +96,7 @@ local function goto_dep(ctx: DepsContext, index: integer)
 
     -- update current entry
     local current = ctx.history[hist_index]
-    current.line = index + popup.TOP_OFFSET
+    current.line = line
 
     local crate_name = selected_dependency.name
     local versions = core.vers_cache[crate_name]
@@ -237,7 +238,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
             for _,k in ipairs(core.cfg.popup.keys.goto_item) do
                 vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                     callback = function()
-                        goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
+                        goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                     end,
                     noremap = true,
                     silent = true,

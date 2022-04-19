@@ -1,4 +1,12 @@
-local record M end
+local record M
+    record VersContext
+        buf: integer
+        crate: Crate
+        versions: {Version}
+    end
+end
+
+local VersContext = M.VersContext
 
 local core = require("crates.core")
 local api = require("crates.api")
@@ -11,16 +19,18 @@ local popup = require("crates.popup.common")
 local WinOpts = popup.WinOpts
 local HighlightText = popup.HighlightText
 
-local function select_version(buf: integer, crate: Crate, versions: {Version}, index: integer, alt: boolean|nil)
-    local version = versions[index]
+local function select_version(ctx: VersContext, line: integer, alt: boolean|nil)
+    local index = line - popup.TOP_OFFSET
+    local crate = ctx.crate
+    local version = ctx.versions[index]
     if not version then return end
 
     local line_range: Range
-    line_range = util.set_version(buf, crate, version.parsed, alt)
+    line_range = util.set_version(ctx.buf, crate, version.parsed, alt)
 
     -- update crate
     for l in line_range:iter() do
-        local line = vim.api.nvim_buf_get_lines(buf, l, l + 1, false)[1]
+        local line = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
         line = toml.trim_comments(line)
         if crate.syntax == "table" then
             local c = toml.parse_crate_table_vers(line)
@@ -42,7 +52,8 @@ local function select_version(buf: integer, crate: Crate, versions: {Version}, i
     end
 end
 
-local function copy_version(versions: {Version}, index: integer)
+local function copy_version(versions: {Version}, line: integer)
+    local index = line - popup.TOP_OFFSET
     local version = versions[index]
     if not version then return end
     
@@ -89,16 +100,15 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
     local width = popup.win_width(title, vers_width + date_width)
     local height = popup.win_height(versions)
     popup.open_win(width, height, title, versions_text, opts, function()
-        local buf = util.current_buf()
+        local ctx = {
+            buf = util.current_buf(),
+            crate = crate,
+            versions = versions,
+        }
         for _,k in ipairs(core.cfg.popup.keys.select) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                 callback = function()
-                    select_version(
-                        buf,
-                        crate,
-                        versions,
-                        vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET
-                    )
+                    select_version(ctx, vim.api.nvim_win_get_cursor(0)[1])
                 end,
                 noremap = true,
                 silent = true,
@@ -109,13 +119,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         for _,k in ipairs(core.cfg.popup.keys.select_alt) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                 callback = function()
-                    select_version(
-                        buf,
-                        crate,
-                        versions,
-                        vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET,
-                        true
-                    )
+                    select_version(ctx, vim.api.nvim_win_get_cursor(0)[1], true)
                 end,
                 noremap = true,
                 silent = true,
@@ -126,7 +130,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         for _,k in ipairs(core.cfg.popup.keys.copy_version) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                 callback = function()
-                    copy_version(versions, vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
+                    copy_version(versions, vim.api.nvim_win_get_cursor(0)[1])
                 end,
                 noremap = true,
                 silent = true,
