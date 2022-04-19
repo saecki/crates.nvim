@@ -27,6 +27,7 @@ local M = {WinOpts = {}, HighlightText = {}, }
 
 
 
+
 local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
 
@@ -54,6 +55,8 @@ function M.hide()
    end
    M.buf = nil
    M.type = nil
+
+   M.transaction = nil
 end
 
 function M.win_height(entries)

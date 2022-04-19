@@ -5,6 +5,7 @@ local record M
     win: integer|nil
     buf: integer|nil
     type: Type|nil
+    transaction: number|nil
 
     enum Type
         "versions"
@@ -54,6 +55,8 @@ function M.hide()
     end
     M.buf = nil
     M.type = nil
+    -- omit loading transaction if any
+    M.transaction = nil
 end
 
 function M.win_height<T>(entries: {T}): integer

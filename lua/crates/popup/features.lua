@@ -16,9 +16,6 @@ local M = {FeatureContext = {}, FeatHistoryEntry = {}, }
 
 
 
-
-
-
 local FeatureContext = M.FeatureContext
 local FeatHistoryEntry = M.FeatHistoryEntry
 
@@ -299,19 +296,6 @@ local function config_feat_win(ctx)
    end
 end
 
-function M.open(crate, version, opts)
-   local ctx = {
-      buf = util.current_buf(),
-      crate = crate,
-      version = version,
-      history = {
-         { feature = nil, line = opts and opts.line or 3 },
-      },
-      history_index = 1,
-   }
-   M.open_features(ctx, crate, version, opts)
-end
-
 function M.open_features(ctx, crate, version, opts)
    popup.type = "features"
 
@@ -335,20 +319,6 @@ function M.open_features(ctx, crate, version, opts)
    else
       popup.open_win(width, height, title, features_text, opts, config_feat_win(ctx))
    end
-end
-
-function M.open_details(crate, version, feature, opts)
-   local ctx = {
-      buf = util.current_buf(),
-      crate = crate,
-      version = version,
-      history = {
-         { feature = nil, line = 3 },
-         { feature = feature, line = opts and opts.line or 3 },
-      },
-      history_index = 2,
-   }
-   M.open_feature_details(ctx, crate, version, feature, opts)
 end
 
 function M.open_feature_details(ctx, crate, version, feature, opts)
@@ -380,6 +350,33 @@ function M.open_feature_details(ctx, crate, version, feature, opts)
    else
       popup.open_win(width, height, title, features_text, opts, config_feat_win(ctx))
    end
+end
+
+function M.open(crate, version, opts)
+   local ctx = {
+      buf = util.current_buf(),
+      crate = crate,
+      version = version,
+      history = {
+         { feature = nil, line = opts and opts.line or 3 },
+      },
+      history_index = 1,
+   }
+   M.open_features(ctx, crate, version, opts)
+end
+
+function M.open_details(crate, version, feature, opts)
+   local ctx = {
+      buf = util.current_buf(),
+      crate = crate,
+      version = version,
+      history = {
+         { feature = nil, line = 3 },
+         { feature = feature, line = opts and opts.line or 3 },
+      },
+      history_index = 2,
+   }
+   M.open_feature_details(ctx, crate, version, feature, opts)
 end
 
 return M

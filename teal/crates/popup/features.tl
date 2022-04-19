@@ -1,7 +1,4 @@
 local record M
-    open: function(Crate, Version, WinOpts)
-    open_details: function(Crate, Version, Feature, WinOpts)
-
     open_features: function(FeatureContext, Crate, Version, WinOpts)
     open_feature_details: function(FeatureContext, Crate, Version, Feature, WinOpts)
     
@@ -299,19 +296,6 @@ local function config_feat_win(ctx: FeatureContext): function()
     end
 end
 
-function M.open(crate: Crate, version: Version, opts: WinOpts)
-    local ctx = {
-        buf = util.current_buf(),
-        crate = crate,
-        version = version,
-        history = {
-            { feature = nil, line = opts and opts.line or 3 },
-        },
-        history_index = 1,
-    }
-    M.open_features(ctx, crate, version, opts)
-end
-
 function M.open_features(ctx: FeatureContext, crate: Crate, version: Version, opts: WinOpts)
     popup.type = "features"
 
@@ -335,20 +319,6 @@ function M.open_features(ctx: FeatureContext, crate: Crate, version: Version, op
     else
         popup.open_win(width, height, title, features_text, opts, config_feat_win(ctx))
     end
-end
-
-function M.open_details(crate: Crate, version: Version, feature: Feature, opts: WinOpts)
-    local ctx = {
-        buf = util.current_buf(),
-        crate = crate,
-        version = version,
-        history = {
-            { feature = nil, line = 3 } as FeatHistoryEntry,
-            { feature = feature, line = opts and opts.line or 3 },
-        },
-        history_index = 2,
-    }
-    M.open_feature_details(ctx, crate, version, feature, opts)
 end
 
 function M.open_feature_details(ctx: FeatureContext, crate: Crate, version: Version, feature: Feature, opts: WinOpts)
@@ -380,6 +350,33 @@ function M.open_feature_details(ctx: FeatureContext, crate: Crate, version: Vers
     else
         popup.open_win(width, height, title, features_text, opts, config_feat_win(ctx))
     end
+end
+
+function M.open(crate: Crate, version: Version, opts: WinOpts)
+    local ctx = {
+        buf = util.current_buf(),
+        crate = crate,
+        version = version,
+        history = {
+            { feature = nil, line = opts and opts.line or 3 },
+        },
+        history_index = 1,
+    }
+    M.open_features(ctx, crate, version, opts)
+end
+
+function M.open_details(crate: Crate, version: Version, feature: Feature, opts: WinOpts)
+    local ctx = {
+        buf = util.current_buf(),
+        crate = crate,
+        version = version,
+        history = {
+            { feature = nil, line = 3 } as FeatHistoryEntry,
+            { feature = feature, line = opts and opts.line or 3 },
+        },
+        history_index = 2,
+    }
+    M.open_feature_details(ctx, crate, version, feature, opts)
 end
 
 return M

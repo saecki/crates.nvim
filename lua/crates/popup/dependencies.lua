@@ -14,9 +14,6 @@ local M = {DepsContext = {}, DepsHistoryEntry = {}, }
 
 
 
-
-
-
 local DepsContext = M.DepsContext
 
 local core = require("crates.core")
@@ -29,31 +26,28 @@ local popup = require("crates.popup.common")
 local WinOpts = popup.WinOpts
 local HighlightText = popup.HighlightText
 
-local function _goto_dep(crate_name, version)
-   if not M.deps_ctx then return end
-   local deps_ctx = M.deps_ctx
+local function _goto_dep(ctx, crate_name, version)
+   local hist_index = ctx.history_index
 
-   local hist_index = deps_ctx.history_index
+   ctx.history_index = hist_index + 1
+   hist_index = ctx.history_index
+   for i = hist_index, #ctx.history, 1 do
+      ctx.history[i] = nil
+   end
+
+
+   popup.transaction = nil
+
+   ctx.history[hist_index] = {
+      crate_name = crate_name,
+      version = version,
+      line = 3,
+   }
 
    M.open_deps(crate_name, version, {
       focus = true,
       update = true,
    })
-
-   deps_ctx.history_index = hist_index + 1
-   hist_index = deps_ctx.history_index
-   for i = hist_index, #deps_ctx.history, 1 do
-      deps_ctx.history[i] = nil
-   end
-
-
-   deps_ctx.transaction = nil
-
-   deps_ctx.history[hist_index] = {
-      crate_name = crate_name,
-      version = version,
-      line = 3,
-   }
 end
 
 local function show_loading_indicator()
@@ -71,11 +65,11 @@ local function hide_loading_indicator()
 end
 
 local function fetch_deps(
+   ctx,
+   transaction,
    crate_name,
    versions,
-   version,
-   deps_ctx,
-   transaction)
+   version)
 
    if not api.is_fetching_deps(crate_name, version.num) then
       state.reload_deps(crate_name, versions, version)
@@ -85,25 +79,22 @@ local function fetch_deps(
       if cancelled then return end
 
 
-      if M.deps_ctx == deps_ctx and deps_ctx.transaction == transaction then
-         _goto_dep(crate_name, version)
+      if popup.transaction == transaction then
+         _goto_dep(ctx, crate_name, version)
       end
    end)
 end
 
-local function goto_dep(index)
-   local deps_ctx = M.deps_ctx
-   if not deps_ctx then return end
-
-   local hist_index = deps_ctx.history_index
-   local hist_entry = deps_ctx.history[hist_index]
+local function goto_dep(ctx, index)
+   local hist_index = ctx.history_index
+   local hist_entry = ctx.history[hist_index]
    local deps = hist_entry.version.deps
 
    if not deps or not deps[index] then return end
    local selected_dependency = deps[index]
 
 
-   local current = deps_ctx.history[hist_index]
+   local current = ctx.history[hist_index]
    current.line = index + popup.TOP_OFFSET
 
    local crate_name = selected_dependency.name
@@ -113,16 +104,16 @@ local function goto_dep(index)
       local match = m or p or y
 
       if match.deps then
-         _goto_dep(crate_name, match)
+         _goto_dep(ctx, crate_name, match)
       else
          local transaction = math.random()
-         deps_ctx.transaction = transaction
+         popup.transaction = transaction
          show_loading_indicator()
-         fetch_deps(crate_name, versions, match, deps_ctx, transaction)
+         fetch_deps(ctx, transaction, crate_name, versions, match)
       end
    else
       local transaction = math.random()
-      deps_ctx.transaction = transaction
+      popup.transaction = transaction
 
       show_loading_indicator()
 
@@ -139,16 +130,13 @@ local function goto_dep(index)
          local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
          local match = m or p or y
 
-         fetch_deps(crate_name, versions, match, deps_ctx, transaction)
+         fetch_deps(ctx, transaction, crate_name, versions, match)
       end)
    end
 end
 
-local function jump_back_dep(line)
-   local deps_ctx = M.deps_ctx
-   if not deps_ctx then return end
-
-   local hist_index = deps_ctx.history_index
+local function jump_back_dep(ctx, line)
+   local hist_index = ctx.history_index
 
    if hist_index == 1 then
       popup.hide()
@@ -156,17 +144,17 @@ local function jump_back_dep(line)
    end
 
 
-   local current = deps_ctx.history[hist_index]
+   local current = ctx.history[hist_index]
    current.line = line
 
-   deps_ctx.history_index = hist_index - 1
-   hist_index = deps_ctx.history_index
+   ctx.history_index = hist_index - 1
+   hist_index = ctx.history_index
 
-   local entry = deps_ctx.history[hist_index]
+   local entry = ctx.history[hist_index]
    if not entry then return end
 
 
-   deps_ctx.transaction = nil
+   popup.transaction = nil
 
    M.open_deps(entry.crate_name, entry.version, {
       focus = true,
@@ -175,28 +163,25 @@ local function jump_back_dep(line)
    })
 end
 
-local function jump_forward_dep(line)
-   local deps_ctx = M.deps_ctx
-   if not deps_ctx then return end
+local function jump_forward_dep(ctx, line)
+   local hist_index = ctx.history_index
 
-   local hist_index = deps_ctx.history_index
-
-   if hist_index == #deps_ctx.history then
+   if hist_index == #ctx.history then
       return
    end
 
 
-   local current = deps_ctx.history[hist_index]
+   local current = ctx.history[hist_index]
    current.line = line
 
-   deps_ctx.history_index = hist_index + 1
-   hist_index = deps_ctx.history_index
+   ctx.history_index = hist_index + 1
+   hist_index = ctx.history_index
 
-   local entry = deps_ctx.history[hist_index]
+   local entry = ctx.history[hist_index]
    if not entry then return end
 
 
-   deps_ctx.transaction = nil
+   popup.transaction = nil
 
    M.open_deps(entry.crate_name, entry.version, {
       focus = true,
@@ -205,18 +190,7 @@ local function jump_forward_dep(line)
    })
 end
 
-function M.open(crate_name, version, opts)
-   M.deps_ctx = {
-      buf = util.current_buf(),
-      history = {
-         { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
-      },
-      history_index = 1,
-   }
-   M.open_deps(crate_name, version, opts)
-end
-
-function M.open_deps(crate_name, version, opts)
+function M.open_deps(ctx, crate_name, version, opts)
    popup.type = "dependencies"
 
    local deps = version.deps
@@ -263,7 +237,7 @@ function M.open_deps(crate_name, version, opts)
          for _, k in ipairs(core.cfg.popup.keys.goto_item) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                callback = function()
-                  goto_dep(vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
+                  goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1] - popup.TOP_OFFSET)
                end,
                noremap = true,
                silent = true,
@@ -274,7 +248,7 @@ function M.open_deps(crate_name, version, opts)
          for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                callback = function()
-                  jump_forward_dep(vim.api.nvim_win_get_cursor(0)[1])
+                  jump_forward_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                end,
                noremap = true,
                silent = true,
@@ -285,7 +259,7 @@ function M.open_deps(crate_name, version, opts)
          for _, k in ipairs(core.cfg.popup.keys.jump_back) do
             vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
                callback = function()
-                  jump_back_dep(vim.api.nvim_win_get_cursor(0)[1])
+                  jump_back_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                end,
                noremap = true,
                silent = true,
@@ -294,6 +268,17 @@ function M.open_deps(crate_name, version, opts)
          end
       end)
    end
+end
+
+function M.open(crate_name, version, opts)
+   local ctx = {
+      buf = util.current_buf(),
+      history = {
+         { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
+      },
+      history_index = 1,
+   }
+   M.open_deps(ctx, crate_name, version, opts)
 end
 
 return M
