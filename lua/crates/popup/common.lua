@@ -140,7 +140,7 @@ function M.open_win(width, height, title, text, opts, configure)
    end
 
    if configure then
-      configure()
+      configure(M.win, M.buf)
    end
 
 

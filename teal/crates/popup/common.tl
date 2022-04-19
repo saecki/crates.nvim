@@ -110,7 +110,7 @@ function M.update_win(width: integer, height: integer, title: string, text: {Hig
     vim.api.nvim_win_set_cursor(M.win, { l, 0 })
 end
 
-function M.open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function())
+function M.open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function(integer, integer))
     M.buf = vim.api.nvim_create_buf(false, true) as integer
 
     -- add text and highlights
@@ -140,7 +140,7 @@ function M.open_win(width: integer, height: integer, title: string, text: {Highl
     end
 
     if configure then
-        configure()
+        configure(M.win, M.buf)
     end
 
     -- autofocus

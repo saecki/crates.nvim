@@ -223,9 +223,9 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
     if opts.update then
         popup.update_win(width, height, title, deps_text, opts)
     else
-        popup.open_win(width, height, title, deps_text, opts, function()
+        popup.open_win(width, height, title, deps_text, opts, function(_win: integer, buf: integer)
             for _,k in ipairs(core.cfg.popup.keys.goto_item) do
-                vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+                vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                     end,
@@ -236,7 +236,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
             end
 
             for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
-                vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+                vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         jump_forward_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                     end,
@@ -247,7 +247,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
             end
 
             for _,k in ipairs(core.cfg.popup.keys.jump_back) do
-                vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+                vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         jump_back_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
                     end,

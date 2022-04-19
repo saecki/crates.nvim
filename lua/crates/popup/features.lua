@@ -240,9 +240,9 @@ local function jump_forward_feature(ctx, line)
 end
 
 local function config_feat_win(ctx)
-   return function()
+   return function(_win, buf)
       for _, k in ipairs(core.cfg.popup.keys.toggle_feature) do
-         vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+         vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                toggle_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
             end,
@@ -253,7 +253,7 @@ local function config_feat_win(ctx)
       end
 
       for _, k in ipairs(core.cfg.popup.keys.goto_item) do
-         vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+         vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                goto_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
             end,
@@ -264,7 +264,7 @@ local function config_feat_win(ctx)
       end
 
       for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
-         vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+         vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                jump_forward_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
             end,
@@ -275,7 +275,7 @@ local function config_feat_win(ctx)
       end
 
       for _, k in ipairs(core.cfg.popup.keys.jump_back) do
-         vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+         vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                jump_back_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
             end,

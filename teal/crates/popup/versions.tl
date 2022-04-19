@@ -99,14 +99,14 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
 
     local width = popup.win_width(title, vers_width + date_width)
     local height = popup.win_height(versions)
-    popup.open_win(width, height, title, versions_text, opts, function()
+    popup.open_win(width, height, title, versions_text, opts, function(_win: integer, buf: integer)
         local ctx = {
             buf = util.current_buf(),
             crate = crate,
             versions = versions,
         }
         for _,k in ipairs(core.cfg.popup.keys.select) do
-            vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+            vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     select_version(ctx, vim.api.nvim_win_get_cursor(0)[1])
                 end,
@@ -117,7 +117,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         end
 
         for _,k in ipairs(core.cfg.popup.keys.select_alt) do
-            vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+            vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     select_version(ctx, vim.api.nvim_win_get_cursor(0)[1], true)
                 end,
@@ -128,7 +128,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         end
 
         for _,k in ipairs(core.cfg.popup.keys.copy_version) do
-            vim.api.nvim_buf_set_keymap(popup.buf, "n", k, "", {
+            vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     copy_version(versions, vim.api.nvim_win_get_cursor(0)[1])
                 end,
