@@ -51,8 +51,7 @@ end
 local function toggle_feature(ctx, line)
    local index = line - popup.TOP_OFFSET
    local features = ctx.version.features
-   local hist_index = ctx.history_index
-   local entry = ctx.history[hist_index]
+   local entry = ctx.history[ctx.hist_idx]
 
    local selected_feature
    if entry.feature then
@@ -150,8 +149,7 @@ local function goto_feature(ctx, line)
    local index = line - popup.TOP_OFFSET
    local crate = ctx.crate
    local version = ctx.version
-   local hist_index = ctx.history_index
-   local feature = ctx.history[hist_index].feature
+   local feature = ctx.history[ctx.hist_idx].feature
 
    local selected_feature = nil
    if feature then
@@ -170,16 +168,15 @@ local function goto_feature(ctx, line)
    })
 
 
-   local current = ctx.history[hist_index]
+   local current = ctx.history[ctx.hist_idx]
    current.line = line
 
-   ctx.history_index = hist_index + 1
-   hist_index = ctx.history_index
-   for i = hist_index, #ctx.history, 1 do
+   ctx.hist_idx = ctx.hist_idx + 1
+   for i = ctx.hist_idx, #ctx.history, 1 do
       ctx.history[i] = nil
    end
 
-   ctx.history[hist_index] = {
+   ctx.history[ctx.hist_idx] = {
       feature = selected_feature,
       line = 3,
    }
@@ -188,28 +185,26 @@ end
 local function jump_back_feature(ctx, line)
    local crate = ctx.crate
    local version = ctx.version
-   local hist_index = ctx.history_index
 
-   if hist_index == 1 then
+   if ctx.hist_idx == 1 then
       popup.hide()
       return
    end
 
 
-   local current = ctx.history[hist_index]
+   local current = ctx.history[ctx.hist_idx]
    current.line = line
 
-   ctx.history_index = hist_index - 1
-   hist_index = ctx.history_index
+   ctx.hist_idx = ctx.hist_idx - 1
 
-   if hist_index == 1 then
+   if ctx.hist_idx == 1 then
       M.open_features(ctx, crate, version, {
          focus = true,
          line = ctx.history[1].line,
          update = true,
       })
    else
-      local entry = ctx.history[hist_index]
+      local entry = ctx.history[ctx.hist_idx]
       if not entry then return end
 
       M.open_feature_details(ctx, crate, version, entry.feature, {
@@ -223,20 +218,18 @@ end
 local function jump_forward_feature(ctx, line)
    local crate = ctx.crate
    local version = ctx.version
-   local hist_index = ctx.history_index
 
-   if hist_index == #ctx.history then
+   if ctx.hist_idx == #ctx.history then
       return
    end
 
 
-   local current = ctx.history[hist_index]
+   local current = ctx.history[ctx.hist_idx]
    current.line = line
 
-   ctx.history_index = hist_index + 1
-   hist_index = ctx.history_index
+   ctx.hist_idx = ctx.hist_idx + 1
 
-   local entry = ctx.history[hist_index]
+   local entry = ctx.history[ctx.hist_idx]
    if not entry then return end
 
    M.open_feature_details(ctx, crate, version, entry.feature, {
@@ -358,7 +351,7 @@ function M.open(crate, version, opts)
       history = {
          { feature = nil, line = opts and opts.line or 3 },
       },
-      history_index = 1,
+      hist_idx = 1,
    }
    M.open_features(ctx, crate, version, opts)
 end
@@ -372,7 +365,7 @@ function M.open_details(crate, version, feature, opts)
          { feature = nil, line = 3 },
          { feature = feature, line = opts and opts.line or 3 },
       },
-      history_index = 2,
+      hist_idx = 2,
    }
    M.open_feature_details(ctx, crate, version, feature, opts)
 end
