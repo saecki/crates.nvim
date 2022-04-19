@@ -1,10 +1,10 @@
 local record M
-    open_deps: function(string, Version, WinOpts)
+    open_deps: function(DepsContext, string, Version, WinOpts)
 
     record DepsContext
         buf: integer
         history: {DepsHistoryEntry}
-        history_index: integer
+        hist_idx: integer
     end
 
     record DepsHistoryEntry
@@ -27,24 +27,21 @@ local WinOpts = popup.WinOpts
 local HighlightText = popup.HighlightText
 
 local function _goto_dep(ctx: DepsContext, crate_name: string, version: Version)
-    local hist_index = ctx.history_index
-
-    ctx.history_index = hist_index + 1
-    hist_index = ctx.history_index
-    for i=hist_index, #ctx.history, 1 do
+    ctx.hist_idx = ctx.hist_idx + 1
+    for i=ctx.hist_idx, #ctx.history, 1 do
         ctx.history[i] = nil
     end
 
     -- omit loading transaction if any
     popup.transaction = nil
 
-    ctx.history[hist_index] = {
+    ctx.history[ctx.hist_idx] = {
         crate_name = crate_name,
         version = version,
         line = 3,
     }
 
-    M.open_deps(crate_name, version, {
+    M.open_deps(ctx, crate_name, version, {
         focus = true,
         update = true,
     })
@@ -87,16 +84,14 @@ end
 
 local function goto_dep(ctx: DepsContext, line: integer)
     local index = line - popup.TOP_OFFSET
-    local hist_index = ctx.history_index
-    local hist_entry = ctx.history[hist_index]
+    local hist_entry = ctx.history[ctx.hist_idx]
     local deps = hist_entry.version.deps as {Dependency}
 
     if not deps or not deps[index] then return end
     local selected_dependency = deps[index]
 
     -- update current entry
-    local current = ctx.history[hist_index]
-    current.line = line
+    hist_entry.line = line
 
     local crate_name = selected_dependency.name
     local versions = core.vers_cache[crate_name]
@@ -137,27 +132,24 @@ local function goto_dep(ctx: DepsContext, line: integer)
 end
 
 local function jump_back_dep(ctx: DepsContext, line: integer)
-    local hist_index = ctx.history_index
-
-    if hist_index == 1 then
+    if ctx.hist_idx == 1 then
         popup.hide()
         return
     end
 
     -- update current entry
-    local current = ctx.history[hist_index]
+    local current = ctx.history[ctx.hist_idx]
     current.line = line
 
-    ctx.history_index = hist_index - 1
-    hist_index = ctx.history_index
+    ctx.hist_idx = ctx.hist_idx - 1
 
-    local entry = ctx.history[hist_index]
+    local entry = ctx.history[ctx.hist_idx]
     if not entry then return end
 
     -- omit loading transaction if any
     popup.transaction = nil
 
-    M.open_deps(entry.crate_name, entry.version, {
+    M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
         line = entry.line,
         update = true,
@@ -165,26 +157,23 @@ local function jump_back_dep(ctx: DepsContext, line: integer)
 end
 
 local function jump_forward_dep(ctx: DepsContext, line: integer)
-    local hist_index = ctx.history_index
-
-    if hist_index == #ctx.history then
+    if ctx.hist_idx == #ctx.history then
         return
     end
 
     -- update current entry
-    local current = ctx.history[hist_index]
+    local current = ctx.history[ctx.hist_idx]
     current.line = line
 
-    ctx.history_index = hist_index + 1
-    hist_index = ctx.history_index
+    ctx.hist_idx = ctx.hist_idx + 1
 
-    local entry = ctx.history[hist_index]
+    local entry = ctx.history[ctx.hist_idx]
     if not entry then return end
 
     -- omit loading transaction if any
     popup.transaction = nil
 
-    M.open_deps(entry.crate_name, entry.version, {
+    M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
         line = entry.line,
         update = true,
@@ -277,7 +266,7 @@ function M.open(crate_name: string, version: Version, opts: WinOpts)
         history = {
             { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
         },
-        history_index = 1,
+        hist_idx = 1,
     }
     M.open_deps(ctx, crate_name, version, opts)
 end
