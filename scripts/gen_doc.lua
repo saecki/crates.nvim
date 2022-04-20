@@ -14,7 +14,7 @@ local function format_readme_refs(line)
 end
 
 local function gen_readme_functions(lines)
-    local file = io.open("teal/crates.tl", "r")
+    local file = io.open("teal/crates/init.tl", "r")
     for l in file:lines("*l") do
         if l == "end" then
             break
@@ -65,7 +65,7 @@ end
 local function gen_vimdoc_functions(lines)
     local func_doc = {}
 
-    local file = io.open("teal/crates.tl", "r")
+    local file = io.open("teal/crates/init.tl", "r")
     for l in file:lines("*l") do
         if l == "end" then
             break
