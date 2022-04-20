@@ -83,26 +83,26 @@ local function toggle_feature(ctx: FeatureContext, line: integer)
     -- update crate position
     local c = {}
     for l in line_range:iter() do
-        local line = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
-        line = toml.trim_comments(line)
+        local text = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
+        text = toml.trim_comments(text)
         if ctx.crate.syntax == "table" then
-            local cr = toml.parse_crate_table_vers(line)
+            local cr = toml.parse_crate_table_vers(text)
             if cr then
                 cr.vers.line = l
                 table.insert(c, cr)
             end
-            local cd = toml.parse_crate_table_def(line)
+            local cd = toml.parse_crate_table_def(text)
             if cd then
                 cd.def.line = l
                 table.insert(c, cd)
             end
-            local cf = toml.parse_crate_table_feat(line)
+            local cf = toml.parse_crate_table_feat(text)
             if cf then
                 cf.feat.line = l
                 table.insert(c, cf)
             end
         elseif ctx.crate.syntax == "plain" or ctx.crate.syntax == "inline_table" then
-            local cf = toml.parse_crate(line)
+            local cf = toml.parse_crate(text)
             if cf and cf.vers then
                 cf.vers.line = l
             end

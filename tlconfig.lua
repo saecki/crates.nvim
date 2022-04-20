@@ -5,5 +5,4 @@ return {
 	include_dir = { "teal", "types" },
 	source_dir = "teal",
 	build_dir = "lua",
-	disable_warnings = { "redeclaration" },
 }

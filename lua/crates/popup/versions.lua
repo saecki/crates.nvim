@@ -30,10 +30,10 @@ local function select_version(ctx, line, alt)
 
 
    for l in line_range:iter() do
-      local line = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
-      line = toml.trim_comments(line)
+      local text = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
+      text = toml.trim_comments(text)
       if crate.syntax == "table" then
-         local c = toml.parse_crate_table_vers(line)
+         local c = toml.parse_crate_table_vers(text)
          if c and c.vers then
             crate.vers.line = l
             crate.vers.col = c.vers.col
@@ -41,7 +41,7 @@ local function select_version(ctx, line, alt)
             crate.vers.quote = c.vers.quote
          end
       elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
-         local c = toml.parse_crate(line)
+         local c = toml.parse_crate(text)
          if c and c.vers then
             crate.vers.line = l
             crate.vers.col = c.vers.col

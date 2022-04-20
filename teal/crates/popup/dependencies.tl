@@ -117,16 +117,16 @@ local function goto_dep(ctx: DepsContext, line: integer)
             state.reload_crate(crate_name)
         end
 
-        api.add_vers_callback(crate_name, function(versions: {Version}, cancelled: boolean)
+        api.add_vers_callback(crate_name, function(fetched_versions: {Version}, cancelled: boolean)
             if cancelled then
                 hide_loading_indicator()
                 return
             end
 
-            local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
+            local m, p, y = util.get_newest(fetched_versions, false, selected_dependency.vers.reqs)
             local match = m or p or y
 
-            fetch_deps(ctx, transaction, crate_name, versions, match)
+            fetch_deps(ctx, transaction, crate_name, fetched_versions, match)
         end)
     end
 end
