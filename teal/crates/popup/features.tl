@@ -1,7 +1,7 @@
 local record M
     open_features: function(FeatureContext, Crate, Version, WinOpts)
     open_feature_details: function(FeatureContext, Crate, Version, Feature, WinOpts)
-    
+
     record FeatureContext
         buf: integer
         crate: Crate

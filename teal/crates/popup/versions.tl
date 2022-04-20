@@ -56,7 +56,7 @@ local function copy_version(versions: {Version}, line: integer)
     local index = line - popup.TOP_OFFSET
     local version = versions[index]
     if not version then return end
-    
+
     vim.fn.setreg(core.cfg.popup.copy_register, version.num)
 end
 
