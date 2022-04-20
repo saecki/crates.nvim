@@ -6,8 +6,10 @@ local record M
 end
 
 local core = require("crates.core")
-local Crate = require("crates.toml").Crate
-local CrateInfo = require("crates.diagnostic").CrateInfo
+local diagnostic = require("crates.diagnostic")
+local CrateInfo = diagnostic.CrateInfo
+local toml = require("crates.toml")
+local Crate = toml.Crate
 
 M.custom_ns = vim.api.nvim_create_namespace("crates.nvim") as integer
 M.custom_diagnostics = {}

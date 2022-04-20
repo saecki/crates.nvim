@@ -9,20 +9,20 @@ local M = {LineCrateInfo = {}, }
 
 
 local LineCrateInfo = M.LineCrateInfo
-
-local core = require("crates.core")
 local api = require("crates.api")
-local Version = api.Version
 local Feature = api.Feature
+local Version = api.Version
+local core = require("crates.core")
+local popup = require("crates.popup.common")
+local popup_deps = require("crates.popup.dependencies")
+local popup_feat = require("crates.popup.features")
+local popup_vers = require("crates.popup.versions")
+local Type = popup.Type
 local toml = require("crates.toml")
 local Crate = toml.Crate
+local types = require("crates.types")
+local Range = types.Range
 local util = require("crates.util")
-local Range = require("crates.types").Range
-local popup = require("crates.popup.common")
-local Type = popup.Type
-local vers_popup = require("crates.popup.versions")
-local feat_popup = require("crates.popup.features")
-local deps_popup = require("crates.popup.dependencies")
 
 local function line_crate_info()
    local pos = vim.api.nvim_win_get_cursor(0)
@@ -105,13 +105,13 @@ function M.show()
    if not info then return end
 
    if info.pref == "versions" then
-      vers_popup.open(info.crate, info.versions)
+      popup_vers.open(info.crate, info.versions)
    elseif info.pref == "features" then
-      feat_popup.open(info.crate, info.newest, {})
+      popup_feat.open(info.crate, info.newest, {})
    elseif info.pref == "feature_details" then
-      feat_popup.open_details(info.crate, info.newest, info.feature, {})
+      popup_feat.open_details(info.crate, info.newest, info.feature, {})
    elseif info.pref == "dependencies" then
-      deps_popup.open(info.crate.name, info.newest, {})
+      popup_deps.open(info.crate.name, info.newest, {})
    end
 end
 
@@ -136,7 +136,7 @@ function M.show_versions()
    local info = line_crate_info()
    if not info then return end
 
-   vers_popup.open(info.crate, info.versions)
+   popup_vers.open(info.crate, info.versions)
 end
 
 function M.show_features()
@@ -153,11 +153,11 @@ function M.show_features()
    if not info then return end
 
    if info.pref == "features" then
-      feat_popup.open(info.crate, info.newest, {})
+      popup_feat.open(info.crate, info.newest, {})
    elseif info.pref == "feature_details" then
-      feat_popup.open_details(info.crate, info.newest, info.feature, {})
+      popup_feat.open_details(info.crate, info.newest, info.feature, {})
    elseif info.newest then
-      feat_popup.open(info.crate, info.newest, {})
+      popup_feat.open(info.crate, info.newest, {})
    end
 end
 
@@ -174,7 +174,7 @@ function M.show_dependencies()
    local info = line_crate_info()
    if not info then return end
 
-   deps_popup.open(info.crate.name, info.newest, {})
+   popup_deps.open(info.crate.name, info.newest, {})
 end
 
 return M

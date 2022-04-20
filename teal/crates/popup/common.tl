@@ -28,9 +28,8 @@ local record M
     end
 end
 
-local WinOpts = M.WinOpts
 local HighlightText = M.HighlightText
-
+local WinOpts = M.WinOpts
 local core = require("crates.core")
 
 M.TOP_OFFSET = 2

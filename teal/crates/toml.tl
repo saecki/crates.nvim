@@ -85,7 +85,8 @@ local Crate = M.Crate
 local CrateFeature = M.CrateFeature
 local semver = require("crates.semver")
 local Requirement = semver.Requirement
-local Range = require("crates.types").Range
+local types = require("crates.types")
+local Range = types.Range
 
 function M.parse_crate_features(text: string): {CrateFeature}
     local feats: {CrateFeature} = {}

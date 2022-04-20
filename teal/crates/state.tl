@@ -1,14 +1,14 @@
 local record M end
 
 local api = require("crates.api")
-local Version = api.Version
 local Dependency = api.Dependency
-local Crate = require("crates.toml").Crate
+local Version = api.Version
 local core = require("crates.core")
-local toml = require("crates.toml")
-local util = require("crates.util")
-local ui = require("crates.ui")
 local diagnostic = require("crates.diagnostic")
+local toml = require("crates.toml")
+local Crate = toml.Crate
+local ui = require("crates.ui")
+local util = require("crates.util")
 
 function M.reload_deps(crate_name: string, versions: {Version}, version: Version)
     api.fetch_crate_deps(crate_name, version.num, function(deps: {Dependency}, cancelled: boolean)

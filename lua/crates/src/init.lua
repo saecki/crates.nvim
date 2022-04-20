@@ -22,10 +22,11 @@ local core = require("crates.core")
 local util = require("crates.util")
 local api = require("crates.api")
 local Version = api.Version
-local Range = require("crates.types").Range
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
+local types = require("crates.types")
+local Range = types.Range
 
 local VALUE_KIND = 12
 

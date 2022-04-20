@@ -158,8 +158,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 local Config = M.Config
-local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
+local SchemaType = M.SchemaType
 
 local function entry(schema, name, elem)
    elem.name = name

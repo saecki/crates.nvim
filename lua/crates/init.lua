@@ -52,12 +52,13 @@ local M = {}
 
 local config = require("crates.config")
 local Config = config.Config
-local state = require("crates.state")
 local core = require("crates.core")
 local popup = require("crates.popup")
-local util = require("crates.util")
+local state = require("crates.state")
+local types = require("crates.types")
+local Range = types.Range
 local ui = require("crates.ui")
-local Range = require("crates.types").Range
+local util = require("crates.util")
 
 function M.setup(cfg)
    core.cfg = config.build(cfg)

@@ -158,8 +158,8 @@ local record M
 end
 
 local Config = M.Config
-local SchemaType = M.SchemaType
 local SchemaElement = M.SchemaElement
+local SchemaType = M.SchemaType
 
 local function entry(schema: {string:SchemaElement}, name: string, elem: SchemaElement)
     elem.name = name

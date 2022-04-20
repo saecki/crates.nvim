@@ -2,15 +2,6 @@ local record M
     vers_jobs: {string:VersJob}
     deps_jobs: {string:DepsJob}
 
-    record Version
-        num: string
-        features: Features
-        yanked: boolean
-        parsed: SemVer
-        created: DateTime
-        deps: {Dependency}|nil
-    end
-
     record VersJob
         job: Job
         callbacks: {function({Version}, boolean)}
@@ -19,6 +10,15 @@ local record M
     record DepsJob
         job: Job
         callbacks: {function({Dependency}, boolean)}
+    end
+
+    record Version
+        num: string
+        features: Features
+        yanked: boolean
+        parsed: SemVer
+        created: DateTime
+        deps: {Dependency}|nil
     end
 
     record Features
@@ -49,15 +49,16 @@ local record M
     end
 end
 
-local Version = M.Version
-local Features = M.Features
-local Feature = M.Feature
 local Dependency = M.Dependency
-local Job = require("plenary.job")
+local Feature = M.Feature
+local Features = M.Features
+local Version = M.Version
 local semver = require("crates.semver")
-local SemVer = semver.SemVer
 local Requirement = semver.Requirement
-local DateTime = require("crates.time").DateTime
+local SemVer = semver.SemVer
+local time = require("crates.time")
+local DateTime = time.DateTime
+local Job = require("plenary.job")
 
 local endpoint = "https://crates.io/api/v1"
 local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)") as string

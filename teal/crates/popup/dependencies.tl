@@ -15,16 +15,15 @@ local record M
 end
 
 local DepsContext = M.DepsContext
-
-local core = require("crates.core")
-local state = require("crates.state")
 local api = require("crates.api")
-local Version = api.Version
 local Dependency = api.Dependency
-local util = require("crates.util")
+local Version = api.Version
+local core = require("crates.core")
 local popup = require("crates.popup.common")
-local WinOpts = popup.WinOpts
 local HighlightText = popup.HighlightText
+local WinOpts = popup.WinOpts
+local state = require("crates.state")
+local util = require("crates.util")
 
 local function _goto_dep(ctx: DepsContext, crate_name: string, version: Version)
     ctx.hist_idx = ctx.hist_idx + 1

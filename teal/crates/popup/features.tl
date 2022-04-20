@@ -18,19 +18,19 @@ end
 
 local FeatureContext = M.FeatureContext
 local FeatHistoryEntry = M.FeatHistoryEntry
-
-local core = require("crates.core")
 local api = require("crates.api")
-local Version = api.Version
 local Feature = api.Feature
-local toml = require("crates.toml")
-local Crate = toml.Crate
-local util = require("crates.util")
-local FeatureInfo = util.FeatureInfo
-local Range = require("crates.types").Range
+local Version = api.Version
+local core = require("crates.core")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
+local toml = require("crates.toml")
+local Crate = toml.Crate
+local types = require("crates.types")
+local Range = types.Range
+local util = require("crates.util")
+local FeatureInfo = util.FeatureInfo
 
 local function feature_text(features_info: {string:FeatureInfo}, feature: Feature): HighlightText
     local text, hl: string, string

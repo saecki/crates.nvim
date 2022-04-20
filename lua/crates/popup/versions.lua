@@ -7,17 +7,17 @@ local M = {VersContext = {}, }
 
 
 local VersContext = M.VersContext
-
-local core = require("crates.core")
 local api = require("crates.api")
 local Version = api.Version
+local core = require("crates.core")
+local popup = require("crates.popup.common")
+local HighlightText = popup.HighlightText
+local WinOpts = popup.WinOpts
 local toml = require("crates.toml")
 local Crate = toml.Crate
+local types = require("crates.types")
+local Range = types.Range
 local util = require("crates.util")
-local Range = require("crates.types").Range
-local popup = require("crates.popup.common")
-local WinOpts = popup.WinOpts
-local HighlightText = popup.HighlightText
 
 local function select_version(ctx, line, alt)
    local index = line - popup.TOP_OFFSET

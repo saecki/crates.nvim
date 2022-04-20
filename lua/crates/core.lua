@@ -5,9 +5,12 @@ local Core = {}
 
 
 
-local Config = require("crates.config").Config
-local Version = require("crates.api").Version
-local Crate = require("crates.toml").Crate
+local api = require("crates.api")
+local Version = api.Version
+local config = require("crates.config")
+local Config = config.Config
+local toml = require("crates.toml")
+local Crate = toml.Crate
 
 Core.cfg = {}
 Core.vers_cache = {}

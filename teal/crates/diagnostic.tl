@@ -6,9 +6,11 @@ local record M
         diagnostics: {vim.diagnostic.Diagnostic}
         version: Version|nil
     end
+
     enum SectionScope
         "header"
     end
+
     enum CrateScope
         "vers"
         "def"
@@ -17,19 +19,20 @@ local record M
 end
 
 local CrateInfo = M.CrateInfo
-local SectionScope = M.SectionScope
 local CrateScope = M.CrateScope
+local SectionScope = M.SectionScope
+local api = require("crates.api")
+local Dependency = api.Dependency
+local Version = api.Version
 local core = require("crates.core")
-local util = require("crates.util")
 local semver = require("crates.semver")
 local toml = require("crates.toml")
-local Section = toml.Section
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
-local api = require("crates.api")
-local Version = api.Version
-local Dependency = api.Dependency
-local Range = require("crates.types").Range
+local Section = toml.Section
+local types = require("crates.types")
+local Range = types.Range
+local util = require("crates.util")
 
 function M.section_diagnostic(section: Section, message: string, severity: integer, scope: SectionScope|nil): vim.diagnostic.Diagnostic
     local d: vim.diagnostic.Diagnostic = {

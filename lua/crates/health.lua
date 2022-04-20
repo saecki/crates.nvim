@@ -5,7 +5,6 @@ local health_ok = vim.fn["health#report_ok"]
 local health_error = vim.fn["health#report_error"]
 local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
 
-
 local function lualib_installed(name)
    local ok, _ = pcall(require, name)
    return ok
