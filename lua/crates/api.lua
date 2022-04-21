@@ -288,11 +288,23 @@ function M.add_vers_callback(name, callback)
 
 end
 
+function M.await_vers(name)
+   return coroutine.yield(function(resolve)
+      M.add_vers_callback(name, resolve)
+   end)
+end
+
 function M.add_deps_callback(name, version, callback)
    table.insert(
    M.deps_jobs[name .. ":" .. version].callbacks,
    callback)
 
+end
+
+function M.await_deps(name, version)
+   return coroutine.yield(function(resolve)
+      M.add_deps_callback(name, version, resolve)
+   end)
 end
 
 function M.cancel_jobs()

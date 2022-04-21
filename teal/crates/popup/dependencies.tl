@@ -18,6 +18,7 @@ local DepsContext = M.DepsContext
 local api = require("crates.api")
 local Dependency = api.Dependency
 local Version = api.Version
+local async = require("crates.async")
 local core = require("crates.core")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
@@ -25,14 +26,66 @@ local WinOpts = popup.WinOpts
 local state = require("crates.state")
 local util = require("crates.util")
 
-local function _goto_dep(ctx: DepsContext, crate_name: string, version: Version)
+local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
+    local index = line - popup.TOP_OFFSET
+    local hist_entry = ctx.history[ctx.hist_idx]
+    local deps = hist_entry.version.deps as {Dependency}
+
+    if not deps or not deps[index] then return end
+    local selected_dependency = deps[index]
+
+    -- update current entry
+    hist_entry.line = line
+
+    local transaction = math.random()
+    popup.transaction = transaction
+
+    local crate_name = selected_dependency.name
+    local versions = core.vers_cache[crate_name]
+
+    if not versions then
+        popup.show_loading_indicator()
+
+        if not api.is_fetching_vers(crate_name) then
+            state.reload_crate(crate_name)
+        end
+
+        local cancelled: boolean
+        versions, cancelled = api.await_vers(crate_name)
+
+        popup.hide_loading_indicator(transaction)
+        if cancelled then return end
+    end
+
+    -- abort if the user has taken other actions
+    if popup.transaction ~= transaction then
+        return
+    end
+
+    local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
+    local version = m or p or y
+
+    if not version.deps then
+        popup.show_loading_indicator()
+
+        if not api.is_fetching_deps(crate_name, version.num) then
+            state.reload_deps(crate_name, versions, version)
+        end
+        local _, cancelled = api.await_deps(crate_name, version.num)
+
+        popup.hide_loading_indicator(transaction)
+        if cancelled then return end
+    end
+
+    -- abort if the user has taken other actions
+    if popup.transaction ~= transaction then
+        return
+    end
+
     ctx.hist_idx = ctx.hist_idx + 1
     for i=ctx.hist_idx, #ctx.history, 1 do
         ctx.history[i] = nil
     end
-
-    -- omit loading transaction if any
-    popup.transaction = nil
 
     ctx.history[ctx.hist_idx] = {
         crate_name = crate_name,
@@ -44,91 +97,7 @@ local function _goto_dep(ctx: DepsContext, crate_name: string, version: Version)
         focus = true,
         update = true,
     })
-end
-
-local function show_loading_indicator()
-    vim.api.nvim_buf_set_extmark(popup.buf, popup.NAMESPACE, 0, -1, {
-        virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
-        virt_text_pos = "right_align",
-        hl_mode = "combine",
-    })
-end
-
-local function hide_loading_indicator()
-    if popup.buf then
-        vim.api.nvim_buf_clear_namespace(popup.buf, popup.NAMESPACE, 0, 1)
-    end
-end
-
-local function fetch_deps(
-    ctx: DepsContext,
-    transaction: number,
-    crate_name: string,
-    versions: {Version},
-    version: Version
-)
-    if not api.is_fetching_deps(crate_name, version.num) then
-        state.reload_deps(crate_name, versions, version)
-    end
-    api.add_deps_callback(crate_name, version.num, function(_deps: {Dependency}, cancelled: boolean)
-        hide_loading_indicator()
-        if cancelled then return end
-
-        -- only goto dependency if the user hasn't taken other actions
-        if popup.transaction == transaction then
-            _goto_dep(ctx, crate_name, version)
-        end
-    end)
-end
-
-local function goto_dep(ctx: DepsContext, line: integer)
-    local index = line - popup.TOP_OFFSET
-    local hist_entry = ctx.history[ctx.hist_idx]
-    local deps = hist_entry.version.deps as {Dependency}
-
-    if not deps or not deps[index] then return end
-    local selected_dependency = deps[index]
-
-    -- update current entry
-    hist_entry.line = line
-
-    local crate_name = selected_dependency.name
-    local versions = core.vers_cache[crate_name]
-    if versions then
-        local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
-        local match = m or p or y
-
-        if match.deps then
-            _goto_dep(ctx, crate_name, match)
-        else
-            local transaction = math.random()
-            popup.transaction = transaction
-            show_loading_indicator()
-            fetch_deps(ctx, transaction, crate_name, versions, match)
-        end
-    else
-        local transaction = math.random()
-        popup.transaction = transaction
-
-        show_loading_indicator()
-
-        if not api.is_fetching_vers(crate_name) then
-            state.reload_crate(crate_name)
-        end
-
-        api.add_vers_callback(crate_name, function(fetched_versions: {Version}, cancelled: boolean)
-            if cancelled then
-                hide_loading_indicator()
-                return
-            end
-
-            local m, p, y = util.get_newest(fetched_versions, false, selected_dependency.vers.reqs)
-            local match = m or p or y
-
-            fetch_deps(ctx, transaction, crate_name, fetched_versions, match)
-        end)
-    end
-end
+end)
 
 local function jump_back_dep(ctx: DepsContext, line: integer)
     if ctx.hist_idx == 1 then
@@ -144,9 +113,6 @@ local function jump_back_dep(ctx: DepsContext, line: integer)
 
     local entry = ctx.history[ctx.hist_idx]
     if not entry then return end
-
-    -- omit loading transaction if any
-    popup.transaction = nil
 
     M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
@@ -169,9 +135,6 @@ local function jump_forward_dep(ctx: DepsContext, line: integer)
     local entry = ctx.history[ctx.hist_idx]
     if not entry then return end
 
-    -- omit loading transaction if any
-    popup.transaction = nil
-
     M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
         line = entry.line,
@@ -181,6 +144,8 @@ end
 
 function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opts: WinOpts)
     popup.type = "dependencies"
+
+    popup.omit_loading_transaction()
 
     local deps = version.deps as {Dependency}
     if not deps then return end

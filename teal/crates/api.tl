@@ -288,11 +288,23 @@ function M.add_vers_callback(name: string, callback: function({Version}, boolean
     )
 end
 
+function M.await_vers(name: string): {Version}, boolean
+    return coroutine.yield(function(resolve: function({Version}, boolean))
+        M.add_vers_callback(name, resolve)
+    end) as ({Version}, boolean)
+end
+
 function M.add_deps_callback(name: string, version: string, callback: function({Dependency}, boolean))
     table.insert(
         M.deps_jobs[name .. ":" .. version].callbacks,
         callback
     )
+end
+
+function M.await_deps(name: string, version: string): {Dependency}, boolean
+    return coroutine.yield(function(resolve: function({Dependency}, boolean))
+        M.add_deps_callback(name, version, resolve)
+    end) as ({Dependency}, boolean)
 end
 
 function M.cancel_jobs()

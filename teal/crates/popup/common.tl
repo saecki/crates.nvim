@@ -1,6 +1,7 @@
 local record M
     TOP_OFFSET: integer
     NAMESPACE: integer
+    LOADING_NAMESPACE: integer
 
     win: integer|nil
     buf: integer|nil
@@ -34,6 +35,7 @@ local core = require("crates.core")
 
 M.TOP_OFFSET = 2
 M.NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
+M.LOADING_NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup.loading") as integer
 
 function M.focus(line: integer|nil)
     if M.win and vim.api.nvim_win_is_valid(M.win) then
@@ -146,6 +148,32 @@ function M.open_win(width: integer, height: integer, title: string, text: {Highl
     if opts and opts.focus or core.cfg.popup.autofocus then
         M.focus(opts and opts.line)
     end
+end
+
+
+function M.hide_loading_indicator(transaction: number)
+    if transaction and transaction ~= M.transaction then
+        return
+    end
+    if M.buf then
+        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NAMESPACE, 0, 1)
+    end
+end
+
+function M.show_loading_indicator()
+    if M.buf then
+        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NAMESPACE, 0, 1)
+        vim.api.nvim_buf_set_extmark(M.buf, M.LOADING_NAMESPACE, 0, -1, {
+            virt_text = { { core.cfg.popup.text.loading, core.cfg.popup.highlight.loading } },
+            virt_text_pos = "right_align",
+            hl_mode = "combine",
+        })
+    end
+end
+
+function M.omit_loading_transaction()
+    M.transaction = nil
+    M.hide_loading_indicator()
 end
 
 return M
