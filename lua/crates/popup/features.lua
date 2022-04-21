@@ -21,10 +21,10 @@ local FeatHistoryEntry = M.FeatHistoryEntry
 local api = require("crates.api")
 local Feature = api.Feature
 local Version = api.Version
-local core = require("crates.core")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
@@ -36,14 +36,14 @@ local function feature_text(features_info, feature)
    local text, hl
    local info = features_info[feature.name]
    if info.enabled then
-      text = string.format(core.cfg.popup.text.enabled, feature.name)
-      hl = core.cfg.popup.highlight.enabled
+      text = string.format(state.cfg.popup.text.enabled, feature.name)
+      hl = state.cfg.popup.highlight.enabled
    elseif info.transitive then
-      text = string.format(core.cfg.popup.text.transitive, feature.name)
-      hl = core.cfg.popup.highlight.transitive
+      text = string.format(state.cfg.popup.text.transitive, feature.name)
+      hl = state.cfg.popup.highlight.transitive
    else
-      text = string.format(core.cfg.popup.text.feature, feature.name)
-      hl = core.cfg.popup.highlight.feature
+      text = string.format(state.cfg.popup.text.feature, feature.name)
+      hl = state.cfg.popup.highlight.feature
    end
    return { text = text, hl = hl }
 end
@@ -241,7 +241,7 @@ end
 
 local function config_feat_win(ctx)
    return function(_win, buf)
-      for _, k in ipairs(core.cfg.popup.keys.toggle_feature) do
+      for _, k in ipairs(state.cfg.popup.keys.toggle_feature) do
          vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                toggle_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -252,7 +252,7 @@ local function config_feat_win(ctx)
          })
       end
 
-      for _, k in ipairs(core.cfg.popup.keys.goto_item) do
+      for _, k in ipairs(state.cfg.popup.keys.goto_item) do
          vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                goto_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -263,7 +263,7 @@ local function config_feat_win(ctx)
          })
       end
 
-      for _, k in ipairs(core.cfg.popup.keys.jump_forward) do
+      for _, k in ipairs(state.cfg.popup.keys.jump_forward) do
          vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                jump_forward_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -274,7 +274,7 @@ local function config_feat_win(ctx)
          })
       end
 
-      for _, k in ipairs(core.cfg.popup.keys.jump_back) do
+      for _, k in ipairs(state.cfg.popup.keys.jump_back) do
          vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
             callback = function()
                jump_back_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -291,7 +291,7 @@ function M.open_features(ctx, crate, version, opts)
    popup.type = "features"
 
    local features = version.features
-   local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num)
+   local title = string.format(state.cfg.popup.text.title, crate.name .. " " .. version.num)
    local feat_width = 0
    local features_text = {}
 
@@ -317,7 +317,7 @@ function M.open_feature_details(ctx, crate, version, feature, opts)
 
    local features = version.features
    local members = feature.members
-   local title = string.format(core.cfg.popup.text.title, crate.name .. " " .. version.num .. " " .. feature.name)
+   local title = string.format(state.cfg.popup.text.title, crate.name .. " " .. version.num .. " " .. feature.name)
    local feat_width = 0
    local features_text = {}
 

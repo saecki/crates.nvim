@@ -16,8 +16,8 @@ local api = require("crates.api")
 local Feature = api.Feature
 local Features = api.Features
 local Version = api.Version
-local core = require("crates.core")
 local semver = require("crates.semver")
+local state = require("crates.state")
 local Requirement = semver.Requirement
 local SemVer = semver.SemVer
 local toml = require("crates.toml")
@@ -34,13 +34,13 @@ function M.get_lines_crates(lines)
    local crate_versions = {}
 
    local cur_buf = M.current_buf()
-   local crates = core.crate_cache[cur_buf]
+   local crates = state.crate_cache[cur_buf]
    if crates then
       for _, c in pairs(crates) do
          if lines:contains(c.lines.s) or c.lines:contains(lines.s) then
             table.insert(crate_versions, {
                crate = c,
-               versions = core.vers_cache[c.name],
+               versions = state.vers_cache[c.name],
             })
          end
       end
@@ -158,7 +158,7 @@ local function set_version_dumb(buf, crate, text)
       end
    else
       local t = text
-      if core.cfg.insert_closing_quote and not crate.vers.quote.e then
+      if state.cfg.insert_closing_quote and not crate.vers.quote.e then
          t = text .. crate.vers.quote.s
       end
       local line = crate.vers.line
@@ -298,9 +298,9 @@ end
 function M.set_version(buf, crate, version, alt)
    local smart
    if alt then
-      smart = not core.cfg.smart_insert
+      smart = not state.cfg.smart_insert
    else
-      smart = core.cfg.smart_insert
+      smart = state.cfg.smart_insert
    end
 
    if smart then
@@ -315,7 +315,7 @@ function M.upgrade_crates(crates, alt)
       local crate = c.crate
       local versions = c.versions
 
-      local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
+      local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
       local newest, newest_pre, newest_yanked = M.get_newest(versions, avoid_pre, nil)
       newest = newest or newest_pre or newest_yanked
 
@@ -330,7 +330,7 @@ function M.update_crates(crates, alt)
       local crate = c.crate
       local versions = c.versions
 
-      local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
+      local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
       local match, match_pre, match_yanked = M.get_newest(versions, avoid_pre, crate:vers_reqs())
       match = match or match_pre or match_yanked
 

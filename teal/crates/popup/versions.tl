@@ -9,10 +9,10 @@ end
 local VersContext = M.VersContext
 local api = require("crates.api")
 local Version = api.Version
-local core = require("crates.core")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
@@ -57,27 +57,27 @@ local function copy_version(versions: {Version}, line: integer)
     local version = versions[index]
     if not version then return end
 
-    vim.fn.setreg(core.cfg.popup.copy_register, version.num)
+    vim.fn.setreg(state.cfg.popup.copy_register, version.num)
 end
 
 function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
     popup.type = "versions"
 
-    local title = string.format(core.cfg.popup.text.title, crate.name)
+    local title = string.format(state.cfg.popup.text.title, crate.name)
     local vers_width = 0
     local versions_text: {HighlightText} = {}
 
     for _,v in ipairs(versions) do
         local text, hl: string, string
         if v.yanked then
-            text = string.format(core.cfg.popup.text.yanked, v.num)
-            hl = core.cfg.popup.highlight.yanked
+            text = string.format(state.cfg.popup.text.yanked, v.num)
+            hl = state.cfg.popup.highlight.yanked
         elseif v.parsed.pre then
-            text = string.format(core.cfg.popup.text.prerelease, v.num)
-            hl = core.cfg.popup.highlight.prerelease
+            text = string.format(state.cfg.popup.text.prerelease, v.num)
+            hl = state.cfg.popup.highlight.prerelease
         else
-            text = string.format(core.cfg.popup.text.version, v.num)
-            hl = core.cfg.popup.highlight.version
+            text = string.format(state.cfg.popup.text.version, v.num)
+            hl = state.cfg.popup.highlight.version
         end
 
         table.insert(versions_text, { text = text, hl = hl })
@@ -85,13 +85,13 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
     end
 
     local date_width = 0
-    if core.cfg.popup.show_version_date then
+    if state.cfg.popup.show_version_date then
         for i,v in ipairs(versions_text) do
             local diff = vers_width - vim.fn.strdisplaywidth(v.text) as integer
-            local date = versions[i].created:display(core.cfg.date_format)
+            local date = versions[i].created:display(state.cfg.date_format)
             v.text = v.text..string.rep(" ", diff)
-            v.suffix = string.format(core.cfg.popup.text.version_date, date)
-            v.suffix_hl = core.cfg.popup.highlight.version_date
+            v.suffix = string.format(state.cfg.popup.text.version_date, date)
+            v.suffix_hl = state.cfg.popup.highlight.version_date
 
             date_width = math.max(vim.fn.strdisplaywidth(v.suffix) as integer, date_width)
         end
@@ -105,7 +105,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
             crate = crate,
             versions = versions,
         }
-        for _,k in ipairs(core.cfg.popup.keys.select) do
+        for _,k in ipairs(state.cfg.popup.keys.select) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     select_version(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -116,7 +116,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
             })
         end
 
-        for _,k in ipairs(core.cfg.popup.keys.select_alt) do
+        for _,k in ipairs(state.cfg.popup.keys.select_alt) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     select_version(ctx, vim.api.nvim_win_get_cursor(0)[1], true)
@@ -127,7 +127,7 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
             })
         end
 
-        for _,k in ipairs(core.cfg.popup.keys.copy_version) do
+        for _,k in ipairs(state.cfg.popup.keys.copy_version) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     copy_version(versions, vim.api.nvim_win_get_cursor(0)[1])

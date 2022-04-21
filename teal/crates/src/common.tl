@@ -21,7 +21,7 @@ local CompletionList = M.CompletionList
 local api = require("crates.api")
 local Version = api.Version
 local async = require("crates.async")
-local core = require("crates.core")
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
@@ -40,16 +40,16 @@ local function complete_versions(crate: Crate, versions: {Version}): CompletionL
             kind = VALUE_KIND,
             sortText = string.format("%04d", i),
         }
-        if core.cfg.src.insert_closing_quote then
+        if state.cfg.src.insert_closing_quote then
             if crate.vers and not crate.vers.quote.e then
                 r.insertText = v.num .. crate.vers.quote.s
             end
         end
         if v.yanked then
             r.deprecated = true
-            r.documentation = core.cfg.src.text.yanked
+            r.documentation = state.cfg.src.text.yanked
         elseif v.parsed.pre then
-            r.documentation = core.cfg.src.text.prerelease
+            r.documentation = state.cfg.src.text.prerelease
         end
 
         table.insert(items, r)
@@ -62,7 +62,7 @@ local function complete_versions(crate: Crate, versions: {Version}): CompletionL
 end
 
 local function complete_features(crate: Crate, cf: CrateFeature, versions: {Version}): CompletionList
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
     if not newest then
@@ -82,7 +82,7 @@ local function complete_features(crate: Crate, cf: CrateFeature, versions: {Vers
                 sortText = f.name,
                 documentation = table.concat(f.members, "\n"),
             }
-            if core.cfg.src.insert_closing_quote then
+            if state.cfg.src.insert_closing_quote then
                 if not cf.quote.e then
                     r.insertText = f.name .. cf.quote.s
                 end

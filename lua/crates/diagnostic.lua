@@ -24,8 +24,8 @@ local SectionScope = M.SectionScope
 local api = require("crates.api")
 local Dependency = api.Dependency
 local Version = api.Version
-local core = require("crates.core")
 local semver = require("crates.semver")
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
@@ -117,19 +117,19 @@ function M.process_crates(sections, crates)
       if s.invalid then
          table.insert(diagnostics, M.section_diagnostic(
          s,
-         core.cfg.diagnostic.section_invalid,
+         state.cfg.diagnostic.section_invalid,
          vim.diagnostic.severity.WARN))
 
       elseif s_cache[key] then
          table.insert(diagnostics, M.section_diagnostic(
          s_cache[key],
-         core.cfg.diagnostic.section_dup_original,
+         state.cfg.diagnostic.section_dup_original,
          vim.diagnostic.severity.HINT,
          "header"))
 
          table.insert(diagnostics, M.section_diagnostic(
          s,
-         core.cfg.diagnostic.section_dup,
+         state.cfg.diagnostic.section_dup,
          vim.diagnostic.severity.ERROR))
 
       else
@@ -146,12 +146,12 @@ function M.process_crates(sections, crates)
       if cache[key] then
          table.insert(diagnostics, M.crate_diagnostic(
          cache[key],
-         core.cfg.diagnostic.crate_dup_orig,
+         state.cfg.diagnostic.crate_dup_orig,
          vim.diagnostic.severity.HINT))
 
          table.insert(diagnostics, M.crate_diagnostic(
          c,
-         core.cfg.diagnostic.crate_dup,
+         state.cfg.diagnostic.crate_dup,
          vim.diagnostic.severity.ERROR))
 
       else
@@ -161,7 +161,7 @@ function M.process_crates(sections, crates)
             if c.def.text ~= "false" and c.def.text ~= "true" then
                table.insert(diagnostics, M.crate_diagnostic(
                c,
-               core.cfg.diagnostic.def_invalid,
+               state.cfg.diagnostic.def_invalid,
                vim.diagnostic.severity.ERROR,
                "def"))
 
@@ -174,13 +174,13 @@ function M.process_crates(sections, crates)
                table.insert(diagnostics, M.feat_diagnostic(
                c,
                feats[f.name],
-               core.cfg.diagnostic.feat_dup_orig,
+               state.cfg.diagnostic.feat_dup_orig,
                vim.diagnostic.severity.HINT))
 
                table.insert(diagnostics, M.feat_diagnostic(
                c,
                f,
-               core.cfg.diagnostic.feat_dup,
+               state.cfg.diagnostic.feat_dup,
                vim.diagnostic.severity.WARN))
 
             else
@@ -196,7 +196,7 @@ function M.process_crates(sections, crates)
 end
 
 function M.process_crate_versions(crate, versions)
-   local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
+   local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
    local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
    newest = newest or newest_pre or newest_yanked
 
@@ -208,17 +208,17 @@ function M.process_crate_versions(crate, versions)
    if newest then
       if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
 
-         info.virt_text = { { string.format(core.cfg.text.version, newest.num), core.cfg.highlight.version } }
+         info.virt_text = { { string.format(state.cfg.text.version, newest.num), state.cfg.highlight.version } }
          info.version = newest
       else
 
          local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
          info.version = match or match_pre or match_yanked
 
-         local upgrade_text = { string.format(core.cfg.text.upgrade, newest.num), core.cfg.highlight.upgrade }
+         local upgrade_text = { string.format(state.cfg.text.upgrade, newest.num), state.cfg.highlight.upgrade }
          table.insert(info.diagnostics, M.crate_diagnostic(
          crate,
-         core.cfg.diagnostic.vers_upgrade,
+         state.cfg.diagnostic.vers_upgrade,
          vim.diagnostic.severity.WARN,
          "vers"))
 
@@ -226,42 +226,42 @@ function M.process_crate_versions(crate, versions)
          if match then
 
             info.virt_text = {
-               { string.format(core.cfg.text.version, match.num), core.cfg.highlight.version },
+               { string.format(state.cfg.text.version, match.num), state.cfg.highlight.version },
                upgrade_text,
             }
          elseif match_pre then
 
             info.virt_text = {
-               { string.format(core.cfg.text.prerelease, match_pre.num), core.cfg.highlight.prerelease },
+               { string.format(state.cfg.text.prerelease, match_pre.num), state.cfg.highlight.prerelease },
                upgrade_text,
             }
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
-            core.cfg.diagnostic.vers_pre,
+            state.cfg.diagnostic.vers_pre,
             vim.diagnostic.severity.WARN,
             "vers"))
 
          elseif match_yanked then
 
             info.virt_text = {
-               { string.format(core.cfg.text.yanked, match_yanked.num), core.cfg.highlight.yanked },
+               { string.format(state.cfg.text.yanked, match_yanked.num), state.cfg.highlight.yanked },
                upgrade_text,
             }
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
-            core.cfg.diagnostic.vers_yanked,
+            state.cfg.diagnostic.vers_yanked,
             vim.diagnostic.severity.ERROR,
             "vers"))
 
          else
 
             info.virt_text = {
-               { core.cfg.text.nomatch, core.cfg.highlight.nomatch },
+               { state.cfg.text.nomatch, state.cfg.highlight.nomatch },
                upgrade_text,
             }
-            local message = core.cfg.diagnostic.vers_nomatch
+            local message = state.cfg.diagnostic.vers_nomatch
             if not crate.vers then
-               message = core.cfg.diagnostic.crate_novers
+               message = state.cfg.diagnostic.crate_novers
             end
             table.insert(info.diagnostics, M.crate_diagnostic(
             crate,
@@ -272,10 +272,10 @@ function M.process_crate_versions(crate, versions)
          end
       end
    else
-      info.virt_text = { { core.cfg.text.error, core.cfg.highlight.error } }
+      info.virt_text = { { state.cfg.text.error, state.cfg.highlight.error } }
       table.insert(info.diagnostics, M.crate_diagnostic(
       crate,
-      core.cfg.diagnostic.crate_error_fetching,
+      state.cfg.diagnostic.crate_error_fetching,
       vim.diagnostic.severity.ERROR,
       "vers"))
 
@@ -297,13 +297,13 @@ function M.process_crate_deps(crate, version, deps)
       end
    end
 
-   if not core.cfg.disable_invalid_feature_diagnostic then
+   if not state.cfg.disable_invalid_feature_diagnostic then
       for _, f in ipairs(crate:feats()) do
          if not vim.tbl_contains(valid_feats, f.name) then
             table.insert(diagnostics, M.feat_diagnostic(
             crate,
             f,
-            core.cfg.diagnostic.feat_invalid,
+            state.cfg.diagnostic.feat_invalid,
             vim.diagnostic.severity.ERROR))
 
          end

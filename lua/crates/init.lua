@@ -61,10 +61,10 @@ local ui = require("crates.ui")
 local util = require("crates.util")
 
 function M.setup(cfg)
-   core.cfg = config.build(cfg)
+   state.cfg = config.build(cfg)
 
    local group = vim.api.nvim_create_augroup("Crates", {})
-   if core.cfg.autoload then
+   if state.cfg.autoload then
       vim.api.nvim_create_autocmd("BufRead", {
          group = group,
          pattern = "Cargo.toml",
@@ -73,7 +73,7 @@ function M.setup(cfg)
          end,
       })
    end
-   if core.cfg.autoupdate then
+   if state.cfg.autoupdate then
       vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
          group = group,
          pattern = "Cargo.toml",
@@ -90,34 +90,34 @@ function M.setup(cfg)
       end,
    })
 
-   if core.cfg.src.coq.enabled then
-      require("crates.src.coq").setup(core.cfg.src.coq.name)
+   if state.cfg.src.coq.enabled then
+      require("crates.src.coq").setup(state.cfg.src.coq.name)
    end
 end
 
 function M.hide()
-   core.visible = false
-   for b, _ in pairs(core.crate_cache) do
+   state.visible = false
+   for b, _ in pairs(state.crate_cache) do
       ui.clear(b)
    end
 end
 
 function M.show()
-   core.visible = true
+   state.visible = true
 
 
    local buf = util.current_buf()
-   state.update(buf, false)
+   core.update(buf, false)
 
-   for b, _ in pairs(core.crate_cache) do
+   for b, _ in pairs(state.crate_cache) do
       if b ~= buf then
-         state.update(b, false)
+         core.update(b, false)
       end
    end
 end
 
 function M.toggle()
-   if core.visible then
+   if state.visible then
       M.hide()
    else
       M.show()
@@ -125,11 +125,11 @@ function M.toggle()
 end
 
 function M.update(buf)
-   state.update(buf, false)
+   core.update(buf, false)
 end
 
 function M.reload(buf)
-   state.update(buf, true)
+   core.update(buf, true)
 end
 
 
@@ -150,14 +150,14 @@ end
 
 function M.upgrade_all_crates(alt)
    local cur_buf = util.current_buf()
-   local crates = core.crate_cache[cur_buf]
+   local crates = state.crate_cache[cur_buf]
    if not crates then return end
 
    local crate_versions = {}
    for _, c in pairs(crates) do
       table.insert(crate_versions, {
          crate = c,
-         versions = core.vers_cache[c.name],
+         versions = state.vers_cache[c.name],
       })
    end
 
@@ -181,14 +181,14 @@ end
 
 function M.update_all_crates(alt)
    local cur_buf = util.current_buf()
-   local crates = core.crate_cache[cur_buf]
+   local crates = state.crate_cache[cur_buf]
    if not crates then return end
 
    local crate_versions = {}
    for _, c in pairs(crates) do
       table.insert(crate_versions, {
          crate = c,
-         versions = core.vers_cache[c.name],
+         versions = state.vers_cache[c.name],
       })
    end
 

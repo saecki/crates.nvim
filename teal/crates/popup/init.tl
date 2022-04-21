@@ -12,12 +12,12 @@ local LineCrateInfo = M.LineCrateInfo
 local api = require("crates.api")
 local Feature = api.Feature
 local Version = api.Version
-local core = require("crates.core")
 local popup = require("crates.popup.common")
+local Type = popup.Type
 local popup_deps = require("crates.popup.dependencies")
 local popup_feat = require("crates.popup.features")
 local popup_vers = require("crates.popup.versions")
-local Type = popup.Type
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
@@ -36,7 +36,7 @@ local function line_crate_info(): LineCrateInfo
     local crate = crates[1].crate
     local versions = crates[1].versions
 
-    local avoid_pre = core.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs()) as Version
 
     local info: LineCrateInfo = {

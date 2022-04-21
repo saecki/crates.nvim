@@ -41,13 +41,13 @@ local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
     popup.transaction = transaction
 
     local crate_name = selected_dependency.name
-    local versions = core.vers_cache[crate_name]
+    local versions = state.vers_cache[crate_name]
 
     if not versions then
         popup.show_loading_indicator()
 
         if not api.is_fetching_vers(crate_name) then
-            state.reload_crate(crate_name)
+            core.reload_crate(crate_name)
         end
 
         local cancelled: boolean
@@ -69,7 +69,7 @@ local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
         popup.show_loading_indicator()
 
         if not api.is_fetching_deps(crate_name, version.num) then
-            state.reload_deps(crate_name, versions, version)
+            core.reload_deps(crate_name, versions, version)
         end
         local _, cancelled = api.await_deps(crate_name, version.num)
 
@@ -150,18 +150,18 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
     local deps = version.deps as {Dependency}
     if not deps then return end
 
-    local title = string.format(core.cfg.popup.text.title, crate_name.." "..version.num)
+    local title = string.format(state.cfg.popup.text.title, crate_name.." "..version.num)
     local deps_width = 0
     local deps_text: {HighlightText} = {}
 
     for _,d in ipairs(deps) do
         local text, hl: string, string
         if d.opt then
-            text = string.format(core.cfg.popup.text.optional, d.name)
-            hl = core.cfg.popup.highlight.optional
+            text = string.format(state.cfg.popup.text.optional, d.name)
+            hl = state.cfg.popup.highlight.optional
         else
-            text = string.format(core.cfg.popup.text.dependency, d.name)
-            hl = core.cfg.popup.highlight.dependency
+            text = string.format(state.cfg.popup.text.dependency, d.name)
+            hl = state.cfg.popup.highlight.dependency
         end
 
         table.insert(deps_text, { text = text, hl = hl })
@@ -169,13 +169,13 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
     end
 
     local vers_width = 0
-    if core.cfg.popup.show_dependency_version then
+    if state.cfg.popup.show_dependency_version then
         for i,d in ipairs(deps_text) do
             local diff = deps_width - vim.fn.strdisplaywidth(d.text) as integer
             local date = deps[i].vers.text
             d.text = d.text..string.rep(" ", diff)
-            d.suffix = string.format(core.cfg.popup.text.dependency_version, date)
-            d.suffix_hl = core.cfg.popup.highlight.dependency_version
+            d.suffix = string.format(state.cfg.popup.text.dependency_version, date)
+            d.suffix_hl = state.cfg.popup.highlight.dependency_version
 
             vers_width = math.max(vim.fn.strdisplaywidth(d.suffix) as integer, vers_width)
         end
@@ -188,7 +188,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
         popup.update_win(width, height, title, deps_text, opts)
     else
         popup.open_win(width, height, title, deps_text, opts, function(_win: integer, buf: integer)
-            for _,k in ipairs(core.cfg.popup.keys.goto_item) do
+            for _,k in ipairs(state.cfg.popup.keys.goto_item) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -199,7 +199,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
                 })
             end
 
-            for _,k in ipairs(core.cfg.popup.keys.jump_forward) do
+            for _,k in ipairs(state.cfg.popup.keys.jump_forward) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         jump_forward_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
@@ -210,7 +210,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
                 })
             end
 
-            for _,k in ipairs(core.cfg.popup.keys.jump_back) do
+            for _,k in ipairs(state.cfg.popup.keys.jump_back) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         jump_back_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])

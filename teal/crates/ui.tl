@@ -5,9 +5,9 @@ local record M
     diagnostics: {integer:{vim.diagnostic.Diagnostic}}
 end
 
-local core = require("crates.core")
 local diagnostic = require("crates.diagnostic")
 local CrateInfo = diagnostic.CrateInfo
+local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 
@@ -17,7 +17,7 @@ M.diagnostic_ns = vim.api.nvim_create_namespace("crates.nvim.diagnostic") as int
 M.diagnostics = {}
 
 function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagnostic})
-    if not core.visible then return end
+    if not state.visible then return end
 
     M.diagnostics[buf] = M.diagnostics[buf] or {}
     vim.list_extend(M.diagnostics[buf], diagnostics)
@@ -26,7 +26,7 @@ function M.display_diagnostics(buf: integer, diagnostics: {vim.diagnostic.Diagno
 end
 
 function M.display_crate_info(buf: integer, info: CrateInfo)
-    if not core.visible then return end
+    if not state.visible then return end
 
     M.custom_diagnostics[buf] = M.custom_diagnostics[buf] or {}
     vim.list_extend(M.custom_diagnostics[buf], info.diagnostics)
@@ -41,9 +41,9 @@ function M.display_crate_info(buf: integer, info: CrateInfo)
 end
 
 function M.display_loading(buf: integer, crate: Crate)
-    if not core.visible then return end
+    if not state.visible then return end
 
-    local virt_text = { { core.cfg.text.loading, core.cfg.highlight.loading } }
+    local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }
     vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, crate.lines.s, crate.lines.e)
     local vers_line = crate.vers and crate.vers.line or crate.lines.s
     vim.api.nvim_buf_set_extmark(buf, M.custom_ns, vers_line, -1, {
