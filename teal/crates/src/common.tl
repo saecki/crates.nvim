@@ -18,15 +18,16 @@ end
 local CompletionItem = M.CompletionItem
 local CompletionList = M.CompletionList
 
-local core = require("crates.core")
-local util = require("crates.util")
 local api = require("crates.api")
 local Version = api.Version
+local async = require("crates.async")
+local core = require("crates.core")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
 local Range = types.Range
+local util = require("crates.util")
 
 local VALUE_KIND = 12
 
@@ -97,59 +98,58 @@ local function complete_features(crate: Crate, cf: CrateFeature, versions: {Vers
     }
 end
 
-local function complete(callback: function(CompletionList|nil), crate: Crate, versions: {Version}, line: integer, col: integer)
-    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
-        callback(complete_versions(crate, versions))
-    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
-        for _,f in ipairs(crate.feat.items) do
-            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
-                callback(complete_features(crate, f, versions))
-                return
-            end
-        end
+local function complete(): CompletionList|nil
+    local buf = util.current_buf()
 
-        callback(nil)
-    else
-        callback(nil)
-    end
-end
-
-function M.complete(callback: function(CompletionList|nil))
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
     local col = pos[2] as integer
-    local buf = util.current_buf()
-
     local crates = util.get_lines_crates(Range.new(line, line + 1))
-    if not crates or not crates[1] then
-        callback(nil)
+    if not crates[1] then
         return
     end
 
     local crate = crates[1].crate
     local versions = crates[1].versions
+
     if not versions and api.is_fetching_vers(crate.name) then
-        api.add_vers_callback(crate.name, function(items: {Version}, cancelled: boolean)
-            if buf ~= util.current_buf() then
-                callback(nil)
-                return
-            end
+        local _, cancelled = api.await_vers(crate.name)
 
-            pos = vim.api.nvim_win_get_cursor(0)
-            line = pos[1] as integer - 1
-            col = pos[2] as integer
-            crates = util.get_lines_crates(Range.new(line, line + 1))
+        if cancelled or buf ~= util.current_buf() then
+            return
+        end
 
-            if cancelled or not crates or not crates[1] then
-                callback(nil)
-            else
-                complete(callback, crate, items, line, col)
-            end
-        end)
+        pos = vim.api.nvim_win_get_cursor(0)
+        line = pos[1] as integer - 1
+        col = pos[2] as integer
+        crates = util.get_lines_crates(Range.new(line, line + 1))
+        if not crates[1] then
+            return
+        end
+
+        crate = crates[1].crate
+        versions = crates[1].versions
+    end
+
+    if not versions then
         return
     end
 
-    complete(callback, crate, versions, line, col)
+    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
+        return complete_versions(crate, versions)
+    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
+        for _,f in ipairs(crate.feat.items) do
+            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
+                return complete_features(crate, f, versions)
+            end
+        end
+    end
+end
+
+function M.complete(callback: function(CompletionList|nil))
+    async.launch(function()
+        callback(complete())
+    end)
 end
 
 return M

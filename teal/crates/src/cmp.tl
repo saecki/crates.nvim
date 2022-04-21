@@ -2,7 +2,7 @@ local record M end
 
 local cmp = require("cmp")
 local lsp = cmp.lsp
-local src = require("crates.src")
+local src = require("crates.src.common")
 
 ---Source constructor.
 function M.new(): M

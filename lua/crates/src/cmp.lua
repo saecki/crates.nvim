@@ -2,7 +2,7 @@ local M = {}
 
 local cmp = require("cmp")
 local lsp = cmp.lsp
-local src = require("crates.src")
+local src = require("crates.src.common")
 
 
 function M.new()
