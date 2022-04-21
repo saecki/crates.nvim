@@ -160,7 +160,7 @@ local function parse_versions(json)
    return versions
 end
 
-function M.fetch_crate_versions(name, callback)
+local function fetch_vers(name, callback)
    if M.vers_jobs[name] then
       return
    end
@@ -201,6 +201,12 @@ function M.fetch_crate_versions(name, callback)
    j:start()
 end
 
+function M.fetch_vers(name)
+   return coroutine.yield(function(resolve)
+      fetch_vers(name, resolve)
+   end)
+end
+
 local function parse_deps(json)
    if not json then
       return nil
@@ -231,7 +237,7 @@ local function parse_deps(json)
    return dependencies
 end
 
-function M.fetch_crate_deps(name, version, callback)
+local function fetch_deps(name, version, callback)
    local jobname = name .. ":" .. version
    if M.deps_jobs[jobname] then
       return
@@ -273,6 +279,12 @@ function M.fetch_crate_deps(name, version, callback)
    j:start()
 end
 
+function M.fetch_deps(name, version)
+   return coroutine.yield(function(resolve)
+      fetch_deps(name, version, resolve)
+   end)
+end
+
 function M.is_fetching_vers(name)
    return M.vers_jobs[name] ~= nil
 end
@@ -281,7 +293,7 @@ function M.is_fetching_deps(name, version)
    return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
-function M.add_vers_callback(name, callback)
+local function add_vers_callback(name, callback)
    table.insert(
    M.vers_jobs[name].callbacks,
    callback)
@@ -290,11 +302,11 @@ end
 
 function M.await_vers(name)
    return coroutine.yield(function(resolve)
-      M.add_vers_callback(name, resolve)
+      add_vers_callback(name, resolve)
    end)
 end
 
-function M.add_deps_callback(name, version, callback)
+local function add_deps_callback(name, version, callback)
    table.insert(
    M.deps_jobs[name .. ":" .. version].callbacks,
    callback)
@@ -303,7 +315,7 @@ end
 
 function M.await_deps(name, version)
    return coroutine.yield(function(resolve)
-      M.add_deps_callback(name, version, resolve)
+      add_deps_callback(name, version, resolve)
    end)
 end
 

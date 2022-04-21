@@ -160,7 +160,7 @@ local function parse_versions(json: string): {Version}|nil
     return versions
 end
 
-function M.fetch_crate_versions(name: string, callback: function({Version}, boolean))
+local function fetch_vers(name: string, callback: function({Version}, boolean))
     if M.vers_jobs[name] then
         return
     end
@@ -201,6 +201,12 @@ function M.fetch_crate_versions(name: string, callback: function({Version}, bool
     j:start()
 end
 
+function M.fetch_vers(name: string): {Version}, boolean
+    return coroutine.yield(function(resolve: function({Version}, boolean))
+        fetch_vers(name, resolve)
+    end) as ({Version}, boolean)
+end
+
 local function parse_deps(json: string): {Dependency}
     if not json then
         return nil
@@ -231,7 +237,7 @@ local function parse_deps(json: string): {Dependency}
     return dependencies
 end
 
-function M.fetch_crate_deps(name: string, version: string, callback: function({Dependency}, boolean))
+local function fetch_deps(name: string, version: string, callback: function({Dependency}, boolean))
     local jobname = name .. ":" .. version
     if M.deps_jobs[jobname] then
         return
@@ -273,6 +279,12 @@ function M.fetch_crate_deps(name: string, version: string, callback: function({D
     j:start()
 end
 
+function M.fetch_deps(name: string, version: string): {Dependency}, boolean
+    return coroutine.yield(function(resolve: function({Dependency}, boolean))
+        fetch_deps(name, version, resolve)
+    end) as ({Dependency}, boolean)
+end
+
 function M.is_fetching_vers(name: string): boolean
     return M.vers_jobs[name] ~= nil
 end
@@ -281,7 +293,7 @@ function M.is_fetching_deps(name: string, version: string): boolean
     return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
-function M.add_vers_callback(name: string, callback: function({Version}, boolean))
+local function add_vers_callback(name: string, callback: function({Version}, boolean))
     table.insert(
         M.vers_jobs[name].callbacks,
         callback
@@ -290,11 +302,11 @@ end
 
 function M.await_vers(name: string): {Version}, boolean
     return coroutine.yield(function(resolve: function({Version}, boolean))
-        M.add_vers_callback(name, resolve)
+        add_vers_callback(name, resolve)
     end) as ({Version}, boolean)
 end
 
-function M.add_deps_callback(name: string, version: string, callback: function({Dependency}, boolean))
+local function add_deps_callback(name: string, version: string, callback: function({Dependency}, boolean))
     table.insert(
         M.deps_jobs[name .. ":" .. version].callbacks,
         callback
@@ -303,7 +315,7 @@ end
 
 function M.await_deps(name: string, version: string): {Dependency}, boolean
     return coroutine.yield(function(resolve: function({Dependency}, boolean))
-        M.add_deps_callback(name, version, resolve)
+        add_deps_callback(name, version, resolve)
     end) as ({Dependency}, boolean)
 end
 
