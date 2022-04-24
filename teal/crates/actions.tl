@@ -5,6 +5,18 @@ local state = require("crates.state")
 local types = require("crates.types")
 local Range = types.Range
 
+function M.get_actions(): {string:function}
+    local actions = {}
+    local function add_action(action: string)
+        actions[action] = (M as {string:function})[action]
+    end
+
+    add_action("update_all_crates")
+    add_action("upgrade_all_crates")
+
+    return actions
+end
+
 function M.upgrade_crate(alt: boolean|nil)
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
     local crates = util.get_lines_crates(Range.pos(linenr - 1))
