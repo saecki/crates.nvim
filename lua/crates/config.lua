@@ -389,7 +389,7 @@ entry(schema_diagnostic, "section_dup", {
    default = "Duplicate dependency section",
    hidden = true,
 })
-entry(schema_diagnostic, "section_dup_original", {
+entry(schema_diagnostic, "section_dup_orig", {
    type = "string",
    default = "Original dependency section is defined here",
    hidden = true,

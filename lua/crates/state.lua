@@ -1,4 +1,4 @@
-local Core = {}
+local State = {}
 
 
 
@@ -12,9 +12,9 @@ local Config = config.Config
 local toml = require("crates.toml")
 local Crate = toml.Crate
 
-Core.cfg = {}
-Core.vers_cache = {}
-Core.crate_cache = {}
-Core.visible = true
+State.cfg = {}
+State.vers_cache = {}
+State.crate_cache = {}
+State.visible = true
 
-return Core
+return State
