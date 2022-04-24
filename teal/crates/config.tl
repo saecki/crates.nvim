@@ -39,7 +39,7 @@ local record M
         record DiagnosticConfig
             section_invalid: string
             section_dup: string
-            section_dup_original: string
+            section_dup_orig: string
             crate_dup: string
             crate_dup_orig: string
             crate_novers: string
@@ -389,7 +389,7 @@ entry(schema_diagnostic, "section_dup", {
     default = "Duplicate dependency section",
     hidden = true,
 })
-entry(schema_diagnostic, "section_dup_original", {
+entry(schema_diagnostic, "section_dup_orig", {
     type = "string",
     default = "Original dependency section is defined here",
     hidden = true,
