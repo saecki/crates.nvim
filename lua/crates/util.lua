@@ -127,7 +127,7 @@ function M.features_info(crate, features)
    return info
 end
 
-local function set_version_dumb(buf, crate, text)
+local function insert_version(buf, crate, text)
    if not crate.vers then
       if crate.syntax == "table" then
          local line = crate.lines.s + 1
@@ -188,9 +188,9 @@ local function replace_existing(r, version)
    end
 end
 
-local function set_version_smart(buf, crate, version)
+function M.smart_version_text(crate, version)
    if #crate:vers_reqs() == 0 then
-      return set_version_dumb(buf, crate, version:display())
+      return version:display()
    end
 
    local pos = 1
@@ -291,22 +291,26 @@ local function set_version_smart(buf, crate, version)
    end
    text = text .. string.sub(crate.vers.text, pos)
 
-   return set_version_dumb(buf, crate, text)
+   return text
 end
 
-function M.set_version(buf, crate, version, alt)
+function M.version_text(crate, version, alt)
    local smart
    if alt then
       smart = not state.cfg.smart_insert
    else
       smart = state.cfg.smart_insert
    end
-
    if smart then
-      return set_version_smart(buf, crate, version)
+      return M.smart_version_text(crate, version)
    else
-      return set_version_dumb(buf, crate, version:display())
+      return version:display()
    end
+end
+
+function M.set_version(buf, crate, version, alt)
+   local text = M.version_text(crate, version, alt)
+   return insert_version(buf, crate, text)
 end
 
 function M.upgrade_crates(crates, alt)

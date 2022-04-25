@@ -2,8 +2,9 @@ local record M
     record CrateInfo
         lines: Range
         vers_line: integer
-        vers_match: Version|nil
-        vers_upgrade: Version|nil
+        vers_match: Version
+        vers_update: Version
+        vers_upgrade: Version
         match_kind: MatchKind
     end
 
