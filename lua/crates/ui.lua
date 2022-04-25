@@ -5,14 +5,13 @@ local M = {}
 
 
 
-local api = require("crates.api")
-local Version = api.Version
-local diagnostic = require("crates.diagnostic")
-local CrateInfo = diagnostic.CrateInfo
-local Diagnostic = diagnostic.Diagnostic
 local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
+local types = require("crates.types")
+local CrateInfo = types.CrateInfo
+local Diagnostic = types.Diagnostic
+local Version = types.Version
 
 M.custom_ns = vim.api.nvim_create_namespace("crates.nvim")
 M.custom_diagnostics = {}

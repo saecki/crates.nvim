@@ -1,4 +1,4 @@
-local M = {CrateInfo = {}, Diagnostic = {}, }
+local M = {}
 
 
 
@@ -10,60 +10,8 @@ local M = {CrateInfo = {}, Diagnostic = {}, }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local CrateInfo = M.CrateInfo
 local CrateScope = M.CrateScope
-local Diagnostic = M.Diagnostic
-local DiagnosticKind = M.DiagnosticKind
 local SectionScope = M.SectionScope
-local api = require("crates.api")
-local Dependency = api.Dependency
-local Version = api.Version
 local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
@@ -71,7 +19,11 @@ local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 local Section = toml.Section
 local types = require("crates.types")
-local Range = types.Range
+local CrateInfo = types.CrateInfo
+local Dependency = types.Dependency
+local Diagnostic = types.Diagnostic
+local DiagnosticKind = types.DiagnosticKind
+local Version = types.Version
 local util = require("crates.util")
 
 function M.section_diagnostic(section, kind, severity, scope)

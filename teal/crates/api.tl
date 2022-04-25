@@ -11,53 +11,15 @@ local record M
         job: Job
         callbacks: {function({Dependency}, boolean)}
     end
-
-    record Version
-        num: string
-        features: Features
-        yanked: boolean
-        parsed: SemVer
-        created: DateTime
-        deps: {Dependency}|nil
-    end
-
-    record Features
-        {Feature}
-    end
-
-    record Feature
-        name: string
-        members: {string}
-    end
-
-    record Dependency
-        name: string
-        opt: boolean
-        kind: Kind
-        vers: Vers
-
-        enum Kind
-            "normal"
-            "build"
-            "dev"
-        end
-
-        record Vers
-            reqs: {Requirement}
-            text: string
-        end
-    end
 end
 
-local Dependency = M.Dependency
-local Feature = M.Feature
-local Features = M.Features
-local Version = M.Version
 local semver = require("crates.semver")
-local Requirement = semver.Requirement
-local SemVer = semver.SemVer
 local time = require("crates.time")
 local DateTime = time.DateTime
+local types = require("crates.types")
+local Dependency = types.Dependency
+local Features = types.Features
+local Version = types.Version
 local Job = require("plenary.job")
 
 local endpoint = "https://crates.io/api/v1"
@@ -66,33 +28,6 @@ local json_decode_opts: vim.json.DecodeOpts = { luanil = { object = true, array 
 
 M.vers_jobs = {}
 M.deps_jobs = {}
-
-
-function Features.new(obj: table): Features
-    return setmetatable(obj as Features, { __index = Features })
-end
-
-function Features:get_feat(name: string): Feature|nil, integer|nil
-    for i,f in ipairs(self) do
-        if f.name == name then
-            return f, i
-        end
-    end
-
-    return nil, nil
-end
-
-function Features:sort()
-    table.sort(self, function (a: Feature, b: Feature): boolean
-        if a.name == "default" then
-            return true
-        elseif b.name == "default" then
-            return false
-        else
-            return a.name < b.name
-        end
-    end)
-end
 
 
 local function parse_versions(json: string): {Version}|nil
