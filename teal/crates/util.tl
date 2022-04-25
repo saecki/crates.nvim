@@ -127,7 +127,7 @@ function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
     return info
 end
 
-local function set_version_dumb(buf: integer, crate: Crate, text: string): Range
+local function insert_version(buf: integer, crate: Crate, text: string): Range
     if not crate.vers then
         if crate.syntax == "table" then
             local line = crate.lines.s + 1
@@ -188,9 +188,9 @@ local function replace_existing(r: Requirement, version: SemVer): SemVer
     end
 end
 
-local function set_version_smart(buf: integer, crate: Crate, version: SemVer): Range
+function M.smart_version_text(crate: Crate, version: SemVer): string
     if #crate:vers_reqs() == 0 then
-        return set_version_dumb(buf, crate, version:display())
+        return version:display()
     end
 
     local pos = 1
@@ -291,22 +291,26 @@ local function set_version_smart(buf: integer, crate: Crate, version: SemVer): R
     end
     text = text .. string.sub(crate.vers.text, pos)
 
-    return set_version_dumb(buf, crate, text)
+    return text
 end
 
-function M.set_version(buf: integer, crate: Crate, version: SemVer, alt: boolean|nil): Range
+function M.version_text(crate: Crate, version: SemVer, alt: boolean|nil): string
     local smart: boolean
     if alt then
         smart = not state.cfg.smart_insert
     else
         smart = state.cfg.smart_insert
     end
-
     if smart then
-        return set_version_smart(buf, crate, version)
+        return M.smart_version_text(crate, version)
     else
-        return set_version_dumb(buf, crate, version:display())
+        return version:display()
     end
+end
+
+function M.set_version(buf: integer, crate: Crate, version: SemVer, alt: boolean|nil): Range
+    local text = M.version_text(crate, version, alt)
+    return insert_version(buf, crate, text)
 end
 
 function M.upgrade_crates(crates: {CrateVersions}, alt: boolean|nil)

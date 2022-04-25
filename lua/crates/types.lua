@@ -114,6 +114,7 @@ local M = {CrateInfo = {}, Diagnostic = {}, Version = {}, Features = {}, Feature
 
 
 
+
 local Feature = M.Feature
 local Features = M.Features
 local Range = M.Range
