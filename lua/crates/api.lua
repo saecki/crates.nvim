@@ -1,4 +1,4 @@
-local M = {VersJob = {}, DepsJob = {}, Version = {}, Features = {}, Feature = {}, Dependency = {Vers = {}, }, }
+local M = {VersJob = {}, DepsJob = {}, }
 
 
 
@@ -13,51 +13,13 @@ local M = {VersJob = {}, DepsJob = {}, Version = {}, Features = {}, Feature = {}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local Dependency = M.Dependency
-local Feature = M.Feature
-local Features = M.Features
-local Version = M.Version
 local semver = require("crates.semver")
-local Requirement = semver.Requirement
-local SemVer = semver.SemVer
 local time = require("crates.time")
 local DateTime = time.DateTime
+local types = require("crates.types")
+local Dependency = types.Dependency
+local Features = types.Features
+local Version = types.Version
 local Job = require("plenary.job")
 
 local endpoint = "https://crates.io/api/v1"
@@ -66,33 +28,6 @@ local json_decode_opts = { luanil = { object = true, array = true } }
 
 M.vers_jobs = {}
 M.deps_jobs = {}
-
-
-function Features.new(obj)
-   return setmetatable(obj, { __index = Features })
-end
-
-function Features:get_feat(name)
-   for i, f in ipairs(self) do
-      if f.name == name then
-         return f, i
-      end
-   end
-
-   return nil, nil
-end
-
-function Features:sort()
-   table.sort(self, function(a, b)
-      if a.name == "default" then
-         return true
-      elseif b.name == "default" then
-         return false
-      else
-         return a.name < b.name
-      end
-   end)
-end
 
 
 local function parse_versions(json)

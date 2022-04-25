@@ -19,7 +19,6 @@ local CompletionItem = M.CompletionItem
 local CompletionList = M.CompletionList
 
 local api = require("crates.api")
-local Version = api.Version
 local async = require("crates.async")
 local state = require("crates.state")
 local toml = require("crates.toml")
@@ -27,6 +26,7 @@ local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
 local Range = types.Range
+local Version = types.Version
 local util = require("crates.util")
 
 local VALUE_KIND = 12

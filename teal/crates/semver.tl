@@ -1,65 +1,10 @@
 local record M
-    record SemVer
-        major: integer
-        minor: integer
-        patch: integer
-        pre: string
-        meta: string
-    end
-
-    record Requirement
-        cond: Cond
-        cond_col: Range -- relative to to the start of the requirement text
-        vers: SemVer
-        vers_col: Range -- relative to to the start of the requirement text
-    end
-
-    enum Cond
-        "eq"
-        "lt"
-        "le"
-        "gt"
-        "ge"
-        "cr"
-        "tl"
-        "wl"
-        "bl"
-    end
 end
 
-local Requirement = M.Requirement
-local SemVer = M.SemVer
 local types = require("crates.types")
 local Range = types.Range
-
-function SemVer.new(obj: table): SemVer
-    return setmetatable(obj as SemVer, { __index = SemVer })
-end
-
-function SemVer:display(): string
-    local text = ""
-    if self.major then
-        text = text .. self.major
-    end
-
-    if self.minor then
-        text = text .. "." .. self.minor
-    end
-
-    if self.patch then
-        text = text .. "." .. self.patch
-    end
-
-    if self.pre then
-        text = text .. "-" .. self.pre
-    end
-
-    if self.meta then
-        text = text .. "+" .. self.meta
-    end
-
-    return text
-end
+local Requirement = types.Requirement
+local SemVer = types.SemVer
 
 function M.parse_version(str: string): SemVer
     local major, minor, patch, pre, meta: string, string, string, string, string

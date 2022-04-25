@@ -1,11 +1,183 @@
 local record M
+    record CrateInfo
+        lines: Range
+        vers_line: integer
+        vers_match: Version|nil
+        vers_upgrade: Version|nil
+        match_kind: MatchKind
+    end
+
+    enum MatchKind
+        "version"
+        "yanked"
+        "prerelease"
+        "nomatch"
+    end
+
+    record Diagnostic
+        lnum: integer
+        end_lnum: integer
+        col: integer
+        end_col: integer
+        severity: integer
+        kind: DiagnosticKind
+    end
+
+    -- keys of DiagnosticConfig
+    enum DiagnosticKind
+        -- error
+        "section_invalid"
+        "section_dup"
+        "crate_dup"
+        "crate_novers"
+        "crate_error_fetching"
+        "vers_nomatch"
+        "vers_yanked"
+        "def_invalid"
+        "feat_invalid"
+        -- warning
+        "vers_upgrade"
+        "vers_pre"
+        "feat_dup"
+        -- hint
+        "section_dup_orig"
+        "crate_dup_orig"
+        "feat_dup_orig"
+    end
+
+    record Version
+        num: string
+        features: Features
+        yanked: boolean
+        parsed: SemVer
+        created: DateTime
+        deps: {Dependency}|nil
+    end
+
+    record Features
+        {Feature}
+    end
+
+    record Feature
+        name: string
+        members: {string}
+    end
+
+    record Dependency
+        name: string
+        opt: boolean
+        kind: Kind
+        vers: Vers
+
+        enum Kind
+            "normal"
+            "build"
+            "dev"
+        end
+
+        record Vers
+            reqs: {Requirement}
+            text: string
+        end
+    end
+
+    record SemVer
+        major: integer
+        minor: integer
+        patch: integer
+        pre: string
+        meta: string
+    end
+
+    record Requirement
+        cond: Cond
+        cond_col: Range -- relative to to the start of the requirement text
+        vers: SemVer
+        vers_col: Range -- relative to to the start of the requirement text
+    end
+
+    enum Cond
+        "eq"
+        "lt"
+        "le"
+        "gt"
+        "ge"
+        "cr"
+        "tl"
+        "wl"
+        "bl"
+    end
+    
     record Range
         s: integer -- 0-indexed inclusive
         e: integer -- 0-indexed exclusive
     end
 end
 
+local Feature = M.Feature
+local Features = M.Features
 local Range = M.Range
+local SemVer = M.SemVer
+local time = require("crates.time")
+local DateTime = time.DateTime
+
+
+function Features.new(obj: table): Features
+    return setmetatable(obj as Features, { __index = Features })
+end
+
+function Features:get_feat(name: string): Feature|nil, integer|nil
+    for i,f in ipairs(self) do
+        if f.name == name then
+            return f, i
+        end
+    end
+
+    return nil, nil
+end
+
+function Features:sort()
+    table.sort(self, function (a: Feature, b: Feature): boolean
+        if a.name == "default" then
+            return true
+        elseif b.name == "default" then
+            return false
+        else
+            return a.name < b.name
+        end
+    end)
+end
+
+
+function SemVer.new(obj: table): SemVer
+    return setmetatable(obj as SemVer, { __index = SemVer })
+end
+
+function SemVer:display(): string
+    local text = ""
+    if self.major then
+        text = text .. self.major
+    end
+
+    if self.minor then
+        text = text .. "." .. self.minor
+    end
+
+    if self.patch then
+        text = text .. "." .. self.patch
+    end
+
+    if self.pre then
+        text = text .. "-" .. self.pre
+    end
+
+    if self.meta then
+        text = text .. "+" .. self.meta
+    end
+
+    return text
+end
+
 
 function Range.new(s: integer, e: integer): Range
     return setmetatable({ s = s, e = e }, { __index = Range })

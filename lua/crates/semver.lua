@@ -1,65 +1,10 @@
-local M = {SemVer = {}, Requirement = {}, }
+local M = {}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local Requirement = M.Requirement
-local SemVer = M.SemVer
 local types = require("crates.types")
 local Range = types.Range
-
-function SemVer.new(obj)
-   return setmetatable(obj, { __index = SemVer })
-end
-
-function SemVer:display()
-   local text = ""
-   if self.major then
-      text = text .. self.major
-   end
-
-   if self.minor then
-      text = text .. "." .. self.minor
-   end
-
-   if self.patch then
-      text = text .. "." .. self.patch
-   end
-
-   if self.pre then
-      text = text .. "-" .. self.pre
-   end
-
-   if self.meta then
-      text = text .. "+" .. self.meta
-   end
-
-   return text
-end
+local Requirement = types.Requirement
+local SemVer = types.SemVer
 
 function M.parse_version(str)
    local major, minor, patch, pre, meta

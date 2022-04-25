@@ -7,8 +7,6 @@ local M = {VersContext = {}, }
 
 
 local VersContext = M.VersContext
-local api = require("crates.api")
-local Version = api.Version
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
@@ -17,6 +15,7 @@ local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
 local Range = types.Range
+local Version = types.Version
 local util = require("crates.util")
 
 local function select_version(ctx, line, alt)

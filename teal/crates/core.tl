@@ -4,11 +4,12 @@ local record M
 end
 
 local api = require("crates.api")
-local Version = api.Version
 local async = require("crates.async")
 local diagnostic = require("crates.diagnostic")
 local state = require("crates.state")
 local toml = require("crates.toml")
+local types = require("crates.types")
+local Version = types.Version
 local ui = require("crates.ui")
 local util = require("crates.util")
 

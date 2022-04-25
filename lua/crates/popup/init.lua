@@ -9,9 +9,6 @@ local M = {LineCrateInfo = {}, }
 
 
 local LineCrateInfo = M.LineCrateInfo
-local api = require("crates.api")
-local Feature = api.Feature
-local Version = api.Version
 local popup = require("crates.popup.common")
 local Type = popup.Type
 local popup_deps = require("crates.popup.dependencies")
@@ -21,7 +18,9 @@ local state = require("crates.state")
 local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
+local Feature = types.Feature
 local Range = types.Range
+local Version = types.Version
 local util = require("crates.util")
 
 local function line_crate_info()

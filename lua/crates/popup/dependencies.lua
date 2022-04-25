@@ -16,14 +16,15 @@ local M = {DepsContext = {}, DepsHistoryEntry = {}, }
 
 local DepsContext = M.DepsContext
 local api = require("crates.api")
-local Dependency = api.Dependency
-local Version = api.Version
 local async = require("crates.async")
 local core = require("crates.core")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
 local state = require("crates.state")
+local types = require("crates.types")
+local Dependency = types.Dependency
+local Version = types.Version
 local util = require("crates.util")
 
 local goto_dep = async.wrap(function(ctx, line)
