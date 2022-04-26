@@ -88,6 +88,9 @@ For more information about the lua function see |crates-functions|.
     nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
     vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
     nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+    nnoremap <silent> <leader>cD :lua require('crates').open_docs_rs()<cr>
+    nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 <
 
 To integrate the crates popup in an idiomatic way into your configuration, you

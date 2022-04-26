@@ -34,6 +34,11 @@ local record M
     -- See `f#crates.upgrade_crate()`.
     update_all_crates: function(alt: boolean|nil)
 
+    -- Open the `docs.rs` page of the crate on the current line.
+    open_docs_rs: function()
+    -- Open the `crates.io` page of the crate on the current line.
+    open_crates_io: function()
+
     -- Show/hide popup with all versions, all features or details about one feature.
     -- If `c#popup.autofocus` is disabled calling this again will focus the popup.
     show_popup: function()
@@ -141,6 +146,8 @@ M.upgrade_all_crates = actions.upgrade_all_crates
 M.update_crate = actions.update_crate
 M.update_crates = actions.update_crates
 M.update_all_crates = actions.update_all_crates
+M.open_docs_rs = actions.open_docs_rs
+M.open_crates_io = actions.open_crates_io
 
 M.show_popup = popup.show
 M.show_versions_popup = popup.show_versions

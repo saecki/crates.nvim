@@ -176,6 +176,9 @@ For more information about the lua function see |crates-functions|.
     nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
     vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
     nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+    nnoremap <silent> <leader>cD :lua require('crates').open_docs_rs()<cr>
+    nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 <
 
 To integrate the crates popup in an idiomatic way into your configuration, you
@@ -276,6 +279,14 @@ update_crates({alt}: `boolean|nil`)                   *crates.update_crates()*
 update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
     Update all crates in the buffer.
     See `crates.upgrade_crate()`.
+
+
+open_docs_rs()                                         *crates.open_docs_rs()*
+    Open the `docs.rs` page of the crate on the current line.
+
+
+open_crates_io()                                     *crates.open_crates_io()*
+    Open the `crates.io` page of the crate on the current line.
 
 
 show_popup()                                             *crates.show_popup()*
