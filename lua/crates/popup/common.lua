@@ -37,10 +37,11 @@ M.TOP_OFFSET = 2
 M.NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup")
 M.LOADING_NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup.loading")
 
+
 function M.focus(line)
    if M.win and vim.api.nvim_win_is_valid(M.win) then
       vim.api.nvim_set_current_win(M.win)
-      local l = math.min(line or 3, vim.api.nvim_buf_line_count(M.buf))
+      local l = math.min((line or 2) + 1, vim.api.nvim_buf_line_count(M.buf))
       vim.api.nvim_win_set_cursor(M.win, { l, 0 })
    end
 end
@@ -58,6 +59,10 @@ function M.hide()
    M.type = nil
 
    M.transaction = nil
+end
+
+function M.item_index(line)
+   return line - M.TOP_OFFSET + 1
 end
 
 function M.win_height(entries)
@@ -107,7 +112,7 @@ function M.update_win(width, height, title, text, opts)
    set_buf_content(M.buf, title, text)
 
 
-   local l = math.min(opts.line or 3, vim.api.nvim_buf_line_count(M.buf))
+   local l = math.min((opts.line or 2) + 1, vim.api.nvim_buf_line_count(M.buf))
    vim.api.nvim_win_set_cursor(M.win, { l, 0 })
 end
 

@@ -24,6 +24,11 @@ function M.current_buf(): integer
     return vim.api.nvim_get_current_buf() as integer
 end
 
+function M.cursor_pos(): integer, integer
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    return cursor[1] - 1, cursor[2]
+end
+
 function M.get_line_crates(buf: integer, lines: Range): {string:Crate}
     local crates = state.crate_cache[buf]
     if not crates then

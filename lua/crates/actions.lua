@@ -11,8 +11,8 @@ local Range = types.Range
 
 function M.upgrade_crate(alt)
    local buf = util.current_buf()
-   local linenr = vim.api.nvim_win_get_cursor(0)[1]
-   local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
+   local line = util.cursor_pos()
+   local crates = util.get_line_crates(buf, Range.pos(line))
    local info = state.info_cache[buf]
    if next(crates) and info then
       util.upgrade_crates(buf, crates, info, alt)
@@ -43,8 +43,8 @@ end
 
 function M.update_crate(alt)
    local buf = util.current_buf()
-   local linenr = vim.api.nvim_win_get_cursor(0)[1]
-   local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
+   local line = util.cursor_pos()
+   local crates = util.get_line_crates(buf, Range.pos(line))
    local info = state.info_cache[buf]
    if next(crates) and info then
       util.update_crates(buf, crates, info, alt)
@@ -95,9 +95,7 @@ function M.get_actions()
    local actions = {}
 
    local buf = util.current_buf()
-   local cursor = vim.api.nvim_win_get_cursor(0)
-   local line = cursor[1] - 1
-   local col = cursor[2]
+   local line, col = util.cursor_pos()
    local crates = util.get_line_crates(buf, Range.pos(line))
    local key, crate = next(crates)
    if crate then

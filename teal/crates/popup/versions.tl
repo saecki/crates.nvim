@@ -19,7 +19,7 @@ local Version = types.Version
 local util = require("crates.util")
 
 local function select_version(ctx: VersContext, line: integer, alt: boolean|nil)
-    local index = line - popup.TOP_OFFSET
+    local index = popup.item_index(line)
     local crate = ctx.crate
     local version = ctx.versions[index]
     if not version then return end
@@ -52,7 +52,7 @@ local function select_version(ctx: VersContext, line: integer, alt: boolean|nil)
 end
 
 local function copy_version(versions: {Version}, line: integer)
-    local index = line - popup.TOP_OFFSET
+    local index = popup.item_index(line)
     local version = versions[index]
     if not version then return end
 
@@ -107,7 +107,8 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         for _,k in ipairs(state.cfg.popup.keys.select) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    select_version(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    select_version(ctx, line)
                 end,
                 noremap = true,
                 silent = true,
@@ -118,7 +119,8 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         for _,k in ipairs(state.cfg.popup.keys.select_alt) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    select_version(ctx, vim.api.nvim_win_get_cursor(0)[1], true)
+                    local line = util.cursor_pos()
+                    select_version(ctx, line, true)
                 end,
                 noremap = true,
                 silent = true,
@@ -129,7 +131,8 @@ function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
         for _,k in ipairs(state.cfg.popup.keys.copy_version) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    copy_version(versions, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    copy_version(versions, line)
                 end,
                 noremap = true,
                 silent = true,
