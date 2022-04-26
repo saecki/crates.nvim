@@ -3,6 +3,7 @@ local record State
     vers_cache: {string:{Version}}
     crate_cache: {integer:{string:Crate}}
     info_cache: {integer:{string:CrateInfo}}
+    diagnostic_cache: {integer:{Diagnostic}}
     visible: boolean
 end
 
@@ -12,12 +13,14 @@ local toml = require("crates.toml")
 local Crate = toml.Crate
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
+local Diagnostic = types.Diagnostic
 local Version = types.Version
 
 State.cfg = {}
 State.vers_cache = {}
 State.crate_cache = {}
 State.info_cache = {}
+State.diagnostic_cache = {}
 State.visible = true
 
 return State

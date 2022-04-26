@@ -85,6 +85,8 @@ function M.update(buf: integer|nil, reload: boolean)
 
     local sections, crates = toml.parse_crates(buf)
     local crate_cache, diagnostics = diagnostic.process_crates(sections, crates)
+    state.crate_cache[buf] = crate_cache
+    state.diagnostic_cache[buf] = diagnostics
 
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
@@ -94,12 +96,18 @@ function M.update(buf: integer|nil, reload: boolean)
         if not reload and versions then
             local info, c_diagnostics = diagnostic.process_crate_versions(c, versions)
             state.info_cache[buf][c:cache_key()] = info
+            state.diagnostic_cache[buf] = state.diagnostic_cache[buf] or {}
+            vim.list_extend(state.diagnostic_cache[buf], c_diagnostics)
+
             ui.display_crate_info(buf, info, c_diagnostics)
 
             local version: Version = info.vers_match or info.vers_upgrade
             if version.deps then
-                diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
-                ui.display_diagnostics(buf, diagnostics)
+                local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
+                state.diagnostic_cache[buf] = state.diagnostic_cache[buf] or {}
+                vim.list_extend(state.diagnostic_cache[buf], d_diagnostics)
+
+                ui.display_diagnostics(buf, d_diagnostics)
             else
                 M.reload_deps(c.name, versions, version)
             end
@@ -111,8 +119,6 @@ function M.update(buf: integer|nil, reload: boolean)
             M.reload_crate(c.name)
         end
     end
-
-    state.crate_cache[buf] = crate_cache
 end
 
 return M
