@@ -115,12 +115,23 @@ local M = {CrateInfo = {}, Diagnostic = {}, Version = {}, Features = {}, Feature
 
 
 
+
+local Diagnostic = M.Diagnostic
 local Feature = M.Feature
 local Features = M.Features
 local Range = M.Range
 local SemVer = M.SemVer
 local time = require("crates.time")
 local DateTime = time.DateTime
+
+function Diagnostic.new(obj)
+   return setmetatable(obj, { __index = Diagnostic })
+end
+
+function Diagnostic:contains(line, col)
+   return (self.lnum < line or self.lnum == line and self.col <= col) and
+   (self.end_lnum > line or self.end_lnum == line and self.end_col > col)
+end
 
 
 function Features.new(obj)

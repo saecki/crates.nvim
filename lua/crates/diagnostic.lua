@@ -26,15 +26,16 @@ local DiagnosticKind = types.DiagnosticKind
 local Version = types.Version
 local util = require("crates.util")
 
-local function section_diagnostic(section, kind, severity, scope)
-   local d = {
+local function section_diagnostic(section, kind, severity, scope, data)
+   local d = Diagnostic.new({
       lnum = section.lines.s,
       end_lnum = section.lines.e,
       col = 0,
       end_col = 0,
       severity = severity,
       kind = kind,
-   }
+      data = data,
+   })
 
    if scope == "header" then
       d.end_lnum = d.lnum + 1
@@ -44,14 +45,14 @@ local function section_diagnostic(section, kind, severity, scope)
 end
 
 local function crate_diagnostic(crate, kind, severity, scope)
-   local d = {
+   local d = Diagnostic.new({
       lnum = crate.lines.s,
       end_lnum = crate.lines.e,
       col = 0,
       end_col = 0,
       severity = severity,
       kind = kind,
-   }
+   })
 
    if not scope then
       return d
@@ -83,16 +84,16 @@ local function crate_diagnostic(crate, kind, severity, scope)
    return d
 end
 
-local function feat_diagnostic(crate, feat, kind, severity)
-   local d = {
+local function feat_diagnostic(crate, feat, kind, severity, data)
+   return Diagnostic.new({
       lnum = crate.feat.line,
       end_lnum = crate.feat.line,
       col = crate.feat.col.s + feat.col.s,
       end_col = crate.feat.col.s + feat.col.e,
       severity = severity,
       kind = kind,
-   }
-   return d
+      data = data,
+   })
 end
 
 function M.process_crates(sections, crates)
@@ -114,7 +115,8 @@ function M.process_crates(sections, crates)
          s_cache[key],
          "section_dup_orig",
          vim.diagnostic.severity.HINT,
-         "header"))
+         "header",
+         { lines = s_cache[key].lines }))
 
          table.insert(diagnostics, section_diagnostic(
          s,
@@ -159,18 +161,21 @@ function M.process_crates(sections, crates)
 
          local feats = {}
          for _, f in ipairs(c:feats()) do
-            if feats[f.name] then
+            local orig = feats[f.name]
+            if orig then
                table.insert(diagnostics, feat_diagnostic(
                c,
                feats[f.name],
                "feat_dup_orig",
-               vim.diagnostic.severity.HINT))
+               vim.diagnostic.severity.HINT,
+               { feat = orig }))
 
                table.insert(diagnostics, feat_diagnostic(
                c,
                f,
                "feat_dup",
-               vim.diagnostic.severity.WARN))
+               vim.diagnostic.severity.WARN,
+               { feat = f }))
 
             else
                feats[f.name] = f
@@ -248,6 +253,7 @@ function M.process_crate_versions(crate, versions)
 
             info.match_kind = "nomatch"
             local kind = "vers_nomatch"
+
             if not crate.vers then
                kind = "crate_novers"
             end
@@ -291,7 +297,8 @@ function M.process_crate_deps(crate, version, deps)
             crate,
             f,
             "feat_invalid",
-            vim.diagnostic.severity.ERROR))
+            vim.diagnostic.severity.ERROR,
+            { feat = f }))
 
          end
       end

@@ -413,7 +413,15 @@ function M.enable_feature(buf, crate, feature)
 end
 
 function M.disable_feature(buf, crate, feature)
-   local _, index = crate:get_feat(feature.name)
+
+   local index
+   for i, f in ipairs(crate.feat.items) do
+      if f == feature then
+         index = i
+         break
+      end
+   end
+   if not index then return end
 
    local col_start = feature.decl_col.s
    local col_end = feature.decl_col.e

@@ -32,7 +32,7 @@ local function line_crate_info(): LineCrateInfo
     local crates = util.get_line_crates(buf,Range.new(line, line + 1))
     local _,crate = next(crates)
     if not crate then return end
-    
+
     local versions = state.vers_cache[crate.name]
     if not versions then return end
 
