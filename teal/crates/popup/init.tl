@@ -24,16 +24,17 @@ local Version = types.Version
 local util = require("crates.util")
 
 local function line_crate_info(): LineCrateInfo
+    local buf = util.current_buf()
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
     local col = pos[2] as integer
 
-    local crates = util.get_lines_crates(Range.new(line, line + 1))
-    if not crates or not crates[1] or not crates[1].versions then
-        return nil
-    end
-    local crate = crates[1].crate
-    local versions = crates[1].versions
+    local crates = util.get_line_crates(buf,Range.new(line, line + 1))
+    local _,crate = next(crates)
+    if not crate then return end
+    
+    local versions = state.vers_cache[crate.name]
+    if not versions then return end
 
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs()) as Version
