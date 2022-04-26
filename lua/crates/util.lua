@@ -20,6 +20,8 @@ local Requirement = types.Requirement
 local SemVer = types.SemVer
 local Version = types.Version
 
+local IS_WIN = vim.api.nvim_call_function("has", { "win32" }) == 1
+
 function M.current_buf()
    return vim.api.nvim_get_current_buf()
 end
@@ -549,6 +551,29 @@ function M.disable_def_features(buf, crate, feature)
       end
    else
       return disable_def_features(buf, crate)
+   end
+end
+
+function M.lualib_installed(name)
+   local ok, _ = pcall(require, name)
+   return ok
+end
+
+function M.binary_installed(name)
+   if IS_WIN then
+      name = name .. ".exe"
+   end
+
+   return vim.fn.executable(name) == 1
+end
+
+function M.open_url(url)
+   if M.binary_installed("xdg-open") then
+      vim.cmd("silent !xdg-open " .. url)
+   elseif M.binary_installed("open") then
+      vim.cmd("silent !open " .. url)
+   else
+      vim.notify("Couldn't open url", vim.log.levels.WARN, { title = "crates.nvim" })
    end
 end
 

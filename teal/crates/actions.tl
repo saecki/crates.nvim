@@ -73,6 +73,26 @@ function M.update_all_crates(alt: boolean|nil)
     end
 end
 
+function M.open_docs_rs()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Range.pos(line))
+    local _,crate = next(crates)
+    if crate then
+        util.open_url("https://docs.rs/" .. crate.name)
+    end
+end
+
+function M.open_crates_io()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Range.pos(line))
+    local _,crate = next(crates)
+    if crate then
+        util.open_url("https://crates.io/crates/" .. crate.name)
+    end
+end
+
 local function remove_diagnostic_range_action(buf: integer, d: Diagnostic): function
     return function()
         vim.api.nvim_buf_set_text(buf, d.lnum, d.col, d.end_lnum, d.end_col, {})
@@ -136,6 +156,11 @@ function M.get_actions(): {string:function}
         end
 
         ::continue::
+    end
+
+    if crate then
+        actions["open_docs.rs"] = M.open_docs_rs
+        actions["open_crates.io"] = M.open_crates_io
     end
 
     actions["update_all_crates"] = M.update_all_crates

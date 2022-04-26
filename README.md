@@ -151,7 +151,7 @@ For more information about the type of some fields see [`teal/crates/config.tl`]
 
 __Default__
 
-The icons in the default configuration require a patched font.  
+The icons in the default configuration require a patched font.<br>
 Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 ```lua
 require('crates').setup {
@@ -318,6 +318,11 @@ require('crates').update_crates(alt: boolean|nil)
 -- See `crates.upgrade_crate()`.
 require('crates').update_all_crates(alt: boolean|nil)
 
+-- Open the `docs.rs` page of the crate on the current line.
+require('crates').open_docs_rs()
+-- Open the `crates.io` page of the crate on the current line.
+require('crates').open_crates_io()
+
 -- Show/hide popup with all versions, all features or details about one feature.
 -- If `popup.autofocus` is disabled calling this again will focus the popup.
 require('crates').show_popup()
@@ -349,6 +354,9 @@ nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
 nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
 vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
 nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+nnoremap <silent> <leader>cD :lua require('crates').open_docs_rs()<cr>
+nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 ```
 
 ### Show appropriate documentation in `Cargo.toml`
