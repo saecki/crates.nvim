@@ -381,7 +381,7 @@ entry(M.schema, "diagnostic", {
 local schema_diagnostic = M.schema.diagnostic.fields
 entry(schema_diagnostic, "section_invalid", {
    type = "string",
-   default = "Invalid dependency",
+   default = "Invalid dependency section",
    hidden = true,
 })
 entry(schema_diagnostic, "section_dup", {

@@ -413,7 +413,15 @@ function M.enable_feature(buf: integer, crate: Crate, feature: Feature): Range
 end
 
 function M.disable_feature(buf: integer, crate: Crate, feature: CrateFeature): Range
-    local _, index = crate:get_feat(feature.name)
+    -- check reference in case of duplicates
+    local index: integer
+    for i,f in ipairs(crate.feat.items) do
+        if f == feature then
+            index = i
+            break
+        end
+    end
+    if not index then return end
 
     local col_start = feature.decl_col.s
     local col_end = feature.decl_col.e

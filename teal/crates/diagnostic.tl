@@ -26,14 +26,15 @@ local DiagnosticKind = types.DiagnosticKind
 local Version = types.Version
 local util = require("crates.util")
 
-local function section_diagnostic(section: Section, kind: DiagnosticKind, severity: integer, scope: SectionScope|nil): Diagnostic
-    local d: Diagnostic = {
+local function section_diagnostic(section: Section, kind: DiagnosticKind, severity: integer, scope: SectionScope|nil, data: {string:any}): Diagnostic
+    local d = Diagnostic.new {
         lnum = section.lines.s,
         end_lnum = section.lines.e,
         col = 0,
         end_col = 0,
         severity = severity,
         kind = kind,
+        data = data,
     }
 
     if scope == "header" then
@@ -44,7 +45,7 @@ local function section_diagnostic(section: Section, kind: DiagnosticKind, severi
 end
 
 local function crate_diagnostic(crate: Crate, kind: DiagnosticKind, severity: integer, scope: CrateScope|nil): Diagnostic
-    local d: Diagnostic = {
+    local d = Diagnostic.new {
         lnum = crate.lines.s,
         end_lnum = crate.lines.e,
         col = 0,
@@ -83,16 +84,16 @@ local function crate_diagnostic(crate: Crate, kind: DiagnosticKind, severity: in
     return d
 end
 
-local function feat_diagnostic(crate: Crate, feat: CrateFeature, kind: DiagnosticKind, severity: integer): Diagnostic
-    local d: Diagnostic = {
+local function feat_diagnostic(crate: Crate, feat: CrateFeature, kind: DiagnosticKind, severity: integer, data: {string:any}|nil): Diagnostic
+    return Diagnostic.new {
         lnum = crate.feat.line,
         end_lnum = crate.feat.line,
         col = crate.feat.col.s + feat.col.s,
         end_col = crate.feat.col.s + feat.col.e,
         severity = severity,
         kind = kind,
+        data = data,
     }
-    return d
 end
 
 function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate}, {Diagnostic}
@@ -114,7 +115,8 @@ function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate},
                 s_cache[key],
                 "section_dup_orig",
                 vim.diagnostic.severity.HINT,
-                "header"
+                "header",
+                { lines = s_cache[key].lines }
             ))
             table.insert(diagnostics, section_diagnostic(
                 s,
@@ -159,18 +161,21 @@ function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate},
 
             local feats: {string:CrateFeature} = {}
             for _,f in ipairs(c:feats()) do
-                if feats[f.name] then
+                local orig = feats[f.name]
+                if orig then
                     table.insert(diagnostics, feat_diagnostic(
                         c,
                         feats[f.name],
                         "feat_dup_orig",
-                        vim.diagnostic.severity.HINT
+                        vim.diagnostic.severity.HINT,
+                        { feat = orig }
                     ))
                     table.insert(diagnostics, feat_diagnostic(
                         c,
                         f,
                         "feat_dup",
-                        vim.diagnostic.severity.WARN
+                        vim.diagnostic.severity.WARN,
+                        { feat = f }
                     ))
                 else
                     feats[f.name] = f
@@ -248,6 +253,7 @@ function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo,
                 -- no match found
                 info.match_kind = "nomatch"
                 local kind: DiagnosticKind = "vers_nomatch"
+                -- TODO: fix this and only show if no git or path was specified
                 if not crate.vers then
                     kind = "crate_novers"
                 end
@@ -291,7 +297,8 @@ function M.process_crate_deps(crate: Crate, version: Version, deps: {Dependency}
                     crate,
                     f,
                     "feat_invalid",
-                    vim.diagnostic.severity.ERROR
+                    vim.diagnostic.severity.ERROR,
+                    { feat = f }
                 ))
             end
         end

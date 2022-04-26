@@ -22,6 +22,7 @@ local record M
         end_col: integer
         severity: integer
         kind: DiagnosticKind
+        data: {string:any}
     end
 
     -- keys of DiagnosticConfig
@@ -108,13 +109,14 @@ local record M
         "wl"
         "bl"
     end
-    
+
     record Range
         s: integer -- 0-indexed inclusive
         e: integer -- 0-indexed exclusive
     end
 end
 
+local Diagnostic = M.Diagnostic
 local Feature = M.Feature
 local Features = M.Features
 local Range = M.Range
@@ -122,9 +124,18 @@ local SemVer = M.SemVer
 local time = require("crates.time")
 local DateTime = time.DateTime
 
+function Diagnostic.new(obj: Diagnostic): Diagnostic
+    return setmetatable(obj, { __index = Diagnostic })
+end
 
-function Features.new(obj: table): Features
-    return setmetatable(obj as Features, { __index = Features })
+function Diagnostic:contains(line: integer, col: integer): boolean
+    return (self.lnum < line or self.lnum == line and self.col <= col)
+        and (self.end_lnum > line or self.end_lnum == line and self.end_col > col)
+end
+
+
+function Features.new(obj: Features): Features
+    return setmetatable(obj, { __index = Features })
 end
 
 function Features:get_feat(name: string): Feature|nil, integer|nil
@@ -150,8 +161,8 @@ function Features:sort()
 end
 
 
-function SemVer.new(obj: table): SemVer
-    return setmetatable(obj as SemVer, { __index = SemVer })
+function SemVer.new(obj: SemVer): SemVer
+    return setmetatable(obj, { __index = SemVer })
 end
 
 function SemVer:display(): string
