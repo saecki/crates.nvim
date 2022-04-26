@@ -100,20 +100,19 @@ end
 
 local function complete(): CompletionList|nil
     local buf = util.current_buf()
-
     local pos = vim.api.nvim_win_get_cursor(0)
     local line = pos[1] as integer - 1
     local col = pos[2] as integer
-    local crates = util.get_lines_crates(Range.new(line, line + 1))
-    if not crates[1] then
+    local crates = util.get_line_crates(buf, Range.new(line, line + 1))
+    local _,crate = next(crates)
+    if not crate then
         return
     end
 
-    local crate = crates[1].crate
-    local versions = crates[1].versions
+    local versions = state.vers_cache[crate.name]
 
     if not versions and api.is_fetching_vers(crate.name) then
-        local _, cancelled = api.await_vers(crate.name)
+        local _versions,cancelled = api.await_vers(crate.name)
 
         if cancelled or buf ~= util.current_buf() then
             return
@@ -122,13 +121,13 @@ local function complete(): CompletionList|nil
         pos = vim.api.nvim_win_get_cursor(0)
         line = pos[1] as integer - 1
         col = pos[2] as integer
-        crates = util.get_lines_crates(Range.new(line, line + 1))
-        if not crates[1] then
+        crates = util.get_line_crates(buf, Range.new(line, line + 1))
+        _,crate = next(crates)
+        if not crate then
             return
         end
 
-        crate = crates[1].crate
-        versions = crates[1].versions
+        versions = state.vers_cache[crate.name]
     end
 
     if not versions then

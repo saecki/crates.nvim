@@ -18,65 +18,67 @@ function M.get_actions(): {string:function}
 end
 
 function M.upgrade_crate(alt: boolean|nil)
+    local buf = util.current_buf()
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
-    local crates = util.get_lines_crates(Range.pos(linenr - 1))
-    util.upgrade_crates(crates, alt)
+    local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
+    local info = state.info_cache[buf]
+    if next(crates) and info then
+        util.upgrade_crates(buf, crates, info, alt)
+    end
 end
 
 function M.upgrade_crates(alt: boolean|nil)
+    local buf = util.current_buf()
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
-    local crates = util.get_lines_crates(lines)
-    util.upgrade_crates(crates, alt)
+    local crates = util.get_line_crates(buf, lines)
+    local info = state.info_cache[buf]
+    if next(crates) and info then
+        util.upgrade_crates(buf, crates, info, alt)
+    end
 end
 
 function M.upgrade_all_crates(alt: boolean|nil)
-    local cur_buf = util.current_buf()
-    local crates = state.crate_cache[cur_buf]
-    if not crates then return end
-
-    local crate_versions = {}
-    for _,c in pairs(crates) do
-        table.insert(crate_versions, {
-            crate = c,
-            versions = state.vers_cache[c.name]
-        })
+    local buf = util.current_buf()
+    local crates = state.crate_cache[buf]
+    local info = state.info_cache[buf]
+    if crates and info then
+        util.upgrade_crates(buf, crates, info, alt)
     end
-
-    util.upgrade_crates(crate_versions, alt)
 end
 
 function M.update_crate(alt: boolean|nil)
+    local buf = util.current_buf()
     local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
-    local crates = util.get_lines_crates(Range.pos(linenr - 1))
-    util.update_crates(crates, alt)
+    local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
+    local info = state.info_cache[buf]
+    if next(crates) and info then
+        util.update_crates(buf, crates, info, alt)
+    end
 end
 
 function M.update_crates(alt: boolean|nil)
+    local buf = util.current_buf()
     local lines = Range.new(
         vim.api.nvim_buf_get_mark(0, "<")[1] as integer - 1,
         vim.api.nvim_buf_get_mark(0, ">")[1] as integer
     )
-    local crates = util.get_lines_crates(lines)
-    util.update_crates(crates, alt)
+    local crates = util.get_line_crates(buf, lines)
+    local info = state.info_cache[buf]
+    if next(crates) and info then
+        util.update_crates(buf, crates, info, alt)
+    end
 end
 
 function M.update_all_crates(alt: boolean|nil)
-    local cur_buf = util.current_buf()
-    local crates = state.crate_cache[cur_buf]
-    if not crates then return end
-
-    local crate_versions = {}
-    for _,c in pairs(crates) do
-        table.insert(crate_versions, {
-            crate = c,
-            versions = state.vers_cache[c.name]
-        })
+    local buf = util.current_buf()
+    local crates = state.crate_cache[buf]
+    local info = state.info_cache[buf]
+    if crates and info then
+        util.update_crates(buf, crates, info, alt)
     end
-
-    util.update_crates(crate_versions, alt)
 end
 
 return M

@@ -1,16 +1,10 @@
-local M = {CrateVersions = {}, FeatureInfo = {}, }
+local M = {FeatureInfo = {}, }
 
 
 
 
 
 
-
-
-
-
-
-local CrateVersions = M.CrateVersions
 local FeatureInfo = M.FeatureInfo
 local semver = require("crates.semver")
 local state = require("crates.state")
@@ -18,6 +12,7 @@ local toml = require("crates.toml")
 local Crate = toml.Crate
 local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
+local CrateInfo = types.CrateInfo
 local Feature = types.Feature
 local Features = types.Features
 local Range = types.Range
@@ -29,23 +24,20 @@ function M.current_buf()
    return vim.api.nvim_get_current_buf()
 end
 
-function M.get_lines_crates(lines)
-   local crate_versions = {}
+function M.get_line_crates(buf, lines)
+   local crates = state.crate_cache[buf]
+   if not crates then
+      return {}
+   end
 
-   local cur_buf = M.current_buf()
-   local crates = state.crate_cache[cur_buf]
-   if crates then
-      for _, c in pairs(crates) do
-         if lines:contains(c.lines.s) or c.lines:contains(lines.s) then
-            table.insert(crate_versions, {
-               crate = c,
-               versions = state.vers_cache[c.name],
-            })
-         end
+   local line_crates = {}
+   for k, c in pairs(crates) do
+      if lines:contains(c.lines.s) or c.lines:contains(lines.s) then
+         line_crates[k] = c
       end
    end
 
-   return crate_versions
+   return line_crates
 end
 
 function M.get_newest(versions, avoid_pre, reqs)
@@ -313,32 +305,28 @@ function M.set_version(buf, crate, version, alt)
    return insert_version(buf, crate, text)
 end
 
-function M.upgrade_crates(crates, alt)
-   for _, c in ipairs(crates) do
-      local crate = c.crate
-      local versions = c.versions
+function M.upgrade_crates(buf, crates, info, alt)
+   for k, c in pairs(crates) do
+      local i = info[k]
 
-      local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
-      local newest, newest_pre, newest_yanked = M.get_newest(versions, avoid_pre, nil)
-      newest = newest or newest_pre or newest_yanked
-
-      if newest then
-         M.set_version(0, crate, newest.parsed, alt)
+      if i then
+         local version = i.vers_upgrade or i.vers_update
+         if version then
+            M.set_version(buf, c, version.parsed, alt)
+         end
       end
    end
 end
 
-function M.update_crates(crates, alt)
-   for _, c in ipairs(crates) do
-      local crate = c.crate
-      local versions = c.versions
+function M.update_crates(buf, crates, info, alt)
+   for k, c in pairs(crates) do
+      local i = info[k]
 
-      local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
-      local match, match_pre, match_yanked = M.get_newest(versions, avoid_pre, crate:vers_reqs())
-      match = match or match_pre or match_yanked
-
-      if match then
-         M.set_version(0, crate, match.parsed, alt)
+      if i then
+         local version = i.vers_update
+         if version then
+            M.set_version(buf, c, version.parsed, alt)
+         end
       end
    end
 end
