@@ -16,14 +16,12 @@ function M.get_actions()
    local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
    local key, crate = next(crates)
    if crate then
-      local info = state.info_cache[buf]
-      if info and info[key] then
-         local i = info[key]
-
-         if i.vers_update then
+      local info = util.get_crate_info(buf, key)
+      if info then
+         if info.vers_update then
             add_action("update_crate")
          end
-         if i.vers_upgrade then
+         if info.vers_upgrade then
             add_action("upgrade_crate")
          end
       end

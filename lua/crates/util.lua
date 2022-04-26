@@ -40,6 +40,11 @@ function M.get_line_crates(buf, lines)
    return line_crates
 end
 
+function M.get_crate_info(buf, key)
+   local info = state.info_cache[buf]
+   return info and info[key] or nil
+end
+
 function M.get_newest(versions, avoid_pre, reqs)
    if not versions then
       return nil
