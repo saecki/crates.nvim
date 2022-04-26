@@ -100,9 +100,7 @@ end
 
 local function complete(): CompletionList|nil
     local buf = util.current_buf()
-    local pos = vim.api.nvim_win_get_cursor(0)
-    local line = pos[1] as integer - 1
-    local col = pos[2] as integer
+    local line, col = util.cursor_pos()
     local crates = util.get_line_crates(buf, Range.new(line, line + 1))
     local _,crate = next(crates)
     if not crate then
@@ -118,9 +116,7 @@ local function complete(): CompletionList|nil
             return
         end
 
-        pos = vim.api.nvim_win_get_cursor(0)
-        line = pos[1] as integer - 1
-        col = pos[2] as integer
+        line, col = util.cursor_pos()
         crates = util.get_line_crates(buf, Range.new(line, line + 1))
         _,crate = next(crates)
         if not crate then

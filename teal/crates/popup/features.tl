@@ -12,7 +12,7 @@ local record M
 
     record FeatHistoryEntry
         feature: Feature
-        line: integer -- 1 indexed
+        line: integer -- 0-indexed
     end
 end
 
@@ -48,7 +48,7 @@ local function feature_text(features_info: {string:FeatureInfo}, feature: Featur
 end
 
 local function toggle_feature(ctx: FeatureContext, line: integer)
-    local index = line - popup.TOP_OFFSET
+    local index = popup.item_index(line)
     local features = ctx.version.features
     local entry = ctx.history[ctx.hist_idx]
 
@@ -145,7 +145,7 @@ local function toggle_feature(ctx: FeatureContext, line: integer)
 end
 
 local function goto_feature(ctx: FeatureContext, line: integer)
-    local index = line - popup.TOP_OFFSET
+    local index = popup.item_index(line)
     local crate = ctx.crate
     local version = ctx.version
     local feature = ctx.history[ctx.hist_idx].feature
@@ -177,11 +177,11 @@ local function goto_feature(ctx: FeatureContext, line: integer)
 
     ctx.history[ctx.hist_idx] = {
         feature = selected_feature,
-        line = 3,
+        line = 2,
     }
 end
 
-local function jump_back_feature(ctx: FeatureContext,line: integer)
+local function jump_back_feature(ctx: FeatureContext, line: integer)
     local crate = ctx.crate
     local version = ctx.version
 
@@ -243,7 +243,8 @@ local function config_feat_win(ctx: FeatureContext): function(integer, integer)
         for _,k in ipairs(state.cfg.popup.keys.toggle_feature) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    toggle_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    toggle_feature(ctx, line)
                 end,
                 noremap = true,
                 silent = true,
@@ -254,7 +255,8 @@ local function config_feat_win(ctx: FeatureContext): function(integer, integer)
         for _,k in ipairs(state.cfg.popup.keys.goto_item) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    goto_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    goto_feature(ctx, line)
                 end,
                 noremap = true,
                 silent = true,
@@ -265,7 +267,8 @@ local function config_feat_win(ctx: FeatureContext): function(integer, integer)
         for _,k in ipairs(state.cfg.popup.keys.jump_forward) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    jump_forward_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    jump_forward_feature(ctx, line)
                 end,
                 noremap = true,
                 silent = true,
@@ -276,7 +279,8 @@ local function config_feat_win(ctx: FeatureContext): function(integer, integer)
         for _,k in ipairs(state.cfg.popup.keys.jump_back) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
-                    jump_back_feature(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                    local line = util.cursor_pos()
+                    jump_back_feature(ctx, line)
                 end,
                 noremap = true,
                 silent = true,
@@ -361,7 +365,7 @@ function M.open_details(crate: Crate, version: Version, feature: Feature, opts: 
         crate = crate,
         version = version,
         history = {
-            { feature = nil, line = 3 } as FeatHistoryEntry,
+            { feature = nil, line = 2 } as FeatHistoryEntry,
             { feature = feature, line = opts and opts.line or 3 },
         },
         hist_idx = 2,

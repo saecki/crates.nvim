@@ -28,7 +28,7 @@ local Version = types.Version
 local util = require("crates.util")
 
 local goto_dep = async.wrap(function(ctx, line)
-   local index = line - popup.TOP_OFFSET
+   local index = popup.item_index(line)
    local hist_entry = ctx.history[ctx.hist_idx]
    local deps = hist_entry.version.deps
 
@@ -91,7 +91,7 @@ local goto_dep = async.wrap(function(ctx, line)
    ctx.history[ctx.hist_idx] = {
       crate_name = crate_name,
       version = version,
-      line = 3,
+      line = 2,
    }
 
    M.open_deps(ctx, crate_name, version, {
@@ -192,7 +192,8 @@ function M.open_deps(ctx, crate_name, version, opts)
          for _, k in ipairs(state.cfg.popup.keys.goto_item) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                callback = function()
-                  goto_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                  local line = util.cursor_pos()
+                  goto_dep(ctx, line)
                end,
                noremap = true,
                silent = true,
@@ -203,7 +204,8 @@ function M.open_deps(ctx, crate_name, version, opts)
          for _, k in ipairs(state.cfg.popup.keys.jump_forward) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                callback = function()
-                  jump_forward_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                  local line = util.cursor_pos()
+                  jump_forward_dep(ctx, line)
                end,
                noremap = true,
                silent = true,
@@ -214,7 +216,8 @@ function M.open_deps(ctx, crate_name, version, opts)
          for _, k in ipairs(state.cfg.popup.keys.jump_back) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                callback = function()
-                  jump_back_dep(ctx, vim.api.nvim_win_get_cursor(0)[1])
+                  local line = util.cursor_pos()
+                  jump_back_dep(ctx, line)
                end,
                noremap = true,
                silent = true,
@@ -229,7 +232,7 @@ function M.open(crate_name, version, opts)
    local ctx = {
       buf = util.current_buf(),
       history = {
-         { crate_name = crate_name, version = version, line = opts and opts.line or 3 },
+         { crate_name = crate_name, version = version, line = opts and opts.line or 2 },
       },
       hist_idx = 1,
    }

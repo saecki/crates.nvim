@@ -25,9 +25,7 @@ local util = require("crates.util")
 
 local function line_crate_info()
    local buf = util.current_buf()
-   local pos = vim.api.nvim_win_get_cursor(0)
-   local line = pos[1] - 1
-   local col = pos[2]
+   local line, col = util.cursor_pos()
 
    local crates = util.get_line_crates(buf, Range.new(line, line + 1))
    local _, crate = next(crates)
