@@ -10,6 +10,24 @@ function M.get_actions(): {string:function}
     local function add_action(action: string)
         actions[action] = (M as {string:function})[action]
     end
+    
+    local buf = util.current_buf()
+    local linenr = vim.api.nvim_win_get_cursor(0)[1] as integer
+    local crates = util.get_line_crates(buf, Range.pos(linenr - 1))
+    local key,crate = next(crates)
+    if crate then
+        local info = state.info_cache[buf]
+        if info and info[key] then
+            local i = info[key]
+
+            if i.vers_update then
+                add_action("update_crate")
+            end
+            if i.vers_upgrade then
+                add_action("upgrade_crate")
+            end
+        end
+    end
 
     add_action("update_all_crates")
     add_action("upgrade_all_crates")
