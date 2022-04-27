@@ -149,6 +149,10 @@ For more information about individual config options see |crates-config|.
                 name = "Crates",
             },
         },
+        null_ls = {
+            enabled = false,
+            name = "Crates",
+        },
     }
 <
 
@@ -812,6 +816,24 @@ src.coq.name                                      *crates-config-src-coq-name*
     Type: `string`, Default: `"Crates"`
 
     The source name displayed by |coq_nvim|.
+
+
+null_ls                                                *crates-config-null_ls*
+    Type: `section`
+
+    Configuration options for null-ls.nvim actions.
+
+
+null_ls.enabled                                *crates-config-null_ls-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to register the |null-ls.nvim| source.
+
+
+null_ls.name                                      *crates-config-null_ls-name*
+    Type: `string`, Default: `"Crates"`
+
+    The |null-ls.nvim| name.
 
 
 
