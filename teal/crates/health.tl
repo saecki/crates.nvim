@@ -2,6 +2,7 @@ local record M end
 
 local health_start = vim.fn["health#report_start"]
 local health_ok = vim.fn["health#report_ok"]
+local health_warn = vim.fn["health#report_warn"]
 local health_error = vim.fn["health#report_error"]
 local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
 
@@ -24,6 +25,11 @@ function M.check()
         health_ok("plenary.nvim installed")
     else
         health_error("plenary.nvim not found")
+    end
+    if lualib_installed("null_ls") then
+        health_ok("null-ls.nvim installed")
+    else
+        health_warn("null-ls.nvim not found")
     end
 
     health_start("Checking for external dependencies")
