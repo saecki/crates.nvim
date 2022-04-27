@@ -15,6 +15,7 @@ local record M
         diagnostic: DiagnosticConfig
         popup: PopupConfig
         src: SrcConfig
+        null_ls: NullLsConfig
 
         record TextConfig
             loading: string
@@ -127,6 +128,11 @@ local record M
         end
 
         record CoqConfig
+            enabled: boolean
+            name: string
+        end
+
+        record NullLsConfig
             enabled: boolean
             name: string
         end
@@ -877,6 +883,29 @@ entry(schema_src_coq, "name", {
     default = "Crates",
     description = [[
         The source name displayed by |coq_nvim|.
+    ]],
+})
+
+entry(M.schema, "null_ls", {
+    type = "section",
+    description = [[
+        Configuration options for null-ls.nvim actions.
+    ]],
+    fields = {},
+})
+local schema_null_ls = M.schema.null_ls.fields
+entry(schema_null_ls, "enabled", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to register the |null-ls.nvim| source.
+    ]],
+})
+entry(schema_null_ls, "name", {
+    type = "string",
+    default = "Crates",
+    description = [[
+        The |null-ls.nvim| name.
     ]],
 })
 

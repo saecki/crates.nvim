@@ -92,6 +92,10 @@ function M.setup(cfg)
    if state.cfg.src.coq.enabled then
       require("crates.src.coq").setup(state.cfg.src.coq.name)
    end
+
+   if state.cfg.null_ls.enabled then
+      require("crates.null-ls").setup(state.cfg.null_ls.name)
+   end
 end
 
 function M.hide()

@@ -5,7 +5,7 @@ local ok, null_ls = pcall(require, "null-ls")
 if not ok then
     vim.notify("null-ls.nvim was not found", vim.log.levels.WARN, { title = "crates.nvim" })
     return {
-        register_source = function() end
+        setup = function(_: string) end
     }
 end
 local null_ls_methods = require("null-ls.methods")
@@ -15,9 +15,9 @@ local function format_title(name: string): string
     return name:sub(1, 1):upper() .. name:gsub("_", " "):sub(2)
 end
 
-function M.source(): null_ls.Source
+function M.source(name: string): null_ls.Source
     return {
-        name = "crates",
+        name = name,
         meta = {
             url = "https://github.com/saecki/crates.nvim",
             description = "Code actions for editing `Cargo.toml` files.",
@@ -46,8 +46,8 @@ function M.source(): null_ls.Source
     }
 end
 
-function M.register_source()
-    null_ls.register(M.source())
+function M.setup(name: string)
+    null_ls.register(M.source(name))
 end
 
 return M
