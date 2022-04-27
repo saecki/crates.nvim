@@ -1,4 +1,10 @@
-local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, SrcConfig = {}, SrcTextConfig = {}, CoqConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, SrcConfig = {}, SrcTextConfig = {}, CoqConfig = {}, NullLsConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+
+
+
+
+
+
 
 
 
@@ -877,6 +883,29 @@ entry(schema_src_coq, "name", {
    default = "Crates",
    description = [[
         The source name displayed by |coq_nvim|.
+    ]],
+})
+
+entry(M.schema, "null_ls", {
+   type = "section",
+   description = [[
+        Configuration options for null-ls.nvim actions.
+    ]],
+   fields = {},
+})
+local schema_null_ls = M.schema.null_ls.fields
+entry(schema_null_ls, "enabled", {
+   type = "boolean",
+   default = false,
+   description = [[
+        Whether to register the |null-ls.nvim| source.
+    ]],
+})
+entry(schema_null_ls, "name", {
+   type = "string",
+   default = "Crates",
+   description = [[
+        The |null-ls.nvim| name.
     ]],
 })
 
