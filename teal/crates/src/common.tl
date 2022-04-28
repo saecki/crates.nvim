@@ -22,8 +22,6 @@ local api = require("crates.api")
 local async = require("crates.async")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
-local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
 local Range = types.Range
 local Version = types.Version
@@ -31,7 +29,7 @@ local util = require("crates.util")
 
 local VALUE_KIND = 12
 
-local function complete_versions(crate: Crate, versions: {Version}): CompletionList
+local function complete_versions(crate: toml.Crate, versions: {Version}): CompletionList
     local items = {}
 
     for i,v in ipairs(versions) do
@@ -61,7 +59,7 @@ local function complete_versions(crate: Crate, versions: {Version}): CompletionL
     }
 end
 
-local function complete_features(crate: Crate, cf: CrateFeature, versions: {Version}): CompletionList
+local function complete_features(crate: toml.Crate, cf: toml.Feature, versions: {Version}): CompletionList
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 

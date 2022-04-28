@@ -12,7 +12,6 @@ local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local Range = types.Range
 local Version = types.Version

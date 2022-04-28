@@ -7,7 +7,6 @@ end
 
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
@@ -78,7 +77,7 @@ function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagn
     })
 end
 
-function M.display_loading(buf: integer, crate: Crate)
+function M.display_loading(buf: integer, crate: toml.Crate)
     if not state.visible then return end
 
     local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }

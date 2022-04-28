@@ -1,7 +1,7 @@
 local record State
     cfg: Config
     vers_cache: {string:{Version}}
-    crate_cache: {integer:{string:Crate}}
+    crate_cache: {integer:{string:toml.Crate}}
     info_cache: {integer:{string:CrateInfo}}
     diagnostic_cache: {integer:{Diagnostic}}
     visible: boolean
@@ -10,7 +10,6 @@ end
 local config = require("crates.config")
 local Config = config.Config
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
