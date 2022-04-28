@@ -26,7 +26,7 @@ function M.check()
    else
       health_error("plenary.nvim not found")
    end
-   if lualib_installed("null_ls") then
+   if lualib_installed("null-ls") then
       health_ok("null-ls.nvim installed")
    else
       health_warn("null-ls.nvim not found")
