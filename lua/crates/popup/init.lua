@@ -16,7 +16,6 @@ local popup_feat = require("crates.popup.features")
 local popup_vers = require("crates.popup.versions")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local Feature = types.Feature
 local Range = types.Range

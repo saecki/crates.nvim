@@ -1,4 +1,4 @@
-local M = {Section = {}, Crate = {Vers = {}, Pkg = {}, Def = {}, Feat = {}, }, CrateFeature = {}, Quotes = {}, }
+local M = {Section = {}, Crate = {Vers = {}, Pkg = {}, Def = {}, Feat = {}, }, Feature = {}, Quotes = {}, }
 
 
 
@@ -82,7 +82,7 @@ local M = {Section = {}, Crate = {Vers = {}, Pkg = {}, Def = {}, Feat = {}, }, C
 
 local Section = M.Section
 local Crate = M.Crate
-local CrateFeature = M.CrateFeature
+local Feature = M.Feature
 local semver = require("crates.semver")
 local types = require("crates.types")
 local Range = types.Range

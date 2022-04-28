@@ -15,9 +15,6 @@ local SectionScope = M.SectionScope
 local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
-local CrateFeature = toml.CrateFeature
-local Section = toml.Section
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Dependency = types.Dependency
@@ -26,7 +23,7 @@ local DiagnosticKind = types.DiagnosticKind
 local Version = types.Version
 local util = require("crates.util")
 
-local function section_diagnostic(section: Section, kind: DiagnosticKind, severity: integer, scope: SectionScope|nil, data: {string:any}): Diagnostic
+local function section_diagnostic(section: toml.Section, kind: DiagnosticKind, severity: integer, scope: SectionScope|nil, data: {string:any}): Diagnostic
     local d = Diagnostic.new {
         lnum = section.lines.s,
         end_lnum = section.lines.e,
@@ -44,7 +41,12 @@ local function section_diagnostic(section: Section, kind: DiagnosticKind, severi
     return d
 end
 
-local function crate_diagnostic(crate: Crate, kind: DiagnosticKind, severity: integer, scope: CrateScope|nil): Diagnostic
+local function crate_diagnostic(
+    crate: toml.Crate,
+    kind: DiagnosticKind,
+    severity: integer,
+    scope: CrateScope|nil
+): Diagnostic
     local d = Diagnostic.new {
         lnum = crate.lines.s,
         end_lnum = crate.lines.e,
@@ -84,7 +86,13 @@ local function crate_diagnostic(crate: Crate, kind: DiagnosticKind, severity: in
     return d
 end
 
-local function feat_diagnostic(crate: Crate, feat: CrateFeature, kind: DiagnosticKind, severity: integer, data: {string:any}|nil): Diagnostic
+local function feat_diagnostic(
+    crate: toml.Crate,
+    feat: toml.Feature,
+    kind: DiagnosticKind,
+    severity: integer,
+    data: {string:any}|nil
+): Diagnostic
     return Diagnostic.new {
         lnum = crate.feat.line,
         end_lnum = crate.feat.line,
@@ -96,10 +104,10 @@ local function feat_diagnostic(crate: Crate, feat: CrateFeature, kind: Diagnosti
     }
 end
 
-function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate}, {Diagnostic}
+function M.process_crates(sections: {toml.Section}, crates: {toml.Crate}): {string:toml.Crate}, {Diagnostic}
     local diagnostics = {}
-    local s_cache: {string:Section} = {}
-    local cache: {string:Crate} = {}
+    local s_cache: {string:toml.Section} = {}
+    local cache: {string:toml.Crate} = {}
 
     for _,s in ipairs(sections) do
         local key = s.text:gsub("%s+", "")
@@ -159,7 +167,7 @@ function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate},
                 end
             end
 
-            local feats: {string:CrateFeature} = {}
+            local feats: {string:toml.Feature} = {}
             for _,f in ipairs(c:feats()) do
                 local orig = feats[f.name]
                 if orig then
@@ -189,7 +197,7 @@ function M.process_crates(sections: {Section}, crates: {Crate}): {string:Crate},
     return cache, diagnostics
 end
 
-function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo, {Diagnostic}
+function M.process_crate_versions(crate: toml.Crate, versions: {Version}): CrateInfo, {Diagnostic}
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
@@ -277,7 +285,7 @@ function M.process_crate_versions(crate: Crate, versions: {Version}): CrateInfo,
     return info, diagnostics
 end
 
-function M.process_crate_deps(crate: Crate, version: Version, deps: {Dependency}): {Diagnostic}
+function M.process_crate_deps(crate: toml.Crate, version: Version, deps: {Dependency}): {Diagnostic}
     local diagnostics = {}
 
     local valid_feats = {}

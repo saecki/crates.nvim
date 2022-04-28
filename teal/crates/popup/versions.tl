@@ -1,7 +1,7 @@
 local record M
     record VersContext
         buf: integer
-        crate: Crate
+        crate: toml.Crate
         versions: {Version}
     end
 end
@@ -12,7 +12,6 @@ local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local Range = types.Range
 local Version = types.Version
@@ -59,7 +58,7 @@ local function copy_version(versions: {Version}, line: integer)
     vim.fn.setreg(state.cfg.popup.copy_register, version.num)
 end
 
-function M.open(crate: Crate, versions: {Version}, opts: WinOpts)
+function M.open(crate: toml.Crate, versions: {Version}, opts: WinOpts)
     popup.type = "versions"
 
     local title = string.format(state.cfg.popup.text.title, crate.name)

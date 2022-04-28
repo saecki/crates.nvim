@@ -7,7 +7,6 @@ local M = {}
 
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic

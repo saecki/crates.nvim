@@ -23,7 +23,6 @@ local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local Feature = types.Feature
 local Range = types.Range
@@ -114,7 +113,7 @@ local function toggle_feature(ctx, line)
          table.insert(c, cf)
       end
    end
-   ctx.crate = Crate.new(vim.tbl_extend("force", ctx.crate, unpack(c)))
+   ctx.crate = toml.Crate.new(vim.tbl_extend("force", ctx.crate, unpack(c)))
 
 
    local features_text = {}

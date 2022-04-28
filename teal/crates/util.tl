@@ -9,8 +9,6 @@ local FeatureInfo = M.FeatureInfo
 local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
-local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Feature = types.Feature
@@ -31,7 +29,7 @@ function M.cursor_pos(): integer, integer
     return cursor[1] - 1, cursor[2]
 end
 
-function M.get_line_crates(buf: integer, lines: Range): {string:Crate}
+function M.get_line_crates(buf: integer, lines: Range): {string:toml.Crate}
     local crates = state.crate_cache[buf]
     if not crates then
         return {}
@@ -79,7 +77,7 @@ function M.get_newest(versions: {Version}, avoid_pre: boolean, reqs: {Requiremen
     return newest, newest_pre, newest_yanked
 end
 
-function M.is_feat_enabled(crate: Crate, feature: Feature): boolean
+function M.is_feat_enabled(crate: toml.Crate, feature: Feature): boolean
     local enabled = crate:get_feat(feature.name) ~= nil
     if feature.name == "default" then
         return enabled or crate:is_def_enabled()
@@ -88,7 +86,7 @@ function M.is_feat_enabled(crate: Crate, feature: Feature): boolean
     end
 end
 
-function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
+function M.features_info(crate: toml.Crate, features: Features): {string:FeatureInfo}
     local info: {string:FeatureInfo} = {}
 
     local function update_transitive(f: Feature)
@@ -131,7 +129,7 @@ function M.features_info(crate: Crate, features: Features): {string:FeatureInfo}
     return info
 end
 
-local function insert_version(buf: integer, crate: Crate, text: string): Range
+local function insert_version(buf: integer, crate: toml.Crate, text: string): Range
     if not crate.vers then
         if crate.syntax == "table" then
             local line = crate.lines.s + 1
@@ -192,7 +190,7 @@ local function replace_existing(r: Requirement, version: SemVer): SemVer
     end
 end
 
-function M.smart_version_text(crate: Crate, version: SemVer): string
+function M.smart_version_text(crate: toml.Crate, version: SemVer): string
     if #crate:vers_reqs() == 0 then
         return version:display()
     end
@@ -298,7 +296,7 @@ function M.smart_version_text(crate: Crate, version: SemVer): string
     return text
 end
 
-function M.version_text(crate: Crate, version: SemVer, alt: boolean|nil): string
+function M.version_text(crate: toml.Crate, version: SemVer, alt: boolean|nil): string
     local smart: boolean
     if alt then
         smart = not state.cfg.smart_insert
@@ -312,12 +310,12 @@ function M.version_text(crate: Crate, version: SemVer, alt: boolean|nil): string
     end
 end
 
-function M.set_version(buf: integer, crate: Crate, version: SemVer, alt: boolean|nil): Range
+function M.set_version(buf: integer, crate: toml.Crate, version: SemVer, alt: boolean|nil): Range
     local text = M.version_text(crate, version, alt)
     return insert_version(buf, crate, text)
 end
 
-function M.upgrade_crates(buf: integer, crates: {string:Crate}, info: {string:CrateInfo}, alt: boolean|nil)
+function M.upgrade_crates(buf: integer, crates: {string:toml.Crate}, info: {string:CrateInfo}, alt: boolean|nil)
     for k,c in pairs(crates) do
         local i = info[k]
 
@@ -330,7 +328,7 @@ function M.upgrade_crates(buf: integer, crates: {string:Crate}, info: {string:Cr
     end
 end
 
-function M.update_crates(buf: integer, crates: {string:Crate}, info: {string:CrateInfo}, alt: boolean|nil)
+function M.update_crates(buf: integer, crates: {string:toml.Crate}, info: {string:CrateInfo}, alt: boolean|nil)
     for k,c in pairs(crates) do
         local i = info[k]
 
@@ -343,7 +341,7 @@ function M.update_crates(buf: integer, crates: {string:Crate}, info: {string:Cra
     end
 end
 
-function M.enable_feature(buf: integer, crate: Crate, feature: Feature): Range
+function M.enable_feature(buf: integer, crate: toml.Crate, feature: Feature): Range
     local t = '"' .. feature.name .. '"'
     if not crate.feat then
         if crate.syntax == "table" then
@@ -419,7 +417,7 @@ function M.enable_feature(buf: integer, crate: Crate, feature: Feature): Range
     end
 end
 
-function M.disable_feature(buf: integer, crate: Crate, feature: CrateFeature): Range
+function M.disable_feature(buf: integer, crate: toml.Crate, feature: toml.Feature): Range
     -- check reference in case of duplicates
     local index: integer
     for i,f in ipairs(crate.feat.items) do
@@ -454,7 +452,7 @@ function M.disable_feature(buf: integer, crate: Crate, feature: CrateFeature): R
     return Range.pos(crate.feat.line)
 end
 
-function M.enable_def_features(buf: integer, crate: Crate): Range
+function M.enable_def_features(buf: integer, crate: toml.Crate): Range
     vim.api.nvim_buf_set_text(
         buf,
         crate.def.line,
@@ -466,7 +464,7 @@ function M.enable_def_features(buf: integer, crate: Crate): Range
     return Range.pos(crate.def.line)
 end
 
-local function disable_def_features(buf: integer, crate: Crate): Range
+local function disable_def_features(buf: integer, crate: toml.Crate): Range
     if crate.def then
         local line = crate.def.line
         vim.api.nvim_buf_set_text(
@@ -539,7 +537,7 @@ local function disable_def_features(buf: integer, crate: Crate): Range
     end
 end
 
-function M.disable_def_features(buf: integer, crate: Crate, feature: CrateFeature|nil): Range
+function M.disable_def_features(buf: integer, crate: toml.Crate, feature: toml.Feature|nil): Range
     if feature then
         if crate.def and crate.def.col.s < crate.feat.col.s then
             M.disable_feature(buf, crate, feature)

@@ -1,10 +1,10 @@
 local record M
-    open_features: function(FeatureContext, Crate, Version, WinOpts)
-    open_feature_details: function(FeatureContext, Crate, Version, Feature, WinOpts)
+    open_features: function(FeatureContext, toml.Crate, Version, WinOpts)
+    open_feature_details: function(FeatureContext, toml.Crate, Version, Feature, WinOpts)
 
     record FeatureContext
         buf: integer
-        crate: Crate
+        crate: toml.Crate
         version: Version
         history: {FeatHistoryEntry}
         hist_idx: integer
@@ -23,7 +23,6 @@ local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
 local types = require("crates.types")
 local Feature = types.Feature
 local Range = types.Range
@@ -114,7 +113,7 @@ local function toggle_feature(ctx: FeatureContext, line: integer)
             table.insert(c, cf)
         end
     end
-    ctx.crate = Crate.new(vim.tbl_extend("force", ctx.crate as table, unpack(c) as table) as Crate)
+    ctx.crate = toml.Crate.new(vim.tbl_extend("force", ctx.crate as table, unpack(c) as table) as toml.Crate)
 
     -- update buffer
     local features_text = {}
@@ -290,7 +289,7 @@ local function config_feat_win(ctx: FeatureContext): function(integer, integer)
     end
 end
 
-function M.open_features(ctx: FeatureContext, crate: Crate, version: Version, opts: WinOpts)
+function M.open_features(ctx: FeatureContext, crate: toml.Crate, version: Version, opts: WinOpts)
     popup.type = "features"
 
     local features = version.features
@@ -315,7 +314,7 @@ function M.open_features(ctx: FeatureContext, crate: Crate, version: Version, op
     end
 end
 
-function M.open_feature_details(ctx: FeatureContext, crate: Crate, version: Version, feature: Feature, opts: WinOpts)
+function M.open_feature_details(ctx: FeatureContext, crate: toml.Crate, version: Version, feature: Feature, opts: WinOpts)
     popup.type = "features"
 
     local features = version.features
@@ -346,7 +345,7 @@ function M.open_feature_details(ctx: FeatureContext, crate: Crate, version: Vers
     end
 end
 
-function M.open(crate: Crate, version: Version, opts: WinOpts)
+function M.open(crate: toml.Crate, version: Version, opts: WinOpts)
     local ctx = {
         buf = util.current_buf(),
         crate = crate,
@@ -359,7 +358,7 @@ function M.open(crate: Crate, version: Version, opts: WinOpts)
     M.open_features(ctx, crate, version, opts)
 end
 
-function M.open_details(crate: Crate, version: Version, feature: Feature, opts: WinOpts)
+function M.open_details(crate: toml.Crate, version: Version, feature: Feature, opts: WinOpts)
     local ctx = {
         buf = util.current_buf(),
         crate = crate,

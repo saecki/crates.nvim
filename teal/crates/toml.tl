@@ -58,7 +58,7 @@ local record M
         end
 
         record Feat
-            items: {CrateFeature}
+            items: {Feature}
             text: string
             line: integer -- 0-indexed
             col: Range
@@ -66,7 +66,7 @@ local record M
         end
     end
 
-    record CrateFeature
+    record Feature
         name: string
         col: Range -- relative to to the start of the features text
         decl_col: Range -- relative to to the start of the features text
@@ -82,14 +82,14 @@ end
 
 local Section = M.Section
 local Crate = M.Crate
-local CrateFeature = M.CrateFeature
+local Feature = M.Feature
 local semver = require("crates.semver")
 local types = require("crates.types")
 local Range = types.Range
 local Requirement = types.Requirement
 
-function M.parse_crate_features(text: string): {CrateFeature}
-    local feats: {CrateFeature} = {}
+function M.parse_crate_features(text: string): {Feature}
+    local feats: {Feature} = {}
     for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
         table.insert(feats, {
             name = f,
@@ -133,7 +133,7 @@ function Crate:vers_is_pre(): boolean|nil
     return self.vers and self.vers.is_pre
 end
 
-function Crate:get_feat(name: string): CrateFeature|nil, integer
+function Crate:get_feat(name: string): Feature|nil, integer
     if not self.feat or not self.feat.items then
         return nil
     end
@@ -147,7 +147,7 @@ function Crate:get_feat(name: string): CrateFeature|nil, integer
     return nil
 end
 
-function Crate:feats(): {CrateFeature}
+function Crate:feats(): {Feature}
     return self.feat and self.feat.items or {}
 end
 

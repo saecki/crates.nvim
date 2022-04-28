@@ -3,8 +3,6 @@ local record M end
 local util = require("crates.util")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
-local CrateFeature = toml.CrateFeature
 local types = require("crates.types")
 local Diagnostic = types.Diagnostic
 local Range = types.Range
@@ -105,7 +103,7 @@ local function remove_lines_action(buf: integer, lines: Range): function
     end
 end
 
-local function remove_feature_action(buf: integer, crate: Crate, feat: CrateFeature): function
+local function remove_feature_action(buf: integer, crate: toml.Crate, feat: toml.Feature): function
     return function()
         util.disable_feature(buf, crate, feat)
     end
@@ -148,11 +146,11 @@ function M.get_actions(): {string:function}
             actions["remove_original_crate"] = remove_diagnostic_range_action(buf, d)
 
         elseif crate and d.kind == "feat_dup" then
-            actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"] as CrateFeature)
+            actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         elseif crate and d.kind == "feat_dup_orig" then
-            actions["remove_original_feature"] = remove_feature_action(buf, crate, d.data["feat"] as CrateFeature)
+            actions["remove_original_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         elseif crate and d.kind == "feat_invalid" then
-            actions["remove_invalid_feature"] = remove_feature_action(buf, crate, d.data["feat"] as CrateFeature)
+            actions["remove_invalid_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         end
 
         ::continue::

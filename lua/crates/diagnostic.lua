@@ -15,9 +15,6 @@ local SectionScope = M.SectionScope
 local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local Crate = toml.Crate
-local CrateFeature = toml.CrateFeature
-local Section = toml.Section
 local types = require("crates.types")
 local CrateInfo = types.CrateInfo
 local Dependency = types.Dependency
@@ -44,7 +41,12 @@ local function section_diagnostic(section, kind, severity, scope, data)
    return d
 end
 
-local function crate_diagnostic(crate, kind, severity, scope)
+local function crate_diagnostic(
+   crate,
+   kind,
+   severity,
+   scope)
+
    local d = Diagnostic.new({
       lnum = crate.lines.s,
       end_lnum = crate.lines.e,
@@ -84,7 +86,13 @@ local function crate_diagnostic(crate, kind, severity, scope)
    return d
 end
 
-local function feat_diagnostic(crate, feat, kind, severity, data)
+local function feat_diagnostic(
+   crate,
+   feat,
+   kind,
+   severity,
+   data)
+
    return Diagnostic.new({
       lnum = crate.feat.line,
       end_lnum = crate.feat.line,
