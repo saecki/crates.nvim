@@ -138,7 +138,7 @@ local function toggle_feature(ctx, line)
    vim.api.nvim_buf_set_option(popup.buf, "modifiable", true)
    for i, v in ipairs(features_text) do
       vim.api.nvim_buf_set_lines(popup.buf, popup.TOP_OFFSET + i - 1, popup.TOP_OFFSET + i, false, { v.text })
-      vim.api.nvim_buf_add_highlight(popup.buf, popup.NAMESPACE, v.hl, popup.TOP_OFFSET + i - 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(popup.buf, popup.POPUP_NS, v.hl, popup.TOP_OFFSET + i - 1, 0, -1)
    end
    vim.api.nvim_buf_set_option(popup.buf, "modifiable", false)
 end

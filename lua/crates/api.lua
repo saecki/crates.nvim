@@ -22,9 +22,9 @@ local Features = types.Features
 local Version = types.Version
 local Job = require("plenary.job")
 
-local endpoint = "https://crates.io/api/v1"
-local useragent = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
-local json_decode_opts = { luanil = { object = true, array = true } }
+local ENDPOINT = "https://crates.io/api/v1"
+local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
+local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 
 M.vers_jobs = {}
 M.deps_jobs = {}
@@ -35,7 +35,7 @@ local function parse_versions(json)
       return nil
    end
 
-   local success, data = pcall(vim.json.decode, json, json_decode_opts)
+   local success, data = pcall(vim.json.decode, json, JSON_DECODE_OPTS)
    if not success then
       data = nil
    end
@@ -101,7 +101,7 @@ local function fetch_vers(name, callback)
    end
 
    local callbacks = { callback }
-   local url = string.format("%s/crates/%s/versions", endpoint, name)
+   local url = string.format("%s/crates/%s/versions", ENDPOINT, name)
 
    local function on_exit(j, code, signal)
       local cancelled = signal ~= 0
@@ -124,7 +124,7 @@ local function fetch_vers(name, callback)
 
    local j = Job:new({
       command = "curl",
-      args = { "-sLA", useragent, url },
+      args = { "-sLA", USERAGENT, url },
       on_exit = vim.schedule_wrap(on_exit),
    })
 
@@ -147,7 +147,7 @@ local function parse_deps(json)
       return nil
    end
 
-   local success, data = pcall(vim.json.decode, json, json_decode_opts)
+   local success, data = pcall(vim.json.decode, json, JSON_DECODE_OPTS)
    if not success then
       data = nil
    end
@@ -179,7 +179,7 @@ local function fetch_deps(name, version, callback)
    end
 
    local callbacks = { callback }
-   local url = string.format("%s/crates/%s/%s/dependencies", endpoint, name, version)
+   local url = string.format("%s/crates/%s/%s/dependencies", ENDPOINT, name, version)
 
    local function on_exit(j, code, signal)
       local cancelled = signal ~= 0
@@ -202,7 +202,7 @@ local function fetch_deps(name, version, callback)
 
    local j = Job:new({
       command = "curl",
-      args = { "-sLA", useragent, url },
+      args = { "-sLA", USERAGENT, url },
       on_exit = vim.schedule_wrap(on_exit),
    })
 

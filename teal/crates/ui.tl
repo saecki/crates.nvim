@@ -1,7 +1,5 @@
 local record M
-    custom_ns: integer
     custom_diagnostics: {integer:{vim.diagnostic.Diagnostic}}
-    diagnostic_ns: integer
     diagnostics: {integer:{vim.diagnostic.Diagnostic}}
 end
 
@@ -12,9 +10,10 @@ local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
 local Version = types.Version
 
-M.custom_ns = vim.api.nvim_create_namespace("crates.nvim") as integer
+local CUSTOM_NS = vim.api.nvim_create_namespace("crates.nvim") as integer
+local DIAGNOSTIC_NS = vim.api.nvim_create_namespace("crates.nvim.diagnostic") as integer
+
 M.custom_diagnostics = {}
-M.diagnostic_ns = vim.api.nvim_create_namespace("crates.nvim.diagnostic") as integer
 M.diagnostics = {}
 
 local function to_vim_diagnostic(d: Diagnostic): vim.diagnostic.Diagnostic
@@ -37,7 +36,7 @@ function M.display_diagnostics(buf: integer, diagnostics: {Diagnostic})
     local vim_diagnostics = vim.tbl_map(to_vim_diagnostic, diagnostics)
     vim.list_extend(M.diagnostics[buf], vim_diagnostics)
 
-    vim.diagnostic.set(M.diagnostic_ns, buf, M.diagnostics[buf])
+    vim.diagnostic.set(DIAGNOSTIC_NS, buf, M.diagnostics[buf])
 end
 
 function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagnostic})
@@ -68,9 +67,9 @@ function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagn
         })
     end
 
-    vim.diagnostic.set(M.custom_ns, buf, M.custom_diagnostics[buf], { virtual_text = false })
-    vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, info.lines.s, info.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, M.custom_ns, info.vers_line, -1, {
+    vim.diagnostic.set(CUSTOM_NS, buf, M.custom_diagnostics[buf], { virtual_text = false })
+    vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, info.lines.s, info.lines.e)
+    vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, info.vers_line, -1, {
         virt_text = virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
@@ -81,9 +80,9 @@ function M.display_loading(buf: integer, crate: toml.Crate)
     if not state.visible then return end
 
     local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, crate.lines.s, crate.lines.e)
+    vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, crate.lines.s, crate.lines.e)
     local vers_line = crate.vers and crate.vers.line or crate.lines.s
-    vim.api.nvim_buf_set_extmark(buf, M.custom_ns, vers_line, -1, {
+    vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, vers_line, -1, {
         virt_text = virt_text,
         virt_text_pos = "eol",
         hl_mode = "combine",
@@ -94,9 +93,9 @@ function M.clear(buf: integer)
     M.custom_diagnostics[buf] = nil
     M.diagnostics[buf] = nil
 
-    vim.api.nvim_buf_clear_namespace(buf, M.custom_ns, 0, -1)
-    vim.diagnostic.reset(M.custom_ns, buf)
-    vim.diagnostic.reset(M.diagnostic_ns, buf)
+    vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, 0, -1)
+    vim.diagnostic.reset(CUSTOM_NS, buf)
+    vim.diagnostic.reset(DIAGNOSTIC_NS, buf)
 end
 
 return M
