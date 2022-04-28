@@ -1,7 +1,7 @@
 local record M
     TOP_OFFSET: integer
-    NAMESPACE: integer
-    LOADING_NAMESPACE: integer
+    POPUP_NS: integer
+    LOADING_NS: integer
 
     win: integer|nil
     buf: integer|nil
@@ -34,8 +34,8 @@ local WinOpts = M.WinOpts
 local state = require("crates.state")
 
 M.TOP_OFFSET = 2
-M.NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
-M.LOADING_NAMESPACE = vim.api.nvim_create_namespace("crates.nvim.popup.loading") as integer
+M.POPUP_NS = vim.api.nvim_create_namespace("crates.nvim.popup") as integer
+M.LOADING_NS = vim.api.nvim_create_namespace("crates.nvim.popup.loading") as integer
 
 -- 0-indexed
 function M.focus(line: integer|nil)
@@ -85,17 +85,17 @@ local function set_buf_content(buf: integer, title: string, text: {HighlightText
 
     -- clear buffer
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
-    vim.api.nvim_buf_clear_namespace(buf, M.NAMESPACE, 0, -1)
+    vim.api.nvim_buf_clear_namespace(buf, M.POPUP_NS, 0, -1)
 
     -- clear buffer
     vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title, "" })
-    vim.api.nvim_buf_add_highlight(buf, M.NAMESPACE, state.cfg.popup.highlight.title, 0, 0, -1)
+    vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, state.cfg.popup.highlight.title, 0, 0, -1)
 
     for i,v in ipairs(text) do
         vim.api.nvim_buf_set_lines(buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { v.text .. (v.suffix or "") })
-        vim.api.nvim_buf_add_highlight(buf, M.NAMESPACE, v.hl, M.TOP_OFFSET + i - 1, 0, v.text:len())
+        vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.hl, M.TOP_OFFSET + i - 1, 0, v.text:len())
         if v.suffix_hl then
-            vim.api.nvim_buf_add_highlight(buf, M.NAMESPACE, v.suffix_hl, M.TOP_OFFSET + i - 1, v.text:len(), -1)
+            vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.suffix_hl, M.TOP_OFFSET + i - 1, v.text:len(), -1)
         end
     end
 
@@ -161,14 +161,14 @@ function M.hide_loading_indicator(transaction: number)
         return
     end
     if M.buf then
-        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NAMESPACE, 0, 1)
+        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NS, 0, 1)
     end
 end
 
 function M.show_loading_indicator()
     if M.buf then
-        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NAMESPACE, 0, 1)
-        vim.api.nvim_buf_set_extmark(M.buf, M.LOADING_NAMESPACE, 0, -1, {
+        vim.api.nvim_buf_clear_namespace(M.buf, M.LOADING_NS, 0, 1)
+        vim.api.nvim_buf_set_extmark(M.buf, M.LOADING_NS, 0, -1, {
             virt_text = { { state.cfg.popup.text.loading, state.cfg.popup.highlight.loading } },
             virt_text_pos = "right_align",
             hl_mode = "combine",
