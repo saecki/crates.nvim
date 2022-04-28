@@ -1,0 +1,52 @@
+{
+  "dependencies": [
+    {
+      "crate_id": "average",
+      "default_features": true,
+      "downloads": 0,
+      "features": [],
+      "id": 563849,
+      "kind": "dev",
+      "optional": false,
+      "req": "^0.9.2",
+      "target": null,
+      "version_id": 119212
+    },
+    {
+      "crate_id": "rand_core",
+      "default_features": false,
+      "downloads": 0,
+      "features": [],
+      "id": 563844,
+      "kind": "normal",
+      "optional": false,
+      "req": "^0.3",
+      "target": null,
+      "version_id": 119212
+    },
+    {
+      "crate_id": "rustc_version",
+      "default_features": true,
+      "downloads": 0,
+      "features": [],
+      "id": 563850,
+      "kind": "build",
+      "optional": false,
+      "req": "^0.2",
+      "target": null,
+      "version_id": 119212
+    },
+    {
+      "crate_id": "cloudabi",
+      "default_features": true,
+      "downloads": 0,
+      "features": [],
+      "id": 563851,
+      "kind": "normal",
+      "optional": true,
+      "req": "^0.0.3",
+      "target": "cfg(target_os = \"cloudabi\")",
+      "version_id": 119212
+    }
+  ]
+}
