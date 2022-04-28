@@ -47,6 +47,15 @@ local record M
         "feat_dup_orig"
     end
 
+    record Crate
+        name: string
+        description: string
+        downloads: integer
+        homepage: string|nil
+        repository: string|nil
+        documentation: string|nil
+    end
+
     record Version
         num: string
         features: Features

@@ -1,4 +1,10 @@
-local M = {VersJob = {}, DepsJob = {}, }
+local M = {CrateJob = {}, VersJob = {}, DepsJob = {}, }
+
+
+
+
+
+
 
 
 
@@ -18,6 +24,7 @@ local time = require("crates.time")
 local DateTime = time.DateTime
 local types = require("crates.types")
 local Dependency = types.Dependency
+local Crate = types.Crate
 local Features = types.Features
 local Version = types.Version
 local Job = require("plenary.job")
@@ -26,69 +33,145 @@ local ENDPOINT = "https://crates.io/api/v1"
 local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
 local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 
+M.crate_jobs = {}
 M.vers_jobs = {}
 M.deps_jobs = {}
 
 
-local function parse_vers(json)
-   if not json then
-      return nil
+local function parse_json(json_str)
+   if not json_str then
+      return
    end
 
-   local success, data = pcall(vim.json.decode, json, JSON_DECODE_OPTS)
+   local success, json = pcall(vim.json.decode, json_str, JSON_DECODE_OPTS)
    if not success then
-      data = nil
+      return
+   end
+
+   if json and type(json) == "table" then
+      return json
+   end
+end
+
+
+function M.parse_crate(json_str)
+   local json = parse_json(json_str)
+   if not (json and json.crate) then
+      return
+   end
+
+   local c = json.crate
+   local crate = {
+      name = c.id,
+      description = c.description,
+      homepage = c.homepage,
+      documentation = c.documentation,
+      repository = c.repository,
+   }
+   return crate
+end
+
+local function fetch_crate(name, callback)
+   if M.crate_jobs[name] then
+      return
+   end
+
+   local callbacks = { callback }
+   local url = string.format("%s/crates/%s", ENDPOINT, name)
+
+   local function on_exit(j, code, signal)
+      local cancelled = signal ~= 0
+
+      local json = nil
+      if code == 0 then
+         json = table.concat(j:result(), "\n")
+      end
+
+      local crate = nil
+      if not cancelled then
+         crate = M.parse_crate(json)
+      end
+      for _, c in ipairs(callbacks) do
+         c(crate, cancelled)
+      end
+
+      M.crate_jobs[name] = nil
+   end
+
+   local j = Job:new({
+      command = "curl",
+      args = { "-sLA", USERAGENT, url },
+      on_exit = vim.schedule_wrap(on_exit),
+   })
+
+   M.crate_jobs[name] = {
+      job = j,
+      callbacks = callbacks,
+   }
+
+   j:start()
+end
+
+function M.fetch_crate(name)
+   return coroutine.yield(function(resolve)
+      fetch_crate(name, resolve)
+   end)
+end
+
+
+function M.parse_vers(json_str)
+   local json = parse_json(json_str)
+   if not (json and json.versions) then
+      return
    end
 
    local versions = {}
-   if data and type(data) == "table" and data.versions then
-      for _, v in ipairs(data.versions) do
-         if v.num then
-            local version = {
-               num = v.num,
-               features = Features.new({}),
-               yanked = v.yanked,
-               parsed = semver.parse_version(v.num),
-               created = DateTime.parse_rfc_3339(v.created_at),
-            }
+   for _, v in ipairs(json.versions) do
+      if v.num then
+         local version = {
+            num = v.num,
+            features = Features.new({}),
+            yanked = v.yanked,
+            parsed = semver.parse_version(v.num),
+            created = DateTime.parse_rfc_3339(v.created_at),
+         }
 
-            for n, m in pairs(v.features) do
-               table.sort(m)
-               table.insert(version.features, {
-                  name = n,
-                  members = m,
-               })
-            end
-
-
-            for _, f in ipairs(version.features) do
-               for _, m in ipairs(f.members) do
-                  if not version.features:get_feat(m) then
-                     table.insert(version.features, {
-                        name = m,
-                        members = {},
-                     })
-                  end
-               end
-            end
-
-
-            version.features:sort()
-
-
-            if not version.features[1] or not (version.features[1].name == "default") then
-               for i = #version.features, 1, -1 do
-                  version.features[i + 1] = version.features[i]
-               end
-
-               version.features[1] = {
-                  name = "default",
-                  members = {},
-               }
-            end
-
-            table.insert(versions, version)
+         for n, m in pairs(v.features) do
+            table.sort(m)
+            table.insert(version.features, {
+               name = n,
+               members = m,
+            })
          end
+
+
+         for _, f in ipairs(version.features) do
+            for _, m in ipairs(f.members) do
+               if not version.features:get_feat(m) then
+                  table.insert(version.features, {
+                     name = m,
+                     members = {},
+                  })
+               end
+            end
+         end
+
+
+         version.features:sort()
+
+
+         if not version.features[1] or not (version.features[1].name == "default") then
+            for i = #version.features, 1, -1 do
+               version.features[i + 1] = version.features[i]
+            end
+
+            version.features[1] = {
+               name = "default",
+               members = {},
+            }
+         end
+
+         table.insert(versions, version)
       end
    end
 
@@ -113,7 +196,7 @@ local function fetch_vers(name, callback)
 
       local versions = nil
       if not cancelled then
-         versions = parse_vers(json)
+         versions = M.parse_vers(json)
       end
       for _, c in ipairs(callbacks) do
          c(versions, cancelled)
@@ -143,30 +226,25 @@ function M.fetch_vers(name)
 end
 
 
-local function parse_deps(json)
-   if not json then
-      return nil
-   end
-
-   local success, data = pcall(vim.json.decode, json, JSON_DECODE_OPTS)
-   if not success then
-      data = nil
+function M.parse_deps(json_str)
+   local json = parse_json(json_str)
+   if not (json and json.dependencies) then
+      return
    end
 
    local dependencies = {}
-   if data and type(data) == "table" and data.dependencies then
-      for _, d in ipairs(data.dependencies) do
-         if d.crate_id then
-            table.insert(dependencies, {
-               name = d.crate_id,
-               opt = d.optional or false,
-               kind = d.kind or "normal",
-               vers = {
-                  text = d.req,
-                  reqs = semver.parse_requirements(d.req),
-               },
-            })
-         end
+   for _, d in ipairs(json.dependencies) do
+      if d.crate_id then
+         local dependency = {
+            name = d.crate_id,
+            opt = d.optional or false,
+            kind = d.kind or "normal",
+            vers = {
+               text = d.req,
+               reqs = semver.parse_requirements(d.req),
+            },
+         }
+         table.insert(dependencies, dependency)
       end
    end
 
@@ -192,7 +270,7 @@ local function fetch_deps(name, version, callback)
 
       local deps = nil
       if not cancelled then
-         deps = parse_deps(json)
+         deps = M.parse_deps(json)
       end
       for _, c in ipairs(callbacks) do
          c(deps, cancelled)

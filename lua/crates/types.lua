@@ -1,4 +1,13 @@
-local M = {CrateInfo = {}, Diagnostic = {}, Version = {}, Features = {}, Feature = {}, Dependency = {Vers = {}, }, SemVer = {}, Requirement = {}, Range = {}, }
+local M = {CrateInfo = {}, Diagnostic = {}, Crate = {}, Version = {}, Features = {}, Feature = {}, Dependency = {Vers = {}, }, SemVer = {}, Requirement = {}, Range = {}, }
+
+
+
+
+
+
+
+
+
 
 
 
