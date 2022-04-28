@@ -105,7 +105,7 @@ end
 
 function M.hide()
     state.visible = false
-    for b,_ in pairs(state.crate_cache) do
+    for b,_ in pairs(state.buf_cache) do
         ui.clear(b)
     end
 end
@@ -117,7 +117,7 @@ function M.show()
     local buf = util.current_buf()
     core.update(buf, false)
 
-    for b,_ in pairs(state.crate_cache) do
+    for b,_ in pairs(state.buf_cache) do
         if b ~= buf then
             core.update(b, false)
         end
