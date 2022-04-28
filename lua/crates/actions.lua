@@ -11,7 +11,7 @@ function M.upgrade_crate(alt)
    local buf = util.current_buf()
    local line = util.cursor_pos()
    local crates = util.get_line_crates(buf, Range.pos(line))
-   local info = state.info_cache[buf]
+   local info = util.get_buf_info(buf)
    if next(crates) and info then
       util.upgrade_crates(buf, crates, info, alt)
    end
@@ -24,7 +24,7 @@ function M.upgrade_crates(alt)
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
    local crates = util.get_line_crates(buf, lines)
-   local info = state.info_cache[buf]
+   local info = util.get_buf_info(buf)
    if next(crates) and info then
       util.upgrade_crates(buf, crates, info, alt)
    end
@@ -32,10 +32,9 @@ end
 
 function M.upgrade_all_crates(alt)
    local buf = util.current_buf()
-   local crates = state.crate_cache[buf]
-   local info = state.info_cache[buf]
-   if crates and info then
-      util.upgrade_crates(buf, crates, info, alt)
+   local cache = state.buf_cache[buf]
+   if cache.crates and cache.info then
+      util.upgrade_crates(buf, cache.crates, cache.info, alt)
    end
 end
 
@@ -43,7 +42,7 @@ function M.update_crate(alt)
    local buf = util.current_buf()
    local line = util.cursor_pos()
    local crates = util.get_line_crates(buf, Range.pos(line))
-   local info = state.info_cache[buf]
+   local info = util.get_buf_info(buf)
    if next(crates) and info then
       util.update_crates(buf, crates, info, alt)
    end
@@ -56,7 +55,7 @@ function M.update_crates(alt)
    vim.api.nvim_buf_get_mark(0, ">")[1])
 
    local crates = util.get_line_crates(buf, lines)
-   local info = state.info_cache[buf]
+   local info = util.get_buf_info(buf)
    if next(crates) and info then
       util.update_crates(buf, crates, info, alt)
    end
@@ -64,10 +63,9 @@ end
 
 function M.update_all_crates(alt)
    local buf = util.current_buf()
-   local crates = state.crate_cache[buf]
-   local info = state.info_cache[buf]
-   if crates and info then
-      util.update_crates(buf, crates, info, alt)
+   local cache = state.buf_cache[buf]
+   if cache.crates and cache.info then
+      util.update_crates(buf, cache.crates, cache.info, alt)
    end
 end
 
@@ -127,7 +125,8 @@ function M.get_actions()
          end
       end
    end
-   local diagnostics = state.diagnostic_cache[buf] or {}
+
+   local diagnostics = util.get_buf_diagnostics(buf) or {}
    for _, d in ipairs(diagnostics) do
       if not d:contains(line, col) then
          goto continue

@@ -30,9 +30,9 @@ M.reload_deps = async.wrap(function(crate_name: string, versions: {Version}, ver
         end
         version.features:sort()
 
-        for b,crates in pairs(state.crate_cache) do
+        for b,cache in pairs(state.buf_cache) do
             -- update crate in all dependency sections
-            for _,c in pairs(crates) do
+            for _,c in pairs(cache.crates) do
                 if c.name == crate_name then
                     local avoid_pre = state.cfg.avoid_prerelease and not c:vers_is_pre()
                     local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
@@ -53,16 +53,15 @@ M.reload_crate = async.wrap(function(crate_name: string)
     if cancelled then return end
 
     if versions and versions[1] then
-        state.vers_cache[crate_name] = versions
+        state.api_cache[crate_name] = versions
     end
 
-    for b,crates in pairs(state.crate_cache) do
-        state.info_cache[b] = state.info_cache[b] or {}
+    for b,cache in pairs(state.buf_cache) do
         -- update crate in all dependency sections
-        for _,c in pairs(crates) do
+        for k,c in pairs(cache.crates) do
             if c.name == crate_name and vim.api.nvim_buf_is_loaded(b) then
                 local info, diagnostics = diagnostic.process_crate_versions(c, versions)
-                state.info_cache[b][c:cache_key()] = info
+                cache.info[k] = info
                 ui.display_crate_info(b, info, diagnostics)
 
                 local version = info.vers_match or info.vers_upgrade
@@ -78,34 +77,35 @@ function M.update(buf: integer|nil, reload: boolean)
     buf = buf or util.current_buf()
 
     if reload then
-        state.vers_cache = {}
-        state.info_cache[buf] = {}
+        state.api_cache = {}
         api.cancel_jobs()
     end
 
     local sections, crates = toml.parse_crates(buf)
     local crate_cache, diagnostics = diagnostic.process_crates(sections, crates)
-    state.crate_cache[buf] = crate_cache
-    state.diagnostic_cache[buf] = diagnostics
+    local cache: state.BufCache = {
+        crates = crate_cache,
+        info = {},
+        diagnostics = diagnostics,
+    }
+    state.buf_cache[buf] = cache
 
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
-    for _,c in pairs(crate_cache) do
-        local versions = state.vers_cache[c.name]
+    for k,c in pairs(crate_cache) do
+        local versions = state.api_cache[c.name]
 
         if not reload and versions then
-            local info, c_diagnostics = diagnostic.process_crate_versions(c, versions)
-            state.info_cache[buf][c:cache_key()] = info
-            state.diagnostic_cache[buf] = state.diagnostic_cache[buf] or {}
-            vim.list_extend(state.diagnostic_cache[buf], c_diagnostics)
+            local info, v_diagnostics = diagnostic.process_crate_versions(c, versions)
+            cache.info[k] = info
+            vim.list_extend(cache.diagnostics, v_diagnostics)
 
-            ui.display_crate_info(buf, info, c_diagnostics)
+            ui.display_crate_info(buf, info, v_diagnostics)
 
             local version: Version = info.vers_match or info.vers_upgrade
             if version.deps then
                 local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
-                state.diagnostic_cache[buf] = state.diagnostic_cache[buf] or {}
-                vim.list_extend(state.diagnostic_cache[buf], d_diagnostics)
+                vim.list_extend(cache.diagnostics, d_diagnostics)
 
                 ui.display_diagnostics(buf, d_diagnostics)
             else

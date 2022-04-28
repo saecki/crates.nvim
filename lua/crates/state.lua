@@ -1,4 +1,8 @@
-local State = {}
+local State = {BufCache = {}, }
+
+
+
+
 
 
 
@@ -16,10 +20,8 @@ local Diagnostic = types.Diagnostic
 local Version = types.Version
 
 State.cfg = {}
-State.vers_cache = {}
-State.crate_cache = {}
-State.info_cache = {}
-State.diagnostic_cache = {}
+State.api_cache = {}
+State.buf_cache = {}
 State.visible = true
 
 return State

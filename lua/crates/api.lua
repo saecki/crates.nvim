@@ -30,7 +30,7 @@ M.vers_jobs = {}
 M.deps_jobs = {}
 
 
-local function parse_versions(json)
+local function parse_vers(json)
    if not json then
       return nil
    end
@@ -113,7 +113,7 @@ local function fetch_vers(name, callback)
 
       local versions = nil
       if not cancelled then
-         versions = parse_versions(json)
+         versions = parse_vers(json)
       end
       for _, c in ipairs(callbacks) do
          c(versions, cancelled)
@@ -141,6 +141,7 @@ function M.fetch_vers(name)
       fetch_vers(name, resolve)
    end)
 end
+
 
 local function parse_deps(json)
    if not json then

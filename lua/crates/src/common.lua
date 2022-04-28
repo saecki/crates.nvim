@@ -105,7 +105,7 @@ local function complete()
       return
    end
 
-   local versions = state.vers_cache[crate.name]
+   local versions = state.api_cache[crate.name]
 
    if not versions and api.is_fetching_vers(crate.name) then
       local _versions, cancelled = api.await_vers(crate.name)
@@ -121,7 +121,7 @@ local function complete()
          return
       end
 
-      versions = state.vers_cache[crate.name]
+      versions = state.api_cache[crate.name]
    end
 
    if not versions then

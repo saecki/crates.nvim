@@ -1,10 +1,14 @@
 local record State
     cfg: Config
-    vers_cache: {string:{Version}}
-    crate_cache: {integer:{string:toml.Crate}}
-    info_cache: {integer:{string:CrateInfo}}
-    diagnostic_cache: {integer:{Diagnostic}}
+    api_cache: {string:{Version}}
+    buf_cache: {integer:BufCache}
     visible: boolean
+
+    record BufCache
+        crates: {string:toml.Crate}
+        info: {string:CrateInfo}
+        diagnostics: {Diagnostic}
+    end
 end
 
 local config = require("crates.config")
@@ -16,10 +20,8 @@ local Diagnostic = types.Diagnostic
 local Version = types.Version
 
 State.cfg = {}
-State.vers_cache = {}
-State.crate_cache = {}
-State.info_cache = {}
-State.diagnostic_cache = {}
+State.api_cache = {}
+State.buf_cache = {}
 State.visible = true
 
 return State

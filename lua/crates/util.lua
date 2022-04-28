@@ -10,6 +10,7 @@ local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
 local types = require("crates.types")
+local Diagnostic = types.Diagnostic
 local CrateInfo = types.CrateInfo
 local Feature = types.Feature
 local Features = types.Features
@@ -29,8 +30,29 @@ function M.cursor_pos()
    return cursor[1] - 1, cursor[2]
 end
 
+function M.get_buf_crates(buf)
+   local cache = state.buf_cache[buf]
+   return cache and cache.crates
+end
+
+function M.get_buf_info(buf)
+   local cache = state.buf_cache[buf]
+   return cache and cache.info
+end
+
+function M.get_buf_diagnostics(buf)
+   local cache = state.buf_cache[buf]
+   return cache and cache.diagnostics
+end
+
+function M.get_crate_info(buf, key)
+   local info = M.get_buf_info(buf)
+   return info[key]
+end
+
 function M.get_line_crates(buf, lines)
-   local crates = state.crate_cache[buf]
+   local cache = state.buf_cache[buf]
+   local crates = cache and cache.crates
    if not crates then
       return {}
    end
@@ -43,11 +65,6 @@ function M.get_line_crates(buf, lines)
    end
 
    return line_crates
-end
-
-function M.get_crate_info(buf, key)
-   local info = state.info_cache[buf]
-   return info and info[key] or nil
 end
 
 function M.get_newest(versions, avoid_pre, reqs)
