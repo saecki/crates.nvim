@@ -69,13 +69,46 @@ function M.update_all_crates(alt: boolean|nil)
     end
 end
 
+function M.open_homepage()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Range.pos(line))
+    local _,crate = next(crates)
+    if crate then
+        local crate_info = state.api_cache.crates[crate.name]
+        if crate_info and crate_info.homepage then
+            util.open_url(crate_info.homepage)
+        else
+            util.notify(vim.log.levels.INFO, "The crate '%s' has no homepage specified", crate.name)
+        end
+    end
+end
+
+function M.open_repository()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Range.pos(line))
+    local _,crate = next(crates)
+    if crate then
+        local crate_info = state.api_cache.crates[crate.name]
+        if crate_info and crate_info.repository then
+            util.open_url(crate_info.repository)
+        else
+            util.notify(vim.log.levels.INFO, "The crate '%s' has no repository specified", crate.name)
+        end
+    end
+end
+
 function M.open_docs_rs()
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Range.pos(line))
     local _,crate = next(crates)
     if crate then
-        util.open_url("https://docs.rs/" .. crate.name)
+        local crate_info = state.api_cache.crates[crate.name]
+        local url = crate_info and crate_info.documentation
+        url = url or "https://docs.rs/" .. crate.name
+        util.open_url(url)
     end
 end
 

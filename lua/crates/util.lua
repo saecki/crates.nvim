@@ -582,13 +582,17 @@ function M.binary_installed(name)
    return vim.fn.executable(name) == 1
 end
 
+function M.notify(severity, s, ...)
+   vim.notify(s:format(...), severity, { title = "crates.nvim" })
+end
+
 function M.open_url(url)
    if M.binary_installed("xdg-open") then
       vim.cmd("silent !xdg-open " .. url)
    elseif M.binary_installed("open") then
       vim.cmd("silent !open " .. url)
    else
-      vim.notify("Couldn't open url", vim.log.levels.WARN, { title = "crates.nvim" })
+      M.notify(vim.log.levels.WARN, "Couldn't open url")
    end
 end
 
