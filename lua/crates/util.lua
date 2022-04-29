@@ -583,7 +583,7 @@ function M.binary_installed(name)
 end
 
 function M.notify(severity, s, ...)
-   vim.notify(s:format(...), severity, { title = "crates.nvim" })
+   vim.notify(s:format(...), severity, { title = state.cfg.notification_title })
 end
 
 function M.open_url(url)

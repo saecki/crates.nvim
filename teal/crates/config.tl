@@ -9,6 +9,7 @@ local record M
         autoupdate: boolean
         loading_indicator: boolean
         date_format: string
+        notification_title: string
         disable_invalid_feature_diagnostic: boolean
         text: TextConfig
         highlight: HighlightConfig
@@ -232,6 +233,13 @@ entry(M.schema, "date_format", {
     default = "%Y-%m-%d",
     description = [[
         The date format passed to `os.date`.
+    ]],
+})
+entry(M.schema, "notification_title", {
+    type = "string",
+    default = "Crates",
+    description = [[
+        The title displayed in notifications.
     ]],
 })
 -- TODO: use cargo metadata to get feature renames
