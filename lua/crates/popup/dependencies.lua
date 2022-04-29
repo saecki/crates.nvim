@@ -42,7 +42,7 @@ local goto_dep = async.wrap(function(ctx, line)
    popup.transaction = transaction
 
    local crate_name = selected_dependency.name
-   local versions = state.api_cache[crate_name]
+   local versions = state.api_cache.versions[crate_name]
 
    if not versions then
       popup.show_loading_indicator()
