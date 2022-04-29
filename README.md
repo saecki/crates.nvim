@@ -162,6 +162,7 @@ require('crates').setup {
     autoupdate = true,
     loading_indicator = true,
     date_format = "%Y-%m-%d",
+    notification_title = "Crates",
     disable_invalid_feature_diagnostic = false,
     text = {
         loading = "   Loading",
@@ -318,6 +319,10 @@ require('crates').update_crates(alt: boolean|nil)
 -- See `crates.upgrade_crate()`.
 require('crates').update_all_crates(alt: boolean|nil)
 
+-- Open the homepage of the crate on the current line.
+require('crates').open_homepage()
+-- Open the repository page of the crate on the current line.
+require('crates').open_repository()
 -- Open the `docs.rs` page of the crate on the current line.
 require('crates').open_docs_rs()
 -- Open the `crates.io` page of the crate on the current line.
