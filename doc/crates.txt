@@ -71,6 +71,7 @@ For more information about individual config options see |crates-config|.
         autoupdate = true,
         loading_indicator = true,
         date_format = "%Y-%m-%d",
+        notification_title = "Crates",
         disable_invalid_feature_diagnostic = false,
         text = {
             loading = "   Loading",
@@ -281,6 +282,14 @@ update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
     See `crates.upgrade_crate()`.
 
 
+open_homepage()                                       *crates.open_homepage()*
+    Open the homepage of the crate on the current line.
+
+
+open_repository()                                   *crates.open_repository()*
+    Open the repository page of the crate on the current line.
+
+
 open_docs_rs()                                         *crates.open_docs_rs()*
     Open the `docs.rs` page of the crate on the current line.
 
@@ -374,6 +383,12 @@ date_format                                        *crates-config-date_format*
     Type: `string`, Default: `"%Y-%m-%d"`
 
     The date format passed to `os.date`.
+
+
+notification_title                          *crates-config-notification_title*
+    Type: `string`, Default: `"Crates"`
+
+    The title displayed in notifications.
 
 
                             *crates-config-disable_invalid_feature_diagnostic*
