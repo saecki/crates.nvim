@@ -62,7 +62,14 @@ describe("versions", function()
 			}),
 			yanked = false,
 			parsed = SemVer.new({ major = 0, minor = 8, patch = 5 }),
-			created = DateTime.new(1644822000),
+			created = DateTime.new(os.time {
+                year = 2022,
+                month = 2,
+                day = 14,
+                hour = 8,
+                minute = 37,
+                second = 47,
+            })
 		}, versions[1])
 
 		assert.same({
@@ -72,7 +79,14 @@ describe("versions", function()
 			}),
 			yanked = false,
 			parsed = SemVer.new({ major = 0, minor = 3, patch = 5 }),
-			created = DateTime.new(1427896800),
+			created = DateTime.new(os.time {
+                year = 2015,
+                month = 4,
+                day = 1,
+                hour = 16,
+                minute = 31,
+                second = 9,
+            })
 		}, versions[2])
 
 		assert.same({
@@ -82,7 +96,14 @@ describe("versions", function()
 			}),
 			yanked = true,
 			parsed = SemVer.new({ major = 0, minor = 1, patch = 1 }),
-			created = DateTime.new(1422939600),
+			created = DateTime.new(os.time {
+                year = 2015,
+                month = 2,
+                day = 3,
+                hour = 6,
+                minute = 17,
+                second = 14,
+            })
 		}, versions[3])
 	end)
 end)
