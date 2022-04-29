@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        path: crates.nvim
 
     - name: Install lua
       uses: leafo/gh-actions-lua@v8
@@ -23,12 +25,31 @@ jobs:
     - name: Install inspect
       run: luarocks install inspect
 
+    - name: Install neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+    
+    - name: Install plenary.nvim
+      uses: actions/checkout@v2
+      with:
+        repository: nvim-lua/plenary.nvim
+        path: plenary.nvim
+
     - name: Build crates.nvim
-      run: tl build
+      run: make build
+      working-directory: crates.nvim
+
+    - name: Run tests
+      run: make test
+      working-directory: crates.nvim
+      timeout-minutes: 1
     
     - name: Generate docs
-      run: ./scripts/gen_doc.lua
+      run: make doc
+      working-directory: crates.nvim
 
     - name: Check git status
       run: if [[ $(git status --short lua) != "" ]]; then exit 1; fi
+      working-directory: crates.nvim
 
