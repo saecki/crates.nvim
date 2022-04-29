@@ -30,7 +30,7 @@ local function line_crate_info()
    local _, crate = next(crates)
    if not crate then return end
 
-   local versions = state.api_cache[crate.name]
+   local versions = state.api_cache.versions[crate.name]
    if not versions then return end
 
    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()

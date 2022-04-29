@@ -48,12 +48,21 @@ M.reload_deps = async.wrap(function(crate_name, versions, version)
    end
 end)
 
-M.reload_crate = async.wrap(function(crate_name)
+local reload_crate = async.wrap(function(crate_name)
+   local crate, cancelled = api.fetch_crate(crate_name)
+   if cancelled then return end
+
+   if crate then
+      state.api_cache.crates[crate_name] = crate
+   end
+end)
+
+local reload_vers = async.wrap(function(crate_name)
    local versions, cancelled = api.fetch_vers(crate_name)
    if cancelled then return end
 
    if versions and versions[1] then
-      state.api_cache[crate_name] = versions
+      state.api_cache.versions[crate_name] = versions
    end
 
    for b, cache in pairs(state.buf_cache) do
@@ -73,11 +82,17 @@ M.reload_crate = async.wrap(function(crate_name)
    end
 end)
 
+function M.reload_crate(crate_name)
+   reload_vers(crate_name)
+   reload_crate(crate_name)
+end
+
 function M.update(buf, reload)
    buf = buf or util.current_buf()
 
    if reload then
-      state.api_cache = {}
+      state.api_cache.crates = {}
+      state.api_cache.versions = {}
       api.cancel_jobs()
    end
 
@@ -93,7 +108,7 @@ function M.update(buf, reload)
    ui.clear(buf)
    ui.display_diagnostics(buf, diagnostics)
    for k, c in pairs(crate_cache) do
-      local versions = state.api_cache[c.name]
+      local versions = state.api_cache.versions[c.name]
 
       if not reload and versions then
          local info, v_diagnostics = diagnostic.process_crate_versions(c, versions)
