@@ -1,9 +1,11 @@
 local M = {}
 
+local util = require("crates.util")
 local actions = require("crates.actions")
+
 local ok, null_ls = pcall(require, "null-ls")
 if not ok then
-   vim.notify("null-ls.nvim was not found", vim.log.levels.WARN, { title = "crates.nvim" })
+   util.notify(vim.log.levels.WARN, "null-ls.nvim was not found")
    return {
       setup = function(_) end,
    }

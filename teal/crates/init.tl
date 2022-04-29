@@ -34,6 +34,10 @@ local record M
     -- See `f#crates.upgrade_crate()`.
     update_all_crates: function(alt: boolean|nil)
 
+    -- Open the homepage of the crate on the current line.
+    open_homepage: function()
+    -- Open the repository page of the crate on the current line.
+    open_repository: function()
     -- Open the `docs.rs` page of the crate on the current line.
     open_docs_rs: function()
     -- Open the `crates.io` page of the crate on the current line.
@@ -146,6 +150,8 @@ M.upgrade_all_crates = actions.upgrade_all_crates
 M.update_crate = actions.update_crate
 M.update_crates = actions.update_crates
 M.update_all_crates = actions.update_all_crates
+M.open_homepage = actions.open_homepage
+M.open_repository = actions.open_repository
 M.open_docs_rs = actions.open_docs_rs
 M.open_crates_io = actions.open_crates_io
 

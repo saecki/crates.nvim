@@ -55,6 +55,10 @@ local M = {}
 
 
 
+
+
+
+
 local actions = require("crates.actions")
 local config = require("crates.config")
 local Config = config.Config
@@ -146,6 +150,8 @@ M.upgrade_all_crates = actions.upgrade_all_crates
 M.update_crate = actions.update_crate
 M.update_crates = actions.update_crates
 M.update_all_crates = actions.update_all_crates
+M.open_homepage = actions.open_homepage
+M.open_repository = actions.open_repository
 M.open_docs_rs = actions.open_docs_rs
 M.open_crates_io = actions.open_crates_io
 
