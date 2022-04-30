@@ -10,6 +10,7 @@ local M = {CrateContext = {}, }
 
 
 
+
 local CrateContext = M.CrateContext
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
@@ -86,6 +87,16 @@ function M.open(crate, opts)
          suffix_hl = highlight.created,
       })
       ctx.created_index = #info_text
+   end
+
+   if crate.updated then
+      table.insert(info_text, {
+         text = text.updated_label,
+         hl = highlight.updated_label,
+         suffix = string.format(text.updated, crate.updated:display(state.cfg.date_format)),
+         suffix_hl = highlight.updated,
+      })
+      ctx.updated_index = #info_text
    end
 
    if crate.downloads then

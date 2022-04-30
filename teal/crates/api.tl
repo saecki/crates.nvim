@@ -81,7 +81,7 @@ function M.parse_crate(json_str: string): Crate|nil
         categories = {},
         keywords = {},
     }
-    
+
     if json.categories then
         for _,ct_id in ipairs(c.categories as {{string:any}}) do
             for _,ct in ipairs(json.categories as {{string:any}}) do

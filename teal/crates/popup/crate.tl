@@ -2,6 +2,7 @@ local record M
     record CrateContext
         crate: Crate
         created_index: integer
+        updated_index: integer
         downloads_index: integer
         homepage_index: integer
         repo_index: integer
@@ -86,6 +87,16 @@ function M.open(crate: Crate, opts: WinOpts)
             suffix_hl = highlight.created,
         })
         ctx.created_index = #info_text
+    end
+
+    if crate.updated then
+        table.insert(info_text, {
+            text = text.updated_label,
+            hl = highlight.updated_label,
+            suffix = string.format(text.updated, crate.updated:display(state.cfg.date_format)),
+            suffix_hl = highlight.updated,
+        })
+        ctx.updated_index = #info_text
     end
 
     if crate.downloads then

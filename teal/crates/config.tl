@@ -75,6 +75,8 @@ local record M
 
             created: string
             created_label: string
+            updated: string
+            updated_label: string
             downloads: string
             downloads_label: string
             homepage: string
@@ -106,6 +108,8 @@ local record M
 
             created: string
             created_label: string
+            updated: string
+            updated_label: string
             description: string
             downloads: string
             downloads_label: string
@@ -601,6 +605,20 @@ entry(schema_popup_text, "created", {
         Format string used for the creation date.
     ]],
 })
+entry(schema_popup_text, "updated_label", {
+    type = "string",
+    default = " updated        ",
+    description = [[
+        Label string used for the updated date.
+    ]],
+})
+entry(schema_popup_text, "updated", {
+    type = "string",
+    default = "%s",
+    description = [[
+        Format string used for the updated date.
+    ]],
+})
 entry(schema_popup_text, "downloads_label", {
     type = "string",
     default = " downloads      ",
@@ -795,6 +813,20 @@ entry(schema_popup_hi, "created", {
     default = "CratesNvimPopupValue",
     description = [[
         Highlight group used for the creation date.
+    ]],
+})
+entry(schema_popup_hi, "updated_label", {
+    type = "string",
+    default = "CratesNvimPopupLabel",
+    description = [[
+        Highlight group used for the updated date label.
+    ]],
+})
+entry(schema_popup_hi, "updated", {
+    type = "string",
+    default = "CratesNvimPopupValue",
+    description = [[
+        Highlight group used for the updated date.
     ]],
 })
 entry(schema_popup_hi, "downloads_label", {

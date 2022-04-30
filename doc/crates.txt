@@ -104,6 +104,8 @@ For more information about individual config options see |crates-config|.
                 title = "  %s ",
                 created_label = " created        ",
                 created = "%s",
+                updated_label = " updated        ",
+                updated = "%s",
                 downloads_label = " downloads      ",
                 downloads = "%s",
                 homepage_label = " homepage       ",
@@ -131,6 +133,8 @@ For more information about individual config options see |crates-config|.
                 description = "CratesNvimPopupDescription",
                 created_label = "CratesNvimPopupLabel",
                 created = "CratesNvimPopupValue",
+                updated_label = "CratesNvimPopupLabel",
+                updated = "CratesNvimPopupValue",
                 downloads_label = "CratesNvimPopupLabel",
                 downloads = "CratesNvimPopupValue",
                 homepage_label = "CratesNvimPopupLabel",
@@ -614,6 +618,18 @@ popup.text.created                          *crates-config-popup-text-created*
     Format string used for the creation date.
 
 
+popup.text.updated_label              *crates-config-popup-text-updated_label*
+    Type: `string`, Default: `" updated        "`
+
+    Label string used for the updated date.
+
+
+popup.text.updated                          *crates-config-popup-text-updated*
+    Type: `string`, Default: `"%s"`
+
+    Format string used for the updated date.
+
+
 popup.text.downloads_label          *crates-config-popup-text-downloads_label*
     Type: `string`, Default: `" downloads      "`
 
@@ -773,6 +789,18 @@ popup.highlight.created                *crates-config-popup-highlight-created*
     Type: `string`, Default: `"CratesNvimPopupValue"`
 
     Highlight group used for the creation date.
+
+
+popup.highlight.updated_label    *crates-config-popup-highlight-updated_label*
+    Type: `string`, Default: `"CratesNvimPopupLabel"`
+
+    Highlight group used for the updated date label.
+
+
+popup.highlight.updated                *crates-config-popup-highlight-updated*
+    Type: `string`, Default: `"CratesNvimPopupValue"`
+
+    Highlight group used for the updated date.
 
 
                                *crates-config-popup-highlight-downloads_label*
