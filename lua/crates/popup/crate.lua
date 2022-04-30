@@ -54,6 +54,28 @@ local function open_url(ctx, line)
    end
 end
 
+local function pill_hl_text(items)
+   local hl_text = {}
+   for i, kw in ipairs(items) do
+      if i ~= 1 then
+         table.insert(hl_text, { text = " ", hl = "None" })
+      end
+      table.insert(hl_text, {
+         text = state.cfg.popup.text.pill_left,
+         hl = state.cfg.popup.highlight.pill_border,
+      })
+      table.insert(hl_text, {
+         text = kw,
+         hl = state.cfg.popup.highlight.pill_text,
+      })
+      table.insert(hl_text, {
+         text = state.cfg.popup.text.pill_right,
+         hl = state.cfg.popup.highlight.pill_border,
+      })
+   end
+   return hl_text
+end
+
 function M.open(crate, opts)
    popup.type = "crate"
 
@@ -165,6 +187,24 @@ function M.open(crate, opts)
       },
    })
    ctx.crates_io_index = #info_text
+
+   if next(crate.categories) then
+      local hl_text = { {
+         text = text.categories_label,
+         hl = highlight.categories_label,
+      }, }
+      vim.list_extend(hl_text, pill_hl_text(crate.categories))
+      table.insert(info_text, hl_text)
+   end
+
+   if next(crate.keywords) then
+      local hl_text = { {
+         text = text.keywords_label,
+         hl = highlight.keywords_label,
+      }, }
+      vim.list_extend(hl_text, pill_hl_text(crate.categories))
+      table.insert(info_text, hl_text)
+   end
 
    local content_width = 0
    for _, v in ipairs(info_text) do

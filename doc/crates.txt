@@ -102,6 +102,8 @@ For more information about individual config options see |crates-config|.
             min_width = 20,
             text = {
                 title = "  %s ",
+                pill_left = "",
+                pill_right = "",
                 created_label = " created        ",
                 created = "%s",
                 updated_label = " updated        ",
@@ -116,6 +118,8 @@ For more information about individual config options see |crates-config|.
                 documentation = "%s",
                 crates_io_label = " crates.io      ",
                 crates_io = "%s",
+                categories_label = " categories     ",
+                keywords_label = " keywords       ",
                 version = "   %s ",
                 prerelease = "  %s ",
                 yanked = "  %s ",
@@ -130,6 +134,8 @@ For more information about individual config options see |crates-config|.
             },
             highlight = {
                 title = "CratesNvimPopupTitle",
+                pill_text = "CratesNvimPopupPillText",
+                pill_border = "CratesNvimPopupPillBorder",
                 description = "CratesNvimPopupDescription",
                 created_label = "CratesNvimPopupLabel",
                 created = "CratesNvimPopupValue",
@@ -145,6 +151,8 @@ For more information about individual config options see |crates-config|.
                 documentation = "CratesNvimPopupUrl",
                 crates_io_label = "CratesNvimPopupLabel",
                 crates_io = "CratesNvimPopupUrl",
+                categories_label = "CratesNvimPopupLabel",
+                keywords_label = "CratesNvimPopupLabel",
                 version = "CratesNvimPopupVersion",
                 prerelease = "CratesNvimPopupPreRelease",
                 yanked = "CratesNvimPopupYanked",
@@ -606,6 +614,18 @@ popup.text.title                              *crates-config-popup-text-title*
     Format string used for the popup title.
 
 
+popup.text.pill_left                      *crates-config-popup-text-pill_left*
+    Type: `string`, Default: `""`
+
+    Left border of a pill.
+
+
+popup.text.pill_right                    *crates-config-popup-text-pill_right*
+    Type: `string`, Default: `""`
+
+    Right border of a pill.
+
+
 popup.text.created_label              *crates-config-popup-text-created_label*
     Type: `string`, Default: `" created        "`
 
@@ -690,6 +710,18 @@ popup.text.crates_io                      *crates-config-popup-text-crates_io*
     Format string used for the crates.io url.
 
 
+popup.text.categories_label        *crates-config-popup-text-categories_label*
+    Type: `string`, Default: `" categories     "`
+
+    Label string used for the categories label.
+
+
+popup.text.keywords_label            *crates-config-popup-text-keywords_label*
+    Type: `string`, Default: `" keywords       "`
+
+    Label string used for the keywords label.
+
+
 popup.text.version                          *crates-config-popup-text-version*
     Type: `string`, Default: `"   %s "`
 
@@ -771,6 +803,18 @@ popup.highlight.title                    *crates-config-popup-highlight-title*
     Type: `string`, Default: `"CratesNvimPopupTitle"`
 
     Highlight group used for the popup title.
+
+
+popup.highlight.pill_text            *crates-config-popup-highlight-pill_text*
+    Type: `string`, Default: `"CratesNvimPopupPillText"`
+
+    Highlight group used for a pill's text (keywords and categories).
+
+
+popup.highlight.pill_border        *crates-config-popup-highlight-pill_border*
+    Type: `string`, Default: `"CratesNvimPopupPillBorder"`
+
+    Highlight group used for a pill's border (keywords and categories).
 
 
 popup.highlight.description        *crates-config-popup-highlight-description*
@@ -865,6 +909,19 @@ popup.highlight.crates_io            *crates-config-popup-highlight-crates_io*
     Type: `string`, Default: `"CratesNvimPopupUrl"`
 
     Highlight group used for the crates.io url.
+
+
+                              *crates-config-popup-highlight-categories_label*
+popup.highlight.categories_label
+    Type: `string`, Default: `"CratesNvimPopupLabel"`
+
+    Highlight group used for the categories label.
+
+
+popup.highlight.keywords_label  *crates-config-popup-highlight-keywords_label*
+    Type: `string`, Default: `"CratesNvimPopupLabel"`
+
+    Highlight group used for the keywords label.
 
 
 popup.highlight.version                *crates-config-popup-highlight-version*
@@ -1112,6 +1169,12 @@ CratesNvimError                                    *crates-hl-CratesNvimError*
 
 CratesNvimPopupTitle                          *crates-hl-CratesNvimPopupTitle*
     Default: links to |Title|
+
+CratesNvimPopupPillText                    *crates-hl-CratesNvimPopupPillText*
+    Default: `ctermfg=15 ctermbg=242 guifg=#e0e0e0 guibg=#3a3a3a`
+
+CratesNvimPopupPillBorder                *crates-hl-CratesNvimPopupPillBorder*
+    Default: `ctermfg=242 guifg=#3a3a3a`
 
 CratesNvimPopupDescription              *crates-hl-CratesNvimPopupDescription*
     Default: links to |Comment|

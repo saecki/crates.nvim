@@ -72,6 +72,8 @@ local record M
 
         record PopupTextConfig
             title: string
+            pill_left: string
+            pill_right: string
 
             created: string
             created_label: string
@@ -87,6 +89,8 @@ local record M
             documentation_label: string
             crates_io: string
             crates_io_label: string
+            categories_label: string
+            keywords_label: string
 
             version: string
             prerelease: string
@@ -105,6 +109,8 @@ local record M
 
         record PopupHighlightConfig
             title: string
+            pill_text: string
+            pill_border: string
 
             created: string
             created_label: string
@@ -121,6 +127,8 @@ local record M
             documentation_label: string
             crates_io: string
             crates_io_label: string
+            categories_label: string
+            keywords_label: string
 
             version: string
             prerelease: string
@@ -590,6 +598,20 @@ entry(schema_popup_text, "title", {
         Format string used for the popup title.
     ]],
 })
+entry(schema_popup_text, "pill_left", {
+    type = "string",
+    default = "",
+    description = [[
+        Left border of a pill.
+    ]],
+})
+entry(schema_popup_text, "pill_right", {
+    type = "string",
+    default = "",
+    description = [[
+        Right border of a pill.
+    ]],
+})
 -- crate
 entry(schema_popup_text, "created_label", {
     type = "string",
@@ -687,6 +709,20 @@ entry(schema_popup_text, "crates_io", {
     default = "%s",
     description = [[
         Format string used for the crates.io url.
+    ]],
+})
+entry(schema_popup_text, "categories_label", {
+    type = "string",
+    default = " categories     ",
+    description = [[
+        Label string used for the categories label.
+    ]],
+})
+entry(schema_popup_text, "keywords_label", {
+    type = "string",
+    default = " keywords       ",
+    description = [[
+        Label string used for the keywords label.
     ]],
 })
 -- versions
@@ -793,6 +829,20 @@ entry(schema_popup_hi, "title", {
         Highlight group used for the popup title.
     ]],
 })
+entry(schema_popup_hi, "pill_text", {
+    type = "string",
+    default = "CratesNvimPopupPillText",
+    description = [[
+        Highlight group used for a pill's text (keywords and categories).
+    ]],
+})
+entry(schema_popup_hi, "pill_border", {
+    type = "string",
+    default = "CratesNvimPopupPillBorder",
+    description = [[
+        Highlight group used for a pill's border (keywords and categories).
+    ]],
+})
 -- crate
 entry(schema_popup_hi, "description", {
     type = "string",
@@ -897,6 +947,20 @@ entry(schema_popup_hi, "crates_io", {
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the crates.io url.
+    ]],
+})
+entry(schema_popup_hi, "categories_label", {
+    type = "string",
+    default = "CratesNvimPopupLabel",
+    description = [[
+        Highlight group used for the categories label.
+    ]],
+})
+entry(schema_popup_hi, "keywords_label", {
+    type = "string",
+    default = "CratesNvimPopupLabel",
+    description = [[
+        Highlight group used for the keywords label.
     ]],
 })
 -- versions
