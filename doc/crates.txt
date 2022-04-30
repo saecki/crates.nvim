@@ -100,10 +100,12 @@ For more information about individual config options see |crates-config|.
             show_dependency_version = true,
             max_height = 30,
             min_width = 20,
+            padding = 1,
             text = {
-                title = "  %s ",
+                title = " %s",
                 pill_left = "",
                 pill_right = "",
+                description = "%s",
                 created_label = " created        ",
                 created = "%s",
                 updated_label = " updated        ",
@@ -120,17 +122,17 @@ For more information about individual config options see |crates-config|.
                 crates_io = "%s",
                 categories_label = " categories     ",
                 keywords_label = " keywords       ",
-                version = "   %s ",
-                prerelease = "  %s ",
-                yanked = "  %s ",
-                version_date = " %s ",
-                feature = "   %s ",
-                enabled = "  %s ",
-                transitive = "  %s ",
-                dependency = "   %s ",
-                optional = "  %s ",
-                dependency_version = " %s ",
-                loading = " ",
+                version = "  %s",
+                prerelease = " %s",
+                yanked = " %s",
+                version_date = "  %s",
+                feature = "  %s",
+                enabled = " %s",
+                transitive = " %s",
+                dependency = "  %s",
+                optional = " %s",
+                dependency_version = "  %s",
+                loading = " ",
             },
             highlight = {
                 title = "CratesNvimPopupTitle",
@@ -597,6 +599,12 @@ popup.min_width                                *crates-config-popup-min_width*
     The minimum width of the popup.
 
 
+popup.padding                                    *crates-config-popup-padding*
+    Type: `number`, Default: `1`
+
+    The horizontal padding of the popup.
+
+
 popup.version_date                          *crates-config-popup-version_date*
     DEPRECATED
 
@@ -609,7 +617,7 @@ popup.text                                          *crates-config-popup-text*
 
 
 popup.text.title                              *crates-config-popup-text-title*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for the popup title.
 
@@ -624,6 +632,12 @@ popup.text.pill_right                    *crates-config-popup-text-pill_right*
     Type: `string`, Default: `""`
 
     Right border of a pill.
+
+
+popup.text.description                  *crates-config-popup-text-description*
+    Type: `string`, Default: `"%s"`
+
+    Format string used for the description.
 
 
 popup.text.created_label              *crates-config-popup-text-created_label*
@@ -723,67 +737,67 @@ popup.text.keywords_label            *crates-config-popup-text-keywords_label*
 
 
 popup.text.version                          *crates-config-popup-text-version*
-    Type: `string`, Default: `"   %s "`
+    Type: `string`, Default: `"  %s"`
 
     Format string used for release versions.
 
 
 popup.text.prerelease                    *crates-config-popup-text-prerelease*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for prerelease versions.
 
 
 popup.text.yanked                            *crates-config-popup-text-yanked*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for yanked versions.
 
 
 popup.text.version_date                *crates-config-popup-text-version_date*
-    Type: `string`, Default: `" %s "`
+    Type: `string`, Default: `"  %s"`
 
     Format string used for appending the version release date.
 
 
 popup.text.feature                          *crates-config-popup-text-feature*
-    Type: `string`, Default: `"   %s "`
+    Type: `string`, Default: `"  %s"`
 
     Format string used for disabled features.
 
 
 popup.text.enabled                          *crates-config-popup-text-enabled*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for enabled features.
 
 
 popup.text.transitive                    *crates-config-popup-text-transitive*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for transitively enabled features.
 
 
 popup.text.dependency                    *crates-config-popup-text-dependency*
-    Type: `string`, Default: `"   %s "`
+    Type: `string`, Default: `"  %s"`
 
     Format string used for dependencies and their version requirement.
 
 
 popup.text.optional                        *crates-config-popup-text-optional*
-    Type: `string`, Default: `"  %s "`
+    Type: `string`, Default: `" %s"`
 
     Format string used for optional dependencies and their version requirement.
 
 
 popup.text.dependency_version    *crates-config-popup-text-dependency_version*
-    Type: `string`, Default: `" %s "`
+    Type: `string`, Default: `"  %s"`
 
     Format string used for appending the dependency version.
 
 
 popup.text.loading                          *crates-config-popup-text-loading*
-    Type: `string`, Default: `" "`
+    Type: `string`, Default: `" "`
 
     Format string used as a loading indicator when fetching dependencies.
 

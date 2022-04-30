@@ -204,6 +204,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -574,6 +576,13 @@ entry(schema_popup, "min_width", {
         The minimum width of the popup.
     ]],
 })
+entry(schema_popup, "padding", {
+   type = "number",
+   default = 1,
+   description = [[
+        The horizontal padding of the popup.
+    ]],
+})
 
 entry(schema_popup, "version_date", {
    type = "boolean",
@@ -593,7 +602,7 @@ entry(schema_popup, "text", {
 local schema_popup_text = schema_popup.text.fields
 entry(schema_popup_text, "title", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for the popup title.
     ]],
@@ -613,6 +622,13 @@ entry(schema_popup_text, "pill_right", {
     ]],
 })
 
+entry(schema_popup_text, "description", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the description.
+    ]],
+})
 entry(schema_popup_text, "created_label", {
    type = "string",
    default = " created        ",
@@ -728,28 +744,28 @@ entry(schema_popup_text, "keywords_label", {
 
 entry(schema_popup_text, "version", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for release versions.
     ]],
 })
 entry(schema_popup_text, "prerelease", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for prerelease versions.
     ]],
 })
 entry(schema_popup_text, "yanked", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for yanked versions.
     ]],
 })
 entry(schema_popup_text, "version_date", {
    type = "string",
-   default = " %s ",
+   default = "  %s",
    description = [[
         Format string used for appending the version release date.
     ]],
@@ -757,21 +773,21 @@ entry(schema_popup_text, "version_date", {
 
 entry(schema_popup_text, "feature", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for disabled features.
     ]],
 })
 entry(schema_popup_text, "enabled", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for enabled features.
     ]],
 })
 entry(schema_popup_text, "transitive", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for transitively enabled features.
     ]],
@@ -779,28 +795,28 @@ entry(schema_popup_text, "transitive", {
 
 entry(schema_popup_text, "dependency", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for dependencies and their version requirement.
     ]],
 })
 entry(schema_popup_text, "optional", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for optional dependencies and their version requirement.
     ]],
 })
 entry(schema_popup_text, "dependency_version", {
    type = "string",
-   default = " %s ",
+   default = "  %s",
    description = [[
         Format string used for appending the dependency version.
     ]],
 })
 entry(schema_popup_text, "loading", {
    type = "string",
-   default = " ",
+   default = " ",
    description = [[
         Format string used as a loading indicator when fetching dependencies.
     ]],

@@ -93,7 +93,7 @@ function M.open(crate, opts)
       for _, l in ipairs(lines) do
          if l ~= "" then
             table.insert(info_text, { {
-               text = l,
+               text = string.format(text.description, l),
                hl = highlight.description,
             }, })
          end

@@ -75,18 +75,21 @@ function M.win_width(title, content_width)
    return math.max(
    vim.fn.strdisplaywidth(title) + vim.fn.strdisplaywidth(state.cfg.popup.text.loading),
    content_width,
-   state.cfg.popup.min_width)
-
+   state.cfg.popup.min_width) +
+   2 * state.cfg.popup.padding
 end
 
 local function set_buf_body(text)
    for i, line in ipairs(text) do
-      local line_text = ""
+      local padding = string.rep(" ", state.cfg.popup.padding)
+      local line_text = padding
       for _, t in ipairs(line) do
          line_text = line_text .. t.text
       end
+      line_text = line_text .. padding
+
       vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { line_text })
-      local pos = 0
+      local pos = state.cfg.popup.padding
       for _, t in ipairs(line) do
          vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
          pos = pos + t.text:len()
@@ -108,7 +111,9 @@ local function set_buf_content(buf, title, text)
    vim.api.nvim_buf_clear_namespace(buf, M.POPUP_NS, 0, -1)
 
 
-   vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title, "" })
+   local padding = string.rep(" ", state.cfg.popup.padding)
+   local title_text = padding .. title .. padding
+   vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title_text, "" })
    vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, state.cfg.popup.highlight.title, 0, 0, -1)
 
    set_buf_body(text)
