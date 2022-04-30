@@ -73,11 +73,35 @@ function M.parse_crate(json_str: string): Crate|nil
         name = c.id as string,
         description = c.description as string,
         created = DateTime.parse_rfc_3339(c.created_at as string),
+        updated = DateTime.parse_rfc_3339(c.updated_at as string),
         downloads = c.downloads as integer,
         homepage = c.homepage as string,
         documentation = c.documentation as string,
         repository = c.repository as string,
+        categories = {},
+        keywords = {},
     }
+    
+    if json.categories then
+        for _,ct_id in ipairs(c.categories as {{string:any}}) do
+            for _,ct in ipairs(json.categories as {{string:any}}) do
+                if ct.id == ct_id then
+                    table.insert(crate.categories, ct.category as string)
+                end
+            end
+        end
+    end
+
+    if json.keywords then
+        for _,kw_id in ipairs(c.keywords as {{string:any}}) do
+            for _,kw in ipairs(json.keywords as {{string:any}}) do
+                if kw.id == kw_id then
+                    table.insert(crate.keywords, kw.keyword as string)
+                end
+            end
+        end
+    end
+
     return crate
 end
 

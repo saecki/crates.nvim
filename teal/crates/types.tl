@@ -51,10 +51,13 @@ local record M
         name: string
         description: string
         created: DateTime
+        updated: DateTime
         downloads: integer
         homepage: string|nil
         repository: string|nil
         documentation: string|nil
+        categories: {string}
+        keywords: {string}
     end
 
     record Version

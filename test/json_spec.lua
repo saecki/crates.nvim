@@ -26,10 +26,20 @@ describe("crate", function()
                 minute = 17,
                 second = 14,
             }),
+			updated = DateTime.new(os.time {
+                year = 2022,
+                month = 2,
+                day = 14,
+                hour = 8,
+                minute = 37,
+                second = 47,
+            }),
             downloads = 121616874,
 			homepage = "https://rust-random.github.io/book",
 			documentation = "https://docs.rs/rand",
 			repository = "https://github.com/rust-random/rand",
+            categories = { "Algorithms", "No standard library" },
+            keywords = { "rng", "random" },
 		}, crate)
 	end)
 end)
