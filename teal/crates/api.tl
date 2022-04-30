@@ -53,6 +53,14 @@ local function parse_json(json_str: string): table
     end
 end
 
+local function request_job(url: string, on_exit: function(j: Job, code: integer, signal: integer)): Job
+    return Job:new {
+        command = "curl",
+        args = { "-sLA", USERAGENT, url },
+        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
+    }
+end
+
 
 function M.parse_crate(json_str: string): Crate|nil
     local json = parse_json(json_str)
@@ -100,18 +108,12 @@ local function fetch_crate(name: string, callback: function(Crate|nil, boolean))
         M.crate_jobs[name] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.crate_jobs[name] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_crate(name: string): Crate, boolean
@@ -207,18 +209,12 @@ local function fetch_vers(name: string, callback: function({Version}, boolean))
         M.vers_jobs[name] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.vers_jobs[name] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_vers(name: string): {Version}, boolean
@@ -281,18 +277,12 @@ local function fetch_deps(name: string, version: string, callback: function({Dep
         M.deps_jobs[jobname] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.deps_jobs[jobname] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_deps(name: string, version: string): {Dependency}, boolean

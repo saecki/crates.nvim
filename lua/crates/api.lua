@@ -53,6 +53,14 @@ local function parse_json(json_str)
    end
 end
 
+local function request_job(url, on_exit)
+   return Job:new({
+      command = "curl",
+      args = { "-sLA", USERAGENT, url },
+      on_exit = vim.schedule_wrap(on_exit),
+   })
+end
+
 
 function M.parse_crate(json_str)
    local json = parse_json(json_str)
@@ -100,18 +108,12 @@ local function fetch_crate(name, callback)
       M.crate_jobs[name] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.crate_jobs[name] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_crate(name)
@@ -207,18 +209,12 @@ local function fetch_vers(name, callback)
       M.vers_jobs[name] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.vers_jobs[name] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_vers(name)
@@ -281,18 +277,12 @@ local function fetch_deps(name, version, callback)
       M.deps_jobs[jobname] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.deps_jobs[jobname] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_deps(name, version)
