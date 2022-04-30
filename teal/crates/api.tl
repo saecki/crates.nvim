@@ -64,6 +64,8 @@ function M.parse_crate(json_str: string): Crate|nil
     local crate: Crate = {
         name = c.id as string,
         description = c.description as string,
+        created = DateTime.parse_rfc_3339(c.created_at as string),
+        downloads = c.downloads as integer,
         homepage = c.homepage as string,
         documentation = c.documentation as string,
         repository = c.repository as string,

@@ -64,6 +64,8 @@ function M.parse_crate(json_str)
    local crate = {
       name = c.id,
       description = c.description,
+      created = DateTime.parse_rfc_3339(c.created_at),
+      downloads = c.downloads,
       homepage = c.homepage,
       documentation = c.documentation,
       repository = c.repository,

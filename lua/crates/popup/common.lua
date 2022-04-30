@@ -29,6 +29,7 @@ local M = {WinOpts = {}, HighlightText = {}, }
 
 
 
+
 local HighlightText = M.HighlightText
 local WinOpts = M.WinOpts
 local state = require("crates.state")

@@ -18,6 +18,15 @@ describe("crate", function()
 		assert.same({
 			name = "rand",
 			description = "Random number generators and other randomness functionality.\n",
+			created = DateTime.new(os.time {
+                year = 2015,
+                month = 2,
+                day = 3,
+                hour = 6,
+                minute = 17,
+                second = 14,
+            }),
+            downloads = 121616874,
 			homepage = "https://rust-random.github.io/book",
 			documentation = "https://docs.rs/rand",
 			repository = "https://github.com/rust-random/rand",

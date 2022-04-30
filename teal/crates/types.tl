@@ -50,6 +50,7 @@ local record M
     record Crate
         name: string
         description: string
+        created: DateTime
         downloads: integer
         homepage: string|nil
         repository: string|nil

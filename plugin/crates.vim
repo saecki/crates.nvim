@@ -7,6 +7,10 @@ highlight default link CratesNvimUpgrade     DiagnosticVirtualTextWarn
 highlight default link CratesNvimError       DiagnosticVirtualTextError
 
 highlight default link CratesNvimPopupTitle              Title
+highlight default link CratesNvimPopupDescription        Comment
+highlight default link CratesNvimPopupLabel              Identifier
+highlight default link CratesNvimPopupValue              String
+highlight default link CratesNvimPopupUrl                Underlined
 highlight default link CratesNvimPopupVersion            None
 highlight default link CratesNvimPopupPreRelease         DiagnosticVirtualTextWarn
 highlight default link CratesNvimPopupYanked             DiagnosticVirtualTextError

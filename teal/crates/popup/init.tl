@@ -11,6 +11,7 @@ end
 local LineCrateInfo = M.LineCrateInfo
 local popup = require("crates.popup.common")
 local Type = popup.Type
+local popup_crate = require("crates.popup.crate")
 local popup_deps = require("crates.popup.dependencies")
 local popup_feat = require("crates.popup.features")
 local popup_vers = require("crates.popup.versions")
@@ -42,6 +43,10 @@ local function line_crate_info(): LineCrateInfo
         newest = newest,
     }
 
+    local function crate_info()
+        info.pref = "crate"
+    end
+
     local function versions_info()
         info.pref = "versions"
     end
@@ -70,22 +75,30 @@ local function line_crate_info(): LineCrateInfo
     end
 
     if crate.syntax == "plain" then
-        versions_info()
+        if crate.vers.col:moved(-1, 1):contains(col) then
+            versions_info()
+        else
+            crate_info()
+        end
     elseif crate.syntax == "table" then
-        if crate.feat and line == crate.feat.line then
+        if crate.vers and line == crate.vers.line then
+            versions_info()
+        elseif crate.feat and line == crate.feat.line then
             features_info()
         elseif crate.def and line == crate.def.line then
             default_features_info()
         else
-            versions_info()
+            crate_info()
         end
     elseif crate.syntax == "inline_table" then
-        if crate.feat and line == crate.feat.line and crate.feat.decl_col:contains(col) then
+        if crate.vers and crate.vers.decl_col:contains(col) then
+            versions_info()
+        elseif crate.feat and crate.feat.decl_col:contains(col) then
             features_info()
-        elseif crate.def and line == crate.def.line and crate.def.decl_col:contains(col) then
+        elseif crate.def and  crate.def.decl_col:contains(col) then
             default_features_info()
         else
-            versions_info()
+            crate_info()
         end
     end
 
@@ -101,7 +114,12 @@ function M.show()
     local info = line_crate_info()
     if not info then return end
 
-    if info.pref == "versions" then
+    if info.pref == "crate" then
+        local crate = state.api_cache.crates[info.crate.name]
+        if crate then
+            popup_crate.open(crate)
+        end
+    elseif info.pref == "versions" then
         popup_vers.open(info.crate, info.versions)
     elseif info.pref == "features" then
         popup_feat.open(info.crate, info.newest, {})
@@ -118,6 +136,25 @@ end
 
 function M.hide()
     popup.hide()
+end
+
+function M.show_crate()
+    if popup.win and vim.api.nvim_win_is_valid(popup.win) then
+        if popup.type == "crate" then
+            popup.focus()
+            return
+        else
+            popup.hide()
+        end
+    end
+
+    local info = line_crate_info()
+    if not info then return end
+
+    local crate = state.api_cache.crates[info.crate.name]
+    if crate then
+        popup_crate.open(crate)
+    end
 end
 
 function M.show_versions()

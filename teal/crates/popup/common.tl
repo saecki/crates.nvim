@@ -9,6 +9,7 @@ local record M
     transaction: number|nil
 
     enum Type
+        "crate"
         "versions"
         "features"
         "feature_details"

@@ -193,6 +193,18 @@ require('crates').setup {
         min_width = 20,
         text = {
             title = "  %s ",
+            created_label = " created        ",
+            created = "%s",
+            downloads_label = " downloads      ",
+            downloads = "%s",
+            homepage_label = " homepage       ",
+            homepage = "%s",
+            repository_label = " repository     ",
+            repository = "%s",
+            documentation_label = " documentation  ",
+            documentation = "%s",
+            crates_io_label = " crates.io      ",
+            crates_io = "%s",
             version = "   %s ",
             prerelease = "  %s ",
             yanked = "  %s ",
@@ -207,6 +219,19 @@ require('crates').setup {
         },
         highlight = {
             title = "CratesNvimPopupTitle",
+            description = "CratesNvimPopupDescription",
+            created_label = "CratesNvimPopupLabel",
+            created = "CratesNvimPopupValue",
+            downloads_label = "CratesNvimPopupLabel",
+            downloads = "CratesNvimPopupValue",
+            homepage_label = "CratesNvimPopupLabel",
+            homepage = "CratesNvimPopupUrl",
+            repository_label = "CratesNvimPopupLabel",
+            repository = "CratesNvimPopupUrl",
+            documentation_label = "CratesNvimPopupLabel",
+            documentation = "CratesNvimPopupUrl",
+            crates_io_label = "CratesNvimPopupLabel",
+            crates_io = "CratesNvimPopupUrl",
             version = "CratesNvimPopupVersion",
             prerelease = "CratesNvimPopupPreRelease",
             yanked = "CratesNvimPopupYanked",
@@ -221,10 +246,11 @@ require('crates').setup {
         },
         keys = {
             hide = { "q", "<esc>" },
+            open_url = { "<cr>" },
             select = { "<cr>" },
             select_alt = { "s" },
-            copy_version = { "yy" },
             toggle_feature = { "<cr>" },
+            copy_value = { "yy" },
             goto_item = { "gd", "K", "<C-LeftMouse>" },
             jump_forward = { "<c-i>" },
             jump_back = { "<c-o>", "<C-RightMouse>" },
@@ -324,7 +350,7 @@ require('crates').open_homepage()
 -- Open the repository page of the crate on the current line.
 require('crates').open_repository()
 -- Open the `docs.rs` page of the crate on the current line.
-require('crates').open_docs_rs()
+require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()
 

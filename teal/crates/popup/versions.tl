@@ -127,7 +127,7 @@ function M.open(crate: toml.Crate, versions: {Version}, opts: WinOpts)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.copy_version) do
+        for _,k in ipairs(state.cfg.popup.keys.copy_value) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()

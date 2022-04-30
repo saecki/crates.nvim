@@ -125,6 +125,7 @@ local M = {CrateInfo = {}, Diagnostic = {}, Crate = {}, Version = {}, Features =
 
 
 
+
 local Diagnostic = M.Diagnostic
 local Feature = M.Feature
 local Features = M.Features
