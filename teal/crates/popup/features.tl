@@ -30,20 +30,20 @@ local Version = types.Version
 local util = require("crates.util")
 local FeatureInfo = util.FeatureInfo
 
-local function feature_text(features_info: {string:FeatureInfo}, feature: Feature): HighlightText
-    local text, hl: string, string
+local function feature_text(features_info: {string:FeatureInfo}, feature: Feature): {HighlightText}
+    local t: HighlightText = {}
     local info = features_info[feature.name]
     if info.enabled then
-        text = string.format(state.cfg.popup.text.enabled, feature.name)
-        hl = state.cfg.popup.highlight.enabled
+        t.text = string.format(state.cfg.popup.text.enabled, feature.name)
+        t.hl = state.cfg.popup.highlight.enabled
     elseif info.transitive then
-        text = string.format(state.cfg.popup.text.transitive, feature.name)
-        hl = state.cfg.popup.highlight.transitive
+        t.text = string.format(state.cfg.popup.text.transitive, feature.name)
+        t.hl = state.cfg.popup.highlight.transitive
     else
-        text = string.format(state.cfg.popup.text.feature, feature.name)
-        hl = state.cfg.popup.highlight.feature
+        t.text = string.format(state.cfg.popup.text.feature, feature.name)
+        t.hl = state.cfg.popup.highlight.feature
     end
-    return { text = text, hl = hl }
+    return { t }
 end
 
 local function toggle_feature(ctx: FeatureContext, line: integer)
@@ -135,12 +135,7 @@ local function toggle_feature(ctx: FeatureContext, line: integer)
         end
     end
 
-    vim.api.nvim_buf_set_option(popup.buf, "modifiable", true)
-    for i,v in ipairs(features_text) do
-        vim.api.nvim_buf_set_lines(popup.buf, popup.TOP_OFFSET + i - 1, popup.TOP_OFFSET + i, false, { v.text })
-        vim.api.nvim_buf_add_highlight(popup.buf, popup.POPUP_NS, v.hl, popup.TOP_OFFSET + i - 1, 0, -1)
-    end
-    vim.api.nvim_buf_set_option(popup.buf, "modifiable", false)
+    popup.update_buf_body(features_text)
 end
 
 local function goto_feature(ctx: FeatureContext, line: integer)
@@ -295,13 +290,17 @@ function M.open_features(ctx: FeatureContext, crate: toml.Crate, version: Versio
     local features = version.features
     local title = string.format(state.cfg.popup.text.title, crate.name.." "..version.num)
     local feat_width = 0
-    local features_text = {}
+    local features_text: {{HighlightText}} = {}
 
     local features_info = util.features_info(crate, features)
     for _,f in ipairs(features) do
-        local hi_text = feature_text(features_info, f)
-        table.insert(features_text, hi_text)
-        feat_width = math.max(vim.fn.strdisplaywidth(hi_text.text) as integer, feat_width)
+        local hl_text = feature_text(features_info, f)
+        table.insert(features_text, hl_text)
+        local w = 0
+        for _,t in ipairs(hl_text) do
+            w = w + vim.fn.strdisplaywidth(t.text) as integer
+        end
+        feat_width = math.max(w, feat_width)
     end
 
     local width = popup.win_width(title, feat_width)
@@ -330,9 +329,13 @@ function M.open_feature_details(ctx: FeatureContext, crate: toml.Crate, version:
             members = {},
         }
 
-        local hi_text = feature_text(features_info, f)
-        table.insert(features_text, hi_text)
-        feat_width = math.max(hi_text.text:len(), feat_width)
+        local hl_text = feature_text(features_info, f)
+        table.insert(features_text, hl_text)
+        local w = 0
+        for _,t in ipairs(hl_text) do
+            w = w + vim.fn.strdisplaywidth(t.text) as integer
+        end
+        feat_width = math.max(w, feat_width)
     end
 
     local width = popup.win_width(title, feat_width)

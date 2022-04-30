@@ -60,7 +60,7 @@ function M.open(crate: Crate, opts: WinOpts)
     local title = string.format(state.cfg.popup.text.title, crate.name)
     local text = state.cfg.popup.text
     local highlight = state.cfg.popup.highlight
-    local info_text: {HighlightText} = {}
+    local info_text: {{HighlightText}} = {}
     local ctx: CrateContext = {
         crate = crate,
     }
@@ -70,84 +70,108 @@ function M.open(crate: Crate, opts: WinOpts)
         local lines = vim.split(desc, "\n")
         for _,l in ipairs(lines) do
             if l ~= "" then
-                table.insert(info_text, {
+                table.insert(info_text, { {
                     text = l,
                     hl = highlight.description,
-                })
+                } })
             end
         end
     end
-    table.insert(info_text, { text = "", hl = "None"})
+    table.insert(info_text, { { text = "", hl = "None" } })
 
     if crate.created then
         table.insert(info_text, {
-            text = text.created_label,
-            hl = highlight.created_label,
-            suffix = string.format(text.created, crate.created:display(state.cfg.date_format)),
-            suffix_hl = highlight.created,
+            {
+                text = text.created_label,
+                hl = highlight.created_label,
+            }, {
+                text = string.format(text.created, crate.created:display(state.cfg.date_format)),
+                hl = highlight.created,
+            },
         })
         ctx.created_index = #info_text
     end
 
     if crate.updated then
         table.insert(info_text, {
-            text = text.updated_label,
-            hl = highlight.updated_label,
-            suffix = string.format(text.updated, crate.updated:display(state.cfg.date_format)),
-            suffix_hl = highlight.updated,
+            {
+                text = text.updated_label,
+                hl = highlight.updated_label,
+            }, {
+                text = string.format(text.updated, crate.updated:display(state.cfg.date_format)),
+                hl = highlight.updated,
+            }
         })
         ctx.updated_index = #info_text
     end
 
     if crate.downloads then
         table.insert(info_text, {
-            text = text.downloads_label,
-            hl = highlight.downloads_label,
-            suffix = string.format(text.downloads, crate.downloads),
-            suffix_hl = highlight.downloads,
+            {
+                text = text.downloads_label,
+                hl = highlight.downloads_label,
+            }, {
+                text = string.format(text.downloads, crate.downloads),
+                hl = highlight.downloads,
+            }
         })
         ctx.downloads_index = #info_text
     end
 
     if crate.homepage then
         table.insert(info_text, {
-            text = text.homepage_label,
-            hl = highlight.homepage_label,
-            suffix = string.format(text.homepage, crate.homepage),
-            suffix_hl = highlight.homepage,
+            {
+                text = text.homepage_label,
+                hl = highlight.homepage_label,
+            }, {
+                text = string.format(text.homepage, crate.homepage),
+                hl = highlight.homepage,
+            }
         })
         ctx.homepage_index = #info_text
     end
 
     if crate.repository then
         table.insert(info_text, {
-            text = text.repository_label,
-            hl = highlight.repository_label,
-            suffix = string.format(text.repository, crate.repository),
-            suffix_hl = highlight.repository,
+            {
+                text = text.repository_label,
+                hl = highlight.repository_label,
+            }, {
+                text = string.format(text.repository, crate.repository),
+                hl = highlight.repository,
+            }
         })
         ctx.repo_index = #info_text
     end
 
     table.insert(info_text, {
-        text = text.documentation_label,
-        hl = highlight.documentation_label,
-        suffix = string.format(text.documentation, crate.documentation or util.docs_rs_url(crate.name)),
-        suffix_hl = highlight.documentation,
+        {
+            text = text.documentation_label,
+            hl = highlight.documentation_label,
+        }, {
+            text = string.format(text.documentation, crate.documentation or util.docs_rs_url(crate.name)),
+            hl = highlight.documentation,
+        }
     })
     ctx.docs_index = #info_text
 
     table.insert(info_text, {
-        text = text.crates_io_label,
-        hl = highlight.crates_io_label,
-        suffix = string.format(text.crates_io, util.crates_io_url(crate.name)),
-        suffix_hl = highlight.crates_io,
+        {
+            text = text.crates_io_label,
+            hl = highlight.crates_io_label,
+        }, {
+            text = string.format(text.crates_io, util.crates_io_url(crate.name)),
+            hl = highlight.crates_io,
+        }
     })
     ctx.crates_io_index = #info_text
 
     local content_width = 0
-    for _,t in ipairs(info_text) do
-        local w = vim.fn.strdisplaywidth(t.text) as integer + vim.fn.strdisplaywidth(t.suffix) as integer
+    for _,v in ipairs(info_text) do
+        local w = 0
+        for _,t in ipairs(v) do
+            w = w + vim.fn.strdisplaywidth(t.text) as integer
+        end
         content_width = math.max(w, content_width)
     end
 

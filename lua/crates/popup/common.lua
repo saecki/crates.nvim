@@ -28,8 +28,6 @@ local M = {WinOpts = {}, HighlightText = {}, }
 
 
 
-
-
 local HighlightText = M.HighlightText
 local WinOpts = M.WinOpts
 local state = require("crates.state")
@@ -81,6 +79,27 @@ function M.win_width(title, content_width)
 
 end
 
+local function set_buf_body(text)
+   for i, line in ipairs(text) do
+      local line_text = ""
+      for _, t in ipairs(line) do
+         line_text = line_text .. t.text
+      end
+      vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { line_text })
+      local pos = 0
+      for _, t in ipairs(line) do
+         vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
+         pos = pos + t.text:len()
+      end
+   end
+end
+
+function M.update_buf_body(text)
+   vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
+   set_buf_body(text)
+   vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
+end
+
 local function set_buf_content(buf, title, text)
    vim.api.nvim_buf_set_option(buf, "modifiable", true)
 
@@ -92,13 +111,7 @@ local function set_buf_content(buf, title, text)
    vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title, "" })
    vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, state.cfg.popup.highlight.title, 0, 0, -1)
 
-   for i, v in ipairs(text) do
-      vim.api.nvim_buf_set_lines(buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { v.text .. (v.suffix or "") })
-      vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.hl, M.TOP_OFFSET + i - 1, 0, v.text:len())
-      if v.suffix_hl then
-         vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.suffix_hl, M.TOP_OFFSET + i - 1, v.text:len(), -1)
-      end
-   end
+   set_buf_body(text)
 
    vim.api.nvim_buf_set_name(buf, "crates")
    vim.api.nvim_buf_set_option(buf, "modifiable", false)

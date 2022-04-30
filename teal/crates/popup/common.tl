@@ -25,8 +25,6 @@ local record M
     record HighlightText
         text: string
         hl: string
-        suffix: string|nil
-        suffix_hl: string|nil
     end
 end
 
@@ -81,30 +79,45 @@ function M.win_width(title: string, content_width: integer): integer
     )
 end
 
-local function set_buf_content(buf: integer, title: string, text: {HighlightText})
+local function set_buf_body(text: {{HighlightText}})
+    for i,line in ipairs(text) do
+        local line_text = ""
+        for _,t in ipairs(line) do
+            line_text = line_text .. t.text
+        end
+        vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { line_text })
+        local pos = 0
+        for _,t in ipairs(line) do
+            vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
+            pos = pos + t.text:len()
+        end
+    end
+end
+
+function M.update_buf_body(text: {{HighlightText}})
+    vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
+    set_buf_body(text)
+    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
+end
+
+local function set_buf_content(buf: integer, title: string, text: {{HighlightText}})
     vim.api.nvim_buf_set_option(buf, "modifiable", true)
 
     -- clear buffer
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
     vim.api.nvim_buf_clear_namespace(buf, M.POPUP_NS, 0, -1)
 
-    -- clear buffer
+    -- update buffer
     vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title, "" })
     vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, state.cfg.popup.highlight.title, 0, 0, -1)
 
-    for i,v in ipairs(text) do
-        vim.api.nvim_buf_set_lines(buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { v.text .. (v.suffix or "") })
-        vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.hl, M.TOP_OFFSET + i - 1, 0, v.text:len())
-        if v.suffix_hl then
-            vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, v.suffix_hl, M.TOP_OFFSET + i - 1, v.text:len(), -1)
-        end
-    end
+    set_buf_body(text)
 
     vim.api.nvim_buf_set_name(buf, "crates")
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
-function M.update_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts)
+function M.update_win(width: integer, height: integer, title: string, text: {{HighlightText}}, opts: WinOpts)
     -- resize window
     vim.api.nvim_win_set_width(M.win, width)
     vim.api.nvim_win_set_height(M.win, height)
@@ -117,7 +130,7 @@ function M.update_win(width: integer, height: integer, title: string, text: {Hig
     vim.api.nvim_win_set_cursor(M.win, { l, 0 })
 end
 
-function M.open_win(width: integer, height: integer, title: string, text: {HighlightText}, opts: WinOpts, configure: function(integer, integer))
+function M.open_win(width: integer, height: integer, title: string, text: {{HighlightText}}, opts: WinOpts, configure: function(integer, integer))
     M.buf = vim.api.nvim_create_buf(false, true) as integer
 
     -- add text and highlights

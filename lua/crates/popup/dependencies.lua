@@ -156,29 +156,34 @@ function M.open_deps(ctx, crate_name, version, opts)
    local deps_text = {}
 
    for _, d in ipairs(deps) do
-      local text, hl
+      local t = {}
       if d.opt then
-         text = string.format(state.cfg.popup.text.optional, d.name)
-         hl = state.cfg.popup.highlight.optional
+         t.text = string.format(state.cfg.popup.text.optional, d.name)
+         t.hl = state.cfg.popup.highlight.optional
       else
-         text = string.format(state.cfg.popup.text.dependency, d.name)
-         hl = state.cfg.popup.highlight.dependency
+         t.text = string.format(state.cfg.popup.text.dependency, d.name)
+         t.hl = state.cfg.popup.highlight.dependency
       end
 
-      table.insert(deps_text, { text = text, hl = hl })
-      deps_width = math.max(vim.fn.strdisplaywidth(text), deps_width)
+      table.insert(deps_text, { t })
+      deps_width = math.max(vim.fn.strdisplaywidth(t.text), deps_width)
    end
 
    local vers_width = 0
    if state.cfg.popup.show_dependency_version then
-      for i, d in ipairs(deps_text) do
-         local diff = deps_width - vim.fn.strdisplaywidth(d.text)
-         local date = deps[i].vers.text
-         d.text = d.text .. string.rep(" ", diff)
-         d.suffix = string.format(state.cfg.popup.text.dependency_version, date)
-         d.suffix_hl = state.cfg.popup.highlight.dependency_version
+      for i, line in ipairs(deps_text) do
+         local dep_text = line[1]
+         local diff = deps_width - vim.fn.strdisplaywidth(dep_text.text)
+         local vers = deps[i].vers.text
+         dep_text.text = dep_text.text .. string.rep(" ", diff)
 
-         vers_width = math.max(vim.fn.strdisplaywidth(d.suffix), vers_width)
+         local vers_text = {
+            text = string.format(state.cfg.popup.text.dependency_version, vers),
+            hl = state.cfg.popup.highlight.dependency_version,
+         }
+         table.insert(line, vers_text)
+
+         vers_width = math.max(vim.fn.strdisplaywidth(vers_text.text), vers_width)
       end
    end
 

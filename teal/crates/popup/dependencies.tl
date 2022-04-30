@@ -153,32 +153,37 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
 
     local title = string.format(state.cfg.popup.text.title, crate_name.." "..version.num)
     local deps_width = 0
-    local deps_text: {HighlightText} = {}
+    local deps_text: {{HighlightText}} = {}
 
     for _,d in ipairs(deps) do
-        local text, hl: string, string
+        local t: HighlightText = {}
         if d.opt then
-            text = string.format(state.cfg.popup.text.optional, d.name)
-            hl = state.cfg.popup.highlight.optional
+            t.text = string.format(state.cfg.popup.text.optional, d.name)
+            t.hl = state.cfg.popup.highlight.optional
         else
-            text = string.format(state.cfg.popup.text.dependency, d.name)
-            hl = state.cfg.popup.highlight.dependency
+            t.text = string.format(state.cfg.popup.text.dependency, d.name)
+            t.hl = state.cfg.popup.highlight.dependency
         end
 
-        table.insert(deps_text, { text = text, hl = hl })
-        deps_width = math.max(vim.fn.strdisplaywidth(text) as integer, deps_width)
+        table.insert(deps_text, { t })
+        deps_width = math.max(vim.fn.strdisplaywidth(t.text) as integer, deps_width)
     end
 
     local vers_width = 0
     if state.cfg.popup.show_dependency_version then
-        for i,d in ipairs(deps_text) do
-            local diff = deps_width - vim.fn.strdisplaywidth(d.text) as integer
-            local date = deps[i].vers.text
-            d.text = d.text..string.rep(" ", diff)
-            d.suffix = string.format(state.cfg.popup.text.dependency_version, date)
-            d.suffix_hl = state.cfg.popup.highlight.dependency_version
+        for i,line in ipairs(deps_text) do
+            local dep_text = line[1]
+            local diff = deps_width - vim.fn.strdisplaywidth(dep_text.text) as integer
+            local vers = deps[i].vers.text
+            dep_text.text = dep_text.text..string.rep(" ", diff)
 
-            vers_width = math.max(vim.fn.strdisplaywidth(d.suffix) as integer, vers_width)
+            local vers_text: HighlightText = {
+                text = string.format(state.cfg.popup.text.dependency_version, vers),
+                hl = state.cfg.popup.highlight.dependency_version,
+            }
+            table.insert(line, vers_text)
+
+            vers_width = math.max(vim.fn.strdisplaywidth(vers_text.text) as integer, vers_width)
         end
     end
 
