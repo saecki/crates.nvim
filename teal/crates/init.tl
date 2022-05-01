@@ -39,7 +39,7 @@ local record M
     -- Open the repository page of the crate on the current line.
     open_repository: function()
     -- Open the `docs.rs` page of the crate on the current line.
-    open_docs_rs: function()
+    open_documentation: function()
     -- Open the `crates.io` page of the crate on the current line.
     open_crates_io: function()
 
@@ -152,7 +152,7 @@ M.update_crates = actions.update_crates
 M.update_all_crates = actions.update_all_crates
 M.open_homepage = actions.open_homepage
 M.open_repository = actions.open_repository
-M.open_docs_rs = actions.open_docs_rs
+M.open_documentation = actions.open_documentation
 M.open_crates_io = actions.open_crates_io
 
 M.show_popup = popup.show

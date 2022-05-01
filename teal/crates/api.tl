@@ -53,6 +53,14 @@ local function parse_json(json_str: string): table
     end
 end
 
+local function request_job(url: string, on_exit: function(j: Job, code: integer, signal: integer)): Job
+    return Job:new {
+        command = "curl",
+        args = { "-sLA", USERAGENT, url },
+        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
+    }
+end
+
 
 function M.parse_crate(json_str: string): Crate|nil
     local json = parse_json(json_str)
@@ -64,10 +72,36 @@ function M.parse_crate(json_str: string): Crate|nil
     local crate: Crate = {
         name = c.id as string,
         description = c.description as string,
+        created = DateTime.parse_rfc_3339(c.created_at as string),
+        updated = DateTime.parse_rfc_3339(c.updated_at as string),
+        downloads = c.downloads as integer,
         homepage = c.homepage as string,
         documentation = c.documentation as string,
         repository = c.repository as string,
+        categories = {},
+        keywords = {},
     }
+
+    if json.categories then
+        for _,ct_id in ipairs(c.categories as {{string:any}}) do
+            for _,ct in ipairs(json.categories as {{string:any}}) do
+                if ct.id == ct_id then
+                    table.insert(crate.categories, ct.category as string)
+                end
+            end
+        end
+    end
+
+    if json.keywords then
+        for _,kw_id in ipairs(c.keywords as {{string:any}}) do
+            for _,kw in ipairs(json.keywords as {{string:any}}) do
+                if kw.id == kw_id then
+                    table.insert(crate.keywords, kw.keyword as string)
+                end
+            end
+        end
+    end
+
     return crate
 end
 
@@ -98,18 +132,12 @@ local function fetch_crate(name: string, callback: function(Crate|nil, boolean))
         M.crate_jobs[name] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.crate_jobs[name] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_crate(name: string): Crate, boolean
@@ -205,18 +233,12 @@ local function fetch_vers(name: string, callback: function({Version}, boolean))
         M.vers_jobs[name] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.vers_jobs[name] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_vers(name: string): {Version}, boolean
@@ -279,18 +301,12 @@ local function fetch_deps(name: string, version: string, callback: function({Dep
         M.deps_jobs[jobname] = nil
     end
 
-    local j = Job:new {
-        command = "curl",
-        args = { "-sLA", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit) as function(Job, integer, integer),
-    }
-
+    local job = request_job(url, on_exit)
     M.deps_jobs[jobname] = {
-        job = j,
+        job = job,
         callbacks = callbacks,
     }
-
-    j:start()
+    job:start()
 end
 
 function M.fetch_deps(name: string, version: string): {Dependency}, boolean

@@ -164,6 +164,48 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -534,6 +576,13 @@ entry(schema_popup, "min_width", {
         The minimum width of the popup.
     ]],
 })
+entry(schema_popup, "padding", {
+   type = "number",
+   default = 1,
+   description = [[
+        The horizontal padding of the popup.
+    ]],
+})
 
 entry(schema_popup, "version_date", {
    type = "boolean",
@@ -553,36 +602,170 @@ entry(schema_popup, "text", {
 local schema_popup_text = schema_popup.text.fields
 entry(schema_popup_text, "title", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for the popup title.
+    ]],
+})
+entry(schema_popup_text, "pill_left", {
+   type = "string",
+   default = "",
+   description = [[
+        Left border of a pill (keywords and categories).
+    ]],
+})
+entry(schema_popup_text, "pill_right", {
+   type = "string",
+   default = "",
+   description = [[
+        Right border of a pill (keywords and categories).
+    ]],
+})
+
+entry(schema_popup_text, "description", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the description.
+    ]],
+})
+entry(schema_popup_text, "created_label", {
+   type = "string",
+   default = " created        ",
+   description = [[
+        Label string used for the creation date.
+    ]],
+})
+entry(schema_popup_text, "created", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the creation date.
+    ]],
+})
+entry(schema_popup_text, "updated_label", {
+   type = "string",
+   default = " updated        ",
+   description = [[
+        Label string used for the updated date.
+    ]],
+})
+entry(schema_popup_text, "updated", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the updated date.
+    ]],
+})
+entry(schema_popup_text, "downloads_label", {
+   type = "string",
+   default = " downloads      ",
+   description = [[
+        Label string used for the download count.
+    ]],
+})
+entry(schema_popup_text, "downloads", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the download count.
+    ]],
+})
+entry(schema_popup_text, "homepage_label", {
+   type = "string",
+   default = " homepage       ",
+   description = [[
+        Label string used for the homepage url.
+    ]],
+})
+entry(schema_popup_text, "homepage", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the homepage url.
+    ]],
+})
+entry(schema_popup_text, "repository_label", {
+   type = "string",
+   default = " repository     ",
+   description = [[
+        Label string used for the repository url.
+    ]],
+})
+entry(schema_popup_text, "repository", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the repository url.
+    ]],
+})
+entry(schema_popup_text, "documentation_label", {
+   type = "string",
+   default = " documentation  ",
+   description = [[
+        Label string used for the documentation url.
+    ]],
+})
+entry(schema_popup_text, "documentation", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the documentation url.
+    ]],
+})
+entry(schema_popup_text, "crates_io_label", {
+   type = "string",
+   default = " crates.io      ",
+   description = [[
+        Label string used for the crates.io url.
+    ]],
+})
+entry(schema_popup_text, "crates_io", {
+   type = "string",
+   default = "%s",
+   description = [[
+        Format string used for the crates.io url.
+    ]],
+})
+entry(schema_popup_text, "categories_label", {
+   type = "string",
+   default = " categories     ",
+   description = [[
+        Label string used for the categories label.
+    ]],
+})
+entry(schema_popup_text, "keywords_label", {
+   type = "string",
+   default = " keywords       ",
+   description = [[
+        Label string used for the keywords label.
     ]],
 })
 
 entry(schema_popup_text, "version", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for release versions.
     ]],
 })
 entry(schema_popup_text, "prerelease", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for prerelease versions.
     ]],
 })
 entry(schema_popup_text, "yanked", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for yanked versions.
     ]],
 })
 entry(schema_popup_text, "version_date", {
    type = "string",
-   default = " %s ",
+   default = "  %s",
    description = [[
         Format string used for appending the version release date.
     ]],
@@ -590,21 +773,21 @@ entry(schema_popup_text, "version_date", {
 
 entry(schema_popup_text, "feature", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for disabled features.
     ]],
 })
 entry(schema_popup_text, "enabled", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for enabled features.
     ]],
 })
 entry(schema_popup_text, "transitive", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for transitively enabled features.
     ]],
@@ -612,28 +795,28 @@ entry(schema_popup_text, "transitive", {
 
 entry(schema_popup_text, "dependency", {
    type = "string",
-   default = "   %s ",
+   default = "  %s",
    description = [[
         Format string used for dependencies and their version requirement.
     ]],
 })
 entry(schema_popup_text, "optional", {
    type = "string",
-   default = "  %s ",
+   default = " %s",
    description = [[
         Format string used for optional dependencies and their version requirement.
     ]],
 })
 entry(schema_popup_text, "dependency_version", {
    type = "string",
-   default = " %s ",
+   default = "  %s",
    description = [[
         Format string used for appending the dependency version.
     ]],
 })
 entry(schema_popup_text, "loading", {
    type = "string",
-   default = " ",
+   default = " ",
    description = [[
         Format string used as a loading indicator when fetching dependencies.
     ]],
@@ -660,6 +843,140 @@ entry(schema_popup_hi, "title", {
    default = "CratesNvimPopupTitle",
    description = [[
         Highlight group used for the popup title.
+    ]],
+})
+entry(schema_popup_hi, "pill_text", {
+   type = "string",
+   default = "CratesNvimPopupPillText",
+   description = [[
+        Highlight group used for a pill's text (keywords and categories).
+    ]],
+})
+entry(schema_popup_hi, "pill_border", {
+   type = "string",
+   default = "CratesNvimPopupPillBorder",
+   description = [[
+        Highlight group used for a pill's border (keywords and categories).
+    ]],
+})
+
+entry(schema_popup_hi, "description", {
+   type = "string",
+   default = "CratesNvimPopupDescription",
+   description = [[
+        Highlight group used for the crate description.
+    ]],
+})
+entry(schema_popup_hi, "created_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the creation date label.
+    ]],
+})
+entry(schema_popup_hi, "created", {
+   type = "string",
+   default = "CratesNvimPopupValue",
+   description = [[
+        Highlight group used for the creation date.
+    ]],
+})
+entry(schema_popup_hi, "updated_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the updated date label.
+    ]],
+})
+entry(schema_popup_hi, "updated", {
+   type = "string",
+   default = "CratesNvimPopupValue",
+   description = [[
+        Highlight group used for the updated date.
+    ]],
+})
+entry(schema_popup_hi, "downloads_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the download count label.
+    ]],
+})
+entry(schema_popup_hi, "downloads", {
+   type = "string",
+   default = "CratesNvimPopupValue",
+   description = [[
+        Highlight group used for the download count.
+    ]],
+})
+entry(schema_popup_hi, "homepage_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the homepage url label.
+    ]],
+})
+entry(schema_popup_hi, "homepage", {
+   type = "string",
+   default = "CratesNvimPopupUrl",
+   description = [[
+        Highlight group used for the homepage url.
+    ]],
+})
+entry(schema_popup_hi, "repository_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the repository url label.
+    ]],
+})
+entry(schema_popup_hi, "repository", {
+   type = "string",
+   default = "CratesNvimPopupUrl",
+   description = [[
+        Highlight group used for the repository url.
+    ]],
+})
+entry(schema_popup_hi, "documentation_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the documentation url label.
+    ]],
+})
+entry(schema_popup_hi, "documentation", {
+   type = "string",
+   default = "CratesNvimPopupUrl",
+   description = [[
+        Highlight group used for the documentation url.
+    ]],
+})
+entry(schema_popup_hi, "crates_io_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the crates.io url label.
+    ]],
+})
+entry(schema_popup_hi, "crates_io", {
+   type = "string",
+   default = "CratesNvimPopupUrl",
+   description = [[
+        Highlight group used for the crates.io url.
+    ]],
+})
+entry(schema_popup_hi, "categories_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the categories label.
+    ]],
+})
+entry(schema_popup_hi, "keywords_label", {
+   type = "string",
+   default = "CratesNvimPopupLabel",
+   description = [[
+        Highlight group used for the keywords label.
     ]],
 })
 
@@ -760,6 +1077,14 @@ entry(schema_popup_keys, "hide", {
     ]],
 })
 
+entry(schema_popup_keys, "open_url", {
+   type = "table",
+   default = { "<cr>" },
+   description = [[
+        Key mappings to open the url on the current line.
+    ]],
+})
+
 entry(schema_popup_keys, "select", {
    type = "table",
    default = { "<cr>" },
@@ -774,22 +1099,22 @@ entry(schema_popup_keys, "select_alt", {
         Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
     ]],
 })
-entry(schema_popup_keys, "copy_version", {
-   type = "table",
-   default = { "yy" },
-   description = [[
-        Key mappings to copy the version on the current line inside the popup.
-    ]],
-})
 
 entry(schema_popup_keys, "toggle_feature", {
    type = "table",
    default = { "<cr>" },
    description = [[
-        Key mappings to enable or disable the feature on the currentline inside the popup.
+        Key mappings to enable or disable the feature on the current line inside the popup.
     ]],
 })
 
+entry(schema_popup_keys, "copy_value", {
+   type = "table",
+   default = { "yy" },
+   description = [[
+        Key mappings to copy the value on the current line inside the popup.
+    ]],
+})
 entry(schema_popup_keys, "goto_item", {
    type = "table",
    default = { "gd", "K", "<C-LeftMouse>" },
@@ -828,6 +1153,12 @@ entry(schema_popup_keys, "jump_back_feature", {
    type = "table",
    deprecated = {
       new_field = { "popup", "keys", "jump_back" },
+   },
+})
+entry(schema_popup_keys, "copy_version", {
+   type = "table",
+   deprecated = {
+      new_field = { "popup", "keys", "copy_value" },
    },
 })
 

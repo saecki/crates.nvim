@@ -586,6 +586,14 @@ function M.notify(severity, s, ...)
    vim.notify(s:format(...), severity, { title = state.cfg.notification_title })
 end
 
+function M.docs_rs_url(name)
+   return "https://docs.rs/" .. name
+end
+
+function M.crates_io_url(name)
+   return "https://crates.io/crates/" .. name
+end
+
 function M.open_url(url)
    if M.binary_installed("xdg-open") then
       vim.cmd("silent !xdg-open " .. url)

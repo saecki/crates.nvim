@@ -63,35 +63,39 @@ function M.open(crate: toml.Crate, versions: {Version}, opts: WinOpts)
 
     local title = string.format(state.cfg.popup.text.title, crate.name)
     local vers_width = 0
-    local versions_text: {HighlightText} = {}
+    local versions_text: {{HighlightText}} = {}
 
     for _,v in ipairs(versions) do
-        local text, hl: string, string
+        local t: HighlightText = {}
         if v.yanked then
-            text = string.format(state.cfg.popup.text.yanked, v.num)
-            hl = state.cfg.popup.highlight.yanked
+            t.text = string.format(state.cfg.popup.text.yanked, v.num)
+            t.hl = state.cfg.popup.highlight.yanked
         elseif v.parsed.pre then
-            text = string.format(state.cfg.popup.text.prerelease, v.num)
-            hl = state.cfg.popup.highlight.prerelease
+            t.text = string.format(state.cfg.popup.text.prerelease, v.num)
+            t.hl = state.cfg.popup.highlight.prerelease
         else
-            text = string.format(state.cfg.popup.text.version, v.num)
-            hl = state.cfg.popup.highlight.version
+            t.text = string.format(state.cfg.popup.text.version, v.num)
+            t.hl = state.cfg.popup.highlight.version
         end
 
-        table.insert(versions_text, { text = text, hl = hl })
-        vers_width = math.max(vim.fn.strdisplaywidth(text) as integer, vers_width)
+        table.insert(versions_text, { t })
+        vers_width = math.max(vim.fn.strdisplaywidth(t.text) as integer, vers_width)
     end
 
     local date_width = 0
     if state.cfg.popup.show_version_date then
-        for i,v in ipairs(versions_text) do
-            local diff = vers_width - vim.fn.strdisplaywidth(v.text) as integer
+        for i,line in ipairs(versions_text) do
+            local vers_text = line[1]
+            local diff = vers_width - vim.fn.strdisplaywidth(vers_text.text) as integer
             local date = versions[i].created:display(state.cfg.date_format)
-            v.text = v.text..string.rep(" ", diff)
-            v.suffix = string.format(state.cfg.popup.text.version_date, date)
-            v.suffix_hl = state.cfg.popup.highlight.version_date
+            vers_text.text = vers_text.text..string.rep(" ", diff)
 
-            date_width = math.max(vim.fn.strdisplaywidth(v.suffix) as integer, date_width)
+            local date_text: HighlightText = {
+                text = string.format(state.cfg.popup.text.version_date, date),
+                hl = state.cfg.popup.highlight.version_date
+            }
+            table.insert(line, date_text)
+            date_width = math.max(vim.fn.strdisplaywidth(date_text.text) as integer, date_width)
         end
     end
 
@@ -127,7 +131,7 @@ function M.open(crate: toml.Crate, versions: {Version}, opts: WinOpts)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.copy_version) do
+        for _,k in ipairs(state.cfg.popup.keys.copy_value) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()

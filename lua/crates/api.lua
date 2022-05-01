@@ -53,6 +53,14 @@ local function parse_json(json_str)
    end
 end
 
+local function request_job(url, on_exit)
+   return Job:new({
+      command = "curl",
+      args = { "-sLA", USERAGENT, url },
+      on_exit = vim.schedule_wrap(on_exit),
+   })
+end
+
 
 function M.parse_crate(json_str)
    local json = parse_json(json_str)
@@ -64,10 +72,36 @@ function M.parse_crate(json_str)
    local crate = {
       name = c.id,
       description = c.description,
+      created = DateTime.parse_rfc_3339(c.created_at),
+      updated = DateTime.parse_rfc_3339(c.updated_at),
+      downloads = c.downloads,
       homepage = c.homepage,
       documentation = c.documentation,
       repository = c.repository,
+      categories = {},
+      keywords = {},
    }
+
+   if json.categories then
+      for _, ct_id in ipairs(c.categories) do
+         for _, ct in ipairs(json.categories) do
+            if ct.id == ct_id then
+               table.insert(crate.categories, ct.category)
+            end
+         end
+      end
+   end
+
+   if json.keywords then
+      for _, kw_id in ipairs(c.keywords) do
+         for _, kw in ipairs(json.keywords) do
+            if kw.id == kw_id then
+               table.insert(crate.keywords, kw.keyword)
+            end
+         end
+      end
+   end
+
    return crate
 end
 
@@ -98,18 +132,12 @@ local function fetch_crate(name, callback)
       M.crate_jobs[name] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.crate_jobs[name] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_crate(name)
@@ -205,18 +233,12 @@ local function fetch_vers(name, callback)
       M.vers_jobs[name] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.vers_jobs[name] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_vers(name)
@@ -279,18 +301,12 @@ local function fetch_deps(name, version, callback)
       M.deps_jobs[jobname] = nil
    end
 
-   local j = Job:new({
-      command = "curl",
-      args = { "-sLA", USERAGENT, url },
-      on_exit = vim.schedule_wrap(on_exit),
-   })
-
+   local job = request_job(url, on_exit)
    M.deps_jobs[jobname] = {
-      job = j,
+      job = job,
       callbacks = callbacks,
    }
-
-   j:start()
+   job:start()
 end
 
 function M.fetch_deps(name, version)

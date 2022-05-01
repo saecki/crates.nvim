@@ -191,22 +191,61 @@ require('crates').setup {
         show_dependency_version = true,
         max_height = 30,
         min_width = 20,
+        padding = 1,
         text = {
-            title = "  %s ",
-            version = "   %s ",
-            prerelease = "  %s ",
-            yanked = "  %s ",
-            version_date = " %s ",
-            feature = "   %s ",
-            enabled = "  %s ",
-            transitive = "  %s ",
-            dependency = "   %s ",
-            optional = "  %s ",
-            dependency_version = " %s ",
-            loading = " ",
+            title = " %s",
+            pill_left = "",
+            pill_right = "",
+            description = "%s",
+            created_label = " created        ",
+            created = "%s",
+            updated_label = " updated        ",
+            updated = "%s",
+            downloads_label = " downloads      ",
+            downloads = "%s",
+            homepage_label = " homepage       ",
+            homepage = "%s",
+            repository_label = " repository     ",
+            repository = "%s",
+            documentation_label = " documentation  ",
+            documentation = "%s",
+            crates_io_label = " crates.io      ",
+            crates_io = "%s",
+            categories_label = " categories     ",
+            keywords_label = " keywords       ",
+            version = "  %s",
+            prerelease = " %s",
+            yanked = " %s",
+            version_date = "  %s",
+            feature = "  %s",
+            enabled = " %s",
+            transitive = " %s",
+            dependency = "  %s",
+            optional = " %s",
+            dependency_version = "  %s",
+            loading = " ",
         },
         highlight = {
             title = "CratesNvimPopupTitle",
+            pill_text = "CratesNvimPopupPillText",
+            pill_border = "CratesNvimPopupPillBorder",
+            description = "CratesNvimPopupDescription",
+            created_label = "CratesNvimPopupLabel",
+            created = "CratesNvimPopupValue",
+            updated_label = "CratesNvimPopupLabel",
+            updated = "CratesNvimPopupValue",
+            downloads_label = "CratesNvimPopupLabel",
+            downloads = "CratesNvimPopupValue",
+            homepage_label = "CratesNvimPopupLabel",
+            homepage = "CratesNvimPopupUrl",
+            repository_label = "CratesNvimPopupLabel",
+            repository = "CratesNvimPopupUrl",
+            documentation_label = "CratesNvimPopupLabel",
+            documentation = "CratesNvimPopupUrl",
+            crates_io_label = "CratesNvimPopupLabel",
+            crates_io = "CratesNvimPopupUrl",
+            categories_label = "CratesNvimPopupLabel",
+            keywords_label = "CratesNvimPopupLabel",
             version = "CratesNvimPopupVersion",
             prerelease = "CratesNvimPopupPreRelease",
             yanked = "CratesNvimPopupYanked",
@@ -221,10 +260,11 @@ require('crates').setup {
         },
         keys = {
             hide = { "q", "<esc>" },
+            open_url = { "<cr>" },
             select = { "<cr>" },
             select_alt = { "s" },
-            copy_version = { "yy" },
             toggle_feature = { "<cr>" },
+            copy_value = { "yy" },
             goto_item = { "gd", "K", "<C-LeftMouse>" },
             jump_forward = { "<c-i>" },
             jump_back = { "<c-o>", "<C-RightMouse>" },
@@ -264,13 +304,24 @@ require('crates').setup {
     },
     popup = {
         text = {
-            title = " # %s ",
-            version = " %s ",
-            prerelease = " %s ",
-            yanked = " %s yanked ",
-            feature = "   %s ",
-            enabled = " * %s ",
-            transitive = " ~ %s ",
+            title = "# %s",
+            pill_left = "",
+            pill_right = "",
+            created_label = "created        ",
+            updated_label = "updated        ",
+            downloads_label = "downloads      ",
+            homepage_label = "homepage       ",
+            repository_label = "repository     ",
+            documentation_label = "documentation  ",
+            crates_io_label = "crates.io      ",
+            categories_label = "categories     ",
+            keywords_label = "keywords       ",
+            prerelease = "%s pre-release",
+            yanked = "%s yanked",
+            enabled = "* s",
+            transitive = "~ s",
+            optional = "? %s",
+            loading = " ...",
         },
     },
     cmp = {
@@ -324,7 +375,7 @@ require('crates').open_homepage()
 -- Open the repository page of the crate on the current line.
 require('crates').open_repository()
 -- Open the `docs.rs` page of the crate on the current line.
-require('crates').open_docs_rs()
+require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()
 
@@ -360,7 +411,9 @@ nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
 vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
 nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
 
-nnoremap <silent> <leader>cD :lua require('crates').open_docs_rs()<cr>
+nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
+nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
+nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
 nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 ```
 

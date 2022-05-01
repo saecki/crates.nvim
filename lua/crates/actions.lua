@@ -99,7 +99,7 @@ function M.open_repository()
    end
 end
 
-function M.open_docs_rs()
+function M.open_documentation()
    local buf = util.current_buf()
    local line = util.cursor_pos()
    local crates = util.get_line_crates(buf, Range.pos(line))
@@ -107,7 +107,7 @@ function M.open_docs_rs()
    if crate then
       local crate_info = state.api_cache.crates[crate.name]
       local url = crate_info and crate_info.documentation
-      url = url or "https://docs.rs/" .. crate.name
+      url = url or util.docs_rs_url(crate.name)
       util.open_url(url)
    end
 end
@@ -118,7 +118,7 @@ function M.open_crates_io()
    local crates = util.get_line_crates(buf, Range.pos(line))
    local _, crate = next(crates)
    if crate then
-      util.open_url("https://crates.io/crates/" .. crate.name)
+      util.open_url(util.crates_io_url(crate.name))
    end
 end
 
@@ -189,7 +189,7 @@ function M.get_actions()
    end
 
    if crate then
-      actions["open_docs.rs"] = M.open_docs_rs
+      actions["open_documentation.rs"] = M.open_documentation
       actions["open_crates.io"] = M.open_crates_io
    end
 
