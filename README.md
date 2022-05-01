@@ -452,7 +452,6 @@ end
 ```
 
 ## TODO
-- info popup with crate description, downloads, and urls
 
 ## Related projects
 - [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
