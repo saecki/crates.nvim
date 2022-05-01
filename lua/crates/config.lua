@@ -611,14 +611,14 @@ entry(schema_popup_text, "pill_left", {
    type = "string",
    default = "",
    description = [[
-        Left border of a pill.
+        Left border of a pill (keywords and categories).
     ]],
 })
 entry(schema_popup_text, "pill_right", {
    type = "string",
    default = "",
    description = [[
-        Right border of a pill.
+        Right border of a pill (keywords and categories).
     ]],
 })
 

@@ -634,13 +634,13 @@ popup.text.title                              *crates-config-popup-text-title*
 popup.text.pill_left                      *crates-config-popup-text-pill_left*
     Type: `string`, Default: `""`
 
-    Left border of a pill.
+    Left border of a pill (keywords and categories).
 
 
 popup.text.pill_right                    *crates-config-popup-text-pill_right*
     Type: `string`, Default: `""`
 
-    Right border of a pill.
+    Right border of a pill (keywords and categories).
 
 
 popup.text.description                  *crates-config-popup-text-description*
