@@ -202,7 +202,7 @@ function M.open(crate: Crate, opts: WinOpts)
             text = text.keywords_label,
             hl = highlight.keywords_label,
         } }
-        vim.list_extend(hl_text, pill_hl_text(crate.categories))
+        vim.list_extend(hl_text, pill_hl_text(crate.keywords))
         table.insert(info_text, hl_text)
     end
 
