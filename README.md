@@ -374,7 +374,7 @@ require('crates').update_all_crates(alt: boolean|nil)
 require('crates').open_homepage()
 -- Open the repository page of the crate on the current line.
 require('crates').open_repository()
--- Open the `docs.rs` page of the crate on the current line.
+-- Open the documentation page of the crate on the current line.
 require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()

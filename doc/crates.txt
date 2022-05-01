@@ -340,7 +340,7 @@ open_repository()                                   *crates.open_repository()*
 
 
 open_documentation()                             *crates.open_documentation()*
-    Open the `docs.rs` page of the crate on the current line.
+    Open the documentation page of the crate on the current line.
 
 
 open_crates_io()                                     *crates.open_crates_io()*

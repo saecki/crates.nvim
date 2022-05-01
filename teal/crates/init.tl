@@ -38,7 +38,7 @@ local record M
     open_homepage: function()
     -- Open the repository page of the crate on the current line.
     open_repository: function()
-    -- Open the `docs.rs` page of the crate on the current line.
+    -- Open the documentation page of the crate on the current line.
     open_documentation: function()
     -- Open the `crates.io` page of the crate on the current line.
     open_crates_io: function()
