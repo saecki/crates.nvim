@@ -66,6 +66,12 @@ function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagn
              state.cfg.highlight.upgrade,
         })
     end
+    if not (info.vers_match or info.vers_upgrade) then
+        table.insert(virt_text, {
+             state.cfg.text.error,
+             state.cfg.highlight.error,
+        })
+    end
 
     vim.diagnostic.set(CUSTOM_NS, buf, M.custom_diagnostics[buf], { virtual_text = false })
     vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, info.lines.s, info.lines.e)

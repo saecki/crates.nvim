@@ -467,7 +467,7 @@ entry(schema_diagnostic, "crate_novers", {
 })
 entry(schema_diagnostic, "crate_error_fetching", {
    type = "string",
-   default = "Error fetching crate information",
+   default = "Error fetching crate versions",
    hidden = true,
 })
 entry(schema_diagnostic, "vers_upgrade", {
