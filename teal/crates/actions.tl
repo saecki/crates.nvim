@@ -189,7 +189,7 @@ function M.get_actions(): {string:function}
     end
 
     if crate then
-        actions["open_documentation.rs"] = M.open_documentation
+        actions["open_documentation"] = M.open_documentation
         actions["open_crates.io"] = M.open_crates_io
     end
 
