@@ -3,16 +3,22 @@ local record M
         lines: Range
         vers_line: integer
         vers_match: Version
-        vers_update: Version
-        vers_upgrade: Version
         match_kind: MatchKind
+        vers_change: Version
+        change_kind: ChangeKind
     end
 
     enum MatchKind
         "version"
+        "update"
         "yanked"
         "prerelease"
         "nomatch"
+    end
+
+    enum ChangeKind
+        "upgrade"
+        "downgrade"
     end
 
     record Diagnostic
@@ -22,6 +28,7 @@ local record M
         end_col: integer
         severity: integer
         kind: DiagnosticKind
+        message: string
         data: {string:any}
     end
 
@@ -42,6 +49,10 @@ local record M
         "vers_pre"
         "feat_dup"
         -- hint
+        "vers_update"
+        "vers_yanked_change"
+        "vers_pre_change"
+        "vers_nomatch_change"
         "section_dup_orig"
         "crate_dup_orig"
         "feat_dup_orig"

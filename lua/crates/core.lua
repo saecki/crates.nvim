@@ -73,7 +73,7 @@ local reload_vers = async.wrap(function(crate_name)
             cache.info[k] = info
             ui.display_crate_info(b, info, diagnostics)
 
-            local version = info.vers_match or info.vers_upgrade
+            local version = info.vers_match or info.vers_change
             if version then
                M.reload_deps(c.name, versions, version)
             end
@@ -117,7 +117,7 @@ function M.update(buf, reload)
 
          ui.display_crate_info(buf, info, v_diagnostics)
 
-         local version = info.vers_match or info.vers_upgrade
+         local version = info.vers_match or info.vers_change
          if version.deps then
             local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
             vim.list_extend(cache.diagnostics, d_diagnostics)

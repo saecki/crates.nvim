@@ -23,7 +23,14 @@ local DiagnosticKind = types.DiagnosticKind
 local Version = types.Version
 local util = require("crates.util")
 
-local function section_diagnostic(section, kind, severity, scope, data)
+local function section_diagnostic(
+   section,
+   severity,
+   kind,
+   message,
+   scope,
+   data)
+
    local d = Diagnostic.new({
       lnum = section.lines.s,
       end_lnum = section.lines.e,
@@ -31,6 +38,7 @@ local function section_diagnostic(section, kind, severity, scope, data)
       end_col = 0,
       severity = severity,
       kind = kind,
+      message = message,
       data = data,
    })
 
@@ -43,8 +51,9 @@ end
 
 local function crate_diagnostic(
    crate,
-   kind,
    severity,
+   kind,
+   message,
    scope)
 
    local d = Diagnostic.new({
@@ -54,6 +63,7 @@ local function crate_diagnostic(
       end_col = 0,
       severity = severity,
       kind = kind,
+      message = message,
    })
 
    if not scope then
@@ -89,8 +99,9 @@ end
 local function feat_diagnostic(
    crate,
    feat,
-   kind,
    severity,
+   kind,
+   message,
    data)
 
    return Diagnostic.new({
@@ -100,6 +111,7 @@ local function feat_diagnostic(
       end_col = crate.feat.col.s + feat.col.e,
       severity = severity,
       kind = kind,
+      message = message,
       data = data,
    })
 end
@@ -115,21 +127,24 @@ function M.process_crates(sections, crates)
       if s.invalid then
          table.insert(diagnostics, section_diagnostic(
          s,
+         vim.diagnostic.severity.WARN,
          "section_invalid",
-         vim.diagnostic.severity.WARN))
+         state.cfg.diagnostic.section_invalid))
 
       elseif s_cache[key] then
          table.insert(diagnostics, section_diagnostic(
          s_cache[key],
-         "section_dup_orig",
          vim.diagnostic.severity.HINT,
+         "section_dup_orig",
+         state.cfg.diagnostic.section_dup_orig,
          "header",
          { lines = s_cache[key].lines }))
 
          table.insert(diagnostics, section_diagnostic(
          s,
+         vim.diagnostic.severity.ERROR,
          "section_dup",
-         vim.diagnostic.severity.ERROR))
+         state.cfg.diagnostic.section_dup))
 
       else
          s_cache[key] = s
@@ -145,13 +160,15 @@ function M.process_crates(sections, crates)
       if cache[key] then
          table.insert(diagnostics, crate_diagnostic(
          cache[key],
+         vim.diagnostic.severity.HINT,
          "crate_dup_orig",
-         vim.diagnostic.severity.HINT))
+         state.cfg.diagnostic.crate_dup_orig))
 
          table.insert(diagnostics, crate_diagnostic(
          c,
+         vim.diagnostic.severity.ERROR,
          "crate_dup",
-         vim.diagnostic.severity.ERROR))
+         state.cfg.diagnostic.crate_dup))
 
       else
          cache[key] = c
@@ -160,8 +177,9 @@ function M.process_crates(sections, crates)
             if c.def.text ~= "false" and c.def.text ~= "true" then
                table.insert(diagnostics, crate_diagnostic(
                c,
-               "def_invalid",
                vim.diagnostic.severity.ERROR,
+               "def_invalid",
+               state.cfg.diagnostic.def_invalid,
                "def"))
 
             end
@@ -174,15 +192,17 @@ function M.process_crates(sections, crates)
                table.insert(diagnostics, feat_diagnostic(
                c,
                feats[f.name],
-               "feat_dup_orig",
                vim.diagnostic.severity.HINT,
+               "feat_dup_orig",
+               state.cfg.diagnostic.feat_dup_orig,
                { feat = orig }))
 
                table.insert(diagnostics, feat_diagnostic(
                c,
                f,
-               "feat_dup",
                vim.diagnostic.severity.WARN,
+               "feat_dup",
+               state.cfg.diagnostic.feat_dup,
                { feat = f }))
 
             else
@@ -215,60 +235,114 @@ function M.process_crate_versions(crate, versions)
          info.match_kind = "version"
 
          if crate.vers and crate.vers.text ~= util.version_text(crate, newest.parsed) then
-            info.vers_update = newest
+            info.match_kind = "update"
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            vim.diagnostic.severity.HINT,
+            "vers_update",
+            state.cfg.diagnostic.vers_update,
+            "vers"))
+
          end
       else
 
          local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
          info.vers_match = match or match_pre or match_yanked
-         info.vers_upgrade = newest
-
-         if info.vers_match then
-            if crate.vers and crate.vers.text ~= util.version_text(crate, info.vers_match.parsed) then
-               info.vers_update = info.vers_match
-            end
-         end
-
-         table.insert(diagnostics, crate_diagnostic(
-         crate,
-         "vers_upgrade",
-         vim.diagnostic.severity.WARN,
-         "vers"))
-
+         info.vers_change = newest
 
          if match then
 
-            info.match_kind = "version"
+            if crate.vers and crate.vers.text ~= util.version_text(crate, match.parsed) then
+               info.match_kind = "update"
+               table.insert(diagnostics, crate_diagnostic(
+               crate,
+               vim.diagnostic.severity.HINT,
+               "vers_update",
+               state.cfg.diagnostic.vers_update,
+               "vers"))
+
+            else
+               info.match_kind = "version"
+            end
+            info.change_kind = "upgrade"
+
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            vim.diagnostic.severity.WARN,
+            "vers_upgrade",
+            state.cfg.diagnostic.vers_upgrade,
+            "vers"))
+
          elseif match_pre then
 
             info.match_kind = "prerelease"
+            if semver.is_lower(match_pre.parsed, newest.parsed) then
+               info.change_kind = "upgrade"
+            else
+               info.change_kind = "downgrade"
+            end
+
             table.insert(diagnostics, crate_diagnostic(
             crate,
-            "vers_pre",
             vim.diagnostic.severity.WARN,
+            "vers_pre",
+            state.cfg.diagnostic.vers_pre,
+            "vers"))
+
+            local change_msg = util.uppercase(info.change_kind)
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            vim.diagnostic.severity.HINT,
+            "vers_pre_change",
+            string.format(state.cfg.diagnostic.vers_pre_change, change_msg),
             "vers"))
 
          elseif match_yanked then
 
             info.match_kind = "yanked"
+            if semver.is_lower(match_yanked.parsed, newest.parsed) then
+               info.change_kind = "upgrade"
+            else
+               info.change_kind = "downgrade"
+            end
+
             table.insert(diagnostics, crate_diagnostic(
             crate,
-            "vers_yanked",
             vim.diagnostic.severity.ERROR,
+            "vers_yanked",
+            state.cfg.diagnostic.vers_yanked,
+            "vers"))
+
+            local change_msg = util.uppercase(info.change_kind)
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            vim.diagnostic.severity.HINT,
+            "vers_yanked_change",
+            string.format(state.cfg.diagnostic.vers_yanked_change, change_msg),
             "vers"))
 
          else
 
             info.match_kind = "nomatch"
-            local kind = "vers_nomatch"
+            info.change_kind = "upgrade"
 
-            if not crate.vers then
-               kind = "crate_novers"
-            end
+
+
+
+
+
             table.insert(diagnostics, crate_diagnostic(
             crate,
-            kind,
             vim.diagnostic.severity.ERROR,
+            "vers_nomatch",
+            state.cfg.diagnostic.vers_nomatch,
+            "vers"))
+
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            vim.diagnostic.severity.HINT,
+            "vers_nomatch_change",
+            state.cfg.diagnostic.vers_nomatch_change,
             "vers"))
 
          end
@@ -276,8 +350,9 @@ function M.process_crate_versions(crate, versions)
    else
       table.insert(diagnostics, crate_diagnostic(
       crate,
-      "crate_error_fetching",
       vim.diagnostic.severity.ERROR,
+      "crate_error_fetching",
+      state.cfg.diagnostic.crate_error_fetching,
       "vers"))
 
    end
@@ -304,8 +379,9 @@ function M.process_crate_deps(crate, version, deps)
             table.insert(diagnostics, feat_diagnostic(
             crate,
             f,
-            "feat_invalid",
             vim.diagnostic.severity.ERROR,
+            "feat_invalid",
+            state.cfg.diagnostic.feat_invalid,
             { feat = f }))
 
          end

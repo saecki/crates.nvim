@@ -142,6 +142,7 @@ end
 
 function M.get_actions(): {string:function}
     local actions: {string:function} = {}
+    local text = state.cfg.diagnostic
 
     local buf = util.current_buf()
     local line, col = util.cursor_pos()
@@ -150,11 +151,25 @@ function M.get_actions(): {string:function}
     if crate then
         local info = util.get_crate_info(buf, key)
         if info then
-            if info.vers_update then
-                actions["update_crate"] = M.update_crate
+            if info.match_kind == "update" then
+                actions[text.vers_update_change] = M.update_crate
             end
-            if info.vers_upgrade then
-                actions["upgrade_crate"] = M.upgrade_crate
+            if info.vers_change then
+                if info.match_kind == "version" then
+                    actions[text.vers_upgrade_change] = M.upgrade_crate
+                elseif info.match_kind == "update" then
+                    actions[text.vers_upgrade_change] = M.upgrade_crate
+                elseif info.match_kind == "nomatch" then
+                    actions[text.vers_nomatch_change] = M.upgrade_crate
+                elseif info.match_kind == "prerelease" then
+                    local change_msg = util.uppercase(info.change_kind)
+                    local title = string.format(text.vers_pre_change, change_msg)
+                    actions[title] = M.upgrade_crate
+                elseif info.match_kind == "yanked" then
+                    local change_msg = util.uppercase(info.change_kind)
+                    local title = string.format(text.vers_yanked_change, change_msg)
+                    actions[title] = M.upgrade_crate
+                end
             end
         end
     end
@@ -166,35 +181,35 @@ function M.get_actions(): {string:function}
         end
 
         if d.kind == "section_dup" then
-            actions["remove_duplicate_section"] = remove_diagnostic_range_action(buf, d)
+            actions[text.section_dup_remove] = remove_diagnostic_range_action(buf, d)
         elseif d.kind == "section_dup_orig" then
-            actions["remove_original_section"] = remove_lines_action(buf, d.data["lines"] as Range)
+            actions[text.section_dup_orig_remove] = remove_lines_action(buf, d.data["lines"] as Range)
         elseif d.kind == "section_invalid" then
-            actions["remove_invalid_dependency_section"] = remove_diagnostic_range_action(buf, d)
+            actions[text.section_invalid_remove] = remove_diagnostic_range_action(buf, d)
 
         elseif d.kind == "crate_dup" then
-            actions["remove_duplicate_crate"] = remove_diagnostic_range_action(buf, d)
+            actions[text.crate_dup_remove] = remove_diagnostic_range_action(buf, d)
         elseif d.kind == "crate_dup_orig" then
-            actions["remove_original_crate"] = remove_diagnostic_range_action(buf, d)
+            actions[text.crate_dup_orig_remove] = remove_diagnostic_range_action(buf, d)
 
         elseif crate and d.kind == "feat_dup" then
-            actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
+            actions[text.feat_dup_remove] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         elseif crate and d.kind == "feat_dup_orig" then
-            actions["remove_original_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
+            actions[text.feat_dup_orig_remove] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         elseif crate and d.kind == "feat_invalid" then
-            actions["remove_invalid_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
+            actions[text.feat_invalid_remove] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)
         end
 
         ::continue::
     end
 
     if crate then
-        actions["open_documentation"] = M.open_documentation
-        actions["open_crates.io"] = M.open_crates_io
+        actions["Open documentation"] = M.open_documentation
+        actions["Open crates.io"] = M.open_crates_io
     end
 
-    actions["update_all_crates"] = M.update_all_crates
-    actions["upgrade_all_crates"] = M.upgrade_all_crates
+    actions["Update all crates"] = M.update_all_crates
+    actions["Upgrade all crates"] = M.upgrade_all_crates
 
     return actions
 end

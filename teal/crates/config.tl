@@ -21,39 +21,57 @@ local record M
         record TextConfig
             loading: string
             version: string
+            update: string
             prerelease: string
             yanked: string
             nomatch: string
             upgrade: string
+            downgrade: string
             error: string
         end
 
         record HighlightConfig
             loading: string
             version: string
+            update: string
             prerelease: string
             yanked: string
             nomatch: string
             upgrade: string
+            downgrade: string
             error: string
         end
 
         record DiagnosticConfig
             section_invalid: string
+            section_invalid_remove: string
             section_dup: string
+            section_dup_remove: string
             section_dup_orig: string
+            section_dup_orig_remove: string
             crate_dup: string
+            crate_dup_remove: string
             crate_dup_orig: string
+            crate_dup_orig_remove: string
             crate_novers: string
             crate_error_fetching: string
+            vers_update: string
+            vers_update_change: string
             vers_upgrade: string
+            vers_upgrade_change: string
             vers_pre: string
+            vers_pre_change: string
             vers_yanked: string
+            vers_yanked_change: string
             vers_nomatch: string
+            vers_nomatch_change: string
             def_invalid: string
             feat_dup: string
+            feat_dup_remove: string
             feat_dup_orig: string
+            feat_dup_orig_remove: string
             feat_invalid: string
+            feat_invalid_remove: string
         end
 
         record PopupConfig
@@ -314,7 +332,14 @@ entry(schema_text, "version", {
     type = "string",
     default = "   %s",
     description = [[
-        format string used for the latest compatible version
+        Format string used for the latest compatible version.
+    ]],
+})
+entry(schema_text, "update", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        Format string used when there is an update candidate.
     ]],
 })
 entry(schema_text, "prerelease", {
@@ -345,20 +370,19 @@ entry(schema_text, "upgrade", {
         Format string used when there is an upgrade candidate.
     ]],
 })
+entry(schema_text, "downgrade", {
+    type = "string",
+    default = "   %s",
+    description = [[
+        Format string used when there is an downgrade candidate.
+    ]],
+})
 entry(schema_text, "error", {
     type = "string",
     default = "   Error fetching crate",
     description = [[
         Format string used when there was an error loading crate information.
     ]],
-})
--- deprecated
-entry(schema_text, "update", {
-    type = "string",
-    deprecated = {
-        new_field = { "text", "upgrade" },
-        hard = true,
-    },
 })
 
 
@@ -380,6 +404,13 @@ entry(schema_hi, "loading", {
 entry(schema_hi, "version", {
     type = "string",
     default = "CratesNvimVersion",
+    description = [[
+        Highlight group used for the latest compatible version.
+    ]],
+})
+entry(schema_hi, "update", {
+    type = "string",
+    default = "CratesNvimUpdate",
     description = [[
         Highlight group used for the latest compatible version.
     ]],
@@ -412,20 +443,19 @@ entry(schema_hi, "upgrade", {
         Highlight group used when there is an upgrade candidate.
     ]],
 })
+entry(schema_hi, "downgrade", {
+    type = "string",
+    default = "CratesNvimDowngrade",
+    description = [[
+        Highlight group used when there is an downgrade candidate.
+    ]],
+})
 entry(schema_hi, "error", {
     type = "string",
     default = "CratesNvimError",
     description = [[
         Highlight group used when there was an error loading crate information.
     ]],
-})
--- deprecated
-entry(schema_hi, "update", {
-    type = "string",
-    deprecated = {
-        new_field = { "highlight", "upgrade" },
-        hard = true,
-    },
 })
 
 
@@ -440,9 +470,19 @@ entry(schema_diagnostic, "section_invalid", {
     default = "Invalid dependency section",
     hidden = true,
 })
+entry(schema_diagnostic, "section_invalid_remove", {
+    type = "string",
+    default = "Remove invalid dependency section",
+    hidden = true,
+})
 entry(schema_diagnostic, "section_dup", {
     type = "string",
     default = "Duplicate dependency section",
+    hidden = true,
+})
+entry(schema_diagnostic, "section_dup_remove", {
+    type = "string",
+    default = "Remove duplicate dependency section",
     hidden = true,
 })
 entry(schema_diagnostic, "section_dup_orig", {
@@ -450,14 +490,29 @@ entry(schema_diagnostic, "section_dup_orig", {
     default = "Original dependency section is defined here",
     hidden = true,
 })
+entry(schema_diagnostic, "section_dup_orig_remove", {
+    type = "string",
+    default = "Remove original dependency section",
+    hidden = true,
+})
 entry(schema_diagnostic, "crate_dup", {
     type = "string",
     default = "Duplicate crate entry",
     hidden = true,
 })
+entry(schema_diagnostic, "crate_dup_remove", {
+    type = "string",
+    default = "Remove duplicate crate",
+    hidden = true,
+})
 entry(schema_diagnostic, "crate_dup_orig", {
     type = "string",
     default = "Original crate entry is defined here",
+    hidden = true,
+})
+entry(schema_diagnostic, "crate_dup_orig_remove", {
+    type = "string",
+    default = "Remove original crate",
     hidden = true,
 })
 entry(schema_diagnostic, "crate_novers", {
@@ -470,9 +525,24 @@ entry(schema_diagnostic, "crate_error_fetching", {
     default = "Error fetching crate versions",
     hidden = true,
 })
+entry(schema_diagnostic, "vers_update", {
+    type = "string",
+    default = "There is an update available",
+    hidden = true,
+})
+entry(schema_diagnostic, "vers_update_change", {
+    type = "string",
+    default = "Update crate",
+    hidden = true,
+})
 entry(schema_diagnostic, "vers_upgrade", {
     type = "string",
     default = "There is an upgrade available",
+    hidden = true,
+})
+entry(schema_diagnostic, "vers_upgrade_change", {
+    type = "string",
+    default = "Upgrade crate",
     hidden = true,
 })
 entry(schema_diagnostic, "vers_pre", {
@@ -480,14 +550,29 @@ entry(schema_diagnostic, "vers_pre", {
     default = "Requirement only matches a pre-release version",
     hidden = true,
 })
+entry(schema_diagnostic, "vers_pre_change", {
+    type = "string",
+    default = "%s to a stable version",
+    hidden = true,
+})
 entry(schema_diagnostic, "vers_yanked", {
     type = "string",
     default = "Requirement only matches a yanked version",
     hidden = true,
 })
+entry(schema_diagnostic, "vers_yanked_change", {
+    type = "string",
+    default = "%s to a stable version",
+    hidden = true,
+})
 entry(schema_diagnostic, "vers_nomatch", {
     type = "string",
     default = "Requirement doesn't match a version",
+    hidden = true,
+})
+entry(schema_diagnostic, "vers_nomatch_change", {
+    type = "string",
+    default = "Use the latest version",
     hidden = true,
 })
 entry(schema_diagnostic, "def_invalid", {
@@ -500,14 +585,29 @@ entry(schema_diagnostic, "feat_dup", {
     default = "Duplicate feature entry",
     hidden = true,
 })
+entry(schema_diagnostic, "feat_dup_remove", {
+    type = "string",
+    default = "Remove duplicate feature",
+    hidden = true,
+})
 entry(schema_diagnostic, "feat_dup_orig", {
     type = "string",
     default = "Original feature entry is defined here",
     hidden = true,
 })
+entry(schema_diagnostic, "feat_dup_orig_remove", {
+    type = "string",
+    default = "Remove original feature",
+    hidden = true,
+})
 entry(schema_diagnostic, "feat_invalid", {
     type = "string",
     default = "Invalid feature",
+    hidden = true,
+})
+entry(schema_diagnostic, "feat_invalid_remove", {
+    type = "string",
+    default = "Remove invalid feature",
     hidden = true,
 })
 

@@ -1,9 +1,11 @@
 highlight default link CratesNvimLoading     DiagnosticVirtualTextInfo
 highlight default link CratesNvimVersion     DiagnosticVirtualTextInfo
+highlight default link CratesNvimUpdate      DiagnosticVirtualTextInfo
 highlight default link CratesNvimPreRelease  DiagnosticVirtualTextWarn
 highlight default link CratesNvimYanked      DiagnosticVirtualTextError
 highlight default link CratesNvimNoMatch     DiagnosticVirtualTextError
 highlight default link CratesNvimUpgrade     DiagnosticVirtualTextWarn
+highlight default link CratesNvimDowngrade   DiagnosticVirtualTextWarn
 highlight default link CratesNvimError       DiagnosticVirtualTextError
 
 highlight default link CratesNvimPopupTitle              Title

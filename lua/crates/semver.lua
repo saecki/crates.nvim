@@ -215,6 +215,10 @@ local function compare_versions(a, b)
    end
 end
 
+function M.is_lower(a, b)
+   return compare_versions(a, b) < 0
+end
+
 function M.matches_requirement(v, r)
    if r.cond == "cr" or r.cond == "bl" then
       if r.vers.major == v.major and not r.vers.minor then

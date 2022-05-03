@@ -337,7 +337,7 @@ function M.upgrade_crates(buf, crates, info, alt)
       local i = info[k]
 
       if i then
-         local version = i.vers_upgrade or i.vers_update
+         local version = i.vers_change or i.match_kind == "update" and i.vers_match
          if version then
             M.set_version(buf, c, version.parsed, alt)
          end
@@ -350,9 +350,8 @@ function M.update_crates(buf, crates, info, alt)
       local i = info[k]
 
       if i then
-         local version = i.vers_update
-         if version then
-            M.set_version(buf, c, version.parsed, alt)
+         if i.match_kind == "update" then
+            M.set_version(buf, c, i.vers_match.parsed, alt)
          end
       end
    end
@@ -602,6 +601,10 @@ function M.open_url(url)
    else
       M.notify(vim.log.levels.WARN, "Couldn't open url")
    end
+end
+
+function M.uppercase(str)
+   return str:sub(1, 1):upper() .. str:sub(2)
 end
 
 return M

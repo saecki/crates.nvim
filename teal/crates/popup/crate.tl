@@ -187,7 +187,7 @@ function M.open(crate: Crate, opts: WinOpts)
         }
     })
     ctx.crates_io_index = #info_text
-    
+
     if next(crate.categories) then
         local hl_text: {HighlightText} = { {
             text = text.categories_label,

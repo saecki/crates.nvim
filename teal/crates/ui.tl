@@ -23,7 +23,7 @@ local function to_vim_diagnostic(d: Diagnostic): vim.diagnostic.Diagnostic
         col = d.col,
         end_col = d.end_col,
         severity = d.severity,
-        message = state.cfg.diagnostic[d.kind],
+        message = d.message,
         source = "crates",
     }
     return diag
@@ -59,14 +59,21 @@ function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagn
              state.cfg.highlight.nomatch,
         })
     end
-    if info.vers_upgrade then
-        local upgrade = info.vers_upgrade as Version
-        table.insert(virt_text, {
-             string.format(state.cfg.text.upgrade, upgrade.num),
-             state.cfg.highlight.upgrade,
-        })
+    if info.vers_change then
+        local new = info.vers_change as Version
+        if info.change_kind == "upgrade" then
+            table.insert(virt_text, {
+                 string.format(state.cfg.text.upgrade, new.num),
+                 state.cfg.highlight.upgrade,
+            })
+        elseif info.change_kind == "downgrade" then
+            table.insert(virt_text, {
+                 string.format(state.cfg.text.downgrade, new.num),
+                 state.cfg.highlight.downgrade,
+            })
+        end
     end
-    if not (info.vers_match or info.vers_upgrade) then
+    if not (info.vers_match or info.vers_change) then
         table.insert(virt_text, {
              state.cfg.text.error,
              state.cfg.highlight.error,
