@@ -206,6 +206,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -275,6 +276,20 @@ entry(M.schema, "date_format", {
    default = "%Y-%m-%d",
    description = [[
         The date format passed to `os.date`.
+    ]],
+})
+entry(M.schema, "thousands_separator", {
+   type = "string",
+   default = ".",
+   description = [[
+        The separator used to separate thousands of a number:
+
+        Example: ~
+            Dot:
+            `14.502.265`
+
+            Comma:
+            `14,502,265`
     ]],
 })
 entry(M.schema, "notification_title", {

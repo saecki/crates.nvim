@@ -128,12 +128,21 @@ function M.open(crate: Crate, opts: WinOpts)
     end
 
     if crate.downloads then
+        local downloads = tostring(crate.downloads)
+        local _end = downloads:len()
+        local start = math.max(0, _end - 2)
+        local downloads_text = downloads:sub(start, _end)
+        for i = start - 1, 1, -3 do
+            local s = math.max(0, i - 2)
+            downloads_text = downloads:sub(s, i) .. state.cfg.thousands_separator .. downloads_text
+        end
+
         table.insert(info_text, {
             {
                 text = text.downloads_label,
                 hl = highlight.downloads_label,
             }, {
-                text = string.format(text.downloads, crate.downloads),
+                text = string.format(text.downloads, downloads_text),
                 hl = highlight.downloads,
             }
         })

@@ -77,6 +77,7 @@ For more information about individual config options see |crates-config|.
         autoupdate = true,
         loading_indicator = true,
         date_format = "%Y-%m-%d",
+        thousands_separator = ".",
         notification_title = "Crates",
         disable_invalid_feature_diagnostic = false,
         text = {
@@ -432,6 +433,19 @@ date_format                                        *crates-config-date_format*
     Type: `string`, Default: `"%Y-%m-%d"`
 
     The date format passed to `os.date`.
+
+
+thousands_separator                        *crates-config-thousands_separator*
+    Type: `string`, Default: `"."`
+
+    The separator used to separate thousands of a number:
+
+    Example: ~
+        Dot:
+        `14.502.265`
+
+        Comma:
+        `14,502,265`
 
 
 notification_title                          *crates-config-notification_title*

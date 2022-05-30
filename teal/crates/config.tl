@@ -9,6 +9,7 @@ local record M
         autoupdate: boolean
         loading_indicator: boolean
         date_format: string
+        thousands_separator: string
         notification_title: string
         disable_invalid_feature_diagnostic: boolean
         text: TextConfig
@@ -275,6 +276,20 @@ entry(M.schema, "date_format", {
     default = "%Y-%m-%d",
     description = [[
         The date format passed to `os.date`.
+    ]],
+})
+entry(M.schema, "thousands_separator", {
+    type = "string",
+    default = ".",
+    description = [[
+        The separator used to separate thousands of a number:
+
+        Example: ~
+            Dot:
+            `14.502.265`
+
+            Comma:
+            `14,502,265`
     ]],
 })
 entry(M.schema, "notification_title", {

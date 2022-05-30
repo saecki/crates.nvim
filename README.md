@@ -162,6 +162,7 @@ require('crates').setup {
     autoupdate = true,
     loading_indicator = true,
     date_format = "%Y-%m-%d",
+    thousands_separator = ".",
     notification_title = "Crates",
     disable_invalid_feature_diagnostic = false,
     text = {
