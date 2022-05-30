@@ -54,7 +54,8 @@ local function crate_diagnostic(
     severity: integer,
     kind: DiagnosticKind,
     message: string,
-    scope: CrateScope|nil
+    scope: CrateScope|nil,
+    data: {string:any}
 ): Diagnostic
     local d = Diagnostic.new {
         lnum = crate.lines.s,
@@ -64,6 +65,7 @@ local function crate_diagnostic(
         severity = severity,
         kind = kind,
         message = message,
+        data = data,
     }
 
     if not scope then
@@ -247,8 +249,24 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
         else
             -- version does not match, possibly upgrade/downgrade available
             local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
-            info.vers_match = match or match_pre or match_yanked
+            local m = match or match_pre or match_yanked
+            info.vers_match = m
             info.vers_change = newest
+
+            if m then
+                if semver.is_lower(m.parsed, newest.parsed) then
+                    info.change_kind = "upgrade"
+                else
+                    info.change_kind = "downgrade"
+                end
+                table.insert(diagnostics, crate_diagnostic(
+                    crate,
+                    vim.diagnostic.severity.WARN,
+                    "vers_upgrade",
+                    state.cfg.diagnostic.vers_upgrade,
+                    "vers"
+                ))
+            end
 
             if match then
                 -- found a match
@@ -264,23 +282,9 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
                 else
                     info.match_kind = "version"
                 end
-                info.change_kind = "upgrade"
-
-                table.insert(diagnostics, crate_diagnostic(
-                    crate,
-                    vim.diagnostic.severity.WARN,
-                    "vers_upgrade",
-                    state.cfg.diagnostic.vers_upgrade,
-                    "vers"
-                ))
             elseif match_pre then
                 -- found a pre-release match
                 info.match_kind = "prerelease"
-                if semver.is_lower(match_pre.parsed, newest.parsed) then
-                    info.change_kind = "upgrade"
-                else
-                    info.change_kind = "downgrade"
-                end
 
                 table.insert(diagnostics, crate_diagnostic(
                     crate,
@@ -300,11 +304,6 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
             elseif match_yanked then
                 -- found a yanked match
                 info.match_kind = "yanked"
-                if semver.is_lower(match_yanked.parsed, newest.parsed) then
-                    info.change_kind = "upgrade"
-                else
-                    info.change_kind = "downgrade"
-                end
 
                 table.insert(diagnostics, crate_diagnostic(
                     crate,
@@ -324,7 +323,6 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
             else
                 -- no match found
                 info.match_kind = "nomatch"
-                info.change_kind = "upgrade"
 
                 -- TODO: fix this and only show if no git or path was specified
                 -- if not crate.vers then

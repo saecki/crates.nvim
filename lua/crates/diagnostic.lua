@@ -54,7 +54,8 @@ local function crate_diagnostic(
    severity,
    kind,
    message,
-   scope)
+   scope,
+   data)
 
    local d = Diagnostic.new({
       lnum = crate.lines.s,
@@ -64,6 +65,7 @@ local function crate_diagnostic(
       severity = severity,
       kind = kind,
       message = message,
+      data = data,
    })
 
    if not scope then
@@ -247,8 +249,22 @@ function M.process_crate_versions(crate, versions)
       else
 
          local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
-         info.vers_match = match or match_pre or match_yanked
+         local m = match or match_pre or match_yanked
+         info.vers_match = m
          info.vers_change = newest
+
+         if not m or semver.is_lower(m.parsed, newest.parsed) then
+            info.change_kind = "upgrade"
+         else
+            info.change_kind = "downgrade"
+         end
+         table.insert(diagnostics, crate_diagnostic(
+         crate,
+         vim.diagnostic.severity.WARN,
+         "vers_upgrade",
+         state.cfg.diagnostic.vers_upgrade,
+         "vers"))
+
 
          if match then
 
@@ -264,23 +280,9 @@ function M.process_crate_versions(crate, versions)
             else
                info.match_kind = "version"
             end
-            info.change_kind = "upgrade"
-
-            table.insert(diagnostics, crate_diagnostic(
-            crate,
-            vim.diagnostic.severity.WARN,
-            "vers_upgrade",
-            state.cfg.diagnostic.vers_upgrade,
-            "vers"))
-
          elseif match_pre then
 
             info.match_kind = "prerelease"
-            if semver.is_lower(match_pre.parsed, newest.parsed) then
-               info.change_kind = "upgrade"
-            else
-               info.change_kind = "downgrade"
-            end
 
             table.insert(diagnostics, crate_diagnostic(
             crate,
@@ -300,11 +302,6 @@ function M.process_crate_versions(crate, versions)
          elseif match_yanked then
 
             info.match_kind = "yanked"
-            if semver.is_lower(match_yanked.parsed, newest.parsed) then
-               info.change_kind = "upgrade"
-            else
-               info.change_kind = "downgrade"
-            end
 
             table.insert(diagnostics, crate_diagnostic(
             crate,
@@ -324,7 +321,6 @@ function M.process_crate_versions(crate, versions)
          else
 
             info.match_kind = "nomatch"
-            info.change_kind = "upgrade"
 
 
 
