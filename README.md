@@ -452,8 +452,6 @@ function show_documentation()
 end
 ```
 
-## TODO
-
 ## Related projects
 - [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
