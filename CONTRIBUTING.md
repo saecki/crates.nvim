@@ -14,12 +14,12 @@
     - `luarocks install inspect`
 
 ## Writing code
-__Do not edit files in the `lua` dir.__
+__Do not edit files in the `lua` directory.__
 
-Instead edit the files inside the `teal` dir
+Instead edit the files inside the `teal` directory
 and compile all teal files to lua by running:
 ```
-tl build
+make build
 ```
 
 ## Documentation
@@ -32,5 +32,12 @@ After editing one of the above, the configuration schema in
 `lua/crates/config.tl` or public api functions in `lua/crates.tl` update the
 docs by running this command:
 ```
-./scripts/gen_doc.lua
+make doc
+```
+
+## Testing
+There are currently only a few tests.
+Execute them by running this command:
+```
+make test`
 ```
