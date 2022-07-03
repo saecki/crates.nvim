@@ -404,6 +404,7 @@ nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
 
 nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
 nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
+nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
 
 nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
 vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
@@ -451,6 +452,8 @@ function show_documentation()
     end
 end
 ```
+
+## TODO
 
 ## Related projects
 - [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
