@@ -4,7 +4,6 @@
 
 A neovim plugin that helps managing crates.io dependencies.
 
-This project is still in it's infancy, so you might encounter some bugs.
 Feel free to open issues.
 
 ## Features

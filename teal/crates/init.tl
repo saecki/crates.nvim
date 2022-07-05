@@ -43,9 +43,11 @@ local record M
     -- Open the `crates.io` page of the crate on the current line.
     open_crates_io: function()
 
-    -- Show/hide popup with all versions, all features or details about one feature.
+    -- Show/hide popup with crate details, all versions, all features or details about one feature.
     -- If `c#popup.autofocus` is disabled calling this again will focus the popup.
     show_popup: function()
+    -- Same as `f#crates.show_popup()` but always show crate details.
+    show_crate_popup: function()
     -- Same as `f#crates.show_popup()` but always show versions.
     show_versions_popup: function()
     -- Same as `f#crates.show_popup()` but always show features or features details.
@@ -156,6 +158,7 @@ M.open_documentation = actions.open_documentation
 M.open_crates_io = actions.open_crates_io
 
 M.show_popup = popup.show
+M.show_crate_popup = popup.show_crate
 M.show_versions_popup = popup.show_versions
 M.show_features_popup = popup.show_features
 M.show_dependencies_popup = popup.show_dependencies

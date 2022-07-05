@@ -349,8 +349,12 @@ open_crates_io()                                     *crates.open_crates_io()*
 
 
 show_popup()                                             *crates.show_popup()*
-    Show/hide popup with all versions, all features or details about one feature.
+    Show/hide popup with crate details, all versions, all features or details about one feature.
     If |crates-config-popup-autofocus| is disabled calling this again will focus the popup.
+
+
+show_crate_popup()                                 *crates.show_crate_popup()*
+    Same as `crates.show_popup()` but always show crate details.
 
 
 show_versions_popup()                           *crates.show_versions_popup()*

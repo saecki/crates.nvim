@@ -379,9 +379,11 @@ require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()
 
--- Show/hide popup with all versions, all features or details about one feature.
+-- Show/hide popup with crate details, all versions, all features or details about one feature.
 -- If `popup.autofocus` is disabled calling this again will focus the popup.
 require('crates').show_popup()
+-- Same as `crates.show_popup()` but always show crate details.
+require('crates').show_crate_popup()
 -- Same as `crates.show_popup()` but always show versions.
 require('crates').show_versions_popup()
 -- Same as `crates.show_popup()` but always show features or features details.
@@ -451,8 +453,6 @@ function show_documentation()
     end
 end
 ```
-
-## TODO
 
 ## Related projects
 - [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
