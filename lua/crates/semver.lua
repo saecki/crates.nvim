@@ -181,113 +181,127 @@ function M.parse_requirements(str)
    return requirements
 end
 
-local function filled_zeros(version)
-   return {
-      major = version.major or 0,
-      minor = version.minor or 0,
-      patch = version.patch or 0,
-      pre = version.pre,
-   }
-end
-
-local function compare_pre(a, b)
-   if a and b then
-      if a < b then return -1
-      elseif a == b then return 0
-      elseif a > b then return 1
+local function compare_pre(version, req)
+   if version and req then
+      if version < req then
+         return -1
+      elseif version == req then
+         return 0
+      elseif version > req then
+         return 1
       end
    end
 
-   if a and not b then return -1
-   elseif not a and not b then return 0
-   elseif not a and b then return 1
-   end
+   return (req and 1 or 0) - (version and 1 or 0)
 end
 
-local function compare_versions(a, b)
-   local major = a.major - b.major
-   local minor = a.minor - b.minor
-   local patch = a.patch - b.patch
-   local pre = compare_pre(a.pre, b.pre)
+local function matches_less(version, req)
+   if req.major and req.major ~= version.major then
+      return version.major < req.major
+   end
+   if req.minor and req.minor ~= version.minor then
+      return version.minor < req.minor
+   end
+   if req.patch and req.patch ~= version.patch then
+      return version.patch < req.patch
+   end
 
-   if major == 0 then
-      if minor == 0 then
-         if patch == 0 then
-            return pre
-         else
-            return patch
-         end
+   return compare_pre(version.pre, req.pre) < 0
+end
+
+local function matches_greater(version, req)
+   if req.major and req.major ~= version.major then
+      return version.major > req.major
+   end
+   if req.minor and req.minor ~= version.minor then
+      return version.minor > req.minor
+   end
+   if req.patch and req.patch ~= version.patch then
+      return version.patch > req.patch
+   end
+
+   return compare_pre(version.pre, req.pre) > 0
+end
+
+local function matches_exact(version, req)
+   if req.major and req.major ~= version.major then
+      return false
+   end
+   if req.minor and req.minor ~= version.minor then
+      return false
+   end
+   if req.patch and req.patch ~= version.patch then
+      return false
+   end
+
+   return version.pre == req.pre
+end
+
+local function matches_caret(version, req)
+   if req.major and req.major ~= version.major then
+      return false
+   end
+
+   if not req.minor then
+      return true
+   end
+
+   if not req.patch then
+      if req.major > 0 then
+         return version.minor >= req.minor
       else
-         return minor
+         return version.minor == req.minor
       end
-   else
-      return major
    end
+
+   if req.major > 0 then
+      if req.minor ~= version.minor then
+         return version.minor > req.minor
+      elseif req.patch ~= version.patch then
+         return version.patch > req.patch
+      end
+   elseif req.minor > 0 then
+      if req.minor ~= version.minor then
+         return false
+      elseif version.patch ~= req.patch then
+         return version.patch > req.patch
+      end
+   elseif version.minor ~= req.minor or version.patch ~= req.patch then
+      return false
+   end
+
+   return compare_pre(version.pre, req.pre) >= 0
+end
+
+local function matches_tilde(version, req)
+   if req.major and req.major ~= version.major then
+      return false
+   end
+   if req.minor and req.minor ~= version.minor then
+      return false
+   end
+   if req.patch and req.patch ~= version.patch then
+      return version.patch > req.patch
+   end
+
+   return compare_pre(version.pre, req.pre) >= 0
 end
 
 function M.matches_requirement(v, r)
    if r.cond == "cr" or r.cond == "bl" then
-      if r.vers.major == v.major and not r.vers.minor then
-         return true
-      end
-
-      local a = filled_zeros(v)
-      local b = filled_zeros(r.vers)
-      local c
-      if b.major == 0 and b.minor == 0 then
-         c = { major = 0, minor = 0, patch = b.patch + 1 }
-      elseif b.major == 0 then
-         c = { major = 0, minor = b.minor + 1, patch = 0 }
-      else
-         c = { major = b.major + 1, minor = 0, patch = 0 }
-      end
-
-      return compare_versions(a, b) >= 0 and
-      compare_versions(a, c) < 0
-   end
-
-   if r.cond == "tl" then
-      local a = v
-      local b = r.vers
-      local c
-      if not b.minor and not b.patch then
-         c = { major = b.major + 1, minor = 0, patch = 0 }
-      else
-         c = { major = b.major, minor = b.minor + 1, patch = 0 }
-      end
-      b = filled_zeros(b)
-
-      return compare_versions(a, b) >= 0 and
-      compare_versions(a, c) < 0
-   end
-
-   if r.cond == "eq" or r.cond == "wl" then
-      if r.vers.major and r.vers.major ~= v.major then
-         return false
-      end
-      if r.vers.minor and r.vers.minor ~= v.minor then
-         return false
-      end
-      if r.vers.patch and r.vers.patch ~= v.patch then
-         return false
-      end
-      return r.vers.pre == v.pre and r.vers.meta == v.meta
+      return matches_caret(v, r.vers)
+   elseif r.cond == "tl" then
+      return matches_tilde(v, r.vers)
+   elseif r.cond == "eq" or r.cond == "wl" then
+      return matches_exact(v, r.vers)
    elseif r.cond == "lt" then
-      local a = filled_zeros(v)
-      local b = filled_zeros(r.vers)
-      return compare_versions(a, b) < 0
+      return matches_less(v, r.vers)
    elseif r.cond == "le" then
-      local a = filled_zeros(v)
-      local b = filled_zeros(r.vers)
-      return compare_versions(a, b) <= 0
+      return matches_exact(v, r.vers) or matches_less(v, r.vers)
    elseif r.cond == "gt" then
-      local a = filled_zeros(v)
-      local b = filled_zeros(r.vers)
-      return compare_versions(a, b) > 0
+      return matches_greater(v, r.vers)
    elseif r.cond == "ge" then
-      local a = filled_zeros(v)
-      local b = filled_zeros(r.vers)
-      return compare_versions(a, b) >= 0
+      return matches_exact(v, r.vers) or matches_greater(v, r.vers)
    end
 end
 
