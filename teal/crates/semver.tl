@@ -129,6 +129,16 @@ function M.parse_requirement(str: string): Requirement
             vers_col = Range.new(vs - 1, ve - 1),
         }
     end
+    
+    local wl = str:match("^%*$") as (string, integer, integer)
+    if wl then
+        return {
+            cond = "wl",
+            cond_col = Range.new(0, 1),
+            vers = SemVer.new {},
+            vers_col = Range.new(0, 0),
+        }
+    end
 
     vers_str, rs, re = str:match("^(.+)()%.%*()$") as (string, integer, integer)
     if vers_str and rs and re then
@@ -252,7 +262,7 @@ function M.matches_requirement(v: SemVer, r: Requirement): boolean
     end
 
     if r.cond == "eq" or r.cond == "wl" then
-        if r.vers.major ~= v.major then
+        if r.vers.major and r.vers.major ~= v.major then
             return false
         end
         if r.vers.minor and r.vers.minor ~= v.minor then
