@@ -112,8 +112,14 @@ require('cmp').setup {
 ```
 
 Or add it lazily.
-```viml
-autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }
+```lua
+vim.api.nvim_create_autocmd("BufRead", {
+    group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
+    pattern = "Cargo.toml",
+    callback = function() 
+        cmp.setup.buffer({ sources = { { name = "crates" } } }) 
+    end,
+})
 ```
 
 ### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
@@ -398,26 +404,29 @@ require('crates').hide_popup()
 ```
 
 ### Key mappings
-Some examples of key mappings.
-```vim
-nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
-nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
+Some examples of key mappings. 
+```lua
+local crates = require('crates')
+local opts = { noremap = true, silent = true }
 
-nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
-nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
-nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
+vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
+vim.keymap.set('n', '<leader>cr', crates.reload, opts)
 
-nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
-vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
-nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
-nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
-vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
-nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+vim.keymap.set('n', '<leader>cv', crates.show_versions_popup, opts)
+vim.keymap.set('n', '<leader>cf', crates.show_features_popup, opts)
+vim.keymap.set('n', '<leader>cd', crates.show_dependencies_popup, opts)
 
-nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
-nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
-nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
-nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
+vim.keymap.set('n', '<leader>cu', crates.update_crate, opts)
+vim.keymap.set('v', '<leader>cu', crates.update_crates, opts)
+vim.keymap.set('n', '<leader>ca', crates.update_all_crates, opts)
+vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
+vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
+vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
+
+vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
+vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
+vim.keymap.set('n', '<leader>cD', crates.open_documentation, opts)
+vim.keymap.set('n', '<leader>cC', crates.open_crates_io, opts)
 ```
 
 ### Show appropriate documentation in `Cargo.toml`
@@ -439,7 +448,6 @@ endfunction
 
 How you might integrate `show_popup` into your `init.lua`.
 ```lua
-vim.api.nvim_set_keymap('n', 'K', ':lua show_documentation()', { noremap = true, silent = true })
 function show_documentation()
     local filetype = vim.bo.filetype
     if vim.tbl_contains({ 'vim','help' }, filetype) then
@@ -452,6 +460,8 @@ function show_documentation()
         vim.lsp.buf.hover()
     end
 end
+
+vim.keymap.set('n', 'K', show_documentation, { noremap = true, silent = true })
 ```
 
 ## Related projects
