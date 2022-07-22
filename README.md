@@ -20,6 +20,8 @@ Feel free to open issues.
 - Show version and upgrade candidates
     - Indicate if compatible version is a pre-release or yanked
     - Indicate if no version is compatible
+- Open floating window with crate info
+    - Open documentation, crates.io, repository and homepage urls
 - Open floating window with crate versions
     - Select a version by pressing enter (`popup.keys.select`)
 - Open floating window with crate features
