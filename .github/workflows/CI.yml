@@ -7,8 +7,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
 
     - name: Install lua
       uses: leafo/gh-actions-lua@v8
@@ -26,11 +30,20 @@ jobs:
     - name: Build crates.nvim
       run: make build
     
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        file_pattern: lua
+        commit_message: "chore: generate lua files"
+    
     - name: Generate docs
       run: make doc
-
-    - name: Check git status
-      run: if [[ $(git status --short lua) != "" ]]; then exit 1; fi
+    
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        file_pattern: README.md doc/crates.txt
+        commit_message: "chore: generate docs"
   
   test:
     runs-on: ubuntu-latest
