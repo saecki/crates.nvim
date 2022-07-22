@@ -148,7 +148,7 @@ How you might integrate `show_popup` into your `init.vim`.
 
 How you might integrate `show_popup` into your `init.lua`.
 >
-    function show_documentation()
+    local function show_documentation()
         local filetype = vim.bo.filetype
         if vim.tbl_contains({ 'vim','help' }, filetype) then
             vim.cmd('h '..vim.fn.expand('<cword>'))
