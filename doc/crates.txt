@@ -136,6 +136,9 @@ For more information about individual config options see |crates-config|.
                 feature = "  %s",
                 enabled = " %s",
                 transitive = " %s",
+                normal_dependencies_title = " Dependencies",
+                build_dependencies_title = " Build dependencies",
+                dev_dependencies_title = " Dev dependencies",
                 dependency = "  %s",
                 optional = " %s",
                 dependency_version = "  %s",
@@ -169,6 +172,9 @@ For more information about individual config options see |crates-config|.
                 feature = "CratesNvimPopupFeature",
                 enabled = "CratesNvimPopupEnabled",
                 transitive = "CratesNvimPopupTransitive",
+                normal_dependencies_title = "CratesNvimPopupNormalDependenciesTitle",
+                build_dependencies_title = "CratesNvimPopupBuildDependenciesTitle",
+                dev_dependencies_title = "CratesNvimPopupDevDependenciesTitle",
                 dependency = "CratesNvimPopupDependency",
                 optional = "CratesNvimPopupOptional",
                 dependency_version = "CratesNvimPopupDependencyVersion",
@@ -831,6 +837,27 @@ popup.text.transitive                    *crates-config-popup-text-transitive*
     Format string used for transitively enabled features.
 
 
+                          *crates-config-popup-text-normal_dependencies_title*
+popup.text.normal_dependencies_title
+    Type: `string`, Default: `" Dependencies"`
+
+    Format string used for the title of the normal dependencies section.
+
+
+                           *crates-config-popup-text-build_dependencies_title*
+popup.text.build_dependencies_title
+    Type: `string`, Default: `" Build dependencies"`
+
+    Format string used for the title of the build dependencies section.
+
+
+                             *crates-config-popup-text-dev_dependencies_title*
+popup.text.dev_dependencies_title
+    Type: `string`, Default: `" Dev dependencies"`
+
+    Format string used for the title of the dev dependencies section.
+
+
 popup.text.dependency                    *crates-config-popup-text-dependency*
     Type: `string`, Default: `"  %s"`
 
@@ -1031,6 +1058,27 @@ popup.highlight.transitive          *crates-config-popup-highlight-transitive*
     Type: `string`, Default: `"CratesNvimPopupTransitive"`
 
     Highlight group used for transitively enabled features inside the popup.
+
+
+                     *crates-config-popup-highlight-normal_dependencies_title*
+popup.highlight.normal_dependencies_title
+    Type: `string`, Default: `"CratesNvimPopupNormalDependenciesTitle"`
+
+    Highlight group used for the title of the normal dependencies section.
+
+
+                      *crates-config-popup-highlight-build_dependencies_title*
+popup.highlight.build_dependencies_title
+    Type: `string`, Default: `"CratesNvimPopupBuildDependenciesTitle"`
+
+    Highlight group used for the title of the build dependencies section.
+
+
+                        *crates-config-popup-highlight-dev_dependencies_title*
+popup.highlight.dev_dependencies_title
+    Type: `string`, Default: `"CratesNvimPopupDevDependenciesTitle"`
+
+    Highlight group used for the title of the dev dependencies section.
 
 
 popup.highlight.dependency          *crates-config-popup-highlight-dependency*
@@ -1275,6 +1323,18 @@ CratesNvimPopupEnabled                      *crates-hl-CratesNvimPopupEnabled*
 
 CratesNvimPopupTransitive                *crates-hl-CratesNvimPopupTransitive*
     Default: `ctermfg=4 guifg=#238bb9`
+
+                            *crates-hl-CratesNvimPopupNormalDependenciesTitle*
+CratesNvimPopupNormalDependenciesTitle
+    Default: links to |Statement|
+
+                             *crates-hl-CratesNvimPopupBuildDependenciesTitle*
+CratesNvimPopupBuildDependenciesTitle
+    Default: links to |Statement|
+
+                               *crates-hl-CratesNvimPopupDevDependenciesTitle*
+CratesNvimPopupDevDependenciesTitle
+    Default: links to |Statement|
 
 CratesNvimPopupDependency                *crates-hl-CratesNvimPopupDependency*
     Default: links to |None|

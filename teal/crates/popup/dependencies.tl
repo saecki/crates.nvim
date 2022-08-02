@@ -153,7 +153,10 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
 
     local title = string.format(state.cfg.popup.text.title, crate_name.." "..version.num)
     local deps_width = 0
-    local deps_text: {{HighlightText}} = {}
+    local deps_text_index: {{HighlightText}} = {}
+    local normal_deps_text: {{HighlightText}} = {}
+    local build_deps_text: {{HighlightText}} = {}
+    local dev_deps_text: {{HighlightText}} = {}
 
     for _,d in ipairs(deps) do
         local t: HighlightText = {}
@@ -165,13 +168,21 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
             t.hl = state.cfg.popup.highlight.dependency
         end
 
-        table.insert(deps_text, { t })
+        local line = { t }
+        if d.kind == "normal" then
+            table.insert(normal_deps_text, line)
+        elseif d.kind == "build" then
+            table.insert(build_deps_text, line)
+        elseif d.kind == "dev" then
+            table.insert(dev_deps_text, line)
+        end
+        table.insert(deps_text_index, line)
         deps_width = math.max(vim.fn.strdisplaywidth(t.text) as integer, deps_width)
     end
 
     local vers_width = 0
     if state.cfg.popup.show_dependency_version then
-        for i,line in ipairs(deps_text) do
+        for i,line in ipairs(deps_text_index) do
             local dep_text = line[1]
             local diff = deps_width - vim.fn.strdisplaywidth(dep_text.text) as integer
             local vers = deps[i].vers.text
@@ -187,8 +198,28 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
         end
     end
 
+    local deps_text: {{HighlightText}} = {}
+    if #normal_deps_text > 0 then
+        table.insert(deps_text, {{ text = state.cfg.popup.text.normal_dependencies_title, hl = state.cfg.popup.highlight.normal_dependencies_title }})
+        vim.list_extend(deps_text, normal_deps_text)
+    end
+    if #build_deps_text > 0 then
+        if #deps_text > 0 then
+            table.insert(deps_text, {})
+        end
+        table.insert(deps_text, {{ text = state.cfg.popup.text.build_dependencies_title, hl = state.cfg.popup.highlight.build_dependencies_title }})
+        vim.list_extend(deps_text, build_deps_text)
+    end
+    if #dev_deps_text > 0 then
+        if #deps_text > 0 then
+            table.insert(deps_text, {})
+        end
+        table.insert(deps_text, {{ text = state.cfg.popup.text.dev_dependencies_title, hl = state.cfg.popup.highlight.dev_dependencies_title }})
+        vim.list_extend(deps_text, dev_deps_text)
+    end
+
     local width = popup.win_width(title, deps_width + vers_width)
-    local height = popup.win_height(deps)
+    local height = popup.win_height(deps_text)
 
     if opts.update then
         popup.update_win(width, height, title, deps_text, opts)

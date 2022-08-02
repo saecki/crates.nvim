@@ -207,6 +207,12 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
+
+
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -808,6 +814,27 @@ entry(schema_popup_text, "transitive", {
     ]],
 })
 
+entry(schema_popup_text, "normal_dependencies_title", {
+   type = "string",
+   default = " Dependencies",
+   description = [[
+        Format string used for the title of the normal dependencies section.
+    ]],
+})
+entry(schema_popup_text, "build_dependencies_title", {
+   type = "string",
+   default = " Build dependencies",
+   description = [[
+        Format string used for the title of the build dependencies section.
+    ]],
+})
+entry(schema_popup_text, "dev_dependencies_title", {
+   type = "string",
+   default = " Dev dependencies",
+   description = [[
+        Format string used for the title of the dev dependencies section.
+    ]],
+})
 entry(schema_popup_text, "dependency", {
    type = "string",
    default = "  %s",
@@ -1046,6 +1073,27 @@ entry(schema_popup_hi, "transitive", {
     ]],
 })
 
+entry(schema_popup_hi, "normal_dependencies_title", {
+   type = "string",
+   default = "CratesNvimPopupNormalDependenciesTitle",
+   description = [[
+        Highlight group used for the title of the normal dependencies section.
+    ]],
+})
+entry(schema_popup_hi, "build_dependencies_title", {
+   type = "string",
+   default = "CratesNvimPopupBuildDependenciesTitle",
+   description = [[
+        Highlight group used for the title of the build dependencies section.
+    ]],
+})
+entry(schema_popup_hi, "dev_dependencies_title", {
+   type = "string",
+   default = "CratesNvimPopupDevDependenciesTitle",
+   description = [[
+        Highlight group used for the title of the dev dependencies section.
+    ]],
+})
 entry(schema_popup_hi, "dependency", {
    type = "string",
    default = "CratesNvimPopupDependency",
