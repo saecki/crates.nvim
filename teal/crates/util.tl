@@ -492,7 +492,7 @@ local function disable_def_features(buf: integer, crate: toml.Crate): Range
             crate.def.col.e,
             { "false" }
         )
-            return crate.lines
+        return crate.lines
     else
         if crate.syntax == "table" then
             local line = math.max((crate.vers.line or 0) + 1, crate.feat.line or 0)
