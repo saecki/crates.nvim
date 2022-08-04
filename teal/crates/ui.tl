@@ -66,7 +66,12 @@ function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagn
              state.cfg.highlight.upgrade,
         })
     end
-    if not (info.vers_match or info.vers_upgrade) then
+
+    if info.dep_kind == "path" then
+        -- TODO: display relevant information
+    elseif info.dep_kind == "git" then
+        -- TODO: display relevant information
+    elseif info.dep_kind == "registry" and not (info.vers_match or info.vers_upgrade) then
         table.insert(virt_text, {
              state.cfg.text.error,
              state.cfg.highlight.error,

@@ -6,6 +6,7 @@ local record M
         vers_update: Version
         vers_upgrade: Version
         match_kind: MatchKind
+        dep_kind: DepKind
     end
 
     enum MatchKind
@@ -13,6 +14,12 @@ local record M
         "yanked"
         "prerelease"
         "nomatch"
+    end
+
+    enum DepKind
+        "registry"
+        "path"
+        "git"
     end
 
     record Diagnostic

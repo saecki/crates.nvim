@@ -208,6 +208,14 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
     }
     local diagnostics = {}
 
+    if crate.path then
+        info.dep_kind = "path"
+    elseif crate.git then
+        info.dep_kind = "git"
+    else
+        info.dep_kind = "registry"
+    end
+
     if newest then
         if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
             -- version matches, no upgrade available
@@ -273,7 +281,7 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
                 ))
             end
         end
-    else
+    elseif info.dep_kind == "registry" then
         table.insert(diagnostics, crate_diagnostic(
             crate,
             "crate_error_fetching",
