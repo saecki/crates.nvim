@@ -10,6 +10,7 @@ local record M
     record DepsHistoryEntry
         crate_name: string
         version: Version
+        line_mapping: {integer:Dependency}
         line: integer -- 0-indexed
     end
 end
@@ -28,12 +29,10 @@ local Version = types.Version
 local util = require("crates.util")
 
 local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
-    local index = popup.item_index(line)
     local hist_entry = ctx.history[ctx.hist_idx]
-    local deps = hist_entry.version.deps as {Dependency}
 
-    if not deps or not deps[index] then return end
-    local selected_dependency = deps[index]
+    local selected_dependency = hist_entry.line_mapping[line]
+    if not selected_dependency then return end
 
     -- update current entry
     hist_entry.line = line
@@ -154,9 +153,13 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
     local title = string.format(state.cfg.popup.text.title, crate_name.." "..version.num)
     local deps_width = 0
     local deps_text_index: {{HighlightText}} = {}
-    local normal_deps_text: {{HighlightText}} = {}
-    local build_deps_text: {{HighlightText}} = {}
-    local dev_deps_text: {{HighlightText}} = {}
+    local record HlTextDepList
+        {HighlightText}
+        dep: Dependency
+    end
+    local normal_deps_text: {HlTextDepList} = {}
+    local build_deps_text: {HlTextDepList} = {}
+    local dev_deps_text: {HlTextDepList} = {}
 
     for _,d in ipairs(deps) do
         local t: HighlightText = {}
@@ -168,7 +171,7 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
             t.hl = state.cfg.popup.highlight.dependency
         end
 
-        local line = { t }
+        local line = { t, dep = d }
         if d.kind == "normal" then
             table.insert(normal_deps_text, line)
         elseif d.kind == "build" then
@@ -199,24 +202,48 @@ function M.open_deps(ctx: DepsContext, crate_name: string, version: Version, opt
     end
 
     local deps_text: {{HighlightText}} = {}
+    local line_mapping = {}
+    local line_idx = popup.TOP_OFFSET
     if #normal_deps_text > 0 then
         table.insert(deps_text, {{ text = state.cfg.popup.text.normal_dependencies_title, hl = state.cfg.popup.highlight.normal_dependencies_title }})
-        vim.list_extend(deps_text, normal_deps_text)
+        line_idx = line_idx + 1
+
+        for _,t in ipairs(normal_deps_text) do
+            table.insert(deps_text, t)
+            line_mapping[line_idx] = t.dep
+            line_idx = line_idx + 1
+        end
     end
     if #build_deps_text > 0 then
         if #deps_text > 0 then
             table.insert(deps_text, {})
+            line_idx = line_idx + 1
         end
         table.insert(deps_text, {{ text = state.cfg.popup.text.build_dependencies_title, hl = state.cfg.popup.highlight.build_dependencies_title }})
-        vim.list_extend(deps_text, build_deps_text)
+        line_idx = line_idx + 1
+
+        for _,t in ipairs(build_deps_text) do
+            table.insert(deps_text, t)
+            line_mapping[line_idx] = t.dep
+            line_idx = line_idx + 1
+        end
     end
     if #dev_deps_text > 0 then
         if #deps_text > 0 then
             table.insert(deps_text, {})
+            line_idx = line_idx + 1
         end
         table.insert(deps_text, {{ text = state.cfg.popup.text.dev_dependencies_title, hl = state.cfg.popup.highlight.dev_dependencies_title }})
-        vim.list_extend(deps_text, dev_deps_text)
+        line_idx = line_idx + 1
+
+        for _,t in ipairs(dev_deps_text) do
+            table.insert(deps_text, t)
+            line_mapping[line_idx] = t.dep
+            line_idx = line_idx + 1
+        end
     end
+
+    ctx.history[ctx.hist_idx].line_mapping = line_mapping
 
     local width = popup.win_width(title, deps_width + vers_width)
     local height = popup.win_height(deps_text)
