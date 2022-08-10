@@ -342,7 +342,7 @@ require('crates').setup {
             loading = " ...",
         },
     },
-    cmp = {
+    src = {
         text = {
             prerelease = " pre-release ",
             yanked = " yanked ",
