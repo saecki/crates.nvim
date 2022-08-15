@@ -193,7 +193,7 @@ function Crate:is_def_enabled(): boolean
 end
 
 function Crate:cache_key(): string
-    return string.format("%s:%s:%s", self.section.target or "", self.section.kind, self.name)
+    return string.format("%s:%s:%s", self.section.target or "", self.section.kind, self.rename or self.name)
 end
 
 
