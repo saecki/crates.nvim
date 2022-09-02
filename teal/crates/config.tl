@@ -858,7 +858,7 @@ entry(schema_popup_text, "dependency_version", {
 })
 entry(schema_popup_text, "loading", {
     type = "string",
-    default = " ",
+    default = "  ",
     description = [[
         Format string used as a loading indicator when fetching dependencies.
     ]],

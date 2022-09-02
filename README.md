@@ -234,7 +234,7 @@ require('crates').setup {
             dependency = "  %s",
             optional = " %s",
             dependency_version = "  %s",
-            loading = " ",
+            loading = "  ",
         },
         highlight = {
             title = "CratesNvimPopupTitle",

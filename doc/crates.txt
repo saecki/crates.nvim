@@ -146,7 +146,7 @@ For more information about individual config options see |crates-config|.
                 dependency = "  %s",
                 optional = " %s",
                 dependency_version = "  %s",
-                loading = " ",
+                loading = "  ",
             },
             highlight = {
                 title = "CratesNvimPopupTitle",
@@ -881,7 +881,7 @@ popup.text.dependency_version    *crates-config-popup-text-dependency_version*
 
 
 popup.text.loading                          *crates-config-popup-text-loading*
-    Type: `string`, Default: `" "`
+    Type: `string`, Default: `"  "`
 
     Format string used as a loading indicator when fetching dependencies.
 
