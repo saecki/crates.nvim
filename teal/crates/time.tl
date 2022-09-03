@@ -27,12 +27,12 @@ function DateTime.parse_rfc_3339(str: string): DateTime
             m = tonumber(minute) - tonumber(offset_minute)
         end
         return DateTime.new(os.time {
-            year = tonumber(year),
-            month = tonumber(month),
-            day = tonumber(day),
-            hour = h,
-            minute = m,
-            second = tonumber(second),
+            year = tonumber(year) as integer,
+            month = tonumber(month) as integer,
+            day = tonumber(day) as integer,
+            hour = h as integer,
+            min = m as integer,
+            sec = tonumber(second) as integer,
         })
     end
 

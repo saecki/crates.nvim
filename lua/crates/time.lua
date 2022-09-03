@@ -31,8 +31,8 @@ function DateTime.parse_rfc_3339(str)
          month = tonumber(month),
          day = tonumber(day),
          hour = h,
-         minute = m,
-         second = tonumber(second),
+         min = m,
+         sec = tonumber(second),
       }))
    end
 
