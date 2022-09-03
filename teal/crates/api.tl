@@ -262,7 +262,7 @@ function M.parse_deps(json_str: string): {Dependency}|nil
                 opt = d.optional as boolean or false,
                 kind = d.kind as Dependency.Kind or "normal",
                 vers = {
-                    text = d.req,
+                    text = d.req as string,
                     reqs = semver.parse_requirements(d.req as string),
                 },
             }
