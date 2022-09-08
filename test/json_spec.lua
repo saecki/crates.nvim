@@ -23,16 +23,16 @@ describe("crate", function()
                 month = 2,
                 day = 3,
                 hour = 6,
-                minute = 17,
-                second = 14,
+                min = 17,
+                sec = 14,
             }),
 			updated = DateTime.new(os.time {
                 year = 2022,
                 month = 2,
                 day = 14,
                 hour = 8,
-                minute = 37,
-                second = 47,
+                min = 37,
+                sec = 47,
             }),
             downloads = 121616874,
 			homepage = "https://rust-random.github.io/book",
@@ -86,8 +86,8 @@ describe("versions", function()
                 month = 2,
                 day = 14,
                 hour = 8,
-                minute = 37,
-                second = 47,
+                min = 37,
+                sec = 47,
             })
 		}, versions[1])
 
@@ -103,8 +103,8 @@ describe("versions", function()
                 month = 4,
                 day = 1,
                 hour = 16,
-                minute = 31,
-                second = 9,
+                min = 31,
+                sec = 9,
             })
 		}, versions[2])
 
@@ -120,8 +120,8 @@ describe("versions", function()
                 month = 2,
                 day = 3,
                 hour = 6,
-                minute = 17,
-                second = 14,
+                min = 17,
+                sec = 14,
             })
 		}, versions[3])
 	end)
