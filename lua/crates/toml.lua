@@ -209,6 +209,14 @@ function M.parse_section(text)
       }
 
       local target = prefix
+
+      local workspace = prefix:match("^workspace%s*%.$")
+      if workspace then
+
+         target = ""
+         prefix = ""
+      end
+
       local dev_target = prefix:match("^(.*)dev%-$")
       if dev_target then
          target = vim.trim(dev_target)
