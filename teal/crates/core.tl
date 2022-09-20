@@ -126,7 +126,7 @@ function M.update(buf: integer|nil, reload: boolean)
             else
                 M.reload_deps(c.name, versions, version)
             end
-        else
+        elseif c.vers and not (c.git or c.path) then
             if state.cfg.loading_indicator then
                 ui.display_loading(buf, c)
             end
