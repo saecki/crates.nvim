@@ -213,6 +213,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -459,6 +461,16 @@ local schema_diagnostic = M.schema.diagnostic.fields
 entry(schema_diagnostic, "section_invalid", {
    type = "string",
    default = "Invalid dependency section",
+   hidden = true,
+})
+entry(schema_diagnostic, "workspace_section_not_default", {
+   type = "string",
+   default = "Workspace dependency sections don't support other kinds of dependencies like build or dev",
+   hidden = true,
+})
+entry(schema_diagnostic, "workspace_section_has_target", {
+   type = "string",
+   default = "Workspace dependency sections don't support target specifiers",
    hidden = true,
 })
 entry(schema_diagnostic, "section_dup", {

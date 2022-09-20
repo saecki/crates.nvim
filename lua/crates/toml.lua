@@ -98,6 +98,7 @@ local M = {Section = {}, Crate = {Vers = {}, Path = {}, Git = {}, Pkg = {}, Def 
 
 
 
+
 local Section = M.Section
 local Crate = M.Crate
 local Feature = M.Feature
@@ -210,13 +211,6 @@ function M.parse_section(text)
 
       local target = prefix
 
-      local workspace = prefix:match("^workspace%s*%.$")
-      if workspace then
-
-         target = ""
-         prefix = ""
-      end
-
       local dev_target = prefix:match("^(.*)dev%-$")
       if dev_target then
          target = vim.trim(dev_target)
@@ -229,19 +223,31 @@ function M.parse_section(text)
          section.kind = "build"
       end
 
+      local workspace_target = target:match("^(.*)workspace%s*%.$")
+      if workspace_target then
+         section.workspace = true
+         target = vim.trim(workspace_target)
+      end
+
       if target then
          local t = target:match("^target%s*%.(.+)%.$")
-         section.target = t and vim.trim(t)
+         if t then
+            section.target = vim.trim(t)
+            target = ""
+         end
       end
 
       if suffix then
          local n = suffix:match("^%.(.+)$")
-         section.name = n and vim.trim(n)
+         if n then
+            section.name = vim.trim(n)
+            suffix = ""
+         end
       end
 
-      section.invalid = prefix ~= "" and not section.target and section.kind == "default" or
-      target ~= "" and not section.target or
-      suffix ~= "" and not section.name
+      section.invalid = (target ~= "" or suffix ~= "") or
+      (section.workspace and section.kind ~= "default") or
+      (section.workspace and section.target ~= nil)
 
       return section
    end

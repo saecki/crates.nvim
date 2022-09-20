@@ -36,6 +36,8 @@ local record M
     enum DiagnosticKind
         -- error
         "section_invalid"
+        "workspace_section_not_default"
+        "workspace_section_has_target"
         "section_dup"
         "crate_dup"
         "crate_novers"

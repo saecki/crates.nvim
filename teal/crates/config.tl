@@ -41,6 +41,8 @@ local record M
 
         record DiagnosticConfig
             section_invalid: string
+            workspace_section_not_default: string
+            workspace_section_has_target: string
             section_dup: string
             section_dup_orig: string
             crate_dup: string
@@ -459,6 +461,16 @@ local schema_diagnostic = M.schema.diagnostic.fields
 entry(schema_diagnostic, "section_invalid", {
     type = "string",
     default = "Invalid dependency section",
+    hidden = true,
+})
+entry(schema_diagnostic, "workspace_section_not_default", {
+    type = "string",
+    default = "Workspace dependency sections don't support other kinds of dependencies like build or dev",
+    hidden = true,
+})
+entry(schema_diagnostic, "workspace_section_has_target", {
+    type = "string",
+    default = "Workspace dependency sections don't support target specifiers",
     hidden = true,
 })
 entry(schema_diagnostic, "section_dup", {

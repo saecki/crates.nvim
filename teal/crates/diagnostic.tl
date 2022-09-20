@@ -112,7 +112,19 @@ function M.process_crates(sections: {toml.Section}, crates: {toml.Crate}): {stri
     for _,s in ipairs(sections) do
         local key = s.text:gsub("%s+", "")
 
-        if s.invalid then
+        if s.workspace and s.kind ~= "default" then
+            table.insert(diagnostics, section_diagnostic(
+                s,
+                "workspace_section_not_default",
+                vim.diagnostic.severity.WARN
+            ))
+        elseif s.workspace and s.target ~= nil then
+            table.insert(diagnostics, section_diagnostic(
+                s,
+                "workspace_section_has_target",
+                vim.diagnostic.severity.ERROR
+            ))
+        elseif s.invalid then
             table.insert(diagnostics, section_diagnostic(
                 s,
                 "section_invalid",
