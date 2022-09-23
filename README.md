@@ -397,6 +397,8 @@ require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()
 
+-- Returns a boolean indicating whether there is information to show in a popup.
+require('crates').popup_available()
 -- Show/hide popup with crate details, all versions, all features or details about one feature.
 -- If `popup.autofocus` is disabled calling this again will focus the popup.
 require('crates').show_popup()
@@ -488,7 +490,7 @@ local function show_documentation()
         vim.cmd('h '..vim.fn.expand('<cword>'))
     elseif vim.tbl_contains({ 'man' }, filetype) then
         vim.cmd('Man '..vim.fn.expand('<cword>'))
-    elseif vim.fn.expand('%:t') == 'Cargo.toml' then
+    elseif vim.fn.expand('%:t') == 'Cargo.toml' and require('crates').popup_available() then
         require('crates').show_popup()
     else
         vim.lsp.buf.hover()

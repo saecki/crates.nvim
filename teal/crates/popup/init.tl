@@ -105,6 +105,10 @@ local function line_crate_info(): LineCrateInfo
     return info
 end
 
+function M.available(): boolean
+    return line_crate_info() and true
+end
+
 function M.show()
     if popup.win and vim.api.nvim_win_is_valid(popup.win) then
         popup.focus()

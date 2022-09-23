@@ -153,7 +153,7 @@ function M.open_deps(ctx, crate_name, version, opts)
    local title = string.format(state.cfg.popup.text.title, crate_name .. " " .. version.num)
    local deps_width = 0
    local deps_text_index = {}
-
+   local HlTextDepList = {}
 
 
 
