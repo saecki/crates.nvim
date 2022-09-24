@@ -397,8 +397,8 @@ require('crates').open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require('crates').open_crates_io()
 
--- Returns a boolean indicating whether there is information to show in a popup.
-require('crates').popup_available()
+-- Returns whether there is information to show in a popup.
+require('crates').popup_available(): boolean
 -- Show/hide popup with crate details, all versions, all features or details about one feature.
 -- If `popup.autofocus` is disabled calling this again will focus the popup.
 require('crates').show_popup()

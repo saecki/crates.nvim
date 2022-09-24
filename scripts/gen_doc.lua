@@ -20,10 +20,10 @@ local function gen_readme_functions(lines)
             break
         end
         if l ~= "" then
-            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)$"
-            local name, params = l:match(pat)
-            if name and params then
-                local func_text = string.format("require('crates').%s(%s)", name, params)
+            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)(.*)$"
+            local name, params, ret_type = l:match(pat)
+            if name and params and ret_type then
+                local func_text = string.format("require('crates').%s(%s)%s", name, params, ret_type)
                 table.insert(lines, func_text)
             else
                 local doc = l:match("^%s*%-%-%s*(.*)$")
@@ -46,6 +46,15 @@ local function format_vimdoc_params(params)
         table.insert(text, fmt)
     end
     return table.concat(text, ", ")
+end
+
+local function format_vimdoc_ret_type(return_type)
+    local type = return_type:match("^%s*:%s*(.+)%s*$")
+    if type then
+        return string.format(": `%s`", type)
+    else
+        return ""
+    end
 end
 
 local function format_vimdoc_refs(line)
@@ -71,11 +80,12 @@ local function gen_vimdoc_functions(lines)
             break
         end
         if l ~= "" then
-            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)$"
-            local name, params = l:match(pat)
-            if name and params then
+            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)(.*)$"
+            local name, params, ret_type = l:match(pat)
+            if name and params and ret_type then
                 local doc_params = format_vimdoc_params(params)
-                local doc_title = string.format("%s(%s)", name, doc_params)
+                local doc_ret_type = format_vimdoc_ret_type(ret_type)
+                local doc_title = string.format("%s(%s)%s", name, doc_params, doc_ret_type)
                 local doc_key = string.format("*crates.%s()*", name)
 
                 local len = string.len(doc_title) + string.len(doc_key)

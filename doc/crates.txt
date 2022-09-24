@@ -384,8 +384,8 @@ open_crates_io()                                     *crates.open_crates_io()*
     Open the `crates.io` page of the crate on the current line.
 
 
-popup_available()                                   *crates.popup_available()*
-    Returns a boolean indicating whether there is information to show in a popup.
+popup_available(): `boolean`                        *crates.popup_available()*
+    Returns whether there is information to show in a popup.
 
 
 show_popup()                                             *crates.show_popup()*

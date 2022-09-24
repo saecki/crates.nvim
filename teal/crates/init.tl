@@ -43,8 +43,8 @@ local record M
     -- Open the `crates.io` page of the crate on the current line.
     open_crates_io: function()
 
-    -- Returns a boolean indicating whether there is information to show in a popup.
-    popup_available: function()
+    -- Returns whether there is information to show in a popup.
+    popup_available: function(): boolean
     -- Show/hide popup with crate details, all versions, all features or details about one feature.
     -- If `c#popup.autofocus` is disabled calling this again will focus the popup.
     show_popup: function()
