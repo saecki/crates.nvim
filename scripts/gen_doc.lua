@@ -5,6 +5,7 @@ exec lua "$0" "$@"
 
 local inspect = require("inspect")
 local config = require('lua.crates.config')
+local version = "0.2.1"
 
 local function format_readme_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
@@ -248,6 +249,7 @@ local function gen_vim_doc()
         elseif l == "<HIGHLIGHTS>" then
             gen_vimdoc_highlights(lines)
         else
+            l = l:gsub("<VERSION>", version)
             table.insert(lines, l)
         end
     end
@@ -269,6 +271,7 @@ local function gen_readme()
         elseif l == "<FUNCTIONS>" then
             gen_readme_functions(lines)
         else
+            l = l:gsub("<VERSION>", version)
             table.insert(lines, l)
         end
     end
