@@ -215,6 +215,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -303,6 +304,13 @@ entry(M.schema, "thousands_separator", {
 entry(M.schema, "notification_title", {
    type = "string",
    default = "Crates",
+   description = [[
+        The title displayed in notifications.
+    ]],
+})
+entry(M.schema, "curl_args", {
+   type = "table",
+   default = { "-sL", "--retry", "1" },
    description = [[
         The title displayed in notifications.
     ]],

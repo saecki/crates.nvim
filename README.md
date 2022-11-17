@@ -171,6 +171,7 @@ require('crates').setup {
     date_format = "%Y-%m-%d",
     thousands_separator = ".",
     notification_title = "Crates",
+    curl_args = { "-sL", "--retry", "1" },
     disable_invalid_feature_diagnostic = false,
     text = {
         loading = "   Loading",

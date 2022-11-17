@@ -83,6 +83,7 @@ For more information about individual config options see |crates-config|.
         date_format = "%Y-%m-%d",
         thousands_separator = ".",
         notification_title = "Crates",
+        curl_args = { "-sL", "--retry", "1" },
         disable_invalid_feature_diagnostic = false,
         text = {
             loading = "   Loading",
@@ -494,6 +495,12 @@ thousands_separator                        *crates-config-thousands_separator*
 
 notification_title                          *crates-config-notification_title*
     Type: `string`, Default: `"Crates"`
+
+    The title displayed in notifications.
+
+
+curl_args                                            *crates-config-curl_args*
+    Type: `table`, Default: `{ "-sL", "--retry", "1" }`
 
     The title displayed in notifications.
 
