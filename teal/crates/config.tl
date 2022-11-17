@@ -11,6 +11,7 @@ local record M
         date_format: string
         thousands_separator: string
         notification_title: string
+        curl_args: {string}
         disable_invalid_feature_diagnostic: boolean
         text: TextConfig
         highlight: HighlightConfig
@@ -303,6 +304,13 @@ entry(M.schema, "thousands_separator", {
 entry(M.schema, "notification_title", {
     type = "string",
     default = "Crates",
+    description = [[
+        The title displayed in notifications.
+    ]],
+})
+entry(M.schema, "curl_args", {
+    type = "table",
+    default = { "-sL", "--retry", "1" },
     description = [[
         The title displayed in notifications.
     ]],

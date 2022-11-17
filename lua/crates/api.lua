@@ -20,6 +20,7 @@ local M = {CrateJob = {}, VersJob = {}, DepsJob = {}, }
 
 
 local semver = require("crates.semver")
+local state = require("crates.state")
 local time = require("crates.time")
 local DateTime = time.DateTime
 local types = require("crates.types")
@@ -56,7 +57,7 @@ end
 local function request_job(url, on_exit)
    return Job:new({
       command = "curl",
-      args = { "-sLA", USERAGENT, url },
+      args = { unpack(state.cfg.curl_args), "-A", USERAGENT, url },
       on_exit = vim.schedule_wrap(on_exit),
    })
 end
