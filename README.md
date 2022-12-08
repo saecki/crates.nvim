@@ -43,7 +43,7 @@ Feel free to open issues.
 ## Setup
 
 ### Installation
-To use with neovim 0.6 or to stay on a stable release.
+To use a stable release.
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
@@ -65,7 +65,8 @@ use {
 }
 ```
 
-If you're feeling adventurous and want to use the newest features.
+<details>
+<summary>If you're feeling adventurous and want to use the newest features.</summary>
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
@@ -85,8 +86,12 @@ use {
     end,
 }
 ```
+</details>
 
-For lazy loading.
+
+<details>
+<summary>For lazy loading.</summary>
+
 ```lua
 use {
     'saecki/crates.nvim',
@@ -97,6 +102,7 @@ use {
     end,
 }
 ```
+</details>
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources.
@@ -113,7 +119,9 @@ require('cmp').setup {
 }
 ```
 
-Or add it lazily.
+<details>
+<summary>Or add it lazily.</summary>
+
 ```lua
 vim.api.nvim_create_autocmd("BufRead", {
     group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
@@ -123,6 +131,7 @@ vim.api.nvim_create_autocmd("BufRead", {
     end,
 })
 ```
+</details>
 
 ### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
@@ -156,7 +165,7 @@ require('crates').setup {
 
 For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
 
-__Default__
+### Default
 
 The icons in the default configuration require a patched font.<br>
 Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
@@ -303,7 +312,7 @@ require('crates').setup {
 }
 ```
 
-__Plain text__
+### Plain text
 
 Replace these fields if you don't have a patched font.
 ```lua
