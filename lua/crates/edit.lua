@@ -178,12 +178,7 @@ function M.smart_version_text(crate, version)
 end
 
 function M.version_text(crate, version, alt)
-   local smart
-   if alt then
-      smart = not state.cfg.smart_insert
-   else
-      smart = state.cfg.smart_insert
-   end
+   local smart = alt ~= state.cfg.smart_insert
    if smart then
       return M.smart_version_text(crate, version)
    else

@@ -178,12 +178,7 @@ function M.smart_version_text(crate: toml.Crate, version: SemVer): string
 end
 
 function M.version_text(crate: toml.Crate, version: SemVer, alt: boolean|nil): string
-    local smart: boolean
-    if alt then
-        smart = not state.cfg.smart_insert
-    else
-        smart = state.cfg.smart_insert
-    end
+    local smart = alt ~= state.cfg.smart_insert
     if smart then
         return M.smart_version_text(crate, version)
     else
