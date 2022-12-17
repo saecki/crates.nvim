@@ -7,6 +7,7 @@ local M = {VersContext = {}, }
 
 
 local VersContext = M.VersContext
+local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
@@ -24,7 +25,7 @@ local function select_version(ctx, line, alt)
    if not version then return end
 
    local line_range
-   line_range = util.set_version(ctx.buf, crate, version.parsed, alt)
+   line_range = edit.set_version(ctx.buf, crate, version.parsed, alt)
 
 
    for l in line_range:iter() do

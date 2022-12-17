@@ -18,6 +18,7 @@ local M = {FeatureContext = {}, FeatHistoryEntry = {}, }
 
 local FeatureContext = M.FeatureContext
 local FeatHistoryEntry = M.FeatHistoryEntry
+local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
@@ -66,15 +67,15 @@ local function toggle_feature(ctx, line)
    local crate_feature = ctx.crate:get_feat(selected_feature.name)
    if selected_feature.name == "default" then
       if crate_feature ~= nil or ctx.crate:is_def_enabled() then
-         line_range = util.disable_def_features(ctx.buf, ctx.crate, crate_feature)
+         line_range = edit.disable_def_features(ctx.buf, ctx.crate, crate_feature)
       else
-         line_range = util.enable_def_features(ctx.buf, ctx.crate)
+         line_range = edit.enable_def_features(ctx.buf, ctx.crate)
       end
    else
       if crate_feature then
-         line_range = util.disable_feature(ctx.buf, ctx.crate, crate_feature)
+         line_range = edit.disable_feature(ctx.buf, ctx.crate, crate_feature)
       else
-         line_range = util.enable_feature(ctx.buf, ctx.crate, selected_feature)
+         line_range = edit.enable_feature(ctx.buf, ctx.crate, selected_feature)
       end
    end
 

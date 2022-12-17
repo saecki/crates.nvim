@@ -12,6 +12,7 @@ local M = {}
 
 local CrateScope = M.CrateScope
 local SectionScope = M.SectionScope
+local edit = require("crates.edit")
 local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
@@ -235,7 +236,7 @@ function M.process_crate_versions(crate, versions)
             info.vers_match = newest
             info.match_kind = "version"
 
-            if crate.vers and crate.vers.text ~= util.version_text(crate, newest.parsed) then
+            if crate.vers and crate.vers.text ~= edit.version_text(crate, newest.parsed) then
                info.vers_update = newest
             end
          else
@@ -245,7 +246,7 @@ function M.process_crate_versions(crate, versions)
             info.vers_upgrade = newest
 
             if info.vers_match then
-               if crate.vers and crate.vers.text ~= util.version_text(crate, info.vers_match.parsed) then
+               if crate.vers and crate.vers.text ~= edit.version_text(crate, info.vers_match.parsed) then
                   info.vers_update = info.vers_match
                end
             end

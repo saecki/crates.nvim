@@ -1,5 +1,6 @@
 local record M end
 
+local edit = require("crates.edit")
 local util = require("crates.util")
 local state = require("crates.state")
 local toml = require("crates.toml")
@@ -13,7 +14,7 @@ function M.upgrade_crate(alt: boolean|nil)
     local crates = util.get_line_crates(buf, Range.pos(line))
     local info  = util.get_buf_info(buf)
     if next(crates) and info then
-        util.upgrade_crates(buf, crates, info, alt)
+        edit.upgrade_crates(buf, crates, info, alt)
     end
 end
 
@@ -26,7 +27,7 @@ function M.upgrade_crates(alt: boolean|nil)
     local crates = util.get_line_crates(buf, lines)
     local info  = util.get_buf_info(buf)
     if next(crates) and info then
-        util.upgrade_crates(buf, crates, info, alt)
+        edit.upgrade_crates(buf, crates, info, alt)
     end
 end
 
@@ -34,7 +35,7 @@ function M.upgrade_all_crates(alt: boolean|nil)
     local buf = util.current_buf()
     local cache = state.buf_cache[buf]
     if cache.crates and cache.info then
-        util.upgrade_crates(buf, cache.crates, cache.info, alt)
+        edit.upgrade_crates(buf, cache.crates, cache.info, alt)
     end
 end
 
@@ -44,7 +45,7 @@ function M.update_crate(alt: boolean|nil)
     local crates = util.get_line_crates(buf, Range.pos(line))
     local info = util.get_buf_info(buf)
     if next(crates) and info then
-        util.update_crates(buf, crates, info, alt)
+        edit.update_crates(buf, crates, info, alt)
     end
 end
 
@@ -57,7 +58,7 @@ function M.update_crates(alt: boolean|nil)
     local crates = util.get_line_crates(buf, lines)
     local info = util.get_buf_info(buf)
     if next(crates) and info then
-        util.update_crates(buf, crates, info, alt)
+        edit.update_crates(buf, crates, info, alt)
     end
 end
 
@@ -65,7 +66,7 @@ function M.update_all_crates(alt: boolean|nil)
     local buf = util.current_buf()
     local cache = state.buf_cache[buf]
     if cache.crates and cache.info then
-        util.update_crates(buf, cache.crates, cache.info, alt)
+        edit.update_crates(buf, cache.crates, cache.info, alt)
     end
 end
 
@@ -136,7 +137,7 @@ end
 
 local function remove_feature_action(buf: integer, crate: toml.Crate, feat: toml.Feature): function
     return function()
-        util.disable_feature(buf, crate, feat)
+        edit.disable_feature(buf, crate, feat)
     end
 end
 

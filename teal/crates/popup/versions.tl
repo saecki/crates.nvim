@@ -7,6 +7,7 @@ local record M
 end
 
 local VersContext = M.VersContext
+local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local HighlightText = popup.HighlightText
 local WinOpts = popup.WinOpts
@@ -24,7 +25,7 @@ local function select_version(ctx: VersContext, line: integer, alt: boolean|nil)
     if not version then return end
 
     local line_range: Range
-    line_range = util.set_version(ctx.buf, crate, version.parsed, alt)
+    line_range = edit.set_version(ctx.buf, crate, version.parsed, alt)
 
     -- update crate position
     for l in line_range:iter() do
