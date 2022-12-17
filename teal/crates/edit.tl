@@ -21,15 +21,13 @@ local function insert_version(buf: integer, crate: toml.Crate, text: string): Ra
             return crate.lines:moved(0, 1)
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            local def_col_start = 0
-            if crate.def then
-                def_col_start = crate.def.decl_col.s
-            end
-            local feat_col_start = 0
-            if crate.feat then
-                feat_col_start = crate.feat.decl_col.s
-            end
-            local col = math.max(def_col_start, feat_col_start)
+            local col = math.min(
+                crate.pkg and crate.pkg.col.s or 999,
+                crate.def and crate.def.col.s or 999,
+                crate.feat and crate.def.col.s or 999,
+                crate.git and crate.git.decl_col.s or 999,
+                crate.path and crate.path.decl_col.s or 999
+            )
             vim.api.nvim_buf_set_text(
                 buf, line, col, line, col,
                 { ' version = "' .. text .. '",' }
@@ -222,9 +220,14 @@ function M.enable_feature(buf: integer, crate: toml.Crate, feature: Feature): Ra
     if not crate.feat then
         if crate.syntax == "table" then
             local line = math.max(
-                crate.vers and crate.vers.line or 0,
-                crate.def and crate.def.line or 0
-            ) + 1
+                crate.vers and crate.vers.line + 1 or 0,
+                crate.pkg and crate.pkg.line + 1 or 0,
+                crate.def and crate.def.line + 1 or 0
+            )
+            line = line ~= 0 and line or math.min(
+                crate.git and crate.git.line or 999,
+                crate.path and crate.path.line or 999
+            )
             vim.api.nvim_buf_set_lines(
                 buf, line, line, false,
                 { "features = [" .. t .."]" }
@@ -252,21 +255,22 @@ function M.enable_feature(buf: integer, crate: toml.Crate, feature: Feature): Ra
             return Range.pos(line)
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            local vers_col_end = 0
-            if crate.vers then
-                vers_col_end = crate.vers.col.e
-                if crate.vers.quote.e then
-                    vers_col_end = vers_col_end + 1
-                end
+            local text = ", features = [" .. t .. "]"
+            local col = math.max(
+                crate.vers and crate.vers.col.e + (crate.vers.quote.e and 1 or 0) or 0,
+                crate.pkg and crate.pkg.col.e or 0,
+                crate.def and crate.def.col.e or 0
+            )
+            if col == 0 then
+                text = " features = [" .. t .. "],"
+                col = math.min(
+                    crate.git and crate.git.decl_col.s or 999,
+                    crate.path and crate.path.decl_col.s or 999
+                )
             end
-            local def_col_end = 0
-            if crate.def then
-                def_col_end = crate.def.col.e
-            end
-            local col = math.max(vers_col_end, def_col_end)
             vim.api.nvim_buf_set_text(
                 buf, line, col, line, col,
-                { ", features = [" .. t .. "]" }
+                { text }
             )
             return Range.pos(line)
         end
@@ -354,7 +358,15 @@ local function disable_def_features(buf: integer, crate: toml.Crate): Range
         return crate.lines
     else
         if crate.syntax == "table" then
-            local line = math.max((crate.vers.line or 0) + 1, crate.feat.line or 0)
+            local line = math.max(
+                crate.vers and crate.vers.line + 1 or 0,
+                crate.pkg and crate.pkg.line + 1 or 0
+            )
+            line = line ~= 0 and line or math.min(
+                crate.feat and crate.feat.line or 999,
+                crate.git and crate.git.line or 999,
+                crate.path and crate.path.line or 999
+            )
             vim.api.nvim_buf_set_lines(
                 buf,
                 line,
@@ -392,22 +404,23 @@ local function disable_def_features(buf: integer, crate: toml.Crate): Range
             return crate.lines
         elseif crate.syntax == "inline_table" then
             local line = crate.lines.s
-            if crate.vers then
-                local col = crate.vers.col.e
-                if crate.vers.quote.e then
-                    col = col + 1
-                end
-                vim.api.nvim_buf_set_text(
-                    buf, line, col, line, col,
-                    { ", default_features = false" }
-                )
-            elseif crate.feat then
-                local col = crate.feat.decl_col.s
-                vim.api.nvim_buf_set_text(
-                    buf, line, col, line, col,
-                    { " default_features = false," }
+            local text = ", default_features = false"
+            local col = math.max(
+                crate.vers and crate.vers.col.e + (crate.vers.quote.e and 1 or 0) or 0,
+                crate.pkg and crate.pkg.col.e or 0
+            )
+            if col == 0 then
+                text = " default_features = false,"
+                col = math.min(
+                    crate.feat and crate.def.col.s or 999,
+                    crate.git and crate.git.decl_col.s or 999,
+                    crate.path and crate.path.decl_col.s or 999
                 )
             end
+            vim.api.nvim_buf_set_text(
+                buf, line, col, line, col,
+                { text }
+            )
             return crate.lines
         end
     end
