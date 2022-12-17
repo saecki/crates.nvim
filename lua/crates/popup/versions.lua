@@ -34,6 +34,7 @@ local function select_version(ctx, line, alt)
       if crate.syntax == "table" then
          local c = toml.parse_crate_table_vers(text)
          if c and c.vers then
+            crate.vers = crate.vers or c.vers
             crate.vers.line = l
             crate.vers.col = c.vers.col
             crate.vers.decl_col = c.vers.decl_col
@@ -42,6 +43,7 @@ local function select_version(ctx, line, alt)
       elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
          local c = toml.parse_crate(text)
          if c and c.vers then
+            crate.vers = crate.vers or c.vers
             crate.vers.line = l
             crate.vers.col = c.vers.col
             crate.vers.decl_col = c.vers.decl_col
