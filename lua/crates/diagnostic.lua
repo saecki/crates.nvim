@@ -228,84 +228,89 @@ function M.process_crate_versions(crate, versions)
       info.dep_kind = "registry"
    end
 
-   if newest then
-      if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
+   if info.dep_kind == "registry" then
+      if newest then
+         if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
 
-         info.vers_match = newest
-         info.match_kind = "version"
-
-         if crate.vers and crate.vers.text ~= util.version_text(crate, newest.parsed) then
-            info.vers_update = newest
-         end
-      else
-
-         local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
-         info.vers_match = match or match_pre or match_yanked
-         info.vers_upgrade = newest
-
-         if info.vers_match then
-            if crate.vers and crate.vers.text ~= util.version_text(crate, info.vers_match.parsed) then
-               info.vers_update = info.vers_match
-            end
-         end
-
-         table.insert(diagnostics, crate_diagnostic(
-         crate,
-         "vers_upgrade",
-         vim.diagnostic.severity.WARN,
-         "vers"))
-
-
-         if match then
-
+            info.vers_match = newest
             info.match_kind = "version"
-         elseif match_pre then
 
-            info.match_kind = "prerelease"
+            if crate.vers and crate.vers.text ~= util.version_text(crate, newest.parsed) then
+               info.vers_update = newest
+            end
+         else
+
+            local match, match_pre, match_yanked = util.get_newest(versions, avoid_pre, crate:vers_reqs())
+            info.vers_match = match or match_pre or match_yanked
+            info.vers_upgrade = newest
+
+            if info.vers_match then
+               if crate.vers and crate.vers.text ~= util.version_text(crate, info.vers_match.parsed) then
+                  info.vers_update = info.vers_match
+               end
+            end
+
             table.insert(diagnostics, crate_diagnostic(
             crate,
-            "vers_pre",
+            "vers_upgrade",
             vim.diagnostic.severity.WARN,
             "vers"))
 
-         elseif match_yanked then
 
-            info.match_kind = "yanked"
-            table.insert(diagnostics, crate_diagnostic(
-            crate,
-            "vers_yanked",
-            vim.diagnostic.severity.ERROR,
-            "vers"))
+            if match then
 
-         else
+               info.match_kind = "version"
+            elseif match_pre then
 
-            info.match_kind = "nomatch"
-            local kind = "vers_nomatch"
+               info.match_kind = "prerelease"
+               table.insert(diagnostics, crate_diagnostic(
+               crate,
+               "vers_pre",
+               vim.diagnostic.severity.WARN,
+               "vers"))
 
-            if not crate.vers then
-               kind = "crate_novers"
+            elseif match_yanked then
+
+               info.match_kind = "yanked"
+               table.insert(diagnostics, crate_diagnostic(
+               crate,
+               "vers_yanked",
+               vim.diagnostic.severity.ERROR,
+               "vers"))
+
+            else
+
+               info.match_kind = "nomatch"
+               local kind = "vers_nomatch"
+               if not crate.vers then
+                  kind = "crate_novers"
+               end
+               table.insert(diagnostics, crate_diagnostic(
+               crate,
+               kind,
+               vim.diagnostic.severity.ERROR,
+               "vers"))
+
             end
-            table.insert(diagnostics, crate_diagnostic(
-            crate,
-            kind,
-            vim.diagnostic.severity.ERROR,
-            "vers"))
-
          end
-      end
-   elseif info.dep_kind == "registry" then
-      table.insert(diagnostics, crate_diagnostic(
-      crate,
-      "crate_error_fetching",
-      vim.diagnostic.severity.ERROR,
-      "vers"))
+      else
+         table.insert(diagnostics, crate_diagnostic(
+         crate,
+         "crate_error_fetching",
+         vim.diagnostic.severity.ERROR,
+         "vers"))
 
+      end
    end
 
    return info, diagnostics
 end
 
 function M.process_crate_deps(crate, version, deps)
+   if crate.path or crate.git then
+      return {}
+   end
+
    local diagnostics = {}
 
    local valid_feats = {}

@@ -118,15 +118,17 @@ function M.update(buf: integer|nil, reload: boolean)
             ui.display_crate_info(buf, info, v_diagnostics)
 
             local version: Version = info.vers_match or info.vers_upgrade
-            if version.deps then
-                local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
-                vim.list_extend(cache.diagnostics, d_diagnostics)
+            if version then
+                if version.deps then
+                    local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
+                    vim.list_extend(cache.diagnostics, d_diagnostics)
 
-                ui.display_diagnostics(buf, d_diagnostics)
-            else
-                M.reload_deps(c.name, versions, version)
+                    ui.display_diagnostics(buf, d_diagnostics)
+                else
+                    M.reload_deps(c.name, versions, version)
+                end
             end
-        elseif c.vers and not (c.git or c.path) then
+        else
             if state.cfg.loading_indicator then
                 ui.display_loading(buf, c)
             end
