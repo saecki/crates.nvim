@@ -99,6 +99,8 @@ local M = {Section = {}, Crate = {Vers = {}, Path = {}, Git = {}, Pkg = {}, Def 
 
 
 
+
+
 local Section = M.Section
 local Crate = M.Crate
 local Feature = M.Feature
@@ -108,15 +110,15 @@ local Range = types.Range
 local Requirement = types.Requirement
 
 local function inline_table_bool_pattern(name)
-   return "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*()([^%s,]*)()%s*()[,]?.*[}]?%s*$"
+   return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*()([^%s,]*)()%s*()[,]?.*[}]?%s*$"
 end
 
 local function inline_table_str_pattern(name)
-   return [[^%s*([^%s]+)%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+   return [[^%s()*([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
 end
 
 local function inline_table_str_array_pattern(name)
-   return "^%s*([^%s]+)%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
+   return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
 end
 
 local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
@@ -204,8 +206,8 @@ function Crate:cache_key()
 end
 
 
-function M.parse_section(text)
-   local prefix, suffix = text:match("^(.*)dependencies(.*)$")
+function M.parse_section(text, start)
+   local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
    if prefix and suffix then
       prefix = vim.trim(prefix)
       suffix = vim.trim(suffix)
@@ -244,9 +246,11 @@ function M.parse_section(text)
       end
 
       if suffix then
-         local n = suffix:match("^%.(.+)$")
+         local n_s, n, n_e = suffix:match("^%.%s*()(.+)()%s*$")
          if n then
             section.name = vim.trim(n)
+            local offset = start + suffix_s - 1
+            section.name_col = Range.new(n_s - 1 + offset, n_e - 1 + offset)
             suffix = ""
          end
       end
@@ -331,9 +335,10 @@ function M.parse_crate_table_def(line)
 end
 
 local function parse_inline_table_str(crate, entry, line, pattern)
-   local name, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
+   local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
    if name then
       crate.name = name
+      crate.name_col = Range.new(name_s - 1, name_e - 1)
       crate.syntax = "inline_table"
       crate[entry] = {
          text = text,
@@ -347,10 +352,11 @@ end
 function M.parse_crate(line)
 
    do
-      local name, quote_s, str_s, text, str_e, quote_e = line:match([[^%s*([^%s]+)%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+      local name_s, name, name_e, quote_s, str_s, text, str_e, quote_e = line:match([[^%s*()([^%s]+)()%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
       if name then
          return {
             name = name,
+            name_col = Range.new(name_s - 1, name_e - 1),
             syntax = "plain",
             vers = {
                text = text,
@@ -370,9 +376,10 @@ function M.parse_crate(line)
    parse_inline_table_str(crate, "git", line, INLINE_TABLE_GIT_PATTERN)
 
    do
-      local name, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
+      local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
       if name then
          crate.name = name
+         crate.name_col = Range.new(name_s - 1, name_e - 1)
          crate.syntax = "inline_table"
          crate.feat = {
             text = text,
@@ -383,9 +390,10 @@ function M.parse_crate(line)
    end
 
    do
-      local name, decl_s, bool_s, text, bool_e, decl_e = line:match(INLINE_TABLE_DEF_PATTERN)
+      local name_s, name, name_e, decl_s, bool_s, text, bool_e, decl_e = line:match(INLINE_TABLE_DEF_PATTERN)
       if name then
          crate.name = name
+         crate.name_col = Range.new(name_s - 1, name_e - 1)
          crate.syntax = "inline_table"
          crate.def = {
             text = text,
@@ -397,10 +405,11 @@ function M.parse_crate(line)
 
 
    do
-      local name, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(INLINE_TABLE_PKG_PATTERN)
+      local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(INLINE_TABLE_PKG_PATTERN)
       if name then
          crate.name = text
          crate.rename = name
+         crate.name_col = Range.new(name_s - 1, name_e - 1)
          crate.syntax = "inline_table"
          crate.pkg = {
             text = text,
@@ -435,7 +444,7 @@ function M.parse_crates(buf)
    for i, l in ipairs(lines) do
       l = M.trim_comments(l)
 
-      local section_text = l:match("^%s*%[(.+)%]%s*$")
+      local section_start, section_text = l:match("^%s*%[()(.+)%]%s*$")
 
       if section_text then
          if dep_section then
@@ -449,7 +458,7 @@ function M.parse_crates(buf)
             end
          end
 
-         local section = M.parse_section(section_text)
+         local section = M.parse_section(section_text, section_start - 1)
 
          if section then
             section.lines = Range.new(i - 1, nil)
@@ -464,6 +473,7 @@ function M.parse_crates(buf)
          local crate_vers = M.parse_crate_table_vers(l)
          if crate_vers then
             crate_vers.name = dep_section.name
+            crate_vers.name_col = dep_section.name_col
             crate_vers.vers.line = i - 1
             crate_vers.section = dep_section
             dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_vers)
@@ -472,6 +482,7 @@ function M.parse_crates(buf)
          local crate_path = M.parse_crate_table_path(l)
          if crate_path then
             crate_path.name = dep_section.name
+            crate_path.name_col = dep_section.name_col
             crate_path.path.line = i - 1
             crate_path.section = dep_section
             dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_path)
@@ -480,6 +491,7 @@ function M.parse_crates(buf)
          local crate_git = M.parse_crate_table_git(l)
          if crate_git then
             crate_git.name = dep_section.name
+            crate_git.name_col = dep_section.name_col
             crate_git.git.line = i - 1
             crate_git.section = dep_section
             dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_git)
@@ -488,6 +500,7 @@ function M.parse_crates(buf)
          local crate_feat = M.parse_crate_table_feat(l)
          if crate_feat then
             crate_feat.name = dep_section.name
+            crate_feat.name_col = dep_section.name_col
             crate_feat.feat.line = i - 1
             crate_feat.section = dep_section
             dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_feat)
@@ -496,6 +509,7 @@ function M.parse_crates(buf)
          local crate_def = M.parse_crate_table_def(l)
          if crate_def then
             crate_def.name = dep_section.name
+            crate_def.name_col = dep_section.name_col
             crate_def.def.line = i - 1
             crate_def.section = dep_section
             dep_section_crate = vim.tbl_extend("keep", dep_section_crate or {}, crate_def)
@@ -505,8 +519,9 @@ function M.parse_crates(buf)
          local crate_pkg = M.parse_crate_table_pkg(l)
          if crate_pkg then
             local crate = dep_section_crate or {}
-            crate.rename = dep_section.name
             crate.name = crate_pkg.pkg.text
+            crate.rename = dep_section.name
+            crate.name_col = dep_section.name_col
 
             crate_pkg.pkg.line = i - 1
             crate_pkg.section = dep_section
