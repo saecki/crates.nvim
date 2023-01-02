@@ -31,15 +31,15 @@ local function line_crate_info()
    local _, crate = next(crates)
    if not crate then return end
 
-   local versions = state.api_cache.versions[crate.name]
-   if not versions then return end
+   local api_crate = state.api_cache.crates[crate.name]
+   if not api_crate then return end
 
    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
-   local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
+   local newest = util.get_newest(api_crate.versions, avoid_pre, crate:vers_reqs())
 
    local info = {
       crate = crate,
-      versions = versions,
+      versions = api_crate.versions,
       newest = newest,
    }
 

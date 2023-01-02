@@ -41,17 +41,17 @@ local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
     popup.transaction = transaction
 
     local crate_name = selected_dependency.name
-    local versions = state.api_cache.versions[crate_name]
+    local crate = state.api_cache.crates[crate_name]
 
-    if not versions then
+    if not crate then
         popup.show_loading_indicator()
 
-        if not api.is_fetching_vers(crate_name) then
+        if not api.is_fetching_crate(crate_name) then
             core.reload_crate(crate_name)
         end
 
         local cancelled: boolean
-        versions, cancelled = api.await_vers(crate_name)
+        crate, cancelled = api.await_crate(crate_name)
 
         popup.hide_loading_indicator(transaction)
         if cancelled then return end
@@ -62,14 +62,14 @@ local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
         return
     end
 
-    local m, p, y = util.get_newest(versions, false, selected_dependency.vers.reqs)
+    local m, p, y = util.get_newest(crate.versions, false, selected_dependency.vers.reqs)
     local version = m or p or y
 
     if not version.deps then
         popup.show_loading_indicator()
 
         if not api.is_fetching_deps(crate_name, version.num) then
-            core.reload_deps(crate_name, versions, version)
+            core.reload_deps(crate_name, crate.versions, version)
         end
         local _, cancelled = api.await_deps(crate_name, version.num)
 

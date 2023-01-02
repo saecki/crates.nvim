@@ -18,7 +18,6 @@ local M = {CrateJob = {}, VersJob = {}, DepsJob = {}, }
 
 
 
-
 local semver = require("crates.semver")
 local state = require("crates.state")
 local time = require("crates.time")
@@ -35,7 +34,6 @@ local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/cra
 local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 
 M.crate_jobs = {}
-M.vers_jobs = {}
 M.deps_jobs = {}
 
 
@@ -81,80 +79,25 @@ function M.parse_crate(json_str)
       repository = c.repository,
       categories = {},
       keywords = {},
+      versions = {},
    }
 
-   if json.categories then
-      for _, ct_id in ipairs(c.categories) do
-         for _, ct in ipairs(json.categories) do
-            if ct.id == ct_id then
-               table.insert(crate.categories, ct.category)
-            end
+   for _, ct_id in ipairs(c.categories) do
+      for _, ct in ipairs(json.categories) do
+         if ct.id == ct_id then
+            table.insert(crate.categories, ct.category)
          end
       end
    end
 
-   if json.keywords then
-      for _, kw_id in ipairs(c.keywords) do
-         for _, kw in ipairs(json.keywords) do
-            if kw.id == kw_id then
-               table.insert(crate.keywords, kw.keyword)
-            end
+   for _, kw_id in ipairs(c.keywords) do
+      for _, kw in ipairs(json.keywords) do
+         if kw.id == kw_id then
+            table.insert(crate.keywords, kw.keyword)
          end
       end
    end
 
-   return crate
-end
-
-local function fetch_crate(name, callback)
-   if M.crate_jobs[name] then
-      return
-   end
-
-   local callbacks = { callback }
-   local url = string.format("%s/crates/%s", ENDPOINT, name)
-
-   local function on_exit(j, code, signal)
-      local cancelled = signal ~= 0
-
-      local json = nil
-      if code == 0 then
-         json = table.concat(j:result(), "\n")
-      end
-
-      local crate = nil
-      if not cancelled then
-         crate = M.parse_crate(json)
-      end
-      for _, c in ipairs(callbacks) do
-         c(crate, cancelled)
-      end
-
-      M.crate_jobs[name] = nil
-   end
-
-   local job = request_job(url, on_exit)
-   M.crate_jobs[name] = {
-      job = job,
-      callbacks = callbacks,
-   }
-   job:start()
-end
-
-function M.fetch_crate(name)
-   return coroutine.yield(function(resolve)
-      fetch_crate(name, resolve)
-   end)
-end
-
-
-function M.parse_vers(json_str)
-   local json = parse_json(json_str)
-   if not (json and json.versions) then
-      return
-   end
-
-   local versions = {}
    for _, v in ipairs(json.versions) do
       if v.num then
          local version = {
@@ -200,20 +143,21 @@ function M.parse_vers(json_str)
             }
          end
 
-         table.insert(versions, version)
+         table.insert(crate.versions, version)
       end
    end
 
-   return versions
+
+   return crate
 end
 
-local function fetch_vers(name, callback)
-   if M.vers_jobs[name] then
+local function fetch_crate(name, callback)
+   if M.crate_jobs[name] then
       return
    end
 
    local callbacks = { callback }
-   local url = string.format("%s/crates/%s/versions", ENDPOINT, name)
+   local url = string.format("%s/crates/%s", ENDPOINT, name)
 
    local function on_exit(j, code, signal)
       local cancelled = signal ~= 0
@@ -223,28 +167,28 @@ local function fetch_vers(name, callback)
          json = table.concat(j:result(), "\n")
       end
 
-      local versions = nil
+      local crate = nil
       if not cancelled then
-         versions = M.parse_vers(json)
+         crate = M.parse_crate(json)
       end
       for _, c in ipairs(callbacks) do
-         c(versions, cancelled)
+         c(crate, cancelled)
       end
 
-      M.vers_jobs[name] = nil
+      M.crate_jobs[name] = nil
    end
 
    local job = request_job(url, on_exit)
-   M.vers_jobs[name] = {
+   M.crate_jobs[name] = {
       job = job,
       callbacks = callbacks,
    }
    job:start()
 end
 
-function M.fetch_vers(name)
+function M.fetch_crate(name)
    return coroutine.yield(function(resolve)
-      fetch_vers(name, resolve)
+      fetch_crate(name, resolve)
    end)
 end
 
@@ -316,24 +260,24 @@ function M.fetch_deps(name, version)
    end)
 end
 
-function M.is_fetching_vers(name)
-   return M.vers_jobs[name] ~= nil
+function M.is_fetching_crate(name)
+   return M.crate_jobs[name] ~= nil
 end
 
 function M.is_fetching_deps(name, version)
    return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
-local function add_vers_callback(name, callback)
+local function add_crate_callback(name, callback)
    table.insert(
-   M.vers_jobs[name].callbacks,
+   M.crate_jobs[name].callbacks,
    callback)
 
 end
 
-function M.await_vers(name)
+function M.await_crate(name)
    return coroutine.yield(function(resolve)
-      add_vers_callback(name, resolve)
+      add_crate_callback(name, resolve)
    end)
 end
 
@@ -351,13 +295,13 @@ function M.await_deps(name, version)
 end
 
 function M.cancel_jobs()
-   for _, r in pairs(M.vers_jobs) do
+   for _, r in pairs(M.crate_jobs) do
       r.job:shutdown(1, 1)
    end
    for _, r in pairs(M.deps_jobs) do
       r.job:shutdown(1, 1)
    end
-   M.vers_jobs = {}
+   M.crate_jobs = {}
    M.deps_jobs = {}
 end
 

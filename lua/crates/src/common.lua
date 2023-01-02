@@ -105,10 +105,10 @@ local function complete()
       return
    end
 
-   local versions = state.api_cache.versions[crate.name]
+   local api_crate = state.api_cache.crates[crate.name]
 
-   if not versions and api.is_fetching_vers(crate.name) then
-      local _versions, cancelled = api.await_vers(crate.name)
+   if not api_crate and api.is_fetching_crate(crate.name) then
+      local _api_crate, cancelled = api.await_crate(crate.name)
 
       if cancelled or buf ~= util.current_buf() then
          return
@@ -121,19 +121,19 @@ local function complete()
          return
       end
 
-      versions = state.api_cache.versions[crate.name]
+      api_crate = state.api_cache.crates[crate.name]
    end
 
-   if not versions then
+   if not api_crate then
       return
    end
 
    if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
-      return complete_versions(crate, versions)
+      return complete_versions(crate, api_crate.versions)
    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
       for _, f in ipairs(crate.feat.items) do
          if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
-            return complete_features(crate, f, versions)
+            return complete_features(crate, f, api_crate.versions)
          end
       end
    end

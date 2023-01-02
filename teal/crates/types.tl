@@ -67,6 +67,7 @@ local record M
         documentation: string|nil
         categories: {string}
         keywords: {string}
+        versions: {Version}
     end
 
     record Version

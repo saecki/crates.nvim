@@ -6,7 +6,6 @@ local record State
 
     record ApiCache
         crates: {string:Crate}
-        versions: {string:{Version}}
     end
 
     record BufCache
@@ -23,12 +22,10 @@ local types = require("crates.types")
 local Crate = types.Crate
 local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
-local Version = types.Version
 
 State.cfg = {}
 State.api_cache = {
     crates = {},
-    versions = {},
 }
 State.buf_cache = {}
 State.visible = true
