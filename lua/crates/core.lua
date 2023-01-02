@@ -50,9 +50,10 @@ end)
 
 M.reload_crate = async.wrap(function(crate_name)
    local crate, cancelled = api.fetch_crate(crate_name)
+   local versions = crate and crate.versions
    if cancelled then return end
 
-   if crate and crate.versions[1] then
+   if versions and versions[1] then
       state.api_cache.crates[crate_name] = crate
    end
 
@@ -60,13 +61,13 @@ M.reload_crate = async.wrap(function(crate_name)
 
       for k, c in pairs(cache.crates) do
          if c.name == crate_name and vim.api.nvim_buf_is_loaded(b) then
-            local info, diagnostics = diagnostic.process_crate_versions(c, crate.versions)
+            local info, diagnostics = diagnostic.process_crate_versions(c, versions)
             cache.info[k] = info
             ui.display_crate_info(b, info, diagnostics)
 
             local version = info.vers_match or info.vers_upgrade
             if version then
-               M.reload_deps(c.name, crate.versions, version)
+               M.reload_deps(c.name, versions, version)
             end
          end
       end
@@ -94,9 +95,10 @@ function M.update(buf, reload)
    ui.display_diagnostics(buf, diagnostics)
    for k, c in pairs(crate_cache) do
       local crate = state.api_cache.crates[c.name]
+      local versions = crate and crate.versions
 
       if not reload and crate then
-         local info, v_diagnostics = diagnostic.process_crate_versions(c, crate.versions)
+         local info, v_diagnostics = diagnostic.process_crate_versions(c, versions)
          cache.info[k] = info
          vim.list_extend(cache.diagnostics, v_diagnostics)
 
@@ -110,7 +112,7 @@ function M.update(buf, reload)
 
                ui.display_diagnostics(buf, d_diagnostics)
             else
-               M.reload_deps(c.name, crate.versions, version)
+               M.reload_deps(c.name, versions, version)
             end
          end
       else
