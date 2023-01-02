@@ -50,6 +50,7 @@ local record M
             crate_dup_orig: string
             crate_novers: string
             crate_error_fetching: string
+            crate_name_case: string
             vers_upgrade: string
             vers_pre: string
             vers_yanked: string
@@ -509,6 +510,11 @@ entry(schema_diagnostic, "crate_novers", {
 entry(schema_diagnostic, "crate_error_fetching", {
     type = "string",
     default = "Error fetching crate",
+    hidden = true,
+})
+entry(schema_diagnostic, "crate_name_case", {
+    type = "string",
+    default = "Incorrect crate name casing",
     hidden = true,
 })
 entry(schema_diagnostic, "vers_upgrade", {

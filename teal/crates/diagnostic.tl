@@ -17,6 +17,7 @@ local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
 local types = require("crates.types")
+local Crate = types.Crate
 local CrateInfo = types.CrateInfo
 local Dependency = types.Dependency
 local Diagnostic = types.Diagnostic
@@ -24,7 +25,13 @@ local DiagnosticKind = types.DiagnosticKind
 local Version = types.Version
 local util = require("crates.util")
 
-local function section_diagnostic(section: toml.Section, kind: DiagnosticKind, severity: integer, scope: SectionScope|nil, data: {string:any}): Diagnostic
+local function section_diagnostic(
+    section: toml.Section,
+    kind: DiagnosticKind,
+    severity: integer,
+    scope: SectionScope|nil,
+    data: {string:any}
+): Diagnostic
     local d = Diagnostic.new {
         lnum = section.lines.s,
         end_lnum = section.lines.e,
@@ -46,7 +53,8 @@ local function crate_diagnostic(
     crate: toml.Crate,
     kind: DiagnosticKind,
     severity: integer,
-    scope: CrateScope|nil
+    scope: CrateScope|nil,
+    data: {string:any}
 ): Diagnostic
     local d = Diagnostic.new {
         lnum = crate.lines.s,
@@ -55,6 +63,7 @@ local function crate_diagnostic(
         end_col = 0,
         severity = severity,
         kind = kind,
+        data = data,
     }
 
     if not scope then
@@ -210,8 +219,9 @@ function M.process_crates(sections: {toml.Section}, crates: {toml.Crate}): {stri
     return cache, diagnostics
 end
 
-function M.process_crate_versions(crate: toml.Crate, versions: {Version}): CrateInfo, {Diagnostic}
+function M.process_api_crate(crate: toml.Crate, api_crate: Crate): CrateInfo, {Diagnostic}
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local versions = api_crate and api_crate.versions
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
 
@@ -227,6 +237,18 @@ function M.process_crate_versions(crate: toml.Crate, versions: {Version}): Crate
         info.dep_kind = "git"
     else
         info.dep_kind = "registry"
+    end
+    
+    if api_crate then
+        if api_crate.name ~= crate.name then
+            table.insert(diagnostics, crate_diagnostic(
+                crate,
+                "crate_name_case",
+                vim.diagnostic.severity.ERROR,
+                nil,
+                { crate = crate, crate_name = api_crate.name }
+            ))
+        end
     end
 
     if info.dep_kind == "registry" then

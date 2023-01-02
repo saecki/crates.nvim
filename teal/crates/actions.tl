@@ -123,6 +123,12 @@ function M.open_crates_io()
     end
 end
 
+local function rename_crate_action(buf: integer, crate: toml.Crate, name: string): function
+    return function()
+        edit.rename_crate(buf, crate, name)
+    end
+end
+
 local function remove_diagnostic_range_action(buf: integer, d: Diagnostic): function
     return function()
         vim.api.nvim_buf_set_text(buf, d.lnum, d.col, d.end_lnum, d.end_col, {})
@@ -177,6 +183,8 @@ function M.get_actions(): {string:function}
             actions["remove_duplicate_crate"] = remove_diagnostic_range_action(buf, d)
         elseif d.kind == "crate_dup_orig" then
             actions["remove_original_crate"] = remove_diagnostic_range_action(buf, d)
+        elseif d.kind == "crate_name_case" then
+            actions["rename_crate"] = rename_crate_action(buf, d.data["crate"] as toml.Crate, d.data["crate_name"] as string)
 
         elseif crate and d.kind == "feat_dup" then
             actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)

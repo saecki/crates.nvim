@@ -216,6 +216,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -509,6 +510,11 @@ entry(schema_diagnostic, "crate_novers", {
 entry(schema_diagnostic, "crate_error_fetching", {
    type = "string",
    default = "Error fetching crate",
+   hidden = true,
+})
+entry(schema_diagnostic, "crate_name_case", {
+   type = "string",
+   default = "Incorrect crate name casing",
    hidden = true,
 })
 entry(schema_diagnostic, "vers_upgrade", {

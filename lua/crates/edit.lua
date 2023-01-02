@@ -10,6 +10,10 @@ local Range = types.Range
 local SemVer = types.SemVer
 local Requirement = types.Requirement
 
+function M.rename_crate(buf, crate, name)
+   vim.api.nvim_buf_set_text(buf, crate.lines.s, crate.name_col.s, crate.lines.s, crate.name_col.e, { name })
+end
+
 local function insert_version(buf, crate, text)
    if not crate.vers then
       if crate.syntax == "table" then

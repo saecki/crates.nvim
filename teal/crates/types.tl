@@ -42,6 +42,7 @@ local record M
         "crate_dup"
         "crate_novers"
         "crate_error_fetching"
+        "crate_name_case"
         "vers_nomatch"
         "vers_yanked"
         "def_invalid"
