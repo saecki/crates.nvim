@@ -1,12 +1,8 @@
 local record State
     cfg: Config
-    api_cache: ApiCache
+    api_cache: {string:Crate}
     buf_cache: {integer:BufCache}
     visible: boolean
-
-    record ApiCache
-        crates: {string:Crate}
-    end
 
     record BufCache
         crates: {string:toml.Crate}
@@ -24,9 +20,7 @@ local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
 
 State.cfg = {}
-State.api_cache = {
-    crates = {},
-}
+State.api_cache = {}
 State.buf_cache = {}
 State.visible = true
 

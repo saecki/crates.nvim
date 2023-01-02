@@ -31,7 +31,7 @@ local function line_crate_info(): LineCrateInfo
     local _,crate = next(crates)
     if not crate then return end
 
-    local api_crate = state.api_cache.crates[crate.name]
+    local api_crate = state.api_cache[crate.name]
     if not api_crate then return end
 
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
@@ -119,7 +119,7 @@ function M.show()
     if not info then return end
 
     if info.pref == "crate" then
-        local crate = state.api_cache.crates[info.crate.name]
+        local crate = state.api_cache[info.crate.name]
         if crate then
             popup_crate.open(crate)
         end
@@ -155,7 +155,7 @@ function M.show_crate()
     local info = line_crate_info()
     if not info then return end
 
-    local crate = state.api_cache.crates[info.crate.name]
+    local crate = state.api_cache[info.crate.name]
     if crate then
         popup_crate.open(crate)
     end

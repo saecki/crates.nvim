@@ -1,8 +1,4 @@
-local State = {ApiCache = {}, BufCache = {}, }
-
-
-
-
+local State = {BufCache = {}, }
 
 
 
@@ -24,9 +20,7 @@ local CrateInfo = types.CrateInfo
 local Diagnostic = types.Diagnostic
 
 State.cfg = {}
-State.api_cache = {
-   crates = {},
-}
+State.api_cache = {}
 State.buf_cache = {}
 State.visible = true
 

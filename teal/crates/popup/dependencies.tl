@@ -41,7 +41,7 @@ local goto_dep = async.wrap(function(ctx: DepsContext, line: integer)
     popup.transaction = transaction
 
     local crate_name = selected_dependency.name
-    local crate = state.api_cache.crates[crate_name]
+    local crate = state.api_cache[crate_name]
 
     if not crate then
         popup.show_loading_indicator()

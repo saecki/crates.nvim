@@ -76,7 +76,7 @@ function M.open_homepage()
    local crates = util.get_line_crates(buf, Range.pos(line))
    local _, crate = next(crates)
    if crate then
-      local crate_info = state.api_cache.crates[crate.name]
+      local crate_info = state.api_cache[crate.name]
       if crate_info and crate_info.homepage then
          util.open_url(crate_info.homepage)
       else
@@ -91,7 +91,7 @@ function M.open_repository()
    local crates = util.get_line_crates(buf, Range.pos(line))
    local _, crate = next(crates)
    if crate then
-      local crate_info = state.api_cache.crates[crate.name]
+      local crate_info = state.api_cache[crate.name]
       if crate_info and crate_info.repository then
          util.open_url(crate_info.repository)
       else
@@ -106,7 +106,7 @@ function M.open_documentation()
    local crates = util.get_line_crates(buf, Range.pos(line))
    local _, crate = next(crates)
    if crate then
-      local crate_info = state.api_cache.crates[crate.name]
+      local crate_info = state.api_cache[crate.name]
       local url = crate_info and crate_info.documentation
       url = url or util.docs_rs_url(crate.name)
       util.open_url(url)

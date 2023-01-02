@@ -53,8 +53,8 @@ M.reload_crate = async.wrap(function(crate_name: string)
     local versions = crate and crate.versions
     if cancelled then return end
 
-    if versions and versions[1] then
-        state.api_cache.crates[crate_name] = crate
+    if crate and versions[1] then
+        state.api_cache[crate.name] = crate
     end
 
     for b,cache in pairs(state.buf_cache) do
@@ -78,7 +78,7 @@ function M.update(buf: integer|nil, reload: boolean)
     buf = buf or util.current_buf()
 
     if reload then
-        state.api_cache.crates = {}
+        state.api_cache = {}
         api.cancel_jobs()
     end
 
@@ -94,7 +94,7 @@ function M.update(buf: integer|nil, reload: boolean)
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
     for k,c in pairs(crate_cache) do
-        local crate = state.api_cache.crates[c.name]
+        local crate = state.api_cache[c.name]
         local versions = crate and crate.versions
 
         if not reload and crate then
