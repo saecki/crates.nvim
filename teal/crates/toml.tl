@@ -114,7 +114,7 @@ local function inline_table_bool_pattern(name: string): string
 end
 
 local function inline_table_str_pattern(name: string): string
-    return [[^%s()*([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+    return [[^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
 end
 
 local function inline_table_str_array_pattern(name: string): string
