@@ -92,7 +92,7 @@ function M.setup(cfg: Config)
             pattern = "Cargo.toml",
             callback = async.throttle(function()
                 M.update()
-            end, state.cfg.autoupdate_throttle),
+            end, state.cfg.autoupdate_throttle as integer),
         })
     end
 
