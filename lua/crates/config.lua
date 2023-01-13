@@ -217,6 +217,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -272,6 +274,13 @@ entry(M.schema, "autoupdate", {
    default = true,
    description = [[
         Automatically update when editing text.
+    ]],
+})
+entry(M.schema, "autoupdate_throttle", {
+   type = "integer",
+   default = 250,
+   description = [[
+        Rate limit the auto update in milliseconds
     ]],
 })
 entry(M.schema, "loading_indicator", {

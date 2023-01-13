@@ -86,14 +86,16 @@ function M.setup(cfg)
       })
    end
    if state.cfg.autoupdate then
+      local async = require("crates.async")
       vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
          group = group,
          pattern = "Cargo.toml",
-         callback = function()
+         callback = async.throttle(function()
             M.update()
-         end,
+         end, state.cfg.autoupdate_throttle),
       })
    end
+
    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
       group = group,
       pattern = "Cargo.toml",

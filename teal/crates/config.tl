@@ -7,6 +7,7 @@ local record M
         avoid_prerelease: boolean
         autoload: boolean
         autoupdate: boolean
+        autoupdate_throttle: integer
         loading_indicator: boolean
         date_format: string
         thousands_separator: string
@@ -197,6 +198,7 @@ local record M
         "table"
         "string"
         "number"
+        "integer"
         "boolean"
     end
 
@@ -272,6 +274,13 @@ entry(M.schema, "autoupdate", {
     default = true,
     description = [[
         Automatically update when editing text.
+    ]],
+})
+entry(M.schema, "autoupdate_throttle", {
+    type = "integer",
+    default = 250,
+    description = [[
+        Rate limit the auto update in milliseconds
     ]],
 })
 entry(M.schema, "loading_indicator", {

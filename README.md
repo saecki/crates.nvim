@@ -176,6 +176,7 @@ require('crates').setup {
     avoid_prerelease = true,
     autoload = true,
     autoupdate = true,
+    autoupdate_throttle = 250,
     loading_indicator = true,
     date_format = "%Y-%m-%d",
     thousands_separator = ".",
