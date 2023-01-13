@@ -190,6 +190,7 @@ global record vim
    -- just steal from that
    record loop
       cwd: function(): string
+      now: function(): integer
       sleep: function(integer)
       record Handle
          close: function(Handle)
@@ -363,6 +364,7 @@ global record vim
          inclusive: boolean
       )
    end
+
 
    record diagnostic
       record Severity -- would be great if this could be a tuplerecord

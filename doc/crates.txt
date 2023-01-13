@@ -79,6 +79,7 @@ For more information about individual config options see |crates-config|.
         avoid_prerelease = true,
         autoload = true,
         autoupdate = true,
+        autoupdate_throttle = 250,
         loading_indicator = true,
         date_format = "%Y-%m-%d",
         thousands_separator = ".",
@@ -466,6 +467,12 @@ autoupdate                                          *crates-config-autoupdate*
     Type: `boolean`, Default: `true`
 
     Automatically update when editing text.
+
+
+autoupdate_throttle                        *crates-config-autoupdate_throttle*
+    Type: `number`, Default: `250`
+
+    Rate limit the auto update in milliseconds
 
 
 loading_indicator                            *crates-config-loading_indicator*
