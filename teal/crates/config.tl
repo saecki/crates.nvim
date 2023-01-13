@@ -7,7 +7,7 @@ local record M
         avoid_prerelease: boolean
         autoload: boolean
         autoupdate: boolean
-        autoupdate_throttle: number
+        autoupdate_throttle: integer
         loading_indicator: boolean
         date_format: string
         thousands_separator: string

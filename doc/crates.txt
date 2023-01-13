@@ -470,7 +470,7 @@ autoupdate                                          *crates-config-autoupdate*
 
 
 autoupdate_throttle                        *crates-config-autoupdate_throttle*
-    Type: `integer`, Default: `250`
+    Type: `number`, Default: `250`
 
     Rate limit the auto update in milliseconds
 
