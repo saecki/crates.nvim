@@ -36,7 +36,7 @@ function M.throttle(f, timeout)
 
       if rem > 0 then
 
-         if type(timer) == "nil" then
+         if timer == nil then
             timer = vim.loop.new_timer()
          end
 
