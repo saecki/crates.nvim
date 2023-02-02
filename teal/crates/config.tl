@@ -64,6 +64,7 @@ local record M
 
         record PopupConfig
             autofocus: boolean
+            hide_on_select: boolean
             copy_register: string
             style: string
             border: string|{string}
@@ -580,6 +581,13 @@ entry(schema_popup, "autofocus", {
     default = false,
     description = [[
         Focus the versions popup when opening it.
+    ]],
+})
+entry(schema_popup, "hide_on_select", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Hides the popup after selecting a version.
     ]],
 })
 entry(schema_popup, "copy_register", {

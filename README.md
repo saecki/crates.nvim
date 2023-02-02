@@ -203,6 +203,7 @@ require('crates').setup {
     },
     popup = {
         autofocus = false,
+        hide_on_select = false,
         copy_register = '"',
         style = "minimal",
         border = "none",

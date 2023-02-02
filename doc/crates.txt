@@ -106,6 +106,7 @@ For more information about individual config options see |crates-config|.
         },
         popup = {
             autofocus = false,
+            hide_on_select = false,
             copy_register = '"',
             style = "minimal",
             border = "none",
@@ -636,6 +637,12 @@ popup.autofocus                                *crates-config-popup-autofocus*
     Type: `boolean`, Default: `false`
 
     Focus the versions popup when opening it.
+
+
+popup.hide_on_select                      *crates-config-popup-hide_on_select*
+    Type: `boolean`, Default: `false`
+
+    Hides the popup after selecting a version.
 
 
 popup.copy_register                        *crates-config-popup-copy_register*

@@ -51,6 +51,10 @@ local function select_version(ctx: VersContext, line: integer, alt: boolean|nil)
             end
         end
     end
+
+    if state.cfg.popup.hide_on_select then
+        popup.hide()
+    end
 end
 
 local function copy_version(versions: {Version}, line: integer)
