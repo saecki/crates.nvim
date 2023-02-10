@@ -28,27 +28,34 @@ local function select_version(ctx, line, alt)
    line_range = edit.set_version(ctx.buf, crate, version.parsed, alt)
 
 
-   for l in line_range:iter() do
-      local text = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
+
+
+   if crate.syntax == "table" then
+      for line_nr in line_range:iter() do
+         local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
+         text = toml.trim_comments(text)
+
+         local vers = toml.parse_crate_table_vers(text, line_nr)
+         if vers then
+            crate.vers = crate.vers or vers
+            crate.vers.line = line_nr
+            crate.vers.col = vers.col
+            crate.vers.decl_col = vers.decl_col
+            crate.vers.quote = vers.quote
+         end
+      end
+   elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
+      local line_nr = line_range.s
+      local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
       text = toml.trim_comments(text)
-      if crate.syntax == "table" then
-         local c = toml.parse_crate_table_vers(text)
-         if c and c.vers then
-            crate.vers = crate.vers or c.vers
-            crate.vers.line = l
-            crate.vers.col = c.vers.col
-            crate.vers.decl_col = c.vers.decl_col
-            crate.vers.quote = c.vers.quote
-         end
-      elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
-         local c = toml.parse_crate(text)
-         if c and c.vers then
-            crate.vers = crate.vers or c.vers
-            crate.vers.line = l
-            crate.vers.col = c.vers.col
-            crate.vers.decl_col = c.vers.decl_col
-            crate.vers.quote = c.vers.quote
-         end
+
+      local c = toml.parse_crate(text, line_nr)
+      if c and c.vers then
+         crate.vers = crate.vers or c.vers
+         crate.vers.line = line_nr
+         crate.vers.col = c.vers.col
+         crate.vers.decl_col = c.vers.decl_col
+         crate.vers.quote = c.vers.quote
       end
    end
 
@@ -68,7 +75,7 @@ end
 function M.open(crate, versions, opts)
    popup.type = "versions"
 
-   local title = string.format(state.cfg.popup.text.title, crate.name)
+   local title = string.format(state.cfg.popup.text.title, crate:package())
    local vers_width = 0
    local versions_text = {}
 

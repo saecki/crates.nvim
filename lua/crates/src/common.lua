@@ -105,10 +105,10 @@ local function complete()
       return
    end
 
-   local api_crate = state.api_cache[crate.name]
+   local api_crate = state.api_cache[crate:package()]
 
-   if not api_crate and api.is_fetching_crate(crate.name) then
-      local _api_crate, cancelled = api.await_crate(crate.name)
+   if not api_crate and api.is_fetching_crate(crate:package()) then
+      local _api_crate, cancelled = api.await_crate(crate:package())
 
       if cancelled or buf ~= util.current_buf() then
          return
@@ -121,7 +121,7 @@ local function complete()
          return
       end
 
-      api_crate = state.api_cache[crate.name]
+      api_crate = state.api_cache[crate:package()]
    end
 
    if not api_crate then

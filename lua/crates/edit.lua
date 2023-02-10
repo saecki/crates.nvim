@@ -10,8 +10,17 @@ local Range = types.Range
 local SemVer = types.SemVer
 local Requirement = types.Requirement
 
-function M.rename_crate(buf, crate, name)
-   vim.api.nvim_buf_set_text(buf, crate.lines.s, crate.name_col.s, crate.lines.s, crate.name_col.e, { name })
+function M.rename_crate_package(buf, crate, name)
+   local line, col
+   if crate.pkg then
+      line = crate.pkg.line
+      col = crate.pkg.col
+   else
+      line = crate.lines.s
+      col = crate.explicit_name_col
+   end
+
+   vim.api.nvim_buf_set_text(buf, line, col.s, line, col.e, { name })
 end
 
 local function insert_version(buf, crate, text)

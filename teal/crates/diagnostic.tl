@@ -240,7 +240,7 @@ function M.process_api_crate(crate: toml.Crate, api_crate: Crate): CrateInfo, {D
     end
     
     if api_crate then
-        if api_crate.name ~= crate.name then
+        if api_crate.name ~= crate:package() then
             table.insert(diagnostics, crate_diagnostic(
                 crate,
                 "crate_name_case",

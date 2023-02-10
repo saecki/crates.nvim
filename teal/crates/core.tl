@@ -33,7 +33,7 @@ M.reload_deps = async.wrap(function(crate_name: string, versions: {Version}, ver
         for b,cache in pairs(state.buf_cache) do
             -- update crate in all dependency sections
             for _,c in pairs(cache.crates) do
-                if c.name == crate_name then
+                if c:package() == crate_name then
                     local avoid_pre = state.cfg.avoid_prerelease and not c:vers_is_pre()
                     local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
                     local match = m or p or y
@@ -60,7 +60,7 @@ M.reload_crate = async.wrap(function(crate_name: string)
     for b,cache in pairs(state.buf_cache) do
         -- update crate in all dependency sections
         for k,c in pairs(cache.crates) do
-            if c.name == crate_name and vim.api.nvim_buf_is_loaded(b) then
+            if c:package() == crate_name and vim.api.nvim_buf_is_loaded(b) then
                 local info, diagnostics = diagnostic.process_api_crate(c, crate)
                 cache.info[k] = info
                 vim.list_extend(cache.diagnostics, diagnostics)
@@ -69,7 +69,7 @@ M.reload_crate = async.wrap(function(crate_name: string)
 
                 local version = info.vers_match or info.vers_upgrade
                 if version then
-                    M.reload_deps(c.name, versions, version)
+                    M.reload_deps(c:package(), versions, version)
                 end
             end
         end
@@ -96,7 +96,7 @@ function M.update(buf: integer|nil, reload: boolean)
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
     for k,c in pairs(crate_cache) do
-        local crate = state.api_cache[c.name]
+        local crate = state.api_cache[c:package()]
         local versions = crate and crate.versions
 
         if not reload and crate then
@@ -114,7 +114,7 @@ function M.update(buf: integer|nil, reload: boolean)
 
                     ui.display_diagnostics(buf, d_diagnostics)
                 else
-                    M.reload_deps(c.name, versions, version)
+                    M.reload_deps(c:package(), versions, version)
                 end
             end
         else
@@ -122,7 +122,7 @@ function M.update(buf: integer|nil, reload: boolean)
                 ui.display_loading(buf, c)
             end
 
-            M.reload_crate(c.name)
+            M.reload_crate(c:package())
         end
     end
 end

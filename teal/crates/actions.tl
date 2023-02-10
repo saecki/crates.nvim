@@ -76,11 +76,11 @@ function M.open_homepage()
     local crates = util.get_line_crates(buf, Range.pos(line))
     local _,crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate.name]
+        local crate_info = state.api_cache[crate:package()]
         if crate_info and crate_info.homepage then
             util.open_url(crate_info.homepage)
         else
-            util.notify(vim.log.levels.INFO, "The crate '%s' has no homepage specified", crate.name)
+            util.notify(vim.log.levels.INFO, "The crate '%s' has no homepage specified", crate:package())
         end
     end
 end
@@ -91,11 +91,11 @@ function M.open_repository()
     local crates = util.get_line_crates(buf, Range.pos(line))
     local _,crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate.name]
+        local crate_info = state.api_cache[crate:package()]
         if crate_info and crate_info.repository then
             util.open_url(crate_info.repository)
         else
-            util.notify(vim.log.levels.INFO, "The crate '%s' has no repository specified", crate.name)
+            util.notify(vim.log.levels.INFO, "The crate '%s' has no repository specified", crate:package())
         end
     end
 end
@@ -106,9 +106,9 @@ function M.open_documentation()
     local crates = util.get_line_crates(buf, Range.pos(line))
     local _,crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate.name]
+        local crate_info = state.api_cache[crate:package()]
         local url = crate_info and crate_info.documentation
-        url = url or util.docs_rs_url(crate.name)
+        url = url or util.docs_rs_url(crate:package())
         util.open_url(url)
     end
 end
@@ -119,13 +119,13 @@ function M.open_crates_io()
     local crates = util.get_line_crates(buf, Range.pos(line))
     local _,crate = next(crates)
     if crate then
-        util.open_url(util.crates_io_url(crate.name))
+        util.open_url(util.crates_io_url(crate:package()))
     end
 end
 
-local function rename_crate_action(buf: integer, crate: toml.Crate, name: string): function
+local function rename_crate_package_action(buf: integer, crate: toml.Crate, name: string): function
     return function()
-        edit.rename_crate(buf, crate, name)
+        edit.rename_crate_package(buf, crate, name)
     end
 end
 
@@ -184,7 +184,7 @@ function M.get_actions(): {string:function}
         elseif d.kind == "crate_dup_orig" then
             actions["remove_original_crate"] = remove_diagnostic_range_action(buf, d)
         elseif d.kind == "crate_name_case" then
-            actions["rename_crate"] = rename_crate_action(buf, d.data["crate"] as toml.Crate, d.data["crate_name"] as string)
+            actions["rename_crate"] = rename_crate_package_action(buf, d.data["crate"] as toml.Crate, d.data["crate_name"] as string)
 
         elseif crate and d.kind == "feat_dup" then
             actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"] as toml.Feature)

@@ -31,7 +31,7 @@ local function line_crate_info(): LineCrateInfo
     local _,crate = next(crates)
     if not crate then return end
 
-    local api_crate = state.api_cache[crate.name]
+    local api_crate = state.api_cache[crate:package()]
     if not api_crate then return end
 
     local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
@@ -119,7 +119,7 @@ function M.show()
     if not info then return end
 
     if info.pref == "crate" then
-        local crate = state.api_cache[info.crate.name]
+        local crate = state.api_cache[info.crate:package()]
         if crate then
             popup_crate.open(crate)
         end
@@ -130,7 +130,7 @@ function M.show()
     elseif info.pref == "feature_details" then
         popup_feat.open_details(info.crate, info.newest, info.feature, {})
     elseif info.pref == "dependencies" then
-        popup_deps.open(info.crate.name, info.newest, {})
+        popup_deps.open(info.crate:package(), info.newest, {})
     end
 end
 
@@ -155,7 +155,7 @@ function M.show_crate()
     local info = line_crate_info()
     if not info then return end
 
-    local crate = state.api_cache[info.crate.name]
+    local crate = state.api_cache[info.crate:package()]
     if crate then
         popup_crate.open(crate)
     end
@@ -212,7 +212,7 @@ function M.show_dependencies()
     local info = line_crate_info()
     if not info then return end
 
-    popup_deps.open(info.crate.name, info.newest, {})
+    popup_deps.open(info.crate:package(), info.newest, {})
 end
 
 return M

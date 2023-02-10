@@ -79,42 +79,40 @@ local function toggle_feature(ctx: FeatureContext, line: integer)
         end
     end
 
-    -- update crate position
-    local c = {}
-    for l in line_range:iter() do
-        local text = vim.api.nvim_buf_get_lines(ctx.buf, l, l + 1, false)[1]
-        text = toml.trim_comments(text)
-        if ctx.crate.syntax == "table" then
-            local cr = toml.parse_crate_table_vers(text)
-            if cr then
-                cr.vers.line = l
-                table.insert(c, cr)
+    -- update crate version, features, and default_features positions
+    -- because they probably have changed after the edits, so toggling
+    -- multiple features will be correct
+    if ctx.crate.syntax == "table" then
+        for line_nr in line_range:iter() do
+            local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
+            text = toml.trim_comments(text)
+
+            local vers = toml.parse_crate_table_vers(text, line_nr)
+            if vers then
+                ctx.crate.vers = vers
             end
-            local cd = toml.parse_crate_table_def(text)
-            if cd then
-                cd.def.line = l
-                table.insert(c, cd)
+            local def = toml.parse_crate_table_def(text, line_nr)
+            if def then
+                ctx.crate.def = def
             end
-            local cf = toml.parse_crate_table_feat(text)
-            if cf then
-                cf.feat.line = l
-                table.insert(c, cf)
+            local feat = toml.parse_crate_table_feat(text, line_nr)
+            if feat then
+                ctx.crate.feat = feat
             end
-        elseif ctx.crate.syntax == "plain" or ctx.crate.syntax == "inline_table" then
-            local cf = toml.parse_crate(text)
-            if cf and cf.vers then
-                cf.vers.line = l
-            end
-            if cf and cf.def then
-                cf.def.line = l
-            end
-            if cf and cf.feat then
-                cf.feat.line = l
-            end
-            table.insert(c, cf)
+
+            ctx.crate = toml.Crate.new(ctx.crate)
         end
+    elseif ctx.crate.syntax == "plain" or ctx.crate.syntax == "inline_table" then
+        local line_nr = line_range.s
+        local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
+        text = toml.trim_comments(text)
+
+        local crate = toml.Crate.new(toml.parse_crate(text, line_nr))
+        ctx.crate.syntax = crate.syntax
+        ctx.crate.vers = crate.vers
+        ctx.crate.feat = crate.feat
+        ctx.crate.def = crate.def
     end
-    ctx.crate = toml.Crate.new(vim.tbl_extend("force", ctx.crate as table, unpack(c) as table) as toml.Crate)
 
     -- update buffer
     local features_text = {}
@@ -289,7 +287,7 @@ function M.open_features(ctx: FeatureContext, crate: toml.Crate, version: Versio
     popup.type = "features"
 
     local features = version.features
-    local title = string.format(state.cfg.popup.text.title, crate.name.." "..version.num)
+    local title = string.format(state.cfg.popup.text.title, crate:package().." "..version.num)
     local feat_width = 0
     local features_text: {{HighlightText}} = {}
 
@@ -319,7 +317,7 @@ function M.open_feature_details(ctx: FeatureContext, crate: toml.Crate, version:
 
     local features = version.features
     local members = feature.members
-    local title = string.format(state.cfg.popup.text.title, crate.name.." "..version.num.." "..feature.name)
+    local title = string.format(state.cfg.popup.text.title, crate:package().." "..version.num.." "..feature.name)
     local feat_width = 0
     local features_text = {}
 
