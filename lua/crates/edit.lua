@@ -56,16 +56,14 @@ local function insert_version(buf, crate, text)
       end
       local line = crate.vers.line
 
-      if t ~= crate.vers.text then
-         vim.api.nvim_buf_set_text(
-         buf,
-         line,
-         crate.vers.col.s,
-         line,
-         crate.vers.col.e,
-         { t })
+      vim.api.nvim_buf_set_text(
+      buf,
+      line,
+      crate.vers.col.s,
+      line,
+      crate.vers.col.e,
+      { t })
 
-      end
       return Range.pos(line)
    end
 end

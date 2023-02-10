@@ -56,16 +56,14 @@ local function insert_version(buf: integer, crate: toml.Crate, text: string): Ra
         end
         local line = crate.vers.line
 
-        if t ~= crate.vers.text then
-            vim.api.nvim_buf_set_text(
-                buf,
-                line,
-                crate.vers.col.s,
-                line,
-                crate.vers.col.e,
-                { t }
-            )
-        end
+        vim.api.nvim_buf_set_text(
+            buf,
+            line,
+            crate.vers.col.s,
+            line,
+            crate.vers.col.e,
+            { t }
+        )
         return Range.pos(line)
     end
 end
