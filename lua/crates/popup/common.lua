@@ -118,8 +118,11 @@ local function set_buf_content(buf, title, text)
 
    set_buf_body(text)
 
-   vim.api.nvim_buf_set_name(buf, "crates")
    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+   vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+   vim.api.nvim_buf_set_option(buf, "swapfile", false)
+   vim.api.nvim_buf_set_option(buf, "filetype", "crates.nvim")
+   vim.api.nvim_buf_set_name(buf, "crates:popup")
 end
 
 function M.update_win(width, height, title, text, opts)
