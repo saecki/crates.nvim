@@ -6,6 +6,8 @@ A neovim plugin that helps managing crates.io dependencies.
 
 Feel free to open issues.
 
+[Screencast from 2023-03-11 05-29-22.webm](https://user-images.githubusercontent.com/43008152/224464963-9810110f-2923-4346-a442-9d4f2723bdff.webm)
+
 ## Features
 - Complete crate versions and features
 - Completion sources for:
@@ -31,14 +33,6 @@ Feel free to open issues.
 - Open floating window with crate dependencies
     - Navigate the dependency hierarchy
     - Indicate if a dependency is optional
-
-![image](https://user-images.githubusercontent.com/43008152/134776663-aae0d50a-ee6e-4539-a766-8cccc629c21a.png)
-
-### Popup
-![image](https://user-images.githubusercontent.com/43008152/134776682-c995b48a-cad5-43d4-80e8-ee3637a5a78a.png)
-
-### Completion
-![image](https://user-images.githubusercontent.com/43008152/134776687-c1359967-4b96-460b-b5f2-2d80b6a09208.png)
 
 ## Setup
 
