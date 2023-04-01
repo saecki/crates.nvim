@@ -451,7 +451,7 @@ nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 You can use `vim.keymap.set` to map lua function to keys directly.
 ```lua
 local crates = require('crates')
-local opts = { noremap = true, silent = true }
+local opts = { silent = true }
 
 vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
 vim.keymap.set('n', '<leader>cr', crates.reload, opts)
@@ -505,7 +505,7 @@ local function show_documentation()
     end
 end
 
-vim.keymap.set('n', 'K', show_documentation, { noremap = true, silent = true })
+vim.keymap.set('n', 'K', show_documentation, { silent = true })
 ```
 
 ## Related projects

@@ -59,7 +59,7 @@ Setup for plain text (without patched font).
                 loading = " ...",
             },
         },
-        cmp = {
+        src = {
             text = {
                 prerelease = " pre-release ",
                 yanked = " yanked ",
@@ -248,7 +248,7 @@ For more information about the lua function see |crates-functions|.
 You can use |vim.keymap.set()| to map lua function to keys directly.
 >
     local crates = require('crates')
-    local opts = { noremap = true, silent = true }
+    local opts = { silent = true }
 
     vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
     vim.keymap.set('n', '<leader>cr', crates.reload, opts)
@@ -304,7 +304,7 @@ How you might integrate `show_popup` into your `init.lua`.
         end
     end
 
-    vim.keymap.set('n', 'K', show_documentation, { noremap = true, silent = true })
+    vim.keymap.set('n', 'K', show_documentation, { silent = true })
 <
 
 ==============================================================================
