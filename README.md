@@ -98,7 +98,8 @@ use {
 ```
 </details>
 
-### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
+### Auto completion
+#### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources.
 ```lua
 require('cmp').setup {
@@ -127,7 +128,7 @@ vim.api.nvim_create_autocmd("BufRead", {
 ```
 </details>
 
-### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
+#### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
 require('crates').setup {
@@ -142,7 +143,8 @@ require('crates').setup {
 }
 ```
 
-### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) source
+### Code actions
+#### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
 local null_ls = require('null-ls')
