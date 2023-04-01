@@ -5,6 +5,7 @@ exec lua "$0" "$@"
 
 local inspect = require("inspect")
 local config = require('lua.crates.config')
+local highlight = require('lua.crates.highlight')
 local version = "0.3.0"
 
 local function format_readme_refs(line)
@@ -118,36 +119,44 @@ local function gen_vimdoc_functions(lines)
 end
 
 local function gen_vimdoc_highlights(lines)
-    local file = io.open("plugin/crates.vim", "r")
-    for l in file:lines("*l") do
-        if l ~= "" then
-            local lname, link = l:match("^highlight default link ([^%s]+)%s+(.+)$")
-            local cname, colors = l:match("^highlight default ([^%s]+)%s+(.+)$")
-            local name = lname or cname
-            if name then
-                local doc_title = name
-                local doc_key = string.format("*crates-hl-%s*", name)
+    for _,value in ipairs(highlight.highlights) do
+        local name = value[1]
+        local hl = value[2]
+        local doc_title = name
+        local doc_key = string.format("*crates-hl-%s*", name)
 
-                local len = string.len(doc_title) + string.len(doc_key)
-                if len < 78 then
-                    local txt = doc_title .. string.rep(" ", 78 - len) .. doc_key
-                    table.insert(lines, txt)
-                else
-                    table.insert(lines, string.format("%78s", doc_key))
-                    table.insert(lines, doc_title)
-                end
+        local len = string.len(doc_title) + string.len(doc_key)
+        if len < 78 then
+            local txt = doc_title .. string.rep(" ", 78 - len) .. doc_key
+            table.insert(lines, txt)
+        else
+            table.insert(lines, string.format("%78s", doc_key))
+            table.insert(lines, doc_title)
+        end
 
-                if link then
-                    table.insert(lines, string.format("    Default: links to |%s|", link))
-                    table.insert(lines, "")
-                elseif colors then
-                    table.insert(lines, string.format("    Default: `%s`", colors))
-                    table.insert(lines, "")
+        if hl.link then
+            table.insert(lines, string.format("    Default: links to |%s|", hl.link))
+            table.insert(lines, "")
+        else
+            local colors = ""
+            local function append_if_not_nil(name, value)
+                if value then
+                    if colors ~= "" then
+                        colors = colors .. " "
+                    end
+                    colors =  colors .. string.format("%s=%s", name, value)
                 end
             end
+
+            append_if_not_nil("ctermfg", hl.ctermfg)
+            append_if_not_nil("ctermbg", hl.ctermbg)
+            append_if_not_nil("fg", hl.fg)
+            append_if_not_nil("bg", hl.bg)
+
+            table.insert(lines, string.format("    Default: `%s`", colors))
+            table.insert(lines, "")
         end
     end
-    file:close()
 end
 
 local function join_path(path, component)
