@@ -171,7 +171,15 @@ function M.crates_io_url(name: string): string
 end
 
 function M.open_url(url: string)
-    if M.binary_installed("xdg-open") then
+	-- We check for `flatpak-xdg-open` first because there is a chance that
+	-- `xdg-open` will still be available in the users path within a {distro,tool}box.
+	-- E.g. 'xdg-open' is installed at `~/.local/bin/xdg-open` which will still be
+	-- available in the sandbox.
+	-- In which case using `xdg-open' will fail silently, as it will not be able
+	-- to escape the sandbox.
+    if M.binary_installed("flatpak-xdg-open") then
+		vim.cmd("silent !flatpak-xdg-open " .. url)
+    elseif M.binary_installed("xdg-open") then
         vim.cmd("silent !xdg-open " .. url)
     elseif M.binary_installed("open") then
         vim.cmd("silent !open " .. url)

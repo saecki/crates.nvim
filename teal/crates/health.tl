@@ -27,7 +27,9 @@ function M.check()
         health_error("curl not found")
     end
 
-    if util.binary_installed("xdg-open") then
+    if util.binary_installed("flatpak-xdg-open") then
+		health_ok("flatpak-xdg-open installed")
+    elseif util.binary_installed("xdg-open") then
         health_ok("xdg-open installed")
     elseif util.binary_installed("open") then
         health_ok("open installed")

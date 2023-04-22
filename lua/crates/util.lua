@@ -171,7 +171,15 @@ function M.crates_io_url(name)
 end
 
 function M.open_url(url)
-   if M.binary_installed("xdg-open") then
+
+
+
+
+
+
+   if M.binary_installed("flatpak-xdg-open") then
+      vim.cmd("silent !flatpak-xdg-open " .. url)
+   elseif M.binary_installed("xdg-open") then
       vim.cmd("silent !xdg-open " .. url)
    elseif M.binary_installed("open") then
       vim.cmd("silent !open " .. url)
