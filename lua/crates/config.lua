@@ -219,6 +219,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -323,6 +324,13 @@ entry(M.schema, "curl_args", {
    default = { "-sL", "--retry", "1" },
    description = [[
         The title displayed in notifications.
+    ]],
+})
+entry(M.schema, "open_programs", {
+   type = "table",
+   default = { "xdg-open", "open" },
+   description = [[
+        A list of programs that used to open urls.
     ]],
 })
 
