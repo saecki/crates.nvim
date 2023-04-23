@@ -13,6 +13,7 @@ local record M
         thousands_separator: string
         notification_title: string
         curl_args: {string}
+        open_programs: {string}
         disable_invalid_feature_diagnostic: boolean
         text: TextConfig
         highlight: HighlightConfig
@@ -323,6 +324,13 @@ entry(M.schema, "curl_args", {
     default = { "-sL", "--retry", "1" },
     description = [[
         The title displayed in notifications.
+    ]],
+})
+entry(M.schema, "open_programs", {
+    type = "table",
+    default = { "xdg-open", "open" },
+    description = [[
+        A list of programs that used to open urls.
     ]],
 })
 -- TODO: use cargo metadata to get feature renames

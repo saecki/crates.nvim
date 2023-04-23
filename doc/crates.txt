@@ -85,6 +85,7 @@ For more information about individual config options see |crates-config|.
         thousands_separator = ".",
         notification_title = "Crates",
         curl_args = { "-sL", "--retry", "1" },
+        open_programs = { "xdg-open", "open" },
         disable_invalid_feature_diagnostic = false,
         text = {
             loading = "   Loading",
@@ -511,6 +512,12 @@ curl_args                                            *crates-config-curl_args*
     Type: `table`, Default: `{ "-sL", "--retry", "1" }`
 
     The title displayed in notifications.
+
+
+open_programs                                    *crates-config-open_programs*
+    Type: `table`, Default: `{ "xdg-open", "open" }`
+
+    A list of programs that used to open urls.
 
 
                             *crates-config-disable_invalid_feature_diagnostic*

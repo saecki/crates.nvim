@@ -171,13 +171,14 @@ function M.crates_io_url(name)
 end
 
 function M.open_url(url)
-   if M.binary_installed("xdg-open") then
-      vim.cmd("silent !xdg-open " .. url)
-   elseif M.binary_installed("open") then
-      vim.cmd("silent !open " .. url)
-   else
-      M.notify(vim.log.levels.WARN, "Couldn't open url")
+   for _, prg in ipairs(state.cfg.open_programs) do
+      if M.binary_installed(prg) then
+         vim.cmd(string.format("silent !%s %s", prg, url))
+         return
+      end
    end
+
+   M.notify(vim.log.levels.WARN, "Couldn't open url")
 end
 
 return M
