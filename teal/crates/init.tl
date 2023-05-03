@@ -80,6 +80,10 @@ function M.setup(cfg: Config)
 
     local group = vim.api.nvim_create_augroup("Crates", {})
     if state.cfg.autoload then
+        if vim.fn.expand("%:t") == "Cargo.toml" then
+          M.update()
+        end
+
         vim.api.nvim_create_autocmd("BufRead", {
             group = group,
             pattern = "Cargo.toml",
