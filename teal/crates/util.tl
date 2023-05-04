@@ -71,9 +71,9 @@ function M.get_newest(versions: {Version}, avoid_pre: boolean, reqs: {Requiremen
         return nil
     end
 
-    local newest_yanked: Version = nil
-    local newest_pre: Version = nil
-    local newest: Version = nil
+    local newest_yanked: Version|nil = nil
+    local newest_pre: Version|nil = nil
+    local newest: Version|nil = nil
 
     for _,v in ipairs(versions) do
         if not reqs or semver.matches_requirements(v.parsed, reqs) then
