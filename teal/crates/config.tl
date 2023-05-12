@@ -196,7 +196,9 @@ local record M
     end
 
     enum SchemaType
+        -- A record of grouped options
         "section"
+        -- The rest are lua types checked at runtime
         "table"
         "string"
         "number"
@@ -323,7 +325,7 @@ entry(M.schema, "curl_args", {
     type = "table",
     default = { "-sL", "--retry", "1" },
     description = [[
-        The title displayed in notifications.
+        A list of arguments passed to curl when fetching metadata from crates.io.
     ]],
 })
 entry(M.schema, "open_programs", {
@@ -333,7 +335,7 @@ entry(M.schema, "open_programs", {
         A list of programs that used to open urls.
     ]],
 })
--- TODO: use cargo metadata to get feature renames
+-- TODO: Blocked on: https://github.com/rust-lang/crates.io/issues/1539
 entry(M.schema, "disable_invalid_feature_diagnostic", {
     type = "boolean",
     default = false,
