@@ -511,7 +511,7 @@ notification_title                          *crates-config-notification_title*
 curl_args                                            *crates-config-curl_args*
     Type: `table`, Default: `{ "-sL", "--retry", "1" }`
 
-    The title displayed in notifications.
+    A list of arguments passed to curl when fetching metadata from crates.io.
 
 
 open_programs                                    *crates-config-open_programs*
