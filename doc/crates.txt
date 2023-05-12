@@ -85,6 +85,7 @@ For more information about individual config options see |crates-config|.
         thousands_separator = ".",
         notification_title = "Crates",
         curl_args = { "-sL", "--retry", "1" },
+        max_parallel_requests = 80,
         open_programs = { "xdg-open", "open" },
         disable_invalid_feature_diagnostic = false,
         text = {
@@ -512,6 +513,12 @@ curl_args                                            *crates-config-curl_args*
     Type: `table`, Default: `{ "-sL", "--retry", "1" }`
 
     A list of arguments passed to curl when fetching metadata from crates.io.
+
+
+max_parallel_requests                    *crates-config-max_parallel_requests*
+    Type: `number`, Default: `80`
+
+    Maximum number of parallel requests.
 
 
 open_programs                                    *crates-config-open_programs*

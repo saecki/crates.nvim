@@ -1,4 +1,18 @@
-local M = {CrateJob = {}, VersJob = {}, DepsJob = {}, }
+local M = {CrateJob = {}, DepsJob = {}, QueuedJob = {}, }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -35,6 +49,8 @@ local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 
 M.crate_jobs = {}
 M.deps_jobs = {}
+M.queued_jobs = {}
+M.num_requests = 0
 
 
 local function parse_json(json_str)
@@ -57,6 +73,36 @@ local function request_job(url, on_exit)
       command = "curl",
       args = { unpack(state.cfg.curl_args), "-A", USERAGENT, url },
       on_exit = vim.schedule_wrap(on_exit),
+   })
+end
+
+local function enqueue_crate_job(name, callbacks)
+   for _, j in ipairs(M.queued_jobs) do
+      if j.kind == "crate" and j.name == name then
+         vim.list_extend(j.crate_callbacks, callbacks)
+         return
+      end
+   end
+
+   table.insert(M.queued_jobs, {
+      kind = "crate",
+      name = name,
+      crate_callbacks = callbacks,
+   })
+end
+
+local function enqueue_deps_job(name, version, callbacks)
+   for _, j in ipairs(M.queued_jobs) do
+      if j.kind == "deps" and j.name == name and j.version == version then
+         vim.list_extend(j.deps_callbacks, callbacks)
+      end
+   end
+
+   table.insert(M.queued_jobs, {
+      kind = "deps",
+      name = name,
+      version = version,
+      deps_callbacks = callbacks,
    })
 end
 
@@ -151,12 +197,18 @@ function M.parse_crate(json_str)
    return crate
 end
 
-local function fetch_crate(name, callback)
-   if M.crate_jobs[name] then
+local function fetch_crate(name, callbacks)
+   local exisiting = M.crate_jobs[name]
+   if exisiting then
+      vim.list_extend(exisiting.callbacks, callbacks)
       return
    end
 
-   local callbacks = { callback }
+   if M.num_requests >= state.cfg.max_parallel_requests then
+      enqueue_crate_job(name, callbacks)
+      return
+   end
+
    local url = string.format("%s/crates/%s", ENDPOINT, name)
 
    local function on_exit(j, code, signal)
@@ -176,9 +228,13 @@ local function fetch_crate(name, callback)
       end
 
       M.crate_jobs[name] = nil
+      M.num_requests = M.num_requests - 1
+
+      M.run_queued_jobs()
    end
 
    local job = request_job(url, on_exit)
+   M.num_requests = M.num_requests + 1
    M.crate_jobs[name] = {
       job = job,
       callbacks = callbacks,
@@ -188,7 +244,7 @@ end
 
 function M.fetch_crate(name)
    return coroutine.yield(function(resolve)
-      fetch_crate(name, resolve)
+      fetch_crate(name, { resolve })
    end)
 end
 
@@ -218,13 +274,19 @@ function M.parse_deps(json_str)
    return dependencies
 end
 
-local function fetch_deps(name, version, callback)
+local function fetch_deps(name, version, callbacks)
    local jobname = name .. ":" .. version
-   if M.deps_jobs[jobname] then
+   local exisiting = M.deps_jobs[jobname]
+   if exisiting then
+      vim.list_extend(exisiting.callbacks, callbacks)
       return
    end
 
-   local callbacks = { callback }
+   if M.num_requests >= state.cfg.max_parallel_requests then
+      enqueue_deps_job(name, version, callbacks)
+      return
+   end
+
    local url = string.format("%s/crates/%s/%s/dependencies", ENDPOINT, name, version)
 
    local function on_exit(j, code, signal)
@@ -243,10 +305,12 @@ local function fetch_deps(name, version, callback)
          c(deps, cancelled)
       end
 
+      M.num_requests = M.num_requests - 1
       M.deps_jobs[jobname] = nil
    end
 
    local job = request_job(url, on_exit)
+   M.num_requests = M.num_requests + 1
    M.deps_jobs[jobname] = {
       job = job,
       callbacks = callbacks,
@@ -256,9 +320,10 @@ end
 
 function M.fetch_deps(name, version)
    return coroutine.yield(function(resolve)
-      fetch_deps(name, version, resolve)
+      fetch_deps(name, version, { resolve })
    end)
 end
+
 
 function M.is_fetching_crate(name)
    return M.crate_jobs[name] ~= nil
@@ -292,6 +357,19 @@ function M.await_deps(name, version)
    return coroutine.yield(function(resolve)
       add_deps_callback(name, version, resolve)
    end)
+end
+
+function M.run_queued_jobs()
+   if #M.queued_jobs == 0 then
+      return
+   end
+
+   local job = table.remove(M.queued_jobs, 1)
+   if job.kind == "crate" then
+      fetch_crate(job.name, job.crate_callbacks)
+   elseif job.kind == "deps" then
+      fetch_deps(job.name, job.version, job.deps_callbacks)
+   end
 end
 
 function M.cancel_jobs()

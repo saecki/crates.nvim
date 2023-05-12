@@ -14,6 +14,7 @@ local record M
         notification_title: string
         curl_args: {string}
         open_programs: {string}
+        max_parallel_requests: integer
         disable_invalid_feature_diagnostic: boolean
         text: TextConfig
         highlight: HighlightConfig
@@ -326,6 +327,13 @@ entry(M.schema, "curl_args", {
     default = { "-sL", "--retry", "1" },
     description = [[
         A list of arguments passed to curl when fetching metadata from crates.io.
+    ]],
+})
+entry(M.schema, "max_parallel_requests", {
+    type = "number",
+    default = 80,
+    description = [[
+        Maximum number of parallel requests.
     ]],
 })
 entry(M.schema, "open_programs", {
