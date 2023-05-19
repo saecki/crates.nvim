@@ -73,6 +73,10 @@ local state = require("crates.state")
 local ui = require("crates.ui")
 local util = require("crates.util")
 
+local record AutocmdInfo
+  buf: integer
+end
+
 function M.setup(cfg: Config)
     state.cfg = config.build(cfg)
 
@@ -82,13 +86,15 @@ function M.setup(cfg: Config)
     if state.cfg.autoload then
         if vim.fn.expand("%:t") == "Cargo.toml" then
           M.update()
+          state.cfg.on_attach(vim.api.nvim_get_current_buf())
         end
 
         vim.api.nvim_create_autocmd("BufRead", {
             group = group,
             pattern = "Cargo.toml",
-            callback = function()
+            callback = function(info: AutocmdInfo)
                 M.update()
+                state.cfg.on_attach(info.buf)
             end,
         })
     end

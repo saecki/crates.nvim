@@ -216,6 +216,7 @@ For more information about individual config options see |crates-config|.
             enabled = false,
             name = "Crates",
         },
+        on_attach = function(bufnr) end,
     }
 <
 
@@ -1294,6 +1295,13 @@ null_ls.name                                      *crates-config-null_ls-name*
     Type: `string`, Default: `"Crates"`
 
     The |null-ls.nvim| name.
+
+
+on_attach                                            *crates-config-on_attach*
+    Type: `function`, Default: `function(bufnr) end`
+
+  Callback to run when Cargo.toml is opened.
+  Ignored if `autoload` is disabled.
 
 
 

@@ -223,6 +223,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -1368,6 +1370,16 @@ entry(schema_null_ls, "name", {
    default = "Crates",
    description = [[
         The |null-ls.nvim| name.
+    ]],
+})
+
+entry(M.schema, "on_attach", {
+   type = "function",
+   default = function(_bufnr) end,
+   default_text = "function(bufnr) end",
+   description = [[
+      Callback to run when Cargo.toml is opened.
+      Ignored if `autoload` is disabled.
     ]],
 })
 
