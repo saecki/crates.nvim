@@ -309,6 +309,7 @@ require('crates').setup {
         enabled = false,
         name = "Crates",
     },
+    on_attach = function(bufnr) end,
 }
 ```
 

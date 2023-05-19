@@ -22,6 +22,7 @@ local record M
         popup: PopupConfig
         src: SrcConfig
         null_ls: NullLsConfig
+        on_attach: function(bufnr: integer): nil
 
         record TextConfig
             loading: string
@@ -204,6 +205,7 @@ local record M
         "string"
         "number"
         "boolean"
+        "function"
     end
 
     record SchemaElement
@@ -1368,6 +1370,16 @@ entry(schema_null_ls, "name", {
     default = "Crates",
     description = [[
         The |null-ls.nvim| name.
+    ]],
+})
+
+entry(M.schema, "on_attach", {
+    type = "function",
+    default = function(_bufnr) end,
+    default_text = "function(bufnr) end",
+    description = [[
+      Callback to run when Cargo.toml is opened.
+      Ignored if `autoload` is disabled.
     ]],
 })
 
