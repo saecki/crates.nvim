@@ -240,7 +240,7 @@ local function gen_def_config(lines, indent, path, schema)
                 gen_def_config(lines, indent, p, s.fields)
                 insert_indent("},")
             else
-                local d = inspect(s.default)
+                local d = s.default_text or inspect(s.default)
                 insert_indent(string.format("%s = %s,", name, d))
             end
         end
