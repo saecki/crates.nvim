@@ -203,7 +203,10 @@ local function gen_vimdoc_config(lines, path, schema)
                 if type(t) == "table" then
                     t = table.concat(t, " or ")
                 end
-                local d = inspect(s.default)
+                local d = s.default_text
+                if not d then
+                    d = inspect(s.default)
+                end
                 table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
                 table.insert(lines, "")
             end
