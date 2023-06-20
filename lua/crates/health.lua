@@ -3,10 +3,11 @@ local M = {}
 local state = require("crates.state")
 local util = require("crates.util")
 
-local health_start = vim.fn["health#report_start"]
-local health_ok = vim.fn["health#report_ok"]
-local health_warn = vim.fn["health#report_warn"]
-local health_error = vim.fn["health#report_error"]
+local health = vim.health or require("health")
+local health_start = health.start or health.report_start
+local health_ok = health.ok or health.report_ok
+local health_warn = health.warn or health.report_warn
+local health_error = health.error or health.report_error
 
 function M.check()
    health_start("Checking required plugins")

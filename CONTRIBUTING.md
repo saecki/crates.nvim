@@ -39,5 +39,5 @@ make doc
 There are currently only a few tests.
 Execute them by running this command:
 ```
-make test`
+make test
 ```
