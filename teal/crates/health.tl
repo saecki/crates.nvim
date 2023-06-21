@@ -3,7 +3,7 @@ local record M end
 local state = require("crates.state")
 local util = require("crates.util")
 
-local health = vim.health or require "health"
+local health = vim.health or require("health")
 local health_start = health.start or health.report_start
 local health_ok = health.ok or health.report_ok
 local health_warn = health.warn or health.report_warn
