@@ -231,7 +231,9 @@ function M.process_api_crate(crate: toml.Crate, api_crate: Crate): CrateInfo, {D
     }
     local diagnostics = {}
 
-    if crate.path then
+    if crate.workspace then
+        info.dep_kind = "workspace"
+    elseif crate.path then
         info.dep_kind = "path"
     elseif crate.git then
         info.dep_kind = "git"

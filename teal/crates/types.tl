@@ -20,6 +20,7 @@ local record M
         "registry"
         "path"
         "git"
+        "workspace"
     end
 
     record Diagnostic

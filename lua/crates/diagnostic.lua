@@ -231,7 +231,9 @@ function M.process_api_crate(crate, api_crate)
    }
    local diagnostics = {}
 
-   if crate.path then
+   if crate.workspace then
+      info.dep_kind = "workspace"
+   elseif crate.path then
       info.dep_kind = "path"
    elseif crate.git then
       info.dep_kind = "git"

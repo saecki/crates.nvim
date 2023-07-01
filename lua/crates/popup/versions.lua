@@ -49,7 +49,7 @@ local function select_version(ctx, line, alt)
       local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
       text = toml.trim_comments(text)
 
-      local c = toml.parse_crate(text, line_nr)
+      local c = toml.parse_inline_crate(text, line_nr)
       if c and c.vers then
          crate.vers = crate.vers or c.vers
          crate.vers.line = line_nr

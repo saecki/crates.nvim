@@ -107,7 +107,7 @@ local function toggle_feature(ctx, line)
       local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
       text = toml.trim_comments(text)
 
-      local crate = toml.Crate.new(toml.parse_crate(text, line_nr))
+      local crate = toml.Crate.new(toml.parse_inline_crate(text, line_nr))
       ctx.crate.syntax = crate.syntax
       ctx.crate.vers = crate.vers
       ctx.crate.feat = crate.feat
