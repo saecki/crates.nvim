@@ -28,6 +28,7 @@ local record M
         path: Path
         git: Git
         pkg: Pkg
+        workspace: Workspace
         def: Def
         feat: Feat
         section: Section
@@ -72,6 +73,14 @@ local record M
             quote: Quotes
         end
 
+        record Workspace
+            enabled: boolean
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+        end
+
         record Def
             enabled: boolean
             text: string
@@ -111,25 +120,6 @@ local types = require("crates.types")
 local Range = types.Range
 local Requirement = types.Requirement
 
-local function inline_table_bool_pattern(name: string): string
-    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*()([^%s,}]*)()%s*()[,]?.*[}]?%s*$"
-end
-
-local function inline_table_str_pattern(name: string): string
-    return [[^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
-end
-
-local function inline_table_str_array_pattern(name: string): string
-    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
-end
-
-local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
-local INLINE_TABLE_PATH_PATTERN = inline_table_str_pattern("path")
-local INLINE_TABLE_GIT_PATTERN = inline_table_str_pattern("git")
-local INLINE_TABLE_PKG_PATTERN = inline_table_str_pattern("package")
-local INLINE_TABLE_FEAT_PATTERN = inline_table_str_array_pattern("features")
-local INLINE_TABLE_DEF_PATTERN = inline_table_bool_pattern("default[_-]features")
-
 function M.parse_crate_features(text: string): {Feature}
     local feats: {Feature} = {}
     for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
@@ -163,6 +153,9 @@ function Crate.new(obj: Crate): Crate
     if obj.def then
         obj.def.enabled = obj.def.text ~= "false"
     end
+    if obj.workspace then
+        obj.workspace.enabled = obj.workspace.text ~= "false"
+    end
 
     return setmetatable(obj, { __index = Crate })
 end
@@ -195,6 +188,10 @@ end
 
 function Crate:is_def_enabled(): boolean
     return not self.def or self.def.enabled
+end
+
+function Crate:is_workspace(): boolean
+    return not self.workspace or self.workspace.enabled
 end
 
 function Crate:package(): string
@@ -271,6 +268,7 @@ function M.parse_section(text: string, start: integer): Section
     return nil
 end
 
+
 local function parse_crate_table_str(line: string, line_nr: integer, pattern: string): table|nil
     local quote_s, str_s, text, str_e, quote_e = line:match(pattern)
     if text then
@@ -280,6 +278,20 @@ local function parse_crate_table_str(line: string, line_nr: integer, pattern: st
             col = Range.new(str_s as integer - 1, str_e as integer - 1),
             decl_col = Range.new(0, line:len()),
             quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
+        }
+    end
+
+    return nil
+end
+
+local function parse_crate_table_bool(line: string, line_nr: integer, pattern: string): table|nil
+    local bool_s, text, bool_e = line:match(pattern)
+    if text then
+        return {
+            text = text,
+            line = line_nr,
+            col = Range.new(bool_s as integer - 1, bool_e as integer - 1),
+            decl_col = Range.new(0, line:len()),
         }
     end
 
@@ -306,6 +318,16 @@ function M.parse_crate_table_pkg(line: string, line_nr: integer): Crate.Pkg
     return parse_crate_table_str(line, line_nr, pat) as Crate.Pkg
 end
 
+function M.parse_crate_table_def(line: string, line_nr: integer): Crate.Def
+    local pat = "^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$"
+    return parse_crate_table_bool(line, line_nr, pat) as Crate.Def
+end
+
+function M.parse_crate_table_workspace(line: string, line_nr: integer): Crate.Workspace
+    local pat = "^%s*workspace%s*=%s*()([^%s]*)()%s*$"
+    return parse_crate_table_bool(line, line_nr, pat) as Crate.Workspace
+end
+
 function M.parse_crate_table_feat(line: string, line_nr: integer): Crate.Feat
     local array_s, text, array_e = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
     if text then
@@ -320,19 +342,26 @@ function M.parse_crate_table_feat(line: string, line_nr: integer): Crate.Feat
     return nil
 end
 
-function M.parse_crate_table_def(line: string, line_nr: integer): Crate.Def
-    local bool_s, text, bool_e = line:match("^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$")
-    if text then
-        return {
-            text = text,
-            line = line_nr,
-            col = Range.new(bool_s as integer - 1, bool_e as integer - 1),
-            decl_col = Range.new(0, line:len()),
-        }
-    end
 
-    return nil
+local function inline_table_bool_pattern(name: string): string
+    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*()([^%s,}]*)()%s*()[,]?.*[}]?%s*$"
 end
+
+local function inline_table_str_pattern(name: string): string
+    return [[^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+end
+
+local function inline_table_str_array_pattern(name: string): string
+    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
+end
+
+local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
+local INLINE_TABLE_PATH_PATTERN = inline_table_str_pattern("path")
+local INLINE_TABLE_GIT_PATTERN = inline_table_str_pattern("git")
+local INLINE_TABLE_PKG_PATTERN = inline_table_str_pattern("package")
+local INLINE_TABLE_FEAT_PATTERN = inline_table_str_array_pattern("features")
+local INLINE_TABLE_DEF_PATTERN = inline_table_bool_pattern("default[_-]features")
+local INLINE_TABLE_WORKSPACE_PATTERN = inline_table_bool_pattern("workspace")
 
 local function parse_inline_table_str(crate: Crate, line: string, line_nr: integer, entry: string, pattern: string)
     local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
@@ -351,7 +380,23 @@ local function parse_inline_table_str(crate: Crate, line: string, line_nr: integ
     end
 end
 
-function M.parse_crate(line: string, line_nr: integer): Crate
+local function parse_inline_table_bool(crate: Crate, line: string, line_nr: integer, entry: string, pattern: string)
+    local name_s, name, name_e, decl_s, str_s, text, str_e, decl_e = line:match(pattern)
+    if name then
+        crate.explicit_name = name
+        crate.explicit_name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
+        do
+            (crate as {string:any})[entry] = {
+                text = text,
+                line = line_nr,
+                col = Range.new(str_s as integer - 1, str_e as integer - 1),
+                decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
+            }
+        end
+    end
+end
+
+function M.parse_inline_crate(line: string, line_nr: integer): Crate
     -- plain version
     do
         local name_s, name, name_e, quote_s, str_s, text, str_e, quote_e = line:match([[^%s*()([^%s]+)()%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
@@ -383,6 +428,9 @@ function M.parse_crate(line: string, line_nr: integer): Crate
     parse_inline_table_str(crate, line, line_nr, "git", INLINE_TABLE_GIT_PATTERN)
     parse_inline_table_str(crate, line, line_nr, "pkg", INLINE_TABLE_PKG_PATTERN)
 
+    parse_inline_table_bool(crate, line, line_nr, "def", INLINE_TABLE_DEF_PATTERN)
+    parse_inline_table_bool(crate, line, line_nr, "workspace", INLINE_TABLE_WORKSPACE_PATTERN)
+
     do
         local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
         if name then
@@ -392,20 +440,6 @@ function M.parse_crate(line: string, line_nr: integer): Crate
                 text = text,
                 line = line_nr,
                 col = Range.new(array_s as integer - 1, array_e as integer - 1),
-                decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
-            }
-        end
-    end
-
-    do
-        local name_s, name, name_e, decl_s, bool_s, text, bool_e, decl_e = line:match(INLINE_TABLE_DEF_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
-            crate.def = {
-                text = text,
-                line = line_nr,
-                col = Range.new(bool_s as integer - 1, bool_e as integer - 1),
                 decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
             }
         end
@@ -493,6 +527,12 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 dep_section_crate.pkg = pkg
             end
 
+            local workspace = M.parse_crate_table_workspace(line, line_nr)
+            if workspace then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.workspace = workspace
+            end
+
             local feat = M.parse_crate_table_feat(line, line_nr)
             if feat then
                 dep_section_crate = dep_section_crate or empty_crate
@@ -505,7 +545,7 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 dep_section_crate.def = def
             end
         elseif dep_section then
-            local crate = M.parse_crate(line, line_nr)
+            local crate = M.parse_inline_crate(line, line_nr)
             if crate then
                 crate.section = dep_section
                 table.insert(crates, Crate.new(crate))
