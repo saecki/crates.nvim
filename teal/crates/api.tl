@@ -19,9 +19,9 @@ local record M
     record QueuedJob
         kind: JobKind
         name: string
-        
+
         crate_callbacks: {function(Crate|nil, boolean)}
-        
+
         version: string
         deps_callbacks: {function({Dependency}|nil, boolean)}
     end
@@ -83,7 +83,7 @@ local function enqueue_crate_job(name: string, callbacks: {function(Crate|nil, b
             return
         end
     end
-        
+
     table.insert(M.queued_jobs, {
         kind = "crate",
         name = name,
@@ -97,7 +97,7 @@ local function enqueue_deps_job(name: string, version: string, callbacks: {funct
             vim.list_extend(j.deps_callbacks, callbacks)
         end
     end
-    
+
     table.insert(M.queued_jobs, {
         kind = "deps",
         name = name,
@@ -203,7 +203,7 @@ local function fetch_crate(name: string, callbacks: {function(Crate|nil, boolean
         vim.list_extend(exisiting.callbacks, callbacks)
         return
     end
-    
+
     if M.num_requests >= state.cfg.max_parallel_requests then
         enqueue_crate_job(name, callbacks)
         return

@@ -374,6 +374,15 @@ update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
     See `crates.upgrade_crate()`.
 
 
+                                 *crates.expand_plain_crate_to_inline_table()*
+expand_plain_crate_to_inline_table()
+    Expand a plain crate declaration into an inline table.
+
+
+extract_crate_into_table()                 *crates.extract_crate_into_table()*
+    Extract an crate declaration from a dependency section into a table.
+
+
 open_homepage()                                       *crates.open_homepage()*
     Open the homepage of the crate on the current line.
 

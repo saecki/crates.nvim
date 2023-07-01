@@ -452,4 +452,55 @@ function M.disable_def_features(buf, crate, feature)
    end
 end
 
+function M.expand_plain_crate_to_inline_table(buf, crate)
+   if crate.syntax ~= "plain" then
+      return
+   end
+
+   vim.api.nvim_buf_set_text(
+   buf, crate.lines.s, crate.vers.decl_col.s, crate.lines.s, crate.vers.decl_col.e,
+   { crate.explicit_name .. ' = { version = "' .. crate.vers.text .. '" }' })
+
+end
+
+function M.extract_crate_into_table(buf, crate)
+   if crate.syntax == "table" then
+      return
+   end
+
+
+   vim.api.nvim_buf_set_lines(buf, crate.lines.s, crate.lines.e, false, {})
+
+
+   local lines = {
+      crate.section:display(crate.explicit_name),
+   }
+   if crate.vers then
+      table.insert(lines, "version = " .. '"' .. crate.vers.text .. '"')
+   end
+   if crate.path then
+      table.insert(lines, "path = " .. '"' .. crate.path.text .. '"')
+   end
+   if crate.git then
+      table.insert(lines, "git = " .. '"' .. crate.git.text .. '"')
+   end
+   if crate.pkg then
+      table.insert(lines, "package = " .. '"' .. crate.pkg.text .. '"')
+   end
+   if crate.workspace then
+      table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
+   end
+   if crate.def then
+      table.insert(lines, "default_features = " .. '"' .. crate.def.text .. '"')
+   end
+   if crate.feat then
+      table.insert(lines, "features = " .. crate.feat.text)
+   end
+
+   table.insert(lines, "")
+
+   local line = crate.section.lines.e - 1
+   vim.api.nvim_buf_set_lines(buf, line, line, false, lines)
+end
+
 return M

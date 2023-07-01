@@ -208,6 +208,38 @@ function Crate:cache_key(): string
     )
 end
 
+function Section.new(obj: Section): Section
+    return setmetatable(obj, { __index = Section })
+end
+
+function Section:display(override_name: string|nil): string
+    local text = "["
+
+    if self.target then
+        text = text .. self.target .. "."
+    end
+
+    if self.workspace then
+        text = text .. "workspace."
+    end
+
+    if self.kind == "default" then
+        text = text .. "dependencies"
+    elseif self.kind == "dev" then
+        text = text .. "dev-dependencies"
+    elseif self.kind == "build" then
+        text = text .. "build-dependencies"
+    end
+
+    local name = override_name or self.name
+    if name then
+        text = text .. "." .. name
+    end
+
+    text = text .. "]"
+
+    return text
+end
 
 function M.parse_section(text: string, start: integer): Section
     local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
@@ -262,7 +294,7 @@ function M.parse_section(text: string, start: integer): Section
             or (section.workspace and section.kind ~= "default")
             or (section.workspace and section.target ~= nil)
 
-        return section
+        return Section.new(section)
     end
 
     return nil

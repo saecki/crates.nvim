@@ -34,6 +34,11 @@ local record M
     -- See `f#crates.upgrade_crate()`.
     update_all_crates: function(alt: boolean|nil)
 
+    -- Expand a plain crate declaration into an inline table.
+    expand_plain_crate_to_inline_table: function()
+    -- Extract an crate declaration from a dependency section into a table.
+    extract_crate_into_table: function()
+
     -- Open the homepage of the crate on the current line.
     open_homepage: function()
     -- Open the repository page of the crate on the current line.
@@ -169,6 +174,10 @@ M.upgrade_all_crates = actions.upgrade_all_crates
 M.update_crate = actions.update_crate
 M.update_crates = actions.update_crates
 M.update_all_crates = actions.update_all_crates
+
+M.expand_plain_crate_to_inline_table = actions.expand_plain_crate_to_inline_table
+M.extract_crate_into_table = actions.extract_crate_into_table
+
 M.open_homepage = actions.open_homepage
 M.open_repository = actions.open_repository
 M.open_documentation = actions.open_documentation

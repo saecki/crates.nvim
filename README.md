@@ -399,6 +399,11 @@ require('crates').update_crates(alt: boolean|nil)
 -- See `crates.upgrade_crate()`.
 require('crates').update_all_crates(alt: boolean|nil)
 
+-- Expand a plain crate declaration into an inline table.
+require('crates').expand_plain_crate_to_inline_table()
+-- Extract an crate declaration from a dependency section into a table.
+require('crates').extract_crate_into_table()
+
 -- Open the homepage of the crate on the current line.
 require('crates').open_homepage()
 -- Open the repository page of the crate on the current line.
