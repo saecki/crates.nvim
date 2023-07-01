@@ -70,6 +70,24 @@ function M.update_all_crates(alt: boolean|nil)
     end
 end
 
+function M.expand_plain_crate_to_inline_table()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local _, crate = next(util.get_line_crates(buf, Range.pos(line)))
+    if crate then
+        edit.expand_plain_crate_to_inline_table(buf, crate)
+    end
+end
+
+function M.extract_crate_into_table()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local _, crate = next(util.get_line_crates(buf, Range.pos(line)))
+    if crate then
+        edit.extract_crate_into_table(buf, crate)
+    end
+end
+
 function M.open_homepage()
     local buf = util.current_buf()
     local line = util.cursor_pos()
@@ -163,6 +181,14 @@ function M.get_actions(): {string:function}
             if info.vers_upgrade then
                 actions["upgrade_crate"] = M.upgrade_crate
             end
+        end
+
+        -- refactorings
+        if crate.syntax == "plain" then
+            actions["expand_crate_to_inline_table"] = M.expand_plain_crate_to_inline_table
+        end
+        if crate.syntax ~= "table" then
+            actions["extract_crate_into_table"] = M.extract_crate_into_table
         end
     end
 

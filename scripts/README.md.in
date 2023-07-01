@@ -227,28 +227,6 @@ require('crates').setup {
 
 ### Key mappings
 Some examples of key mappings.
-```vim
-nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
-nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
-
-nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
-nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
-nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
-
-nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
-vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
-nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
-nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
-vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
-nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
-
-nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
-nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
-nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
-nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
-```
-
-You can use `vim.keymap.set` to map lua function to keys directly.
 ```lua
 local crates = require('crates')
 local opts = { silent = true }
@@ -267,11 +245,42 @@ vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
 vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
 vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
 
+vim.keymap.set('n', '<leader>ce', crates.expand_plain_crate_to_inline_table, opts)
+vim.keymap.set('n', '<leader>cE', crates.extract_crate_into_table, opts)
+
 vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
 vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
 vim.keymap.set('n', '<leader>cD', crates.open_documentation, opts)
 vim.keymap.set('n', '<leader>cC', crates.open_crates_io, opts)
 ```
+
+<details>
+<summary>In vimscript</summary>
+
+```vim
+nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
+nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
+
+nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
+nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
+nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
+
+nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
+vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
+nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
+nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
+vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
+nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+nnoremap <silent> <leader>ce :lua require('crates').expand_plain_crate_to_inline_table()<cr>
+nnoremap <silent> <leader>cE :lua require('crates').extract_crate_into_table()<cr>
+
+nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
+nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
+nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
+nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
+```
+</details>
 
 ### Show appropriate documentation in `Cargo.toml`
 How you might integrate `show_popup` into your `init.vim`.
