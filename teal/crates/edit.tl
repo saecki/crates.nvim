@@ -494,7 +494,7 @@ function M.extract_crate_into_table(buf: integer, crate: toml.Crate)
         table.insert(lines, "default_features = " .. '"' .. crate.def.text ..'"')
     end
     if crate.feat then
-        table.insert(lines, "features = " .. crate.feat.text)
+        table.insert(lines, "features = [" .. crate.feat.text .. "]")
     end
 
     table.insert(lines, "")
