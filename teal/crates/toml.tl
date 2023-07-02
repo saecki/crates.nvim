@@ -25,10 +25,14 @@ local record M
         lines: Range
         syntax: Syntax
         vers: Vers
+        registry: Registry
         path: Path
         git: Git
+        branch: Branch
+        rev: Rev
         pkg: Pkg
         workspace: Workspace
+        opt: Opt
         def: Def
         feat: Feat
         section: Section
@@ -41,6 +45,15 @@ local record M
 
         record Vers
             reqs: {Requirement}
+            text: string
+            is_pre: boolean
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+            quote: Quotes
+        end
+
+        record Registry
             text: string
             is_pre: boolean
             line: integer -- 0-indexed
@@ -65,6 +78,22 @@ local record M
             quote: Quotes
         end
 
+        record Branch
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+            quote: Quotes
+        end
+
+        record Rev
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+            quote: Quotes
+        end
+
         record Pkg
             text: string
             line: integer -- 0-indexed
@@ -74,6 +103,14 @@ local record M
         end
 
         record Workspace
+            enabled: boolean
+            text: string
+            line: integer -- 0-indexed
+            col: Range
+            decl_col: Range
+        end
+
+        record Opt
             enabled: boolean
             text: string
             line: integer -- 0-indexed
@@ -155,6 +192,9 @@ function Crate.new(obj: Crate): Crate
     end
     if obj.workspace then
         obj.workspace.enabled = obj.workspace.text ~= "false"
+    end
+    if obj.opt then
+        obj.opt.enabled = obj.opt.text ~= "false"
     end
 
     return setmetatable(obj, { __index = Crate })
@@ -335,6 +375,11 @@ function M.parse_crate_table_vers(line: string, line_nr: integer): Crate.Vers
     return parse_crate_table_str(line, line_nr, pat) as Crate.Vers
 end
 
+function M.parse_crate_table_registry(line: string, line_nr: integer): Crate.Registry
+    local pat = [[^%s*registry%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+    return parse_crate_table_str(line, line_nr, pat) as Crate.Registry
+end
+
 function M.parse_crate_table_path(line: string, line_nr: integer): Crate.Path
     local pat = [[^%s*path%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
     return parse_crate_table_str(line, line_nr, pat) as Crate.Path
@@ -343,6 +388,16 @@ end
 function M.parse_crate_table_git(line: string, line_nr: integer): Crate.Git
     local pat = [[^%s*git%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
     return parse_crate_table_str(line, line_nr, pat) as Crate.Git
+end
+
+function M.parse_crate_table_branch(line: string, line_nr: integer): Crate.Branch
+    local pat = [[^%s*branch%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+    return parse_crate_table_str(line, line_nr, pat) as Crate.Branch
+end
+
+function M.parse_crate_table_rev(line: string, line_nr: integer): Crate.Rev
+    local pat = [[^%s*rev%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+    return parse_crate_table_str(line, line_nr, pat) as Crate.Rev
 end
 
 function M.parse_crate_table_pkg(line: string, line_nr: integer): Crate.Pkg
@@ -358,6 +413,11 @@ end
 function M.parse_crate_table_workspace(line: string, line_nr: integer): Crate.Workspace
     local pat = "^%s*workspace%s*=%s*()([^%s]*)()%s*$"
     return parse_crate_table_bool(line, line_nr, pat) as Crate.Workspace
+end
+
+function M.parse_crate_table_opt(line: string, line_nr: integer): Crate.Opt
+    local pat = "^%s*optional%s*=%s*()([^%s]*)()%s*$"
+    return parse_crate_table_bool(line, line_nr, pat) as Crate.Opt
 end
 
 function M.parse_crate_table_feat(line: string, line_nr: integer): Crate.Feat
@@ -388,12 +448,16 @@ local function inline_table_str_array_pattern(name: string): string
 end
 
 local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
+local INLINE_TABLE_REGISTRY_PATTERN = inline_table_str_pattern("registry")
 local INLINE_TABLE_PATH_PATTERN = inline_table_str_pattern("path")
 local INLINE_TABLE_GIT_PATTERN = inline_table_str_pattern("git")
+local INLINE_TABLE_BRANCH_PATTERN = inline_table_str_pattern("branch")
+local INLINE_TABLE_REV_PATTERN = inline_table_str_pattern("rev")
 local INLINE_TABLE_PKG_PATTERN = inline_table_str_pattern("package")
 local INLINE_TABLE_FEAT_PATTERN = inline_table_str_array_pattern("features")
 local INLINE_TABLE_DEF_PATTERN = inline_table_bool_pattern("default[_-]features")
 local INLINE_TABLE_WORKSPACE_PATTERN = inline_table_bool_pattern("workspace")
+local INLINE_TABLE_OPT_PATTERN = inline_table_bool_pattern("optional")
 
 local function parse_inline_table_str(crate: Crate, line: string, line_nr: integer, entry: string, pattern: string)
     local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
@@ -456,12 +520,16 @@ function M.parse_inline_crate(line: string, line_nr: integer): Crate
     }
 
     parse_inline_table_str(crate, line, line_nr, "vers", INLINE_TABLE_VERS_PATTERN)
+    parse_inline_table_str(crate, line, line_nr, "registry", INLINE_TABLE_REGISTRY_PATTERN)
     parse_inline_table_str(crate, line, line_nr, "path", INLINE_TABLE_PATH_PATTERN)
     parse_inline_table_str(crate, line, line_nr, "git", INLINE_TABLE_GIT_PATTERN)
+    parse_inline_table_str(crate, line, line_nr, "branch", INLINE_TABLE_BRANCH_PATTERN)
+    parse_inline_table_str(crate, line, line_nr, "rev", INLINE_TABLE_REV_PATTERN)
     parse_inline_table_str(crate, line, line_nr, "pkg", INLINE_TABLE_PKG_PATTERN)
 
     parse_inline_table_bool(crate, line, line_nr, "def", INLINE_TABLE_DEF_PATTERN)
     parse_inline_table_bool(crate, line, line_nr, "workspace", INLINE_TABLE_WORKSPACE_PATTERN)
+    parse_inline_table_bool(crate, line, line_nr, "opt", INLINE_TABLE_OPT_PATTERN)
 
     do
         local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
@@ -541,6 +609,12 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 dep_section_crate.vers = vers
             end
 
+            local registry = M.parse_crate_table_registry(line, line_nr)
+            if registry then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.registry = registry
+            end
+
             local path = M.parse_crate_table_path(line, line_nr)
             if path then
                 dep_section_crate = dep_section_crate or empty_crate
@@ -553,10 +627,28 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 dep_section_crate.git = git
             end
 
+            local branch = M.parse_crate_table_branch(line, line_nr)
+            if branch then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.branch = branch
+            end
+
+            local rev = M.parse_crate_table_rev(line, line_nr)
+            if rev then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.rev = rev
+            end
+
             local pkg = M.parse_crate_table_pkg(line, line_nr)
             if pkg then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.pkg = pkg
+            end
+
+            local def = M.parse_crate_table_def(line, line_nr)
+            if def then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.def = def
             end
 
             local workspace = M.parse_crate_table_workspace(line, line_nr)
@@ -565,16 +657,16 @@ function M.parse_crates(buf: integer): {Section}, {Crate}
                 dep_section_crate.workspace = workspace
             end
 
+            local opt = M.parse_crate_table_opt(line, line_nr)
+            if opt then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.opt = opt
+            end
+
             local feat = M.parse_crate_table_feat(line, line_nr)
             if feat then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.feat = feat
-            end
-
-            local def = M.parse_crate_table_def(line, line_nr)
-            if def then
-                dep_section_crate = dep_section_crate or empty_crate
-                dep_section_crate.def = def
             end
         elseif dep_section then
             local crate = M.parse_inline_crate(line, line_nr)

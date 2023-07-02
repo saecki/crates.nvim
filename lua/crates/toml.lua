@@ -1,4 +1,41 @@
-local M = {Section = {}, Crate = {Vers = {}, Path = {}, Git = {}, Pkg = {}, Workspace = {}, Def = {}, Feat = {}, }, Feature = {}, Quotes = {}, }
+local M = {Section = {}, Crate = {Vers = {}, Registry = {}, Path = {}, Git = {}, Branch = {}, Rev = {}, Pkg = {}, Workspace = {}, Opt = {}, Def = {}, Feat = {}, }, Feature = {}, Quotes = {}, }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -155,6 +192,9 @@ function Crate.new(obj)
    end
    if obj.workspace then
       obj.workspace.enabled = obj.workspace.text ~= "false"
+   end
+   if obj.opt then
+      obj.opt.enabled = obj.opt.text ~= "false"
    end
 
    return setmetatable(obj, { __index = Crate })
@@ -335,6 +375,11 @@ function M.parse_crate_table_vers(line, line_nr)
    return parse_crate_table_str(line, line_nr, pat)
 end
 
+function M.parse_crate_table_registry(line, line_nr)
+   local pat = [[^%s*registry%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+   return parse_crate_table_str(line, line_nr, pat)
+end
+
 function M.parse_crate_table_path(line, line_nr)
    local pat = [[^%s*path%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
    return parse_crate_table_str(line, line_nr, pat)
@@ -342,6 +387,16 @@ end
 
 function M.parse_crate_table_git(line, line_nr)
    local pat = [[^%s*git%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+   return parse_crate_table_str(line, line_nr, pat)
+end
+
+function M.parse_crate_table_branch(line, line_nr)
+   local pat = [[^%s*branch%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+   return parse_crate_table_str(line, line_nr, pat)
+end
+
+function M.parse_crate_table_rev(line, line_nr)
+   local pat = [[^%s*rev%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
    return parse_crate_table_str(line, line_nr, pat)
 end
 
@@ -357,6 +412,11 @@ end
 
 function M.parse_crate_table_workspace(line, line_nr)
    local pat = "^%s*workspace%s*=%s*()([^%s]*)()%s*$"
+   return parse_crate_table_bool(line, line_nr, pat)
+end
+
+function M.parse_crate_table_opt(line, line_nr)
+   local pat = "^%s*optional%s*=%s*()([^%s]*)()%s*$"
    return parse_crate_table_bool(line, line_nr, pat)
 end
 
@@ -388,12 +448,16 @@ local function inline_table_str_array_pattern(name)
 end
 
 local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
+local INLINE_TABLE_REGISTRY_PATTERN = inline_table_str_pattern("registry")
 local INLINE_TABLE_PATH_PATTERN = inline_table_str_pattern("path")
 local INLINE_TABLE_GIT_PATTERN = inline_table_str_pattern("git")
+local INLINE_TABLE_BRANCH_PATTERN = inline_table_str_pattern("branch")
+local INLINE_TABLE_REV_PATTERN = inline_table_str_pattern("rev")
 local INLINE_TABLE_PKG_PATTERN = inline_table_str_pattern("package")
 local INLINE_TABLE_FEAT_PATTERN = inline_table_str_array_pattern("features")
 local INLINE_TABLE_DEF_PATTERN = inline_table_bool_pattern("default[_-]features")
 local INLINE_TABLE_WORKSPACE_PATTERN = inline_table_bool_pattern("workspace")
+local INLINE_TABLE_OPT_PATTERN = inline_table_bool_pattern("optional")
 
 local function parse_inline_table_str(crate, line, line_nr, entry, pattern)
    local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
@@ -456,12 +520,16 @@ function M.parse_inline_crate(line, line_nr)
    }
 
    parse_inline_table_str(crate, line, line_nr, "vers", INLINE_TABLE_VERS_PATTERN)
+   parse_inline_table_str(crate, line, line_nr, "registry", INLINE_TABLE_REGISTRY_PATTERN)
    parse_inline_table_str(crate, line, line_nr, "path", INLINE_TABLE_PATH_PATTERN)
    parse_inline_table_str(crate, line, line_nr, "git", INLINE_TABLE_GIT_PATTERN)
+   parse_inline_table_str(crate, line, line_nr, "branch", INLINE_TABLE_BRANCH_PATTERN)
+   parse_inline_table_str(crate, line, line_nr, "rev", INLINE_TABLE_REV_PATTERN)
    parse_inline_table_str(crate, line, line_nr, "pkg", INLINE_TABLE_PKG_PATTERN)
 
    parse_inline_table_bool(crate, line, line_nr, "def", INLINE_TABLE_DEF_PATTERN)
    parse_inline_table_bool(crate, line, line_nr, "workspace", INLINE_TABLE_WORKSPACE_PATTERN)
+   parse_inline_table_bool(crate, line, line_nr, "opt", INLINE_TABLE_OPT_PATTERN)
 
    do
       local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
@@ -541,6 +609,12 @@ function M.parse_crates(buf)
             dep_section_crate.vers = vers
          end
 
+         local registry = M.parse_crate_table_registry(line, line_nr)
+         if registry then
+            dep_section_crate = dep_section_crate or empty_crate
+            dep_section_crate.registry = registry
+         end
+
          local path = M.parse_crate_table_path(line, line_nr)
          if path then
             dep_section_crate = dep_section_crate or empty_crate
@@ -553,10 +627,28 @@ function M.parse_crates(buf)
             dep_section_crate.git = git
          end
 
+         local branch = M.parse_crate_table_branch(line, line_nr)
+         if branch then
+            dep_section_crate = dep_section_crate or empty_crate
+            dep_section_crate.branch = branch
+         end
+
+         local rev = M.parse_crate_table_rev(line, line_nr)
+         if rev then
+            dep_section_crate = dep_section_crate or empty_crate
+            dep_section_crate.rev = rev
+         end
+
          local pkg = M.parse_crate_table_pkg(line, line_nr)
          if pkg then
             dep_section_crate = dep_section_crate or empty_crate
             dep_section_crate.pkg = pkg
+         end
+
+         local def = M.parse_crate_table_def(line, line_nr)
+         if def then
+            dep_section_crate = dep_section_crate or empty_crate
+            dep_section_crate.def = def
          end
 
          local workspace = M.parse_crate_table_workspace(line, line_nr)
@@ -565,16 +657,16 @@ function M.parse_crates(buf)
             dep_section_crate.workspace = workspace
          end
 
+         local opt = M.parse_crate_table_opt(line, line_nr)
+         if opt then
+            dep_section_crate = dep_section_crate or empty_crate
+            dep_section_crate.opt = opt
+         end
+
          local feat = M.parse_crate_table_feat(line, line_nr)
          if feat then
             dep_section_crate = dep_section_crate or empty_crate
             dep_section_crate.feat = feat
-         end
-
-         local def = M.parse_crate_table_def(line, line_nr)
-         if def then
-            dep_section_crate = dep_section_crate or empty_crate
-            dep_section_crate.def = def
          end
       elseif dep_section then
          local crate = M.parse_inline_crate(line, line_nr)

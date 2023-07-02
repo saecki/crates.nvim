@@ -478,11 +478,20 @@ function M.extract_crate_into_table(buf, crate)
    if crate.vers then
       table.insert(lines, "version = " .. '"' .. crate.vers.text .. '"')
    end
+   if crate.registry then
+      table.insert(lines, "registry = " .. '"' .. crate.registry.text .. '"')
+   end
    if crate.path then
       table.insert(lines, "path = " .. '"' .. crate.path.text .. '"')
    end
    if crate.git then
       table.insert(lines, "git = " .. '"' .. crate.git.text .. '"')
+   end
+   if crate.branch then
+      table.insert(lines, "branch = " .. '"' .. crate.branch.text .. '"')
+   end
+   if crate.rev then
+      table.insert(lines, "rev = " .. '"' .. crate.rev.text .. '"')
    end
    if crate.pkg then
       table.insert(lines, "package = " .. '"' .. crate.pkg.text .. '"')
@@ -495,6 +504,9 @@ function M.extract_crate_into_table(buf, crate)
    end
    if crate.feat then
       table.insert(lines, "features = [" .. crate.feat.text .. "]")
+   end
+   if crate.opt then
+      table.insert(lines, "optional = " .. '"' .. crate.opt.text .. '"')
    end
 
    table.insert(lines, "")
