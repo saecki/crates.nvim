@@ -459,36 +459,33 @@ local INLINE_TABLE_DEF_PATTERN = inline_table_bool_pattern("default[_-]features"
 local INLINE_TABLE_WORKSPACE_PATTERN = inline_table_bool_pattern("workspace")
 local INLINE_TABLE_OPT_PATTERN = inline_table_bool_pattern("optional")
 
-local function parse_inline_table_str(crate: Crate, line: string, line_nr: integer, entry: string, pattern: string)
+local function parse_inline_table_str(line: string, line_nr: integer, pattern: string): string|nil, Range|nil, {string:any}|nil
     local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
     if name then
-        crate.explicit_name = name
-        crate.explicit_name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
-        do
-            (crate as {string:any})[entry] = {
-                text = text,
-                line = line_nr,
-                col = Range.new(str_s as integer - 1, str_e as integer - 1),
-                decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
-                quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
-            }
-        end
+        local name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
+        local entry = {
+            text = text,
+            line = line_nr,
+            col = Range.new(str_s as integer - 1, str_e as integer - 1),
+            decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
+            quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
+        }
+
+        return name, name_col, entry
     end
 end
 
-local function parse_inline_table_bool(crate: Crate, line: string, line_nr: integer, entry: string, pattern: string)
+local function parse_inline_table_bool(line: string, line_nr: integer, pattern: string): string|nil, Range|nil, {string:any}|nil
     local name_s, name, name_e, decl_s, str_s, text, str_e, decl_e = line:match(pattern)
     if name then
-        crate.explicit_name = name
-        crate.explicit_name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
-        do
-            (crate as {string:any})[entry] = {
-                text = text,
-                line = line_nr,
-                col = Range.new(str_s as integer - 1, str_e as integer - 1),
-                decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
-            }
-        end
+        local name_col = Range.new(name_s as integer - 1, name_e as integer - 1)
+        local entry = {
+            text = text,
+            line = line_nr,
+            col = Range.new(str_s as integer - 1, str_e as integer - 1),
+            decl_col = Range.new(decl_s as integer - 1, decl_e as integer - 1),
+        }
+        return name, name_col, entry
     end
 end
 
@@ -519,17 +516,95 @@ function M.parse_inline_crate(line: string, line_nr: integer): Crate
         lines = Range.new(line_nr, line_nr + 1),
     }
 
-    parse_inline_table_str(crate, line, line_nr, "vers", INLINE_TABLE_VERS_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "registry", INLINE_TABLE_REGISTRY_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "path", INLINE_TABLE_PATH_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "git", INLINE_TABLE_GIT_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "branch", INLINE_TABLE_BRANCH_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "rev", INLINE_TABLE_REV_PATTERN)
-    parse_inline_table_str(crate, line, line_nr, "pkg", INLINE_TABLE_PKG_PATTERN)
+    do
+        local name, name_col, vers = parse_inline_table_str(line, line_nr, INLINE_TABLE_VERS_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.vers = vers as Crate.Vers
+        end
+    end
 
-    parse_inline_table_bool(crate, line, line_nr, "def", INLINE_TABLE_DEF_PATTERN)
-    parse_inline_table_bool(crate, line, line_nr, "workspace", INLINE_TABLE_WORKSPACE_PATTERN)
-    parse_inline_table_bool(crate, line, line_nr, "opt", INLINE_TABLE_OPT_PATTERN)
+    do
+        local name, name_col, registry = parse_inline_table_str(line, line_nr, INLINE_TABLE_REGISTRY_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.registry = registry as Crate.Registry
+        end
+    end
+
+    do
+        local name, name_col, path = parse_inline_table_str(line, line_nr, INLINE_TABLE_PATH_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.path = path as Crate.Path
+        end
+    end
+
+    do
+        local name, name_col, git = parse_inline_table_str(line, line_nr, INLINE_TABLE_GIT_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.git = git as Crate.Git
+        end
+    end
+
+    do
+        local name, name_col, branch = parse_inline_table_str(line, line_nr, INLINE_TABLE_BRANCH_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.branch = branch as Crate.Branch
+        end
+    end
+
+    do
+        local name, name_col, rev = parse_inline_table_str(line, line_nr, INLINE_TABLE_REV_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.rev = rev as Crate.Rev
+        end
+    end
+
+    do
+        local name, name_col, pkg = parse_inline_table_str(line, line_nr, INLINE_TABLE_PKG_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.pkg = pkg as Crate.Pkg
+        end
+    end
+
+    do
+        local name, name_col, def = parse_inline_table_bool(line, line_nr, INLINE_TABLE_DEF_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.def = def as Crate.Def
+        end
+    end
+
+    do
+        local name, name_col, workspace = parse_inline_table_bool(line, line_nr, INLINE_TABLE_WORKSPACE_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.workspace = workspace as Crate.Workspace
+        end
+    end
+
+    do
+        local name, name_col, opt = parse_inline_table_bool(line, line_nr, INLINE_TABLE_OPT_PATTERN)
+        if name then
+            crate.explicit_name = name
+            crate.explicit_name_col = name_col
+            crate.opt = opt as Crate.Opt
+        end
+    end
 
     do
         local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
