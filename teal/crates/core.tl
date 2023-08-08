@@ -96,11 +96,17 @@ function M.update(buf: integer|nil, reload: boolean)
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
     for k,c in pairs(crate_cache) do
-        local crate = state.api_cache[c:package()]
-        local versions = crate and crate.versions
+        -- Don't try to fetch info from crates.io if it's a local or git crate
+        -- TODO: Once there is workspace support, resolve the crate
+        if c.dep_kind ~= "registry" then
+            return
+        end
 
-        if not reload and crate then
-            local info, c_diagnostics = diagnostic.process_api_crate(c, crate)
+        local api_crate = state.api_cache[c:package()]
+        local versions = api_crate and api_crate.versions
+
+        if not reload and api_crate then
+            local info, c_diagnostics = diagnostic.process_api_crate(c, api_crate)
             cache.info[k] = info
             vim.list_extend(cache.diagnostics, c_diagnostics)
 
