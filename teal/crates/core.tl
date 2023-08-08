@@ -99,7 +99,7 @@ function M.update(buf: integer|nil, reload: boolean)
         -- Don't try to fetch info from crates.io if it's a local or git crate
         -- TODO: Once there is workspace support, resolve the crate
         if c.dep_kind ~= "registry" then
-            return
+            goto continue
         end
 
         local api_crate = state.api_cache[c:package()]
@@ -130,6 +130,8 @@ function M.update(buf: integer|nil, reload: boolean)
 
             M.reload_crate(c:package())
         end
+
+        ::continue::
     end
 end
 
