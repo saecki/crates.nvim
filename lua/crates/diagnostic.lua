@@ -231,29 +231,19 @@ function M.process_api_crate(crate, api_crate)
    }
    local diagnostics = {}
 
-   if crate.workspace then
-      info.dep_kind = "workspace"
-   elseif crate.path then
-      info.dep_kind = "path"
-   elseif crate.git then
-      info.dep_kind = "git"
-   else
-      info.dep_kind = "registry"
-   end
+   if crate.dep_kind == "registry" then
+      if api_crate then
+         if api_crate.name ~= crate:package() then
+            table.insert(diagnostics, crate_diagnostic(
+            crate,
+            "crate_name_case",
+            vim.diagnostic.severity.ERROR,
+            nil,
+            { crate = crate, crate_name = api_crate.name }))
 
-   if api_crate then
-      if api_crate.name ~= crate:package() then
-         table.insert(diagnostics, crate_diagnostic(
-         crate,
-         "crate_name_case",
-         vim.diagnostic.severity.ERROR,
-         nil,
-         { crate = crate, crate_name = api_crate.name }))
-
+         end
       end
-   end
 
-   if info.dep_kind == "registry" then
       if newest then
          if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
 

@@ -149,6 +149,14 @@ local M = {Section = {}, Crate = {Vers = {}, Registry = {}, Path = {}, Git = {},
 
 
 
+
+
+
+
+
+
+
+
 local Section = M.Section
 local Crate = M.Crate
 local Feature = M.Feature
@@ -195,6 +203,16 @@ function Crate.new(obj)
    end
    if obj.opt then
       obj.opt.enabled = obj.opt.text ~= "false"
+   end
+
+   if obj.workspace then
+      obj.dep_kind = "workspace"
+   elseif obj.path then
+      obj.dep_kind = "path"
+   elseif obj.git then
+      obj.dep_kind = "git"
+   else
+      obj.dep_kind = "registry"
    end
 
    return setmetatable(obj, { __index = Crate })

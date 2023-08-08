@@ -36,6 +36,7 @@ local record M
         def: Def
         feat: Feat
         section: Section
+        dep_kind: DepKind
 
         enum Syntax
             "plain"
@@ -135,6 +136,13 @@ local record M
         end
     end
 
+    enum DepKind
+        "registry"
+        "path"
+        "git"
+        "workspace"
+    end
+
     record Feature
         name: string
         col: Range -- relative to to the start of the features text
@@ -195,6 +203,16 @@ function Crate.new(obj: Crate): Crate
     end
     if obj.opt then
         obj.opt.enabled = obj.opt.text ~= "false"
+    end
+
+    if obj.workspace then
+        obj.dep_kind = "workspace"
+    elseif obj.path then
+        obj.dep_kind = "path"
+    elseif obj.git then
+        obj.dep_kind = "git"
+    else
+        obj.dep_kind = "registry"
     end
 
     return setmetatable(obj, { __index = Crate })
