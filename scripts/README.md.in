@@ -47,12 +47,12 @@ Plug 'saecki/crates.nvim', { 'tag': 'v<VERSION>' }
 lua require('crates').setup()
 ```
 
-[__packer.nvim__](https://github.com/wbthomason/packer.nvim)
+[__lazy.nvim__](https://github.com/folke/lazy.nvim)
 ```lua
 use {
     'saecki/crates.nvim',
     tag = 'v<VERSION>',
-    requires = { 'nvim-lua/plenary.nvim' },
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
@@ -70,11 +70,11 @@ Plug 'saecki/crates.nvim'
 lua require('crates').setup()
 ```
 
-[__packer.nvim__](https://github.com/wbthomason/packer.nvim)
+[__lazy.nvim__](https://github.com/folke/lazy.nvim)
 ```lua
 use {
     'saecki/crates.nvim',
-    requires = { 'nvim-lua/plenary.nvim' },
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
@@ -90,7 +90,7 @@ use {
 use {
     'saecki/crates.nvim',
     event = { "BufRead Cargo.toml" },
-    requires = { { 'nvim-lua/plenary.nvim' } },
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
