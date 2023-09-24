@@ -34,9 +34,9 @@ local function section_diagnostic(
 
    local d = Diagnostic.new({
       lnum = section.lines.s,
-      end_lnum = section.lines.e,
+      end_lnum = section.lines.e - 1,
       col = 0,
-      end_col = 0,
+      end_col = 999,
       severity = severity,
       kind = kind,
       data = data,
@@ -58,9 +58,9 @@ local function crate_diagnostic(
 
    local d = Diagnostic.new({
       lnum = crate.lines.s,
-      end_lnum = crate.lines.e,
+      end_lnum = crate.lines.e - 1,
       col = 0,
-      end_col = 0,
+      end_col = 999,
       severity = severity,
       kind = kind,
       data = data,
