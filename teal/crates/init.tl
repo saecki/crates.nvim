@@ -69,6 +69,7 @@ local record M
 end
 
 local actions = require("crates.actions")
+local async = require("crates.async")
 local config = require("crates.config")
 local Config = config.Config
 local core = require("crates.core")
@@ -90,27 +91,30 @@ function M.setup(cfg: Config)
     local group = vim.api.nvim_create_augroup("Crates", {})
     if state.cfg.autoload then
         if vim.fn.expand("%:t") == "Cargo.toml" then
-          M.update()
-          state.cfg.on_attach(vim.api.nvim_get_current_buf())
+            core.update(nil, false)
+            state.cfg.on_attach(vim.api.nvim_get_current_buf())
         end
 
         vim.api.nvim_create_autocmd("BufRead", {
             group = group,
             pattern = "Cargo.toml",
             callback = function(info: AutocmdInfo)
-                M.update()
+                core.update(nil, false)
                 state.cfg.on_attach(info.buf)
             end,
         })
     end
+
+    -- initialize the throttled update function with timeout
+    core.inner_throttled_update = async.throttle(M.update, state.cfg.autoupdate_throttle) as function()
+
     if state.cfg.autoupdate then
-        local async = require("crates.async")
         vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
             group = group,
             pattern = "Cargo.toml",
-            callback = async.throttle(function()
-                M.update()
-            end, state.cfg.autoupdate_throttle),
+            callback = function()
+                core.throttled_update(nil, false)
+            end,
         })
     end
 

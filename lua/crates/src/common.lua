@@ -20,6 +20,7 @@ local CompletionList = M.CompletionList
 
 local api = require("crates.api")
 local async = require("crates.async")
+local core = require("crates.core")
 local state = require("crates.state")
 local toml = require("crates.toml")
 local types = require("crates.types")
@@ -98,6 +99,12 @@ end
 
 local function complete()
    local buf = util.current_buf()
+
+   local awaited = core.await_throttled_update_if_any(buf)
+   if awaited and buf ~= util.current_buf() then
+      return
+   end
+
    local line, col = util.cursor_pos()
    local crates = util.get_line_crates(buf, Range.new(line, line + 1))
    local _, crate = next(crates)
