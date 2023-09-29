@@ -198,9 +198,9 @@ function M.parse_crate(json_str)
 end
 
 local function fetch_crate(name, callbacks)
-   local exisiting = M.crate_jobs[name]
-   if exisiting then
-      vim.list_extend(exisiting.callbacks, callbacks)
+   local existing = M.crate_jobs[name]
+   if existing then
+      vim.list_extend(existing.callbacks, callbacks)
       return
    end
 
@@ -276,9 +276,9 @@ end
 
 local function fetch_deps(name, version, callbacks)
    local jobname = name .. ":" .. version
-   local exisiting = M.deps_jobs[jobname]
-   if exisiting then
-      vim.list_extend(exisiting.callbacks, callbacks)
+   local existing = M.deps_jobs[jobname]
+   if existing then
+      vim.list_extend(existing.callbacks, callbacks)
       return
    end
 
