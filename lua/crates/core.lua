@@ -3,6 +3,9 @@ local M = {}
 
 
 
+
+
+
 local api = require("crates.api")
 local async = require("crates.async")
 local diagnostic = require("crates.diagnostic")
@@ -12,6 +15,9 @@ local types = require("crates.types")
 local Version = types.Version
 local ui = require("crates.ui")
 local util = require("crates.util")
+
+M.throttled_updates = {}
+
 
 M.reload_deps = async.wrap(function(crate_name, versions, version)
    local deps, cancelled = api.fetch_deps(crate_name, version.num)
@@ -133,6 +139,37 @@ function M.update(buf, reload)
 
       ::continue::
    end
+
+   local callbacks = M.throttled_updates[buf]
+   if callbacks then
+      for _, callback in ipairs(callbacks) do
+         callback()
+      end
+   end
+   M.throttled_updates[buf] = nil
+end
+
+function M.throttled_update(buf, reload)
+   buf = buf or util.current_buf()
+   local existing = M.throttled_updates[buf]
+   if not existing then
+      M.throttled_updates[buf] = {}
+   end
+
+   M.inner_throttled_update(buf, reload)
+end
+
+function M.await_throttled_update_if_any(buf)
+   local existing = M.throttled_updates[buf]
+   if not existing then
+      return false
+   end
+
+   coroutine.yield(function(resolve)
+      table.insert(existing, resolve)
+   end)
+
+   return true
 end
 
 return M
