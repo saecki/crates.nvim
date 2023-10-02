@@ -147,9 +147,9 @@ local function complete(): CompletionList|nil
 end
 
 function M.complete(callback: function(CompletionList|nil))
-    async.launch(function()
+    vim.schedule(async.wrap(function()
         callback(complete())
-    end)
+    end))
 end
 
 return M
