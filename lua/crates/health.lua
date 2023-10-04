@@ -13,7 +13,7 @@ function M.check()
    if util.lualib_installed("null-ls") then
       vim.health.ok("null-ls.nvim installed")
    else
-      vim.health.warn("null-ls.nvim not found")
+      vim.health.info("null-ls.nvim not found")
    end
 
    vim.health.start("Checking external dependencies")
