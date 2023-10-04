@@ -49,7 +49,7 @@ lua require('crates').setup()
 
 [__lazy.nvim__](https://github.com/folke/lazy.nvim)
 ```lua
-use {
+{
     'saecki/crates.nvim',
     tag = 'v0.3.0',
     dependencies = { 'nvim-lua/plenary.nvim' },
@@ -72,7 +72,7 @@ lua require('crates').setup()
 
 [__lazy.nvim__](https://github.com/folke/lazy.nvim)
 ```lua
-use {
+{
     'saecki/crates.nvim',
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
@@ -87,7 +87,7 @@ use {
 <summary>For lazy loading.</summary>
 
 ```lua
-use {
+{
     'saecki/crates.nvim',
     event = { "BufRead Cargo.toml" },
     dependencies = { 'nvim-lua/plenary.nvim' },
