@@ -42,7 +42,7 @@ To use a stable release.
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
 Plug 'nvim-lua/plenary.nvim'
-Plug 'saecki/crates.nvim', { 'tag': 'v0.3.0' }
+Plug 'saecki/crates.nvim', { 'tag': 'v0.4.0' }
 
 lua require('crates').setup()
 ```
@@ -51,7 +51,7 @@ lua require('crates').setup()
 ```lua
 {
     'saecki/crates.nvim',
-    tag = 'v0.3.0',
+    tag = 'v0.4.0',
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()

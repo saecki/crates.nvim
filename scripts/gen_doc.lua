@@ -6,7 +6,7 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 local highlight = require('lua.crates.highlight')
-local version = "0.3.0"
+local version = "0.4.0"
 
 local function format_readme_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
