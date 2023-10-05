@@ -191,7 +191,7 @@ local function gen_vimdoc_config(lines, path, schema)
             if s.deprecated.new_field then
                 local nf = "crates-config-" .. table.concat(s.deprecated.new_field, "-")
                 table.insert(lines, "")
-                table.insert(lines, string.format("    Please use %s instead.", nf))
+                table.insert(lines, string.format("    Please use |%s| instead.", nf))
             end
             table.insert(lines, "")
         else

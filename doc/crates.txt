@@ -602,7 +602,7 @@ text.error                                          *crates-config-text-error*
 text.update                                        *crates-config-text-update*
     DEPRECATED
 
-    Please use crates-config-text-upgrade instead.
+    Please use |crates-config-text-upgrade| instead.
 
 highlight                                            *crates-config-highlight*
     Type: `section`
@@ -655,7 +655,7 @@ highlight.error                                *crates-config-highlight-error*
 highlight.update                              *crates-config-highlight-update*
     DEPRECATED
 
-    Please use crates-config-highlight-upgrade instead.
+    Please use |crates-config-highlight-upgrade| instead.
 
 popup                                                    *crates-config-popup*
     Type: `section`
@@ -726,7 +726,7 @@ popup.padding                                    *crates-config-popup-padding*
 popup.version_date                          *crates-config-popup-version_date*
     DEPRECATED
 
-    Please use crates-config-popup-show_version_date instead.
+    Please use |crates-config-popup-show_version_date| instead.
 
 popup.text                                          *crates-config-popup-text*
     Type: `section`
@@ -944,7 +944,7 @@ popup.text.loading                          *crates-config-popup-text-loading*
 popup.text.date                                *crates-config-popup-text-date*
     DEPRECATED
 
-    Please use crates-config-popup-text-version_date instead.
+    Please use |crates-config-popup-text-version_date| instead.
 
 popup.highlight                                *crates-config-popup-highlight*
     Type: `section`
@@ -1228,23 +1228,23 @@ popup.keys.jump_back                      *crates-config-popup-keys-jump_back*
 popup.keys.goto_feature                *crates-config-popup-keys-goto_feature*
     DEPRECATED
 
-    Please use crates-config-popup-keys-goto_item instead.
+    Please use |crates-config-popup-keys-goto_item| instead.
 
                                *crates-config-popup-keys-jump_forward_feature*
 popup.keys.jump_forward_feature
     DEPRECATED
 
-    Please use crates-config-popup-keys-jump_forward instead.
+    Please use |crates-config-popup-keys-jump_forward| instead.
 
 popup.keys.jump_back_feature      *crates-config-popup-keys-jump_back_feature*
     DEPRECATED
 
-    Please use crates-config-popup-keys-jump_back instead.
+    Please use |crates-config-popup-keys-jump_back| instead.
 
 popup.keys.copy_version                *crates-config-popup-keys-copy_version*
     DEPRECATED
 
-    Please use crates-config-popup-keys-copy_value instead.
+    Please use |crates-config-popup-keys-copy_value| instead.
 
 src                                                        *crates-config-src*
     Type: `section`
