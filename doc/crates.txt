@@ -207,11 +207,8 @@ For more information about individual config options see |crates-config|.
                 prerelease = "  pre-release ",
                 yanked = "  yanked ",
             },
-            coq = {
-                enabled = false,
-                name = "Crates",
-            },
             cmp = {
+                enabled = false,
                 use_custom_kind = true,
                 kind_text = {
                     version = "Version",
@@ -221,6 +218,10 @@ For more information about individual config options see |crates-config|.
                     version = "CmpItemKindVersion",
                     feature = "CmpItemKindFeature",
                 },
+            },
+            coq = {
+                enabled = false,
+                name = "Crates",
             },
         },
         null_ls = {
@@ -1287,28 +1288,21 @@ src.text.yanked                                *crates-config-src-text-yanked*
     Text shown in the completion source documentation preview for yanked versions.
 
 
-src.coq                                                *crates-config-src-coq*
-    Type: `section`
-
-    Configuration options for the |coq_nvim| completion source.
-
-
-src.coq.enabled                                *crates-config-src-coq-enabled*
-    Type: `boolean`, Default: `false`
-
-    Whether to load and register the |coq_nvim| source.
-
-
-src.coq.name                                      *crates-config-src-coq-name*
-    Type: `string`, Default: `"Crates"`
-
-    The source name displayed by |coq_nvim|.
-
-
 src.cmp                                                *crates-config-src-cmp*
     Type: `section`
 
     Configuration options for the |nvim-cmp| completion source.
+
+
+src.cmp.enabled                                *crates-config-src-cmp-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to load and register the |nvim-cmp| source.
+    Note Ignored if |crates-config-autoload| is disabled.
+    You may manually register it, after |nvim-cmp| has been loaded.
+    >
+        require("crates.src.cmp").setup()
+    <
 
 
 src.cmp.use_custom_kind                *crates-config-src-cmp-use_custom_kind*
@@ -1353,6 +1347,24 @@ src.cmp.kind_highlight.feature  *crates-config-src-cmp-kind_highlight-feature*
     Highlight group used for the feature kind text in the |nvim-cmp| completion menu.
 
 
+src.coq                                                *crates-config-src-coq*
+    Type: `section`
+
+    Configuration options for the |coq_nvim| completion source.
+
+
+src.coq.enabled                                *crates-config-src-coq-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to load and register the |coq_nvim| source.
+
+
+src.coq.name                                      *crates-config-src-coq-name*
+    Type: `string`, Default: `"Crates"`
+
+    The source name displayed by |coq_nvim|.
+
+
 null_ls                                                *crates-config-null_ls*
     Type: `section`
 
@@ -1375,7 +1387,7 @@ on_attach                                            *crates-config-on_attach*
     Type: `function`, Default: `function(bufnr) end`
 
   Callback to run when Cargo.toml is opened.
-  Ignored if `autoload` is disabled.
+  Note Ignored if |crates-config-autoload| is disabled.
 
 
 

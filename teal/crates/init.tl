@@ -91,6 +91,10 @@ function M.setup(cfg: Config)
     local group = vim.api.nvim_create_augroup("Crates", {})
     if state.cfg.autoload then
         if vim.fn.expand("%:t") == "Cargo.toml" then
+            if state.cfg.src.cmp.enabled then
+                require("crates.src.cmp").setup()
+            end
+
             core.update(nil, false)
             state.cfg.on_attach(vim.api.nvim_get_current_buf())
         end
@@ -99,6 +103,10 @@ function M.setup(cfg: Config)
             group = group,
             pattern = "Cargo.toml",
             callback = function(info: AutocmdInfo)
+                if state.cfg.src.cmp.enabled then
+                    require("crates.src.cmp").setup()
+                end
+
                 core.update(nil, false)
                 state.cfg.on_attach(info.buf)
             end,
