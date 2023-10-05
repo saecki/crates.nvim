@@ -1,4 +1,10 @@
-local M = {CompletionList = {}, CompletionItem = {}, }
+local M = {CompletionList = {}, CompletionItem = {}, CmpCompletionExtension = {}, }
+
+
+
+
+
+
 
 
 
@@ -50,6 +56,12 @@ local function complete_versions(crate, versions)
       elseif v.parsed.pre then
          r.documentation = state.cfg.src.text.prerelease
       end
+      if state.cfg.src.cmp.use_custom_kind then
+         r.cmp = {
+            kind_text = state.cfg.src.cmp.kind_text.version,
+            kind_hl_group = state.cfg.src.cmp.kind_highlight.version,
+         }
+      end
 
       table.insert(items, r)
    end
@@ -85,6 +97,12 @@ local function complete_features(crate, cf, versions)
             if not cf.quote.e then
                r.insertText = f.name .. cf.quote.s
             end
+         end
+         if state.cfg.src.cmp.use_custom_kind then
+            r.cmp = {
+               kind_text = state.cfg.src.cmp.kind_text.feature,
+               kind_hl_group = state.cfg.src.cmp.kind_highlight.feature,
+            }
          end
 
          table.insert(items, r)

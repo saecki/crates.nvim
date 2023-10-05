@@ -304,6 +304,17 @@ require('crates').setup {
             enabled = false,
             name = "Crates",
         },
+        cmp = {
+            use_custom_kind = true,
+            kind_text = {
+                version = "Version",
+                feature = "Feature",
+            },
+            kind_highlight = {
+                version = "CmpItemKindVersion",
+                feature = "CmpItemKindFeature",
+            },
+        },
     },
     null_ls = {
         enabled = false,

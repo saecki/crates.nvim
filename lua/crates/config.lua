@@ -1,4 +1,21 @@
-local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, SrcConfig = {}, SrcTextConfig = {}, CoqConfig = {}, NullLsConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {}, PopupConfig = {}, PopupTextConfig = {}, PopupHighlightConfig = {}, PopupKeyConfig = {}, SrcConfig = {}, SrcTextConfig = {}, CoqConfig = {}, CmpConfig = {}, CmpKindTextConfig = {}, CmpKindHighlightConfig = {}, NullLsConfig = {}, }, SchemaElement = {Deprecated = {}, }, }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1349,6 +1366,69 @@ entry(schema_src_coq, "name", {
         The source name displayed by |coq_nvim|.
     ]],
 })
+
+entry(schema_src, "cmp", {
+   type = "section",
+   description = [[
+        Configuration options for the |nvim-cmp| completion source.
+    ]],
+   fields = {},
+})
+local schema_src_cmp = schema_src.cmp.fields
+entry(schema_src_cmp, "use_custom_kind", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Use custom a custom kind to display inside the |nvim-cmp| completion menu.
+    ]],
+})
+
+entry(schema_src_cmp, "kind_text", {
+   type = "section",
+   description = [[
+        The kind text shown in the |nvim-cmp| completion menu.
+    ]],
+   fields = {},
+})
+local schema_src_cmp_kind_text = schema_src_cmp.kind_text.fields
+entry(schema_src_cmp_kind_text, "version", {
+   type = "string",
+   default = "Version",
+   description = [[
+        The version kind text shown in the |nvim-cmp| completion menu.
+    ]],
+})
+entry(schema_src_cmp_kind_text, "feature", {
+   type = "string",
+   default = "Feature",
+   description = [[
+        The feature kind text shown in the |nvim-cmp| completion menu.
+    ]],
+})
+
+entry(schema_src_cmp, "kind_highlight", {
+   type = "section",
+   description = [[
+        Highlight groups used for the kind text in the |nvim-cmp| completion menu.
+    ]],
+   fields = {},
+})
+local schema_src_cmp_kind_hi = schema_src_cmp.kind_highlight.fields
+entry(schema_src_cmp_kind_hi, "version", {
+   type = "string",
+   default = "CmpItemKindVersion",
+   description = [[
+        Highlight group used for the version kind text in the |nvim-cmp| completion menu.
+    ]],
+})
+entry(schema_src_cmp_kind_hi, "feature", {
+   type = "string",
+   default = "CmpItemKindFeature",
+   description = [[
+        Highlight group used for the feature kind text in the |nvim-cmp| completion menu.
+    ]],
+})
+
 
 entry(M.schema, "null_ls", {
    type = "section",

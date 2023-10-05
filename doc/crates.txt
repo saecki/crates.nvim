@@ -211,6 +211,17 @@ For more information about individual config options see |crates-config|.
                 enabled = false,
                 name = "Crates",
             },
+            cmp = {
+                use_custom_kind = true,
+                kind_text = {
+                    version = "Version",
+                    feature = "Feature",
+                },
+                kind_highlight = {
+                    version = "CmpItemKindVersion",
+                    feature = "CmpItemKindFeature",
+                },
+            },
         },
         null_ls = {
             enabled = false,
@@ -1294,6 +1305,54 @@ src.coq.name                                      *crates-config-src-coq-name*
     The source name displayed by |coq_nvim|.
 
 
+src.cmp                                                *crates-config-src-cmp*
+    Type: `section`
+
+    Configuration options for the |nvim-cmp| completion source.
+
+
+src.cmp.use_custom_kind                *crates-config-src-cmp-use_custom_kind*
+    Type: `boolean`, Default: `true`
+
+    Use custom a custom kind to display inside the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_text                            *crates-config-src-cmp-kind_text*
+    Type: `section`
+
+    The kind text shown in the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_text.version            *crates-config-src-cmp-kind_text-version*
+    Type: `string`, Default: `"Version"`
+
+    The version kind text shown in the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_text.feature            *crates-config-src-cmp-kind_text-feature*
+    Type: `string`, Default: `"Feature"`
+
+    The feature kind text shown in the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_highlight                  *crates-config-src-cmp-kind_highlight*
+    Type: `section`
+
+    Highlight groups used for the kind text in the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_highlight.version  *crates-config-src-cmp-kind_highlight-version*
+    Type: `string`, Default: `"CmpItemKindVersion"`
+
+    Highlight group used for the version kind text in the |nvim-cmp| completion menu.
+
+
+src.cmp.kind_highlight.feature  *crates-config-src-cmp-kind_highlight-feature*
+    Type: `string`, Default: `"CmpItemKindFeature"`
+
+    Highlight group used for the feature kind text in the |nvim-cmp| completion menu.
+
+
 null_ls                                                *crates-config-null_ls*
     Type: `section`
 
@@ -1412,6 +1471,12 @@ CratesNvimPopupDependencyVersion  *crates-hl-CratesNvimPopupDependencyVersion*
     Default: links to |String|
 
 CratesNvimPopupLoading                      *crates-hl-CratesNvimPopupLoading*
+    Default: links to |Special|
+
+CmpItemKindVersion                              *crates-hl-CmpItemKindVersion*
+    Default: links to |Special|
+
+CmpItemKindFeature                              *crates-hl-CmpItemKindFeature*
     Default: links to |Special|
 
 

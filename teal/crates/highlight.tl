@@ -32,6 +32,9 @@ M.highlights = {
     { "CratesNvimPopupOptional", { default = true, link = "Comment" } },
     { "CratesNvimPopupDependencyVersion", { default = true, link = "String" } },
     { "CratesNvimPopupLoading", { default = true, link = "Special" } },
+
+    { "CmpItemKindVersion", { default = true, link = "Special" } },
+    { "CmpItemKindFeature", { default = true, link = "Special" } },
 }
 
 function M.define()
