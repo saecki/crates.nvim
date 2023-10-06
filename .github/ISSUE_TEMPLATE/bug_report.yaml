@@ -37,65 +37,46 @@ body:
       required: true
   - type: textarea
     attributes:
-       label: "Minimal config"
-       description: >
-         Minimal(!) configuration necessary to reproduce the issue. Save this as
-         `minimal.lua`. If necessary, add plugins and config options from your
-         `init.lua` at the indicated lines.
-       render: lua
-       value: |
-         local root = vim.fn.fnamemodify("crates_issue", ":p")
-         for _, name in ipairs({ "config", "data", "state", "cache" }) do
-             vim.env[("XDG_%s_HOME"):format(name:upper())] = root .. "/" .. name
-         end
+      label: "Minimal config"
+      description: >
+        Minimal(!) configuration necessary to reproduce the issue. Save this as
+        `minimal.lua`. If necessary, add plugins and config options from your
+        `init.lua` at the indicated lines.
+      render: lua
+      value: |
+        -- comment out, and add the things that are _necessary_ for reproducing the ISSUE
+        for name, url in pairs({
+            crates = "/home/tobi/Projects/crates.nvim",
+            plenary = "https://github.com/nvim-lua/plenary.nvim",
+            -- cmp = "https://github.com/hrsh7th/nvim-cmp",
+            -- coq = "https://github.com/ms-jpq/coq_nvim",
+            -- null_ls = "https://github.com/jose-elias-alvarez/null-ls.nvim",
+        }) do
+            local install_path = vim.fn.fnamemodify("crates_issue/" .. name, ":p")
+            if vim.fn.isdirectory(install_path) == 0 then
+                vim.notify("cloning " .. url .. " into " .. install_path)
+                vim.fn.system({ "git", "clone", "--depth=1", url, install_path })
+            end
+            vim.opt.runtimepath:append(install_path)
+        end
 
-         local lazypath = root .. "/plugins/lazy.nvim"
-         if not vim.loop.fs_stat(lazypath) then
-             vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", lazypath })
-         end
-         vim.opt.runtimepath:prepend(lazypath)
+        require("crates").setup({
+            src = {
+                -- cmp = { enabled = true },
+                -- coq = { enabled = true },
+            },
+            -- null_ls = { enabled = true },
+        })
 
-         require("lazy").setup({
-             {
-                 "saecki/crates.nvim",
-                 dependencies = "nvim-lua/plenary.nvim",
-                 config = function()
-                     require("crates").setup({
-                         null_ls = {
-                             enabled = true,
-                         },
-                         -- add crates.nvim config that is _necessary_ for reproducing the ISSUE
-                     })
-                 end,
-             },
-             {
-                 "hrsh7th/nvim-cmp",
-                 config = function()
-                     require("cmp").setup({
-                         sources = {
-                             { name = "crates" },
-                         },
-                         -- add nvim-cmp config that is _necessary_ for reproducing the ISSUE
-                     })
-                 end,
-             },
-             {
-                 "jose-elias-alvarez/null-ls.nvim",
-                 config = function()
-                     require("null-ls").setup({
-                         null_ls = {
-                             enabled = true,
-                         },
-                         -- add null-ls config that is _necessary_ for reproducing the ISSUE
-                     })
-                 end,
-             },
-             -- add additional plugins _necessary_ for reproducing the ISSUE
-         }, {
-             root = root .. "/plugins",
-         })
+        -- require("cmp").setup({
+        -- 	sources = { { name = "crates" } },
+        -- })
 
-         -- add init.lua settings that are _necessary_ for reproducing the ISSUE
+        -- require("null-ls").setup({
+        -- 	on_attach = function(client, buf)
+        -- 		vim.keymap.set("n", "<space>a", vim.lsp.buf.code_action, { buffer = buf })
+        -- 	end,
+        -- })
     validations:
       required: true
   - type: textarea
