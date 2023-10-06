@@ -265,12 +265,14 @@ function M.process_api_crate(crate, api_crate)
                end
             end
 
-            table.insert(diagnostics, crate_diagnostic(
-            crate,
-            "vers_upgrade",
-            vim.diagnostic.severity.WARN,
-            "vers"))
+            if state.cfg.enable_update_available_warning then
+               table.insert(diagnostics, crate_diagnostic(
+               crate,
+               "vers_upgrade",
+               vim.diagnostic.severity.WARN,
+               "vers"))
 
+            end
 
             if match then
 

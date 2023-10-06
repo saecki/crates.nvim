@@ -16,6 +16,7 @@ local record M
         open_programs: {string}
         max_parallel_requests: integer
         disable_invalid_feature_diagnostic: boolean
+        enable_update_available_warning: boolean
         text: TextConfig
         highlight: HighlightConfig
         diagnostic: DiagnosticConfig
@@ -369,6 +370,14 @@ entry(M.schema, "disable_invalid_feature_diagnostic", {
     description = [[
         This is a temporary solution for:
         https://github.com/Saecki/crates.nvim/issues/14
+    ]],
+})
+
+entry(M.schema, "enable_update_available_warning", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Enable warnings for outdated crates.
     ]],
 })
 

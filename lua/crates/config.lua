@@ -242,6 +242,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -369,6 +370,14 @@ entry(M.schema, "disable_invalid_feature_diagnostic", {
    description = [[
         This is a temporary solution for:
         https://github.com/Saecki/crates.nvim/issues/14
+    ]],
+})
+
+entry(M.schema, "enable_update_available_warning", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Enable warnings for outdated crates.
     ]],
 })
 
