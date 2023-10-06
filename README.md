@@ -195,6 +195,7 @@ require('crates').setup {
     max_parallel_requests = 80,
     open_programs = { "xdg-open", "open" },
     disable_invalid_feature_diagnostic = false,
+    enable_update_available_warning = true,
     text = {
         loading = "   Loading",
         version = "   %s",

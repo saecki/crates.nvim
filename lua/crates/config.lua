@@ -373,6 +373,14 @@ entry(M.schema, "disable_invalid_feature_diagnostic", {
     ]],
 })
 
+entry(M.schema, "enable_update_available_warning", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Enable warnings for outdated crates.
+    ]],
+})
+
 
 entry(M.schema, "text", {
    type = "section",

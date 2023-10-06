@@ -88,6 +88,7 @@ For more information about individual config options see |crates-config|.
         max_parallel_requests = 80,
         open_programs = { "xdg-open", "open" },
         disable_invalid_feature_diagnostic = false,
+        enable_update_available_warning = true,
         text = {
             loading = "   Loading",
             version = "   %s",
@@ -561,6 +562,13 @@ disable_invalid_feature_diagnostic
 
     This is a temporary solution for:
     https://github.com/Saecki/crates.nvim/issues/14
+
+
+                               *crates-config-enable_update_available_warning*
+enable_update_available_warning
+    Type: `boolean`, Default: `true`
+
+    Enable warnings for outdated crates.
 
 
 text                                                      *crates-config-text*
