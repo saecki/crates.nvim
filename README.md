@@ -100,7 +100,21 @@ lua require('crates').setup()
 
 ### Auto completion
 #### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
-Just add it to your list of sources.
+
+Enable it in the setup.
+```lua
+require('crates').setup {
+    ...
+    src = {
+        ...
+        cmp = {
+            enabled = true,
+        },
+    },
+}
+```
+
+And add it to your list of sources.
 ```lua
 require('cmp').setup {
     ...
@@ -300,11 +314,8 @@ require('crates').setup {
             prerelease = "  pre-release ",
             yanked = "  yanked ",
         },
-        coq = {
-            enabled = false,
-            name = "Crates",
-        },
         cmp = {
+            enabled = false,
             use_custom_kind = true,
             kind_text = {
                 version = "Version",
@@ -314,6 +325,10 @@ require('crates').setup {
                 version = "CmpItemKindVersion",
                 feature = "CmpItemKindFeature",
             },
+        },
+        coq = {
+            enabled = false,
+            name = "Crates",
         },
     },
     null_ls = {

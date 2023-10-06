@@ -1,8 +1,81 @@
-local M = {}
+local M = {lsp = {CompletionItemKind = {}, MarkupKind = {}, MarkupContent = {}, CompletionItem = {}, CompletionList = {}, }, cmp = {SourceBaseApiParams = {}, SourceCompletionApiParams = {}, }, }
 
-local cmp = require("cmp")
-local lsp = cmp.lsp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local src = require("crates.src.common")
+local util = require("crates.util")
 
 
 function M.new()
@@ -36,6 +109,20 @@ end
 
 function M:complete(_, callback)
    src.complete(callback)
+end
+
+function M.setup()
+   if M.registered_source then
+      return
+   end
+
+   local cmp = package.loaded["cmp"]
+   if not cmp then
+      return
+   end
+
+   cmp.register_source("crates", M.new())
+   M.registered_source = true
 end
 
 return M

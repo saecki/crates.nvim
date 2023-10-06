@@ -193,6 +193,7 @@ local record M
         end
 
         record CmpConfig
+            enabled: boolean
             use_custom_kind: boolean
             kind_text: CmpKindTextConfig
             kind_highlight: CmpKindHighlightConfig
@@ -1343,30 +1344,6 @@ entry(schema_src_text, "yanked", {
     ]],
 })
 
-
-entry(schema_src, "coq", {
-    type = "section",
-    description = [[
-        Configuration options for the |coq_nvim| completion source.
-    ]],
-    fields = {},
-})
-local schema_src_coq = schema_src.coq.fields
-entry(schema_src_coq, "enabled", {
-    type = "boolean",
-    default = false,
-    description = [[
-        Whether to load and register the |coq_nvim| source.
-    ]],
-})
-entry(schema_src_coq, "name", {
-    type = "string",
-    default = "Crates",
-    description = [[
-        The source name displayed by |coq_nvim|.
-    ]],
-})
-
 entry(schema_src, "cmp", {
     type = "section",
     description = [[
@@ -1375,6 +1352,18 @@ entry(schema_src, "cmp", {
     fields = {},
 })
 local schema_src_cmp = schema_src.cmp.fields
+entry(schema_src_cmp, "enabled", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to load and register the |nvim-cmp| source.
+        Note Ignored if |crates-config-autoload| is disabled.
+        You may manually register it, after |nvim-cmp| has been loaded.
+        >
+            require("crates.src.cmp").setup()
+        <
+    ]],
+})
 entry(schema_src_cmp, "use_custom_kind", {
     type = "boolean",
     default = true,
@@ -1429,6 +1418,29 @@ entry(schema_src_cmp_kind_hi, "feature", {
     ]],
 })
 
+entry(schema_src, "coq", {
+    type = "section",
+    description = [[
+        Configuration options for the |coq_nvim| completion source.
+    ]],
+    fields = {},
+})
+local schema_src_coq = schema_src.coq.fields
+entry(schema_src_coq, "enabled", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to load and register the |coq_nvim| source.
+    ]],
+})
+entry(schema_src_coq, "name", {
+    type = "string",
+    default = "Crates",
+    description = [[
+        The source name displayed by |coq_nvim|.
+    ]],
+})
+
 
 entry(M.schema, "null_ls", {
     type = "section",
@@ -1459,7 +1471,7 @@ entry(M.schema, "on_attach", {
     default_text = "function(bufnr) end",
     description = [[
       Callback to run when Cargo.toml is opened.
-      Ignored if `autoload` is disabled.
+      Note Ignored if |crates-config-autoload| is disabled.
     ]],
 })
 
