@@ -66,6 +66,13 @@ M.reload_crate = async.wrap(function(crate_name: string)
     for b,cache in pairs(state.buf_cache) do
         -- update crate in all dependency sections
         for k,c in pairs(cache.crates) do
+            -- Don't try to fetch info from crates.io if it's a local or git crate,
+            -- or from a registry other than crates.io
+            -- TODO: Once there is workspace support, resolve the crate
+            if c.dep_kind ~= "registry" or c.registry ~= nil then
+                goto continue
+            end
+
             if c:package() == crate_name and vim.api.nvim_buf_is_loaded(b) then
                 local info, diagnostics = diagnostic.process_api_crate(c, crate)
                 cache.info[k] = info
@@ -78,6 +85,8 @@ M.reload_crate = async.wrap(function(crate_name: string)
                     M.reload_deps(c:package(), versions, version)
                 end
             end
+
+            ::continue::
         end
     end
 end) as function(string)
@@ -102,9 +111,10 @@ function M.update(buf: integer|nil, reload: boolean)
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
     for k,c in pairs(crate_cache) do
-        -- Don't try to fetch info from crates.io if it's a local or git crate
+        -- Don't try to fetch info from crates.io if it's a local or git crate,
+        -- or from a registry other than crates.io
         -- TODO: Once there is workspace support, resolve the crate
-        if c.dep_kind ~= "registry" then
+        if c.dep_kind ~= "registry" or c.registry ~= nil then
             goto continue
         end
 
