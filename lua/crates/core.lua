@@ -66,6 +66,13 @@ M.reload_crate = async.wrap(function(crate_name)
    for b, cache in pairs(state.buf_cache) do
 
       for k, c in pairs(cache.crates) do
+
+
+
+         if c.dep_kind ~= "registry" or c.registry ~= nil then
+            goto continue
+         end
+
          if c:package() == crate_name and vim.api.nvim_buf_is_loaded(b) then
             local info, diagnostics = diagnostic.process_api_crate(c, crate)
             cache.info[k] = info
@@ -78,6 +85,8 @@ M.reload_crate = async.wrap(function(crate_name)
                M.reload_deps(c:package(), versions, version)
             end
          end
+
+         ::continue::
       end
    end
 end)
@@ -104,7 +113,8 @@ function M.update(buf, reload)
    for k, c in pairs(crate_cache) do
 
 
-      if c.dep_kind ~= "registry" then
+
+      if c.dep_kind ~= "registry" or c.registry ~= nil then
          goto continue
       end
 
