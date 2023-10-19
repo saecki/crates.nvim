@@ -75,7 +75,6 @@ local M = {lsp = {CompletionItemKind = {}, MarkupKind = {}, MarkupContent = {}, 
 
 
 local src = require("crates.src.common")
-local util = require("crates.util")
 
 
 function M.new()

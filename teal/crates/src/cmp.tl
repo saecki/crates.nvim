@@ -75,7 +75,6 @@ local record M
 end
 
 local src = require("crates.src.common")
-local util = require("crates.util")
 
 ---Source constructor.
 function M.new(): M
