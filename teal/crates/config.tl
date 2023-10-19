@@ -15,6 +15,7 @@ local record M
         curl_args: {string}
         open_programs: {string}
         max_parallel_requests: integer
+        expand_crate_moves_cursor: boolean
         disable_invalid_feature_diagnostic: boolean
         enable_update_available_warning: boolean
         text: TextConfig
@@ -355,6 +356,13 @@ entry(M.schema, "max_parallel_requests", {
     default = 80,
     description = [[
         Maximum number of parallel requests.
+    ]],
+})
+entry(M.schema, "expand_crate_moves_cursor", {
+    type = "boolean",
+    default = true,
+    description = [[
+        Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
     ]],
 })
 entry(M.schema, "open_programs", {

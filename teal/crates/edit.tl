@@ -457,10 +457,16 @@ function M.expand_plain_crate_to_inline_table(buf: integer, crate: toml.Crate)
         return
     end
 
+    local text = crate.explicit_name .. ' = { version = "' .. crate.vers.text .. '" }'
     vim.api.nvim_buf_set_text(
         buf, crate.lines.s, crate.vers.decl_col.s, crate.lines.s, crate.vers.decl_col.e,
-        { crate.explicit_name .. ' = { version = "' .. crate.vers.text .. '" }' }
+        { text }
     )
+
+    if state.cfg.expand_crate_moves_cursor then
+        local pos = { crate.lines.s + 1, #text - 2 }
+        vim.api.nvim_win_set_cursor(0, pos)
+    end
 end
 
 function M.extract_crate_into_table(buf: integer, crate: toml.Crate)

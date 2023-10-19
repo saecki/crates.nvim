@@ -244,6 +244,7 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -355,6 +356,13 @@ entry(M.schema, "max_parallel_requests", {
    default = 80,
    description = [[
         Maximum number of parallel requests.
+    ]],
+})
+entry(M.schema, "expand_crate_moves_cursor", {
+   type = "boolean",
+   default = true,
+   description = [[
+        Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
     ]],
 })
 entry(M.schema, "open_programs", {
