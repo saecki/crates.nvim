@@ -86,6 +86,7 @@ For more information about individual config options see |crates-config|.
         notification_title = "Crates",
         curl_args = { "-sL", "--retry", "1" },
         max_parallel_requests = 80,
+        expand_crate_moves_cursor = true,
         open_programs = { "xdg-open", "open" },
         disable_invalid_feature_diagnostic = false,
         enable_update_available_warning = true,
@@ -548,6 +549,12 @@ max_parallel_requests                    *crates-config-max_parallel_requests*
     Type: `number`, Default: `80`
 
     Maximum number of parallel requests.
+
+
+expand_crate_moves_cursor            *crates-config-expand_crate_moves_cursor*
+    Type: `boolean`, Default: `true`
+
+    Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
 
 
 open_programs                                    *crates-config-open_programs*
