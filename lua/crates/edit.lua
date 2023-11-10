@@ -383,11 +383,11 @@ local function disable_def_features(buf, crate)
          line,
          line,
          false,
-         { "default_features = false" })
+         { "default-features = false" })
 
          return crate.lines:moved(0, 1)
       elseif crate.syntax == "plain" then
-         local t = ", default_features = false }"
+         local t = ", default-features = false }"
          local col = crate.vers.col.e
          if crate.vers.quote.e then
             col = col + 1
@@ -415,13 +415,13 @@ local function disable_def_features(buf, crate)
          return crate.lines
       elseif crate.syntax == "inline_table" then
          local line = crate.lines.s
-         local text = ", default_features = false"
+         local text = ", default-features = false"
          local col = math.max(
          crate.vers and crate.vers.col.e + (crate.vers.quote.e and 1 or 0) or 0,
          crate.pkg and crate.pkg.col.e or 0)
 
          if col == 0 then
-            text = " default_features = false,"
+            text = " default-features = false,"
             col = math.min(
             crate.feat and crate.def.col.s or 999,
             crate.git and crate.git.decl_col.s or 999,
@@ -506,7 +506,7 @@ function M.extract_crate_into_table(buf, crate)
       table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
    end
    if crate.def then
-      table.insert(lines, "default_features = " .. '"' .. crate.def.text .. '"')
+      table.insert(lines, "default-features = " .. '"' .. crate.def.text .. '"')
    end
    if crate.feat then
       table.insert(lines, "features = [" .. crate.feat.text .. "]")
