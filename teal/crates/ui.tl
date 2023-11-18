@@ -32,9 +32,12 @@ end
 function M.display_diagnostics(buf: integer, diagnostics: {Diagnostic})
     if not state.visible then return end
 
-    M.diagnostics[buf] = M.diagnostics[buf] or {}
-    local vim_diagnostics = vim.tbl_map(to_vim_diagnostic, diagnostics)
-    vim.list_extend(M.diagnostics[buf], vim_diagnostics)
+    local buf_diagnostics = M.diagnostics[buf] or {}
+    for _,d in ipairs(diagnostics) do
+        local vim_diagnostic = to_vim_diagnostic(d)
+        table.insert(buf_diagnostics, vim_diagnostic)
+    end
+    M.diagnostics[buf] = buf_diagnostics
 
     vim.diagnostic.set(DIAGNOSTIC_NS, buf, M.diagnostics[buf])
 end
@@ -42,9 +45,12 @@ end
 function M.display_crate_info(buf: integer, info: CrateInfo, diagnostics: {Diagnostic})
     if not state.visible then return end
 
-    M.custom_diagnostics[buf] = M.custom_diagnostics[buf] or {}
-    local vim_diagnostics = vim.tbl_map(to_vim_diagnostic, diagnostics)
-    vim.list_extend(M.custom_diagnostics[buf], vim_diagnostics)
+    local buf_diagnostics = M.custom_diagnostics[buf] or {}
+    for _,d in ipairs(diagnostics) do
+        local vim_diagnostic = to_vim_diagnostic(d)
+        table.insert(buf_diagnostics, vim_diagnostic)
+    end
+    M.custom_diagnostics[buf] = buf_diagnostics
 
     local virt_text = {}
     if info.vers_match then
