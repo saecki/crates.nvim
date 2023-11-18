@@ -33,15 +33,15 @@ local FeatureInfo = util.FeatureInfo
 
 local function feature_text(features_info, feature)
    local t = {}
-   local info = features_info[feature.name]
-   if info.enabled then
-      t.text = string.format(state.cfg.popup.text.enabled, feature.name)
+   local info = features_info[feature]
+   if info == FeatureInfo.ENABLED then
+      t.text = string.format(state.cfg.popup.text.enabled, feature)
       t.hl = state.cfg.popup.highlight.enabled
-   elseif info.transitive then
-      t.text = string.format(state.cfg.popup.text.transitive, feature.name)
+   elseif info == FeatureInfo.TRANSITIVE then
+      t.text = string.format(state.cfg.popup.text.transitive, feature)
       t.hl = state.cfg.popup.highlight.transitive
    else
-      t.text = string.format(state.cfg.popup.text.feature, feature.name)
+      t.text = string.format(state.cfg.popup.text.feature, feature)
       t.hl = state.cfg.popup.highlight.feature
    end
    return { t }
@@ -119,17 +119,12 @@ local function toggle_feature(ctx, line)
    local features_info = util.features_info(ctx.crate, features)
    if entry.feature then
       for _, m in ipairs(entry.feature.members) do
-         local f = features:get_feat(m) or {
-            name = m,
-            members = {},
-         }
-
-         local hi_text = feature_text(features_info, f)
+         local hi_text = feature_text(features_info, m)
          table.insert(features_text, hi_text)
       end
    else
       for _, f in ipairs(features.list) do
-         local hi_text = feature_text(features_info, f)
+         local hi_text = feature_text(features_info, f.name)
          table.insert(features_text, hi_text)
       end
    end
@@ -293,7 +288,7 @@ function M.open_features(ctx, crate, version, opts)
 
    local features_info = util.features_info(crate, features)
    for _, f in ipairs(features.list) do
-      local hl_text = feature_text(features_info, f)
+      local hl_text = feature_text(features_info, f.name)
       table.insert(features_text, hl_text)
       local w = 0
       for _, t in ipairs(hl_text) do
@@ -323,12 +318,7 @@ function M.open_feature_details(ctx, crate, version, feature, opts)
 
    local features_info = util.features_info(crate, features)
    for _, m in ipairs(members) do
-      local f = features:get_feat(m) or {
-         name = m,
-         members = {},
-      }
-
-      local hl_text = feature_text(features_info, f)
+      local hl_text = feature_text(features_info, m)
       table.insert(features_text, hl_text)
       local w = 0
       for _, t in ipairs(hl_text) do
