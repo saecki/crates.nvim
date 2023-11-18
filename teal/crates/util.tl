@@ -121,7 +121,7 @@ function M.features_info(crate: toml.Crate, features: Features): {string:integer
         end
     end
 
-    if crate.def and crate.def.enabled then
+    if not crate.def or crate.def.enabled then
         info["default"] = FeatureInfo.ENABLED
         local api_feat = features.list[1]
         update_transitive(api_feat)
