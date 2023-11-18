@@ -165,7 +165,8 @@ function M.parse_crate(json_str: string): Crate|nil
             -- add optional dependency members as features
             for _,f in ipairs(version.features.list) do
                 for _,m in ipairs(f.members) do
-                    if not version.features:get_feat(m) then
+                    -- don't add dependency features
+                    if not string.find(m, "/") and not version.features:get_feat(m) then
                         version.features:insert({
                             name = m,
                             members = {},
