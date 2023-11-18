@@ -67,10 +67,7 @@ local function line_crate_info()
    end
 
    local function default_features_info()
-      info.feature = newest.features:get_feat("default") or {
-         name = "default",
-         members = {},
-      }
+      info.feature = newest.features.list[1]
       info.pref = "feature_details"
    end
 

@@ -5,6 +5,9 @@ local M = {FeatureInfo = {}, }
 
 
 
+M.FeatureInfo.ENABLED = 1
+M.FeatureInfo.TRANSITIVE = 2
+
 local FeatureInfo = M.FeatureInfo
 local semver = require("crates.semver")
 local state = require("crates.state")
@@ -110,35 +113,30 @@ function M.features_info(crate, features)
          local tf = features:get_feat(m)
          if tf then
             local i = info[m]
-            if i then
-               if not i.transitive then
-                  i.transitive = true
-               end
-            else
-               info[m] = {
-                  enabled = false,
-                  transitive = true,
-               }
+            if not i then
+               info[m] = FeatureInfo.TRANSITIVE
                update_transitive(tf)
             end
          end
       end
    end
 
-   for _, f in ipairs(features.list) do
-      local enabled = M.is_feat_enabled(crate, f)
-      local i = info[f.name]
-      if i then
-         i.enabled = enabled
-      else
-         info[f.name] = {
-            enabled = enabled,
-            transitive = false,
-         }
-      end
+   if crate.def and crate.def.enabled then
+      info["default"] = FeatureInfo.ENABLED
+      local api_feat = features.list[1]
+      update_transitive(api_feat)
+   end
 
-      if enabled then
-         update_transitive(f)
+   local crate_features = crate.feat
+   if not crate_features then
+      return info
+   end
+
+   for _, crate_feat in ipairs(crate_features.items) do
+      local api_feat = features:get_feat(crate_feat.name)
+      if api_feat then
+         info[(api_feat).name] = FeatureInfo.ENABLED
+         update_transitive(api_feat)
       end
    end
 

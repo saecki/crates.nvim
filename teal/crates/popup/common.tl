@@ -80,15 +80,19 @@ function M.win_width(title: string, content_width: integer): integer
 end
 
 local function set_buf_body(text: {{HighlightText}})
-    for i,line in ipairs(text) do
+    local lines = {}
+    for _,line in ipairs(text) do
         local padding = string.rep(" ", state.cfg.popup.padding)
         local line_text = padding
         for _,t in ipairs(line) do
             line_text = line_text .. t.text
         end
         line_text = line_text .. padding
+        table.insert(lines, line_text)
+    end
+    vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET, M.TOP_OFFSET + #lines, false, lines)
 
-        vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET + i - 1, M.TOP_OFFSET + i, false, { line_text })
+    for i,line in ipairs(text) do
         local pos = state.cfg.popup.padding
         for _,t in ipairs(line) do
             vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
