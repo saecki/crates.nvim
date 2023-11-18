@@ -125,7 +125,7 @@ function M.features_info(crate: toml.Crate, features: Features): {string:Feature
         end
     end
 
-    for _,f in ipairs(features) do
+    for _,f in ipairs(features.list) do
         local enabled = M.is_feat_enabled(crate, f)
         local i = info[f.name]
         if i then

@@ -133,6 +133,7 @@ local M = {CrateInfo = {}, Diagnostic = {}, Crate = {}, Version = {}, Features =
 
 
 
+
 local Diagnostic = M.Diagnostic
 local Feature = M.Feature
 local Features = M.Features
@@ -151,22 +152,20 @@ function Diagnostic:contains(line, col)
 end
 
 
-function Features.new(obj)
-   return setmetatable(obj, { __index = Features })
+function Features.new(list)
+   local map = {}
+   for _, f in ipairs(list) do
+      map[f.name] = f
+   end
+   return setmetatable({ list = list, map = map }, { __index = Features })
 end
 
 function Features:get_feat(name)
-   for i, f in ipairs(self) do
-      if f.name == name then
-         return f, i
-      end
-   end
-
-   return nil, nil
+   return self.map[name]
 end
 
 function Features:sort()
-   table.sort(self, function(a, b)
+   table.sort(self.list, function(a, b)
       if a.name == "default" then
          return true
       elseif b.name == "default" then
@@ -175,6 +174,11 @@ function Features:sort()
          return a.name < b.name
       end
    end)
+end
+
+function Features:insert(feat)
+   table.insert(self.list, feat)
+   self.map[feat.name] = feat
 end
 
 

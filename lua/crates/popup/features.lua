@@ -59,7 +59,7 @@ local function toggle_feature(ctx, line)
          selected_feature = features:get_feat(m)
       end
    else
-      selected_feature = features[index]
+      selected_feature = features.list[index]
    end
    if not selected_feature then return end
 
@@ -128,7 +128,7 @@ local function toggle_feature(ctx, line)
          table.insert(features_text, hi_text)
       end
    else
-      for _, f in ipairs(features) do
+      for _, f in ipairs(features.list) do
          local hi_text = feature_text(features_info, f)
          table.insert(features_text, hi_text)
       end
@@ -150,7 +150,7 @@ local function goto_feature(ctx, line)
          selected_feature = version.features:get_feat(m)
       end
    else
-      selected_feature = version.features[index]
+      selected_feature = version.features.list[index]
    end
    if not selected_feature then return end
 
@@ -292,7 +292,7 @@ function M.open_features(ctx, crate, version, opts)
    local features_text = {}
 
    local features_info = util.features_info(crate, features)
-   for _, f in ipairs(features) do
+   for _, f in ipairs(features.list) do
       local hl_text = feature_text(features_info, f)
       table.insert(features_text, hl_text)
       local w = 0
@@ -303,7 +303,7 @@ function M.open_features(ctx, crate, version, opts)
    end
 
    local width = popup.win_width(title, feat_width)
-   local height = popup.win_height(features)
+   local height = popup.win_height(features.list)
 
    if opts.update then
       popup.update_win(width, height, title, features_text, opts)

@@ -148,7 +148,7 @@ function M.parse_crate(json_str: string): Crate|nil
         if v.num then
             local version: Version = {
                 num = v.num as string,
-                features = Features.new {},
+                features = Features.new({}),
                 yanked = v.yanked as boolean,
                 parsed = semver.parse_version(v.num as string),
                 created = DateTime.parse_rfc_3339(v.created_at as string)
@@ -156,17 +156,17 @@ function M.parse_crate(json_str: string): Crate|nil
 
             for n,m in pairs(v.features as {string:{string}}) do
                 table.sort(m)
-                table.insert(version.features, {
+                version.features:insert({
                     name = n,
                     members = m,
                 })
             end
 
             -- add optional dependency members as features
-            for _,f in ipairs(version.features) do
+            for _,f in ipairs(version.features.list) do
                 for _,m in ipairs(f.members) do
                     if not version.features:get_feat(m) then
-                        table.insert(version.features, {
+                        version.features:insert({
                             name = m,
                             members = {},
                         })
@@ -178,15 +178,11 @@ function M.parse_crate(json_str: string): Crate|nil
             version.features:sort()
 
             -- add missing default feature
-            if not version.features[1] or not (version.features[1].name == "default") then
-                for i=#version.features, 1, -1 do
-                    version.features[i + 1] = version.features[i]
-                end
-
-                version.features[1] = {
+            if not version.features.list[1] or not (version.features.list[1].name == "default") then
+                version.features:insert({
                     name = "default",
                     members = {},
-                }
+                })
             end
 
             table.insert(crate.versions, version)
