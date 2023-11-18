@@ -84,7 +84,7 @@ local function complete_features(crate, cf, versions)
    end
 
    local items = {}
-   for _, f in ipairs(newest.features) do
+   for _, f in ipairs(newest.features.list) do
       local crate_feat = crate:get_feat(f.name)
       if not crate_feat then
          local r = {

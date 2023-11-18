@@ -28,7 +28,7 @@ M.reload_deps = async.wrap(function(crate_name: string, versions: {Version}, ver
         for _,d in ipairs(deps) do
             -- optional dependencies are automatically promoted to features
             if d.opt and not version.features:get_feat(d.name) then
-                table.insert(version.features, {
+                version.features:insert({
                     name = d.name,
                     members = {},
                 })

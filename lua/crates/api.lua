@@ -156,17 +156,17 @@ function M.parse_crate(json_str)
 
          for n, m in pairs(v.features) do
             table.sort(m)
-            table.insert(version.features, {
+            version.features:insert({
                name = n,
                members = m,
             })
          end
 
 
-         for _, f in ipairs(version.features) do
+         for _, f in ipairs(version.features.list) do
             for _, m in ipairs(f.members) do
                if not version.features:get_feat(m) then
-                  table.insert(version.features, {
+                  version.features:insert({
                      name = m,
                      members = {},
                   })
@@ -178,15 +178,11 @@ function M.parse_crate(json_str)
          version.features:sort()
 
 
-         if not version.features[1] or not (version.features[1].name == "default") then
-            for i = #version.features, 1, -1 do
-               version.features[i + 1] = version.features[i]
-            end
-
-            version.features[1] = {
+         if not version.features.list[1] or not (version.features.list[1].name == "default") then
+            version.features:insert({
                name = "default",
                members = {},
-            }
+            })
          end
 
          table.insert(crate.versions, version)

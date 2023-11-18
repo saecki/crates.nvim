@@ -331,7 +331,7 @@ function M.process_crate_deps(crate: toml.Crate, version: Version, deps: {Depend
     local diagnostics = {}
 
     local valid_feats = {}
-    for _,f in ipairs(version.features) do
+    for _,f in ipairs(version.features.list) do
         table.insert(valid_feats, f.name)
     end
     for _,d in ipairs(deps) do
