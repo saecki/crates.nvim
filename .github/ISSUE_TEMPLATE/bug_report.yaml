@@ -46,7 +46,7 @@ body:
       value: |
         -- comment out, and add the things that are _necessary_ for reproducing the ISSUE
         for name, url in pairs({
-            crates = "/home/tobi/Projects/crates.nvim",
+            crates = "https://github.com/saecki/crates.nvim",
             plenary = "https://github.com/nvim-lua/plenary.nvim",
             -- cmp = "https://github.com/hrsh7th/nvim-cmp",
             -- coq = "https://github.com/ms-jpq/coq_nvim",
