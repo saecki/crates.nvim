@@ -626,11 +626,6 @@ text.error                                          *crates-config-text-error*
     Format string used when there was an error loading crate information.
 
 
-text.update                                        *crates-config-text-update*
-    DEPRECATED
-
-    Please use |crates-config-text-upgrade| instead.
-
 highlight                                            *crates-config-highlight*
     Type: `section`
 
@@ -678,11 +673,6 @@ highlight.error                                *crates-config-highlight-error*
 
     Highlight group used when there was an error loading crate information.
 
-
-highlight.update                              *crates-config-highlight-update*
-    DEPRECATED
-
-    Please use |crates-config-highlight-upgrade| instead.
 
 popup                                                    *crates-config-popup*
     Type: `section`
