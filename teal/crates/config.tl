@@ -690,6 +690,7 @@ entry(schema_popup, "version_date", {
     type = "boolean",
     deprecated = {
         new_field = { "popup", "show_version_date" },
+        hard = true,
     }
 })
 
@@ -948,7 +949,8 @@ entry(schema_popup_text, "loading", {
 entry(schema_popup_text, "date", {
     type = "string",
     deprecated = {
-        new_field = { "popup", "text", "version_date" }
+        new_field = { "popup", "text", "version_date" },
+        hard = true,
     }
 })
 
@@ -1285,24 +1287,28 @@ entry(schema_popup_keys, "goto_feature", {
     type = "table",
     deprecated = {
         new_field = { "popup", "keys", "goto_item" },
+        hard = true,
     }
 })
 entry(schema_popup_keys, "jump_forward_feature", {
     type = "table",
     deprecated = {
         new_field = { "popup", "keys", "jump_forward" },
+        hard = true,
     }
 })
 entry(schema_popup_keys, "jump_back_feature", {
     type = "table",
     deprecated = {
         new_field = { "popup", "keys", "jump_back" },
+        hard = true,
     }
 })
 entry(schema_popup_keys, "copy_version", {
     type = "table",
     deprecated = {
         new_field = { "popup", "keys", "copy_value" },
+        hard = true,
     }
 })
 
