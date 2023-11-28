@@ -448,14 +448,6 @@ entry(schema_text, "error", {
         Format string used when there was an error loading crate information.
     ]],
 })
--- deprecated
-entry(schema_text, "update", {
-    type = "string",
-    deprecated = {
-        new_field = { "text", "upgrade" },
-        hard = true,
-    },
-})
 
 
 entry(M.schema, "highlight", {
@@ -514,14 +506,6 @@ entry(schema_hi, "error", {
     description = [[
         Highlight group used when there was an error loading crate information.
     ]],
-})
--- deprecated
-entry(schema_hi, "update", {
-    type = "string",
-    deprecated = {
-        new_field = { "highlight", "upgrade" },
-        hard = true,
-    },
 })
 
 
