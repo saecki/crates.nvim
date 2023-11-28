@@ -449,14 +449,6 @@ entry(schema_text, "error", {
     ]],
 })
 
-entry(schema_text, "update", {
-   type = "string",
-   deprecated = {
-      new_field = { "text", "upgrade" },
-      hard = true,
-   },
-})
-
 
 entry(M.schema, "highlight", {
    type = "section",
@@ -514,14 +506,6 @@ entry(schema_hi, "error", {
    description = [[
         Highlight group used when there was an error loading crate information.
     ]],
-})
-
-entry(schema_hi, "update", {
-   type = "string",
-   deprecated = {
-      new_field = { "highlight", "upgrade" },
-      hard = true,
-   },
 })
 
 
@@ -706,6 +690,7 @@ entry(schema_popup, "version_date", {
    type = "boolean",
    deprecated = {
       new_field = { "popup", "show_version_date" },
+      hard = true,
    },
 })
 
@@ -965,6 +950,7 @@ entry(schema_popup_text, "date", {
    type = "string",
    deprecated = {
       new_field = { "popup", "text", "version_date" },
+      hard = true,
    },
 })
 
@@ -1301,24 +1287,28 @@ entry(schema_popup_keys, "goto_feature", {
    type = "table",
    deprecated = {
       new_field = { "popup", "keys", "goto_item" },
+      hard = true,
    },
 })
 entry(schema_popup_keys, "jump_forward_feature", {
    type = "table",
    deprecated = {
       new_field = { "popup", "keys", "jump_forward" },
+      hard = true,
    },
 })
 entry(schema_popup_keys, "jump_back_feature", {
    type = "table",
    deprecated = {
       new_field = { "popup", "keys", "jump_back" },
+      hard = true,
    },
 })
 entry(schema_popup_keys, "copy_version", {
    type = "table",
    deprecated = {
       new_field = { "popup", "keys", "copy_value" },
+      hard = true,
    },
 })
 
