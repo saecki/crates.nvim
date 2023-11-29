@@ -70,6 +70,7 @@ end
 
 local actions = require("crates.actions")
 local async = require("crates.async")
+local command = require("crates.command")
 local config = require("crates.config")
 local Config = config.Config
 local core = require("crates.core")
@@ -86,6 +87,7 @@ end
 function M.setup(cfg: Config)
     state.cfg = config.build(cfg)
 
+    command.register()
     highlight.define()
 
     local group = vim.api.nvim_create_augroup("Crates", {})
