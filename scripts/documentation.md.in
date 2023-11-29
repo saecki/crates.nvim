@@ -1,0 +1,262 @@
+# <TITLE>
+Documentation for `crates.nvim` `<VERSION>`
+
+## Features
+- Complete crate versions and features
+- Completion sources for:
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
+- [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) code actions
+- Update crates to newest compatible version
+- Upgrade crates to newest version
+- Respect existing version requirements and update them in an elegant way (`smart_insert`)
+- Automatically load when opening a `Cargo.toml` file (`autoload`)
+- Live update while editing (`autoupdate`)
+- Show version and upgrade candidates
+    - Indicate if compatible version is a pre-release or yanked
+    - Indicate if no version is compatible
+- Open floating window with crate info
+    - Open documentation, crates.io, repository and homepage urls
+- Open floating window with crate versions
+    - Select a version by pressing enter (`popup.keys.select`)
+- Open floating window with crate features
+    - Navigate the feature hierarchy
+    - Enable/disable features
+    - Indicate if a feature is enabled directly or transitively
+- Open floating window with crate dependencies
+    - Navigate the dependency hierarchy
+    - Indicate if a dependency is optional
+
+## Setup
+### Auto completion
+#### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
+
+Enable it in the setup.
+```lua
+require('crates').setup {
+    ...
+    src = {
+        ...
+        cmp = {
+            enabled = true,
+        },
+    },
+}
+```
+
+And add it to your list of sources.
+```lua
+require('cmp').setup {
+    ...
+    sources = {
+        { name = "path" },
+        { name = "buffer" },
+        { name = "nvim_lsp" },
+        ...
+        { name = "crates" },
+    },
+}
+```
+
+<details>
+<summary>Or add it lazily.</summary>
+
+```lua
+vim.api.nvim_create_autocmd("BufRead", {
+    group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
+    pattern = "Cargo.toml",
+    callback = function()
+        cmp.setup.buffer({ sources = { { name = "crates" } } })
+    end,
+})
+```
+</details>
+
+#### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
+Enable it in the setup, and optionally change the display name.
+```lua
+require('crates').setup {
+    ...
+    src = {
+        ...
+        coq = {
+            enabled = true,
+            name = "crates.nvim",
+        },
+    },
+}
+```
+
+### Code actions
+#### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) source
+Enable it in the setup, and optionally change the display name.
+```lua
+local null_ls = require('null-ls')
+require('crates').setup {
+    ...
+    null_ls = {
+        enabled = true,
+        name = "crates.nvim",
+    },
+}
+```
+
+## Config
+
+For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
+
+### Default
+
+The icons in the default configuration require a patched font.<br>
+Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
+```lua
+require('crates').setup {
+<DEFAULT_CONFIGURATION>
+}
+```
+
+### Plain text
+
+Replace these fields if you don't have a patched font.
+```lua
+require('crates').setup {
+    text = {
+        loading = "  Loading...",
+        version = "  %s",
+        prerelease = "  %s",
+        yanked = "  %s yanked",
+        nomatch = "  Not found",
+        upgrade = "  %s",
+        error = "  Error fetching crate",
+    },
+    popup = {
+        text = {
+            title = "# %s",
+            pill_left = "",
+            pill_right = "",
+            created_label = "created        ",
+            updated_label = "updated        ",
+            downloads_label = "downloads      ",
+            homepage_label = "homepage       ",
+            repository_label = "repository     ",
+            documentation_label = "documentation  ",
+            crates_io_label = "crates.io      ",
+            categories_label = "categories     ",
+            keywords_label = "keywords       ",
+            version = "%s",
+            prerelease = "%s pre-release",
+            yanked = "%s yanked",
+            enabled = "* s",
+            transitive = "~ s",
+            normal_dependencies_title = "  Dependencies",
+            build_dependencies_title = "  Build dependencies",
+            dev_dependencies_title = "  Dev dependencies",
+            optional = "? %s",
+            loading = " ...",
+        },
+    },
+    src = {
+        text = {
+            prerelease = " pre-release ",
+            yanked = " yanked ",
+        },
+    },
+}
+```
+
+### Functions
+```lua
+<FUNCTIONS>
+```
+
+### Key mappings
+Some examples of key mappings.
+```lua
+local crates = require('crates')
+local opts = { silent = true }
+
+vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
+vim.keymap.set('n', '<leader>cr', crates.reload, opts)
+
+vim.keymap.set('n', '<leader>cv', crates.show_versions_popup, opts)
+vim.keymap.set('n', '<leader>cf', crates.show_features_popup, opts)
+vim.keymap.set('n', '<leader>cd', crates.show_dependencies_popup, opts)
+
+vim.keymap.set('n', '<leader>cu', crates.update_crate, opts)
+vim.keymap.set('v', '<leader>cu', crates.update_crates, opts)
+vim.keymap.set('n', '<leader>ca', crates.update_all_crates, opts)
+vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
+vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
+vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
+
+vim.keymap.set('n', '<leader>ce', crates.expand_plain_crate_to_inline_table, opts)
+vim.keymap.set('n', '<leader>cE', crates.extract_crate_into_table, opts)
+
+vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
+vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
+vim.keymap.set('n', '<leader>cD', crates.open_documentation, opts)
+vim.keymap.set('n', '<leader>cC', crates.open_crates_io, opts)
+```
+
+<details>
+<summary>In vimscript</summary>
+
+```vim
+nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
+nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
+
+nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
+nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
+nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
+
+nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
+vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
+nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
+nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
+vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
+nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+nnoremap <silent> <leader>ce :lua require('crates').expand_plain_crate_to_inline_table()<cr>
+nnoremap <silent> <leader>cE :lua require('crates').extract_crate_into_table()<cr>
+
+nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
+nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
+nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
+nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
+```
+</details>
+
+### Show appropriate documentation in `Cargo.toml`
+How you might integrate `show_popup` into your `init.vim`.
+```vim
+nnoremap <silent> K :call <SID>show_documentation()<cr>
+function! s:show_documentation()
+    if (index(['vim','help'], &filetype) >= 0)
+        execute 'h '.expand('<cword>')
+    elseif (index(['man'], &filetype) >= 0)
+        execute 'Man '.expand('<cword>')
+    elseif (expand('%:t') == 'Cargo.toml' && luaeval('require("crates").popup_available()'))
+        lua require('crates').show_popup()
+    else
+        lua vim.lsp.buf.hover()
+    endif
+endfunction
+```
+
+How you might integrate `show_popup` into your `init.lua`.
+```lua
+local function show_documentation()
+    local filetype = vim.bo.filetype
+    if vim.tbl_contains({ 'vim','help' }, filetype) then
+        vim.cmd('h '..vim.fn.expand('<cword>'))
+    elseif vim.tbl_contains({ 'man' }, filetype) then
+        vim.cmd('Man '..vim.fn.expand('<cword>'))
+    elseif vim.fn.expand('%:t') == 'Cargo.toml' and require('crates').popup_available() then
+        require('crates').show_popup()
+    else
+        vim.lsp.buf.hover()
+    end
+end
+
+vim.keymap.set('n', 'K', show_documentation, { silent = true })
+```

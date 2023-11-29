@@ -45,9 +45,14 @@ jobs:
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: README.md doc/crates.txt
+        file_pattern: README.md doc/crates.txt scripts/wiki
         commit_message: "chore: generate docs"
-  
+
+    - name: Upload Documentation to Wiki
+      uses: spenserblack/actions-wiki@v0.3.0
+      with:
+        path: scripts/wiki
+
   test:
     runs-on: ubuntu-latest
     steps:
