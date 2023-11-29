@@ -6,16 +6,16 @@ exec lua "$0" "$@"
 local inspect = require("inspect")
 local config = require('lua.crates.config')
 local highlight = require('lua.crates.highlight')
-local version = "0.4.0"
+local version = "unstable"
 
-local function format_readme_refs(line)
+local function format_markdown_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
     line = line:gsub("`p#([^`]+)`", "`%1`")
     line = line:gsub("`c#([^`]+)`", "`%1`")
     return line
 end
 
-local function gen_readme_functions(lines)
+local function gen_markdown_functions(lines)
     local file = io.open("teal/crates/init.tl", "r")
     for l in file:lines("*l") do
         if l == "end" then
@@ -30,7 +30,7 @@ local function gen_readme_functions(lines)
             else
                 local doc = l:match("^%s*%-%-%s*(.*)$")
                 if doc then
-                    local fmt = format_readme_refs(doc)
+                    local fmt = format_markdown_refs(doc)
                     table.insert(lines, "-- " .. fmt)
                 end
             end
@@ -273,31 +273,33 @@ local function gen_vim_doc()
     outfile:close()
 end
 
-local function gen_readme()
+local function gen_markdown(inpath, outpath, title)
     local lines = {}
 
-    local infile = io.open("scripts/README.md.in", "r")
+    local infile = io.open(inpath, "r")
     for l in infile:lines("*l") do
         if l == "<DEFAULT_CONFIGURATION>" then
             gen_def_config(lines, 1, {}, config.schema)
         elseif l == "<FUNCTIONS>" then
-            gen_readme_functions(lines)
+            gen_markdown_functions(lines)
         else
             l = l:gsub("<VERSION>", version)
+            l = l:gsub("<TITLE>", title)
             table.insert(lines, l)
         end
     end
     infile:close()
 
     local doc = table.concat(lines, "\n")
-    local outfile = io.open("README.md", "w")
+    local outfile = io.open(outpath, "w")
     outfile:write(doc)
     outfile:close()
 end
 
 local function gen_docs()
     gen_vim_doc()
-    gen_readme()
+    gen_markdown("scripts/README.md.in", "README.md", "")
+    gen_markdown("scripts/documentation.md.in", "scripts/wiki/Unstable-documentation.md", "Unstable documentation")
 end
 
 gen_docs()
