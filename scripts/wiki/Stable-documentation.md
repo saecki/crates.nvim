@@ -30,21 +30,7 @@ Documentation for `crates.nvim` `v0.4.0`
 ## Setup
 ### Auto completion
 #### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
-
-Enable it in the setup.
-```lua
-require('crates').setup {
-    ...
-    src = {
-        ...
-        cmp = {
-            enabled = true,
-        },
-    },
-}
-```
-
-And add it to your list of sources.
+Just add it to your list of sources.
 ```lua
 require('cmp').setup {
     ...
