@@ -224,6 +224,14 @@ local function gen_vimdoc_config(lines, path, schema)
     end
 end
 
+local function gen_plain_text_config(lines, indent)
+    local infile = io.open("scripts/plain_text_config.lua", "r")
+    for l in infile:lines("*l") do
+        local indented = string.rep("    ", indent) .. l
+        table.insert(lines, indented)
+    end
+end
+
 local function gen_def_config(lines, indent, path, schema)
     local function insert_indent(str)
         local l = string.rep("    ", #path + indent) .. str
@@ -254,6 +262,8 @@ local function gen_vim_doc()
     for l in infile:lines("*l") do
         if l == "<DEFAULT_CONFIGURATION>" then
             gen_def_config(lines, 2, {}, config.schema)
+        elseif l == "<PLAIN_TEXT_CONFIGURATION>" then
+            gen_plain_text_config(lines, 2)
         elseif l == "<FUNCTIONS>" then
             gen_vimdoc_functions(lines)
         elseif l == "<CONFIGURATION>" then
@@ -280,6 +290,8 @@ local function gen_markdown(inpath, outpath, title)
     for l in infile:lines("*l") do
         if l == "<DEFAULT_CONFIGURATION>" then
             gen_def_config(lines, 1, {}, config.schema)
+        elseif l == "<PLAIN_TEXT_CONFIGURATION>" then
+            gen_plain_text_config(lines, 1)
         elseif l == "<FUNCTIONS>" then
             gen_markdown_functions(lines)
         else
