@@ -91,7 +91,7 @@ M.reload_crate = async.wrap(function(crate_name: string)
     end
 end) as function(string)
 
-function M.update(buf: integer|nil, reload: boolean)
+local function update(buf: integer|nil, reload: boolean)
     buf = buf or util.current_buf()
 
     if reload then
@@ -180,6 +180,43 @@ function M.await_throttled_update_if_any(buf: integer): boolean
     end)
 
     return true
+end
+
+function M.hide()
+    state.visible = false
+    for b,_ in pairs(state.buf_cache) do
+        ui.clear(b)
+    end
+end
+
+function M.show()
+    state.visible = true
+
+    -- make sure we update the current buffer (first)
+    local buf = util.current_buf()
+    update(buf, false)
+
+    for b,_ in pairs(state.buf_cache) do
+        if b ~= buf then
+            update(b, false)
+        end
+    end
+end
+
+function M.toggle()
+    if state.visible then
+        M.hide()
+    else
+        M.show()
+    end
+end
+
+function M.update(buf: integer|nil)
+    update(buf, false)
+end
+
+function M.reload(buf: integer|nil)
+    update(buf, true)
 end
 
 return M

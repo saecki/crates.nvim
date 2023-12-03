@@ -77,8 +77,6 @@ local core = require("crates.core")
 local highlight = require("crates.highlight")
 local popup = require("crates.popup")
 local state = require("crates.state")
-local ui = require("crates.ui")
-local util = require("crates.util")
 
 
 
@@ -97,7 +95,7 @@ function M.setup(cfg)
             require("crates.src.cmp").setup()
          end
 
-         core.update(nil, false)
+         core.update()
          state.cfg.on_attach(vim.api.nvim_get_current_buf())
       end
 
@@ -109,7 +107,7 @@ function M.setup(cfg)
                require("crates.src.cmp").setup()
             end
 
-            core.update(nil, false)
+            core.update()
             state.cfg.on_attach(info.buf)
          end,
       })
@@ -145,42 +143,11 @@ function M.setup(cfg)
    end
 end
 
-function M.hide()
-   state.visible = false
-   for b, _ in pairs(state.buf_cache) do
-      ui.clear(b)
-   end
-end
-
-function M.show()
-   state.visible = true
-
-
-   local buf = util.current_buf()
-   core.update(buf, false)
-
-   for b, _ in pairs(state.buf_cache) do
-      if b ~= buf then
-         core.update(b, false)
-      end
-   end
-end
-
-function M.toggle()
-   if state.visible then
-      M.hide()
-   else
-      M.show()
-   end
-end
-
-function M.update(buf)
-   core.update(buf, false)
-end
-
-function M.reload(buf)
-   core.update(buf, true)
-end
+M.hide = core.hide
+M.show = core.show
+M.toggle = core.toggle
+M.update = core.update
+M.reload = core.reload
 
 M.upgrade_crate = actions.upgrade_crate
 M.upgrade_crates = actions.upgrade_crates
