@@ -8,5 +8,5 @@ test:
 
 .PHONY: doc
 doc:
-	./scripts/gen_doc.lua
+	./docgen/gen_doc.lua
 

@@ -23,14 +23,13 @@ make build
 ```
 
 ## Documentation
-__Do not edit the `README.md` or `doc/crates.txt` files.__
+__Do not edit the `README.md`, `doc/crates.txt` or wiki files.__
 
-To update the README or vimdoc edit the `scripts/README.md.in` and
-`scripts/crates.txt.in` files instead of their generated counter parts.
+To update the README, vimdoc or wiki edit the files in `docgen/templates/*`
+instead of their generated counter parts.
 
-After editing one of the above, the configuration schema in
-`lua/crates/config.tl` or public api functions in `lua/crates.tl` update the
-docs by running this command:
+Documentation is automatically updated by github actions, but you can also
+generate it yourself by running:
 ```
 make doc
 ```

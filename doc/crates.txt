@@ -252,15 +252,15 @@ For more information about the lua function see |crates-functions|.
     vim.keymap.set('n', '<leader>cf', crates.show_features_popup, opts)
     vim.keymap.set('n', '<leader>cd', crates.show_dependencies_popup, opts)
 
-    vim.keymap.set('n', '<leader>ce', crates.expand_plain_crate_to_inline_table, opts)
-    vim.keymap.set('n', '<leader>cE', crates.extract_crate_into_table, opts)
-
     vim.keymap.set('n', '<leader>cu', crates.update_crate, opts)
     vim.keymap.set('v', '<leader>cu', crates.update_crates, opts)
     vim.keymap.set('n', '<leader>ca', crates.update_all_crates, opts)
     vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
     vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
     vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
+
+    vim.keymap.set('n', '<leader>ce', crates.expand_plain_crate_to_inline_table, opts)
+    vim.keymap.set('n', '<leader>cE', crates.extract_crate_into_table, opts)
 
     vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
     vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
@@ -277,15 +277,15 @@ And here are the same ones in vimscript.
     nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
     nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
 
-    nnoremap <silent> <leader>ce :lua require('crates').expand_plain_crate_to_inline_table()<cr>
-    nnoremap <silent> <leader>cE :lua require('crates').extract_crate_into_table()<cr>
-
     nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
     vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
     nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
     nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
     vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
     nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+
+    nnoremap <silent> <leader>ce :lua require('crates').expand_plain_crate_to_inline_table()<cr>
+    nnoremap <silent> <leader>cE :lua require('crates').extract_crate_into_table()<cr>
 
     nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
     nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>

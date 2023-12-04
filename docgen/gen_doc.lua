@@ -8,6 +8,15 @@ local config = require('lua.crates.config')
 local highlight = require('lua.crates.highlight')
 local version = "unstable"
 
+local function gen_from_shared_file(lines, indent, filename)
+    local infile = io.open("docgen/shared/" .. filename, "r")
+    for l in infile:lines("*l") do
+        l = string.rep("    ", indent) .. l
+        l = l:gsub("%s+$", "")
+        table.insert(lines, l)
+    end
+end
+
 local function format_markdown_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
     line = line:gsub("`p#([^`]+)`", "`%1`")
@@ -224,14 +233,6 @@ local function gen_vimdoc_config(lines, path, schema)
     end
 end
 
-local function gen_plain_text_config(lines, indent)
-    local infile = io.open("scripts/plain_text_config.lua", "r")
-    for l in infile:lines("*l") do
-        local indented = string.rep("    ", indent) .. l
-        table.insert(lines, indented)
-    end
-end
-
 local function gen_def_config(lines, indent, path, schema)
     local function insert_indent(str)
         local l = string.rep("    ", #path + indent) .. str
@@ -255,25 +256,41 @@ local function gen_def_config(lines, indent, path, schema)
     end
 end
 
+local function parse_placeholder(l)
+    local preceeding_spaces, placeholder = l:match("^%s*()<SHARED%:([a-zA-Z0-9_%.]+)>$")
+    if placeholder then
+        local spaces = preceeding_spaces - 1
+        if spaces % 4 ~= 0 then
+            error(string.format("4 space indent is enforced, but found %s spaced in line:\n%s", spaces, l))
+        end
+        local indent = spaces / 4
+        return placeholder, indent
+    end
+end
+
 local function gen_vim_doc()
     local lines = {}
 
-    local infile = io.open("scripts/crates.txt.in", "r")
+    local infile = io.open("docgen/templates/crates.txt.in", "r")
     for l in infile:lines("*l") do
-        if l == "<DEFAULT_CONFIGURATION>" then
-            gen_def_config(lines, 2, {}, config.schema)
-        elseif l == "<PLAIN_TEXT_CONFIGURATION>" then
-            gen_plain_text_config(lines, 2)
-        elseif l == "<FUNCTIONS>" then
-            gen_vimdoc_functions(lines)
-        elseif l == "<CONFIGURATION>" then
-            gen_vimdoc_config(lines, {}, config.schema)
-        elseif l == "<HIGHLIGHTS>" then
-            gen_vimdoc_highlights(lines)
+        local ph, indent = parse_placeholder(l)
+        if ph then
+            if ph == "DEFAULT_CONFIGURATION" then
+                gen_def_config(lines, 2, {}, config.schema)
+            elseif ph == "FUNCTIONS" then
+                gen_vimdoc_functions(lines)
+            elseif ph == "CONFIGURATION" then
+                gen_vimdoc_config(lines, {}, config.schema)
+            elseif ph == "HIGHLIGHTS" then
+                gen_vimdoc_highlights(lines)
+            else
+                gen_from_shared_file(lines, indent, ph)
+            end
         else
             l = l:gsub("<VERSION>", version)
             table.insert(lines, l)
         end
+
     end
     infile:close()
 
@@ -283,20 +300,22 @@ local function gen_vim_doc()
     outfile:close()
 end
 
-local function gen_markdown(inpath, outpath, title)
+local function gen_markdown(inpath, outpath)
     local lines = {}
 
     local infile = io.open(inpath, "r")
     for l in infile:lines("*l") do
-        if l == "<DEFAULT_CONFIGURATION>" then
-            gen_def_config(lines, 1, {}, config.schema)
-        elseif l == "<PLAIN_TEXT_CONFIGURATION>" then
-            gen_plain_text_config(lines, 1)
-        elseif l == "<FUNCTIONS>" then
-            gen_markdown_functions(lines)
+        local ph, indent = parse_placeholder(l)
+        if ph then
+            if ph == "DEFAULT_CONFIGURATION" then
+                gen_def_config(lines, 1, {}, config.schema)
+            elseif ph == "FUNCTIONS" then
+                gen_markdown_functions(lines)
+            else
+                gen_from_shared_file(lines, indent, ph)
+            end
         else
             l = l:gsub("<VERSION>", version)
-            l = l:gsub("<TITLE>", title)
             table.insert(lines, l)
         end
     end
@@ -310,8 +329,8 @@ end
 
 local function gen_docs()
     gen_vim_doc()
-    gen_markdown("scripts/README.md.in", "README.md", "")
-    gen_markdown("scripts/documentation.md.in", "scripts/wiki/Unstable-documentation.md", "Unstable documentation")
+    gen_markdown("docgen/templates/README.md.in", "README.md")
+    gen_markdown("docgen/templates/documentation.md.in", "docgen/wiki/Unstable-documentation.md")
 end
 
 gen_docs()
