@@ -17,12 +17,12 @@ upgrade, select, enable or disable them.
 USAGE                                                           *crates-usage*
 
 Basic setup.
->
+>lua
     require('crates').setup()
 <
 
 Setup for plain text (without patched font).
->
+>lua
     require('crates').setup {
         text = {
             loading = "  Loading...",
@@ -72,7 +72,7 @@ Setup with default options.
 Note the icons in the default config require a patched font, if you don't have
 one use the plain text config.
 For more information about individual config options see |crates-config|.
->
+>lua
     require('crates').setup {
         smart_insert = true,
         insert_closing_quote = true,
@@ -241,7 +241,7 @@ Note crates doesn't use any global key mappings by default.
 
 But here are some recommended ones.
 For more information about the lua function see |crates-functions|.
->
+>lua
     local crates = require('crates')
     local opts = { silent = true }
 
@@ -269,7 +269,7 @@ For more information about the lua function see |crates-functions|.
 <
 
 And here are the same ones in vimscript.
->
+>vim
     nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
     nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
 
@@ -297,7 +297,7 @@ To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
 How you might integrate `show_popup` into your `init.vim`.
->
+>vim
     nnoremap <silent> K :call <SID>show_documentation()<cr>
     function! s:show_documentation()
         if (index(['vim','help'], &filetype) >= 0)
@@ -313,7 +313,7 @@ How you might integrate `show_popup` into your `init.vim`.
 <
 
 How you might integrate `show_popup` into your `init.lua`.
->
+>lua
     local function show_documentation()
         local filetype = vim.bo.filetype
         if vim.tbl_contains({ 'vim','help' }, filetype) then
@@ -335,7 +335,7 @@ FUNCTIONS                                                   *crates-functions*
 
 All of these functions are members of the `crates` root module.
 They can be accessed like this.
->
+>lua
     require('crates').function_name()
 <
 

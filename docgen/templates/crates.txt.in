@@ -17,12 +17,12 @@ upgrade, select, enable or disable them.
 USAGE                                                           *crates-usage*
 
 Basic setup.
->
+>lua
     require('crates').setup()
 <
 
 Setup for plain text (without patched font).
->
+>lua
     require('crates').setup {
         <SHARED:plain_text_config.lua>
     }
@@ -32,7 +32,7 @@ Setup with default options.
 Note the icons in the default config require a patched font, if you don't have
 one use the plain text config.
 For more information about individual config options see |crates-config|.
->
+>lua
     require('crates').setup {
         <SHARED:DEFAULT_CONFIGURATION>
     }
@@ -45,12 +45,12 @@ Note crates doesn't use any global key mappings by default.
 
 But here are some recommended ones.
 For more information about the lua function see |crates-functions|.
->
+>lua
     <SHARED:keymaps.lua>
 <
 
 And here are the same ones in vimscript.
->
+>vim
     <SHARED:keymaps.vim>
 <
 
@@ -58,12 +58,12 @@ To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
 How you might integrate `show_popup` into your `init.vim`.
->
+>vim
     <SHARED:show_docs.vim>
 <
 
 How you might integrate `show_popup` into your `init.lua`.
->
+>lua
     <SHARED:show_docs.lua>
 <
 
@@ -72,7 +72,7 @@ FUNCTIONS                                                   *crates-functions*
 
 All of these functions are members of the `crates` root module.
 They can be accessed like this.
->
+>lua
     require('crates').function_name()
 <
 
