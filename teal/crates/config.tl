@@ -4,7 +4,6 @@ local record M
     record Config
         smart_insert: boolean
         insert_closing_quote: boolean
-        avoid_prerelease: boolean
         autoload: boolean
         autoupdate: boolean
         autoupdate_throttle: integer
@@ -281,13 +280,6 @@ entry(M.schema, "insert_closing_quote", {
         Insert a closing quote when updating or upgrading a version, if there is none.
     ]],
 })
-entry(M.schema, "avoid_prerelease", {
-    type = "boolean",
-    default = true,
-    description = [[
-        Don't select a prerelease if the requirement does not have a suffix.
-    ]],
-})
 entry(M.schema, "autoload", {
     type = "boolean",
     default = true,
@@ -381,7 +373,6 @@ entry(M.schema, "disable_invalid_feature_diagnostic", {
         https://github.com/Saecki/crates.nvim/issues/14
     ]],
 })
-
 entry(M.schema, "enable_update_available_warning", {
     type = "boolean",
     default = true,
@@ -389,7 +380,13 @@ entry(M.schema, "enable_update_available_warning", {
         Enable warnings for outdated crates.
     ]],
 })
-
+-- deprecated
+entry(M.schema, "avoid_prerelease", {
+    type = "boolean",
+    deprecated = {
+        hard = true,
+    },
+})
 
 entry(M.schema, "text", {
     type = "section",
@@ -572,7 +569,7 @@ entry(schema_diagnostic, "vers_upgrade", {
 })
 entry(schema_diagnostic, "vers_pre", {
     type = "string",
-    default = "Requirement only matches a pre-release version",
+    default = "Requirement only matches a pre-release version\nIf you want to use the pre-release package, it needs to be specified explicitly",
     hidden = true,
 })
 entry(schema_diagnostic, "vers_yanked", {

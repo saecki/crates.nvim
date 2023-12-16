@@ -73,7 +73,7 @@ local function complete_versions(crate, versions)
 end
 
 local function complete_features(crate, cf, versions)
-   local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
+   local avoid_pre = not crate:vers_is_pre()
    local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
    if not newest then

@@ -5,7 +5,7 @@ local M = {}
 M.highlights = {
    { "CratesNvimLoading", { default = true, link = "DiagnosticVirtualTextInfo" } },
    { "CratesNvimVersion", { default = true, link = "DiagnosticVirtualTextInfo" } },
-   { "CratesNvimPreRelease", { default = true, link = "DiagnosticVirtualTextWarn" } },
+   { "CratesNvimPreRelease", { default = true, link = "DiagnosticVirtualTextError" } },
    { "CratesNvimYanked", { default = true, link = "DiagnosticVirtualTextError" } },
    { "CratesNvimNoMatch", { default = true, link = "DiagnosticVirtualTextError" } },
    { "CratesNvimUpgrade", { default = true, link = "DiagnosticVirtualTextWarn" } },

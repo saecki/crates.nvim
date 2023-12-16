@@ -40,7 +40,7 @@ M.reload_deps = async.wrap(function(crate_name: string, versions: {Version}, ver
             -- update crate in all dependency sections
             for _,c in pairs(cache.crates) do
                 if c:package() == crate_name then
-                    local avoid_pre = state.cfg.avoid_prerelease and not c:vers_is_pre()
+                    local avoid_pre = not c:vers_is_pre()
                     local m, p, y = util.get_newest(versions, avoid_pre, c:vers_reqs())
                     local match = m or p or y
 

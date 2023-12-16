@@ -220,7 +220,7 @@ function M.process_crates(sections: {toml.Section}, crates: {toml.Crate}): {stri
 end
 
 function M.process_api_crate(crate: toml.Crate, api_crate: Crate): CrateInfo, {Diagnostic}
-    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local avoid_pre = not crate:vers_is_pre()
     local versions = api_crate and api_crate.versions
     local newest, newest_pre, newest_yanked = util.get_newest(versions, avoid_pre, nil)
     newest = newest or newest_pre or newest_yanked
@@ -283,7 +283,7 @@ function M.process_api_crate(crate: toml.Crate, api_crate: Crate): CrateInfo, {D
                     table.insert(diagnostics, crate_diagnostic(
                         crate,
                         "vers_pre",
-                        vim.diagnostic.severity.WARN,
+                        vim.diagnostic.severity.ERROR,
                         "vers"
                     ))
                 elseif match_yanked then

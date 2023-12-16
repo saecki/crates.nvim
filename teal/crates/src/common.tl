@@ -73,7 +73,7 @@ local function complete_versions(crate: toml.Crate, versions: {Version}): Comple
 end
 
 local function complete_features(crate: toml.Crate, cf: toml.Feature, versions: {Version}): CompletionList
-    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local avoid_pre = not crate:vers_is_pre()
     local newest = util.get_newest(versions, avoid_pre, crate:vers_reqs())
 
     if not newest then

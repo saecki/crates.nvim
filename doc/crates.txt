@@ -76,7 +76,6 @@ For more information about individual config options see |crates-config|.
     require('crates').setup {
         smart_insert = true,
         insert_closing_quote = true,
-        avoid_prerelease = true,
         autoload = true,
         autoupdate = true,
         autoupdate_throttle = 250,
@@ -484,12 +483,6 @@ insert_closing_quote                      *crates-config-insert_closing_quote*
     Insert a closing quote when updating or upgrading a version, if there is none.
 
 
-avoid_prerelease                              *crates-config-avoid_prerelease*
-    Type: `boolean`, Default: `true`
-
-    Don't select a prerelease if the requirement does not have a suffix.
-
-
 autoload                                              *crates-config-autoload*
     Type: `boolean`, Default: `true`
 
@@ -577,6 +570,9 @@ enable_update_available_warning
 
     Enable warnings for outdated crates.
 
+
+avoid_prerelease                              *crates-config-avoid_prerelease*
+    DEPRECATED
 
 text                                                      *crates-config-text*
     Type: `section`
@@ -1410,7 +1406,7 @@ CratesNvimVersion                                *crates-hl-CratesNvimVersion*
     Default: links to |DiagnosticVirtualTextInfo|
 
 CratesNvimPreRelease                          *crates-hl-CratesNvimPreRelease*
-    Default: links to |DiagnosticVirtualTextWarn|
+    Default: links to |DiagnosticVirtualTextError|
 
 CratesNvimYanked                                  *crates-hl-CratesNvimYanked*
     Default: links to |DiagnosticVirtualTextError|

@@ -34,7 +34,7 @@ local function line_crate_info(): LineCrateInfo
     local api_crate = state.api_cache[crate:package()]
     if not api_crate then return end
 
-    local avoid_pre = state.cfg.avoid_prerelease and not crate:vers_is_pre()
+    local avoid_pre = not crate:vers_is_pre()
     local newest = util.get_newest(api_crate.versions, avoid_pre, crate:vers_reqs()) as Version
 
     local info: LineCrateInfo = {

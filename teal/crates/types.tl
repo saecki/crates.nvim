@@ -38,11 +38,11 @@ local record M
         "crate_name_case"
         "vers_nomatch"
         "vers_yanked"
+        "vers_pre"
         "def_invalid"
         "feat_invalid"
         -- warning
         "vers_upgrade"
-        "vers_pre"
         "feat_dup"
         -- hint
         "section_dup_orig"
