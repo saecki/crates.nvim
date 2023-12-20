@@ -304,6 +304,8 @@ local function fetch_deps(name: string, version: string, callbacks: {function({D
 
         M.num_requests = M.num_requests - 1
         M.deps_jobs[jobname] = nil
+
+        M.run_queued_jobs()
     end
 
     local job = request_job(url, on_exit)
