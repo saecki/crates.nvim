@@ -41,7 +41,8 @@ body:
       description: >
         Minimal(!) configuration necessary to reproduce the issue. Save this as
         `minimal.lua`. If necessary, add plugins and config options from your
-        `init.lua` at the indicated lines.
+        `init.lua` at the indicated lines. Neovim can then be started with this
+        config by running `nvim -u minimal.lua`.
       render: lua
       value: |
         -- comment out, and add the things that are _necessary_ for reproducing the ISSUE
