@@ -95,6 +95,7 @@ local function enqueue_deps_job(name, version, callbacks)
    for _, j in ipairs(M.queued_jobs) do
       if j.kind == "deps" and j.name == name and j.version == version then
          vim.list_extend(j.deps_callbacks, callbacks)
+         return
       end
    end
 
