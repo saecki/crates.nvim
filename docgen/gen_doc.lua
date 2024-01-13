@@ -50,6 +50,31 @@ local function gen_markdown_functions(lines)
     file:close()
 end
 
+local function gen_markdown_subcommands(lines)
+    local file = io.open("teal/crates/command.tl", "r")
+    local line_iter = file:lines("*l")
+    for l in line_iter do
+        if l:match("^local sub_commands:") then
+            break
+        end
+    end
+
+    for l in line_iter do
+        if l == "}" then
+            break
+        end
+        if l ~= "" then
+            local pat = "^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$"
+            local name = l:match(pat)
+            if name then
+                local doc_ref = string.format("- `%s()`", name)
+                table.insert(lines, doc_ref)
+            end
+        end
+    end
+    file:close()
+end
+
 local function format_vimdoc_params(params)
     local text = {}
     for p, t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
@@ -337,6 +362,8 @@ local function gen_markdown(inpath, outpath)
                 gen_def_config(lines, 1, {}, config.schema)
             elseif ph == "FUNCTIONS" then
                 gen_markdown_functions(lines)
+            elseif ph == "SUBCOMMANDS" then
+                gen_markdown_subcommands(lines)
             else
                 gen_from_shared_file(lines, indent, ph)
             end

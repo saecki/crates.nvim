@@ -388,6 +388,38 @@ require("crates").focus_popup(line: integer|nil)
 require("crates").hide_popup()
 ```
 
+## Command
+```vim
+:Crates <subcmd>
+```
+Run a crates.nvim `<subcmd>`. All `<subcmd>`s are just wrappers around the
+corresponding functions. These are the functions available as commands:
+- `hide()`
+- `show()`
+- `toggle()`
+- `update()`
+- `reload()`
+- `upgrade_crate()`
+- `upgrade_crates()`
+- `upgrade_all_crates()`
+- `update_crate()`
+- `update_crates()`
+- `update_all_crates()`
+- `expand_plain_crate_to_inline_table()`
+- `extract_crate_into_table()`
+- `open_homepage()`
+- `open_repository()`
+- `open_documentation()`
+- `open_cratesio()`
+- `popup_available()`
+- `show_popup()`
+- `show_crate_popup()`
+- `show_versions_popup()`
+- `show_features_popup()`
+- `show_dependencies_popup()`
+- `focus_popup()`
+- `hide_popup()`
+
 ## Key mappings
 Some examples of key mappings.
 ```lua

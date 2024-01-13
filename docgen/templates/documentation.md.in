@@ -127,6 +127,14 @@ require("crates").setup {
 <SHARED:FUNCTIONS>
 ```
 
+## Command
+```vim
+:Crates <subcmd>
+```
+Run a crates.nvim `<subcmd>`. All `<subcmd>`s are just wrappers around the
+corresponding functions. These are the functions available as commands:
+<SHARED:SUBCOMMANDS>
+
 ## Key mappings
 Some examples of key mappings.
 ```lua
