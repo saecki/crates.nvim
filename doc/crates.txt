@@ -454,6 +454,41 @@ hide_popup()                                             *crates.hide_popup()*
 
 
 ==============================================================================
+COMMAND                                                       *crates-command*
+
+:Crates {subcmd}
+
+Run a crates.nvim {subcmd}. All {subcmd}s are just wrappers around the
+corresponding |crates-functions|. These are the functions available as
+commands:
+
+    - |crates.hide()|
+    - |crates.show()|
+    - |crates.toggle()|
+    - |crates.update()|
+    - |crates.reload()|
+    - |crates.upgrade_crate()|
+    - |crates.upgrade_crates()|
+    - |crates.upgrade_all_crates()|
+    - |crates.update_crate()|
+    - |crates.update_crates()|
+    - |crates.update_all_crates()|
+    - |crates.expand_plain_crate_to_inline_table()|
+    - |crates.extract_crate_into_table()|
+    - |crates.open_homepage()|
+    - |crates.open_repository()|
+    - |crates.open_documentation()|
+    - |crates.open_cratesio()|
+    - |crates.popup_available()|
+    - |crates.show_popup()|
+    - |crates.show_crate_popup()|
+    - |crates.show_versions_popup()|
+    - |crates.show_features_popup()|
+    - |crates.show_dependencies_popup()|
+    - |crates.focus_popup()|
+    - |crates.hide_popup()|
+
+==============================================================================
 CONFIGURATION                                                  *crates-config*
 
 This section describes the configuration options which can be passed to

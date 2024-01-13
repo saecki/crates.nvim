@@ -79,6 +79,17 @@ They can be accessed like this.
 
 <SHARED:FUNCTIONS>
 ==============================================================================
+COMMAND                                                       *crates-command*
+
+:Crates {subcmd}
+
+Run a crates.nvim {subcmd}. All {subcmd}s are just wrappers around the
+corresponding |crates-functions|. These are the functions available as
+commands:
+
+<SHARED:SUBCOMMANDS>
+
+==============================================================================
 CONFIGURATION                                                  *crates-config*
 
 This section describes the configuration options which can be passed to

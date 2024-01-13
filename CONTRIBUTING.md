@@ -34,7 +34,7 @@ For example
 ```
 <SHARED:DEFAULT_CONFIGURATION>
 ```
-would be replaced by the generated default configuration, but 
+would be replaced by the generated default configuration, but
 ```
     <SHARED:keymaps.lua>
 ```

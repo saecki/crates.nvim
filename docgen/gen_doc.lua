@@ -127,6 +127,31 @@ local function gen_vimdoc_functions(lines)
     file:close()
 end
 
+local function gen_vimdoc_subcommands(lines)
+    local file = io.open("teal/crates/command.tl", "r")
+    local line_iter = file:lines("*l")
+    for l in line_iter do
+        if l:match("^local sub_commands:") then
+            break
+        end
+    end
+
+    for l in line_iter do
+        if l == "}" then
+            break
+        end
+        if l ~= "" then
+            local pat = "^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$"
+            local name = l:match(pat)
+            if name then
+                local doc_ref = string.format("    - |crates.%s()|", name)
+                table.insert(lines, doc_ref)
+            end
+        end
+    end
+    file:close()
+end
+
 local function gen_vimdoc_highlights(lines)
     for _, value in ipairs(highlight.highlights) do
         local name = value[1]
@@ -279,6 +304,8 @@ local function gen_vim_doc()
                 gen_def_config(lines, 2, {}, config.schema)
             elseif ph == "FUNCTIONS" then
                 gen_vimdoc_functions(lines)
+            elseif ph == "SUBCOMMANDS" then
+                gen_vimdoc_subcommands(lines)
             elseif ph == "CONFIGURATION" then
                 gen_vimdoc_config(lines, {}, config.schema)
             elseif ph == "HIGHLIGHTS" then
