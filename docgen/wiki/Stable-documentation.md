@@ -1,4 +1,3 @@
-# Stable documentation
 Documentation for `crates.nvim` `v0.4.0`
 
 ## Features
