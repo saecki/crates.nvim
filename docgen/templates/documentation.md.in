@@ -32,7 +32,7 @@ Documentation for `crates.nvim` `<VERSION>`
 
 Enable it in the setup.
 ```lua
-require('crates').setup {
+require("crates").setup {
     ...
     src = {
         ...
@@ -45,7 +45,7 @@ require('crates').setup {
 
 And add it to your list of sources.
 ```lua
-require('cmp').setup {
+require("cmp").setup {
     ...
     sources = {
         { name = "path" },
@@ -74,7 +74,7 @@ vim.api.nvim_create_autocmd("BufRead", {
 ### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
-require('crates').setup {
+require("crates").setup {
     ...
     src = {
         ...
@@ -90,7 +90,7 @@ require('crates').setup {
 ### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
-require('crates').setup {
+require("crates").setup {
     ...
     null_ls = {
         enabled = true,
@@ -108,16 +108,16 @@ For more information about the type of some fields see [`teal/crates/config.tl`]
 The icons in the default configuration require a patched font.<br>
 Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 ```lua
-require('crates').setup {
+require("crates").setup {
     <SHARED:DEFAULT_CONFIGURATION>
 }
 ```
 
 ## Plain text
 
-Replace these fields if you don't have a patched font.
+Replace these fields if you don"t have a patched font.
 ```lua
-require('crates').setup {
+require("crates").setup {
     <SHARED:plain_text_config.lua>
 }
 ```

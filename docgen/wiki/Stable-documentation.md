@@ -31,7 +31,7 @@ Documentation for `crates.nvim` `v0.4.0`
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources.
 ```lua
-require('cmp').setup {
+require("cmp").setup {
     ...
     sources = {
         { name = "path" },
@@ -60,7 +60,7 @@ vim.api.nvim_create_autocmd("BufRead", {
 ### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
-require('crates').setup {
+require("crates").setup {
     ...
     src = {
         ...
@@ -76,7 +76,7 @@ require('crates').setup {
 ### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
-require('crates').setup {
+require("crates").setup {
     ...
     null_ls = {
         enabled = true,
@@ -94,7 +94,7 @@ For more information about the type of some fields see [`teal/crates/config.tl`]
 The icons in the default configuration require a patched font.<br>
 Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 ```lua
-require('crates').setup {
+require("crates").setup {
     smart_insert = true,
     insert_closing_quote = true,
     avoid_prerelease = true,
@@ -243,9 +243,9 @@ require('crates').setup {
 
 ## Plain text
 
-Replace these fields if you don't have a patched font.
+Replace these fields if you don"t have a patched font.
 ```lua
-require('crates').setup {
+require("crates").setup {
     text = {
         loading = "  Loading...",
         version = "  %s",
@@ -293,128 +293,128 @@ require('crates').setup {
 ## Functions
 ```lua
 -- Setup config and auto commands.
-require('crates').setup(cfg: Config)
+require("crates").setup(cfg: Config)
 
 -- Disable UI elements (virtual text and diagnostics).
-require('crates').hide()
+require("crates").hide()
 -- Enable UI elements (virtual text and diagnostics).
-require('crates').show()
+require("crates").show()
 -- Enable or disable UI elements (virtual text and diagnostics).
-require('crates').toggle()
+require("crates").toggle()
 -- Update data. Optionally specify which `buf` to update.
-require('crates').update(buf: integer|nil)
+require("crates").update(buf: integer|nil)
 -- Reload data (clears cache). Optionally specify which `buf` to reload.
-require('crates').reload(buf: integer|nil)
+require("crates").reload(buf: integer|nil)
 
 -- Upgrade the crate on the current line.
 -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
 -- option will be used to insert the version.
-require('crates').upgrade_crate(alt: boolean|nil)
+require("crates").upgrade_crate(alt: boolean|nil)
 -- Upgrade the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require('crates').upgrade_crates(alt: boolean|nil)
+require("crates").upgrade_crates(alt: boolean|nil)
 -- Upgrade all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require('crates').upgrade_all_crates(alt: boolean|nil)
+require("crates").upgrade_all_crates(alt: boolean|nil)
 
 -- Update the crate on the current line.
 -- See `crates.upgrade_crate()`.
-require('crates').update_crate(alt: boolean|nil)
+require("crates").update_crate(alt: boolean|nil)
 -- Update the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require('crates').update_crates(alt: boolean|nil)
+require("crates").update_crates(alt: boolean|nil)
 -- Update all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require('crates').update_all_crates(alt: boolean|nil)
+require("crates").update_all_crates(alt: boolean|nil)
 
 -- Expand a plain crate declaration into an inline table.
-require('crates').expand_plain_crate_to_inline_table()
+require("crates").expand_plain_crate_to_inline_table()
 -- Extract an crate declaration from a dependency section into a table.
-require('crates').extract_crate_into_table()
+require("crates").extract_crate_into_table()
 
 -- Open the homepage of the crate on the current line.
-require('crates').open_homepage()
+require("crates").open_homepage()
 -- Open the repository page of the crate on the current line.
-require('crates').open_repository()
+require("crates").open_repository()
 -- Open the documentation page of the crate on the current line.
-require('crates').open_documentation()
+require("crates").open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
-require('crates').open_crates_io()
+require("crates").open_crates_io()
 
 -- Returns whether there is information to show in a popup.
-require('crates').popup_available(): boolean
+require("crates").popup_available(): boolean
 -- Show/hide popup with crate details, all versions, all features or details about one feature.
 -- If `popup.autofocus` is disabled calling this again will focus the popup.
-require('crates').show_popup()
+require("crates").show_popup()
 -- Same as `crates.show_popup()` but always show crate details.
-require('crates').show_crate_popup()
+require("crates").show_crate_popup()
 -- Same as `crates.show_popup()` but always show versions.
-require('crates').show_versions_popup()
+require("crates").show_versions_popup()
 -- Same as `crates.show_popup()` but always show features or features details.
-require('crates').show_features_popup()
+require("crates").show_features_popup()
 -- Same as `crates.show_popup()` but always show depedencies.
-require('crates').show_dependencies_popup()
+require("crates").show_dependencies_popup()
 -- Focus the popup (jump into the floating window).
 -- Optionally specify the line to jump to, inside the popup.
-require('crates').focus_popup(line: integer|nil)
+require("crates").focus_popup(line: integer|nil)
 -- Hide the popup.
-require('crates').hide_popup()
+require("crates").hide_popup()
 ```
 
 ## Key mappings
 Some examples of key mappings.
 ```lua
-local crates = require('crates')
+local crates = require("crates")
 local opts = { silent = true }
 
-vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
-vim.keymap.set('n', '<leader>cr', crates.reload, opts)
+vim.keymap.set("n", "<leader>ct", crates.toggle, opts)
+vim.keymap.set("n", "<leader>cr", crates.reload, opts)
 
-vim.keymap.set('n', '<leader>cv', crates.show_versions_popup, opts)
-vim.keymap.set('n', '<leader>cf', crates.show_features_popup, opts)
-vim.keymap.set('n', '<leader>cd', crates.show_dependencies_popup, opts)
+vim.keymap.set("n", "<leader>cv", crates.show_versions_popup, opts)
+vim.keymap.set("n", "<leader>cf", crates.show_features_popup, opts)
+vim.keymap.set("n", "<leader>cd", crates.show_dependencies_popup, opts)
 
-vim.keymap.set('n', '<leader>cu', crates.update_crate, opts)
-vim.keymap.set('v', '<leader>cu', crates.update_crates, opts)
-vim.keymap.set('n', '<leader>ca', crates.update_all_crates, opts)
-vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
-vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
-vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
+vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
+vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
+vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
+vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
+vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
+vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
 
-vim.keymap.set('n', '<leader>ce', crates.expand_plain_crate_to_inline_table, opts)
-vim.keymap.set('n', '<leader>cE', crates.extract_crate_into_table, opts)
+vim.keymap.set("n", "<leader>cx", crates.expand_plain_crate_to_inline_table, opts)
+vim.keymap.set("n", "<leader>cX", crates.extract_crate_into_table, opts)
 
-vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
-vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
-vim.keymap.set('n', '<leader>cD', crates.open_documentation, opts)
-vim.keymap.set('n', '<leader>cC', crates.open_crates_io, opts)
+vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
+vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
+vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
+vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
 ```
 
 <details>
 <summary>In vimscript</summary>
 
 ```vim
-nnoremap <silent> <leader>ct :lua require('crates').toggle()<cr>
-nnoremap <silent> <leader>cr :lua require('crates').reload()<cr>
+nnoremap <silent> <leader>ct :lua require("crates").toggle()<cr>
+nnoremap <silent> <leader>cr :lua require("crates").reload()<cr>
 
-nnoremap <silent> <leader>cv :lua require('crates').show_versions_popup()<cr>
-nnoremap <silent> <leader>cf :lua require('crates').show_features_popup()<cr>
-nnoremap <silent> <leader>cd :lua require('crates').show_dependencies_popup()<cr>
+nnoremap <silent> <leader>cv :lua require("crates").show_versions_popup()<cr>
+nnoremap <silent> <leader>cf :lua require("crates").show_features_popup()<cr>
+nnoremap <silent> <leader>cd :lua require("crates").show_dependencies_popup()<cr>
 
-nnoremap <silent> <leader>cu :lua require('crates').update_crate()<cr>
-vnoremap <silent> <leader>cu :lua require('crates').update_crates()<cr>
-nnoremap <silent> <leader>ca :lua require('crates').update_all_crates()<cr>
-nnoremap <silent> <leader>cU :lua require('crates').upgrade_crate()<cr>
-vnoremap <silent> <leader>cU :lua require('crates').upgrade_crates()<cr>
-nnoremap <silent> <leader>cA :lua require('crates').upgrade_all_crates()<cr>
+nnoremap <silent> <leader>cu :lua require("crates").update_crate()<cr>
+vnoremap <silent> <leader>cu :lua require("crates").update_crates()<cr>
+nnoremap <silent> <leader>ca :lua require("crates").update_all_crates()<cr>
+nnoremap <silent> <leader>cU :lua require("crates").upgrade_crate()<cr>
+vnoremap <silent> <leader>cU :lua require("crates").upgrade_crates()<cr>
+nnoremap <silent> <leader>cA :lua require("crates").upgrade_all_crates()<cr>
 
-nnoremap <silent> <leader>ce :lua require('crates').expand_plain_crate_to_inline_table()<cr>
-nnoremap <silent> <leader>cE :lua require('crates').extract_crate_into_table()<cr>
+nnoremap <silent> <leader>cx :lua require("crates").expand_plain_crate_to_inline_table()<cr>
+nnoremap <silent> <leader>cX :lua require("crates").extract_crate_into_table()<cr>
 
-nnoremap <silent> <leader>cH :lua require('crates').open_homepage()<cr>
-nnoremap <silent> <leader>cR :lua require('crates').open_repository()<cr>
-nnoremap <silent> <leader>cD :lua require('crates').open_documentation()<cr>
-nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
+nnoremap <silent> <leader>cH :lua require("crates").open_homepage()<cr>
+nnoremap <silent> <leader>cR :lua require("crates").open_repository()<cr>
+nnoremap <silent> <leader>cD :lua require("crates").open_documentation()<cr>
+nnoremap <silent> <leader>cC :lua require("crates").open_crates_io()<cr>
 ```
 </details>
 

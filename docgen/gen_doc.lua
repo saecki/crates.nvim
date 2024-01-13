@@ -4,8 +4,8 @@ exec lua "$0" "$@"
 ]]
 
 local inspect = require("inspect")
-local config = require('lua.crates.config')
-local highlight = require('lua.crates.highlight')
+local config = require("lua.crates.config")
+local highlight = require("lua.crates.highlight")
 local version = "unstable"
 
 local function gen_from_shared_file(lines, indent, filename)
@@ -34,7 +34,7 @@ local function gen_markdown_functions(lines)
             local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)(.*)$"
             local name, params, ret_type = l:match(pat)
             if name and params and ret_type then
-                local func_text = string.format("require('crates').%s(%s)%s", name, params, ret_type)
+                local func_text = string.format('require("crates").%s(%s)%s', name, params, ret_type)
                 table.insert(lines, func_text)
             else
                 local doc = l:match("^%s*%-%-%s*(.*)$")
@@ -52,7 +52,7 @@ end
 
 local function format_vimdoc_params(params)
     local text = {}
-    for p,t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
+    for p, t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
         local fmt = string.format("{%s}: `%s`", p, t)
         table.insert(text, fmt)
     end
@@ -108,7 +108,7 @@ local function gen_vimdoc_functions(lines)
                     table.insert(lines, doc_title)
                 end
 
-                for _,dl in ipairs(func_doc) do
+                for _, dl in ipairs(func_doc) do
                     local fmt = format_vimdoc_refs(dl)
                     table.insert(lines, "    " .. fmt)
                 end
@@ -128,7 +128,7 @@ local function gen_vimdoc_functions(lines)
 end
 
 local function gen_vimdoc_highlights(lines)
-    for _,value in ipairs(highlight.highlights) do
+    for _, value in ipairs(highlight.highlights) do
         local name = value[1]
         local hl = value[2]
         local doc_title = name
@@ -153,7 +153,7 @@ local function gen_vimdoc_highlights(lines)
                     if colors ~= "" then
                         colors = colors .. " "
                     end
-                    colors =  colors .. string.format("%s=%s", name, value)
+                    colors = colors .. string.format("%s=%s", name, value)
                 end
             end
 
@@ -170,7 +170,7 @@ end
 
 local function join_path(path, component)
     local p = {}
-    for i,c in ipairs(path) do
+    for i, c in ipairs(path) do
         p[i] = c
     end
     table.insert(p, component)
@@ -178,7 +178,7 @@ local function join_path(path, component)
 end
 
 local function gen_vimdoc_config(lines, path, schema)
-    for _,s in ipairs(schema) do
+    for _, s in ipairs(schema) do
         if s.hidden then
             goto continue
         end
@@ -239,7 +239,7 @@ local function gen_def_config(lines, indent, path, schema)
         table.insert(lines, l)
     end
 
-    for _,s in ipairs(schema) do
+    for _, s in ipairs(schema) do
         if not s.hidden and not s.deprecated then
             local name = s.name
 
@@ -290,7 +290,6 @@ local function gen_vim_doc()
             l = l:gsub("<VERSION>", version)
             table.insert(lines, l)
         end
-
     end
     infile:close()
 
