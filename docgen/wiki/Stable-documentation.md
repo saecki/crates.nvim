@@ -1,6 +1,6 @@
 Documentation for `crates.nvim` `v0.4.0`
 
-## Features
+# Features
 - Complete crate versions and features
 - Completion sources for:
     - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
@@ -26,9 +26,9 @@ Documentation for `crates.nvim` `v0.4.0`
     - Navigate the dependency hierarchy
     - Indicate if a dependency is optional
 
-## Setup
-### Auto completion
-#### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
+# Setup
+## Auto completion
+### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 Just add it to your list of sources.
 ```lua
 require('cmp').setup {
@@ -57,7 +57,7 @@ vim.api.nvim_create_autocmd("BufRead", {
 ```
 </details>
 
-#### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
+### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
 require('crates').setup {
@@ -72,8 +72,8 @@ require('crates').setup {
 }
 ```
 
-### Code actions
-#### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) source
+## Code actions
+### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
 local null_ls = require('null-ls')
@@ -86,11 +86,11 @@ require('crates').setup {
 }
 ```
 
-## Config
+# Config
 
 For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
 
-### Default
+## Default
 
 The icons in the default configuration require a patched font.<br>
 Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
@@ -242,7 +242,7 @@ require('crates').setup {
 }
 ```
 
-### Plain text
+## Plain text
 
 Replace these fields if you don't have a patched font.
 ```lua
@@ -291,7 +291,7 @@ require('crates').setup {
 }
 ```
 
-### Functions
+## Functions
 ```lua
 -- Setup config and auto commands.
 require('crates').setup(cfg: Config)
@@ -362,7 +362,7 @@ require('crates').focus_popup(line: integer|nil)
 require('crates').hide_popup()
 ```
 
-### Key mappings
+## Key mappings
 Some examples of key mappings.
 ```lua
 local crates = require('crates')
@@ -419,7 +419,7 @@ nnoremap <silent> <leader>cC :lua require('crates').open_crates_io()<cr>
 ```
 </details>
 
-### Show appropriate documentation in `Cargo.toml`
+## Show appropriate documentation in `Cargo.toml`
 How you might integrate `show_popup` into your `init.vim`.
 ```vim
 nnoremap <silent> K :call <SID>show_documentation()<cr>
