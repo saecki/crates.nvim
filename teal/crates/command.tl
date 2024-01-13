@@ -55,7 +55,10 @@ end
 local function exec(cmd: {string:any})
     for _,s in ipairs(sub_commands) do
         if s[1] == cmd.args then
-            s[2]()
+            local ret = s[2]()
+            if ret ~= nil then
+                print(vim.inspect(ret))
+            end
             return
         end
     end

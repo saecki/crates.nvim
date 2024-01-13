@@ -103,7 +103,7 @@ local function line_crate_info()
 end
 
 function M.available()
-   return line_crate_info() and true
+   return line_crate_info() ~= nil
 end
 
 function M.show()
