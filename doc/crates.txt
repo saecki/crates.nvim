@@ -69,7 +69,8 @@ Setup for plain text (without patched font).
 <
 
 Setup with default options.
-Note the icons in the default config require a patched font, if you don't have
+
+NOTE: The icons in the default config require a patched font, if you don't have
 one use the plain text config.
 For more information about individual config options see |crates-config|.
 >lua
@@ -236,7 +237,7 @@ For more information about individual config options see |crates-config|.
 ==============================================================================
 MAPPINGS                                                     *crates-mappings*
 
-Note crates doesn't use any global key mappings by default.
+NOTE: Crates doesn't use any global key mappings by default.
 
 But here are some recommended ones.
 For more information about the lua function see |crates-functions|.
@@ -295,22 +296,6 @@ And here are the same ones in vimscript.
 To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
-How you might integrate `show_popup` into your `init.vim`.
->vim
-    nnoremap <silent> K :call <SID>show_documentation()<cr>
-    function! s:show_documentation()
-        if (index(["vim","help"], &filetype) >= 0)
-            execute "h ".expand("<cword>")
-        elseif (&filetype == "man")
-            execute "Man ".expand("<cword>")
-        elseif (expand("%:t") == "Cargo.toml" && luaeval("require('crates').popup_available()"))
-            lua require("crates").show_popup()
-        else
-            lua vim.lsp.buf.hover()
-        endif
-    endfunction
-<
-
 How you might integrate `show_popup` into your `init.lua`.
 >lua
     local function show_documentation()
@@ -327,6 +312,22 @@ How you might integrate `show_popup` into your `init.lua`.
     end
 
     vim.keymap.set('n', 'K', show_documentation, { silent = true })
+<
+
+How you might integrate `show_popup` into your `init.vim`.
+>vim
+    nnoremap <silent> K :call <SID>show_documentation()<cr>
+    function! s:show_documentation()
+        if (index(["vim","help"], &filetype) >= 0)
+            execute "h ".expand("<cword>")
+        elseif (&filetype == "man")
+            execute "Man ".expand("<cword>")
+        elseif (expand("%:t") == "Cargo.toml" && luaeval("require('crates').popup_available()"))
+            lua require("crates").show_popup()
+        else
+            lua vim.lsp.buf.hover()
+        endif
+    endfunction
 <
 
 ==============================================================================
@@ -456,9 +457,12 @@ hide_popup()                                             *crates.hide_popup()*
 CONFIGURATION                                                  *crates-config*
 
 This section describes the configuration options which can be passed to
-`crates.setup()`. Note the type `section` indicates that the field
-is a table with subfields which will be extended with their default values, if
-not specified.
+`crates.setup()`.
+
+NOTE: The type `section` indicates that the field is a table of subfields and
+use their default values, if not specified. This is different from fields
+with the type `table`. If a config option with the type `table` is spedified
+it completely overrides the default value.
 
 smart_insert                                      *crates-config-smart_insert*
     Type: `boolean`, Default: `true`
@@ -1299,6 +1303,7 @@ src.cmp.enabled                                *crates-config-src-cmp-enabled*
     Type: `boolean`, Default: `false`
 
     Whether to load and register the |nvim-cmp| source.
+
     NOTE: Ignored if |crates-config-autoload| is disabled.
     You may manually register it, after |nvim-cmp| has been loaded.
     >
@@ -1388,6 +1393,7 @@ on_attach                                            *crates-config-on_attach*
     Type: `function`, Default: `function(bufnr) end`
 
   Callback to run when a `Cargo.toml` file is opened.
+
   NOTE: Ignored if |crates-config-autoload| is disabled.
 
 

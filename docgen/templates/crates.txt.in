@@ -29,7 +29,8 @@ Setup for plain text (without patched font).
 <
 
 Setup with default options.
-Note the icons in the default config require a patched font, if you don't have
+
+NOTE: The icons in the default config require a patched font, if you don't have
 one use the plain text config.
 For more information about individual config options see |crates-config|.
 >lua
@@ -41,7 +42,7 @@ For more information about individual config options see |crates-config|.
 ==============================================================================
 MAPPINGS                                                     *crates-mappings*
 
-Note crates doesn't use any global key mappings by default.
+NOTE: Crates doesn't use any global key mappings by default.
 
 But here are some recommended ones.
 For more information about the lua function see |crates-functions|.
@@ -57,14 +58,14 @@ And here are the same ones in vimscript.
 To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
-How you might integrate `show_popup` into your `init.vim`.
->vim
-    <SHARED:show_docs.vim>
-<
-
 How you might integrate `show_popup` into your `init.lua`.
 >lua
     <SHARED:show_docs.lua>
+<
+
+How you might integrate `show_popup` into your `init.vim`.
+>vim
+    <SHARED:show_docs.vim>
 <
 
 ==============================================================================
@@ -81,9 +82,12 @@ They can be accessed like this.
 CONFIGURATION                                                  *crates-config*
 
 This section describes the configuration options which can be passed to
-`crates.setup()`. Note the type `section` indicates that the field
-is a table with subfields which will be extended with their default values, if
-not specified.
+`crates.setup()`.
+
+NOTE: The type `section` indicates that the field is a table of subfields and
+use their default values, if not specified. This is different from fields
+with the type `table`. If a config option with the type `table` is spedified
+it completely overrides the default value.
 
 <SHARED:CONFIGURATION>
 
