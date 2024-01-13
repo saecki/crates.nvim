@@ -1361,7 +1361,7 @@ entry(schema_src_cmp, "enabled", {
    default = false,
    description = [[
         Whether to load and register the |nvim-cmp| source.
-        Note Ignored if |crates-config-autoload| is disabled.
+        NOTE: Ignored if |crates-config-autoload| is disabled.
         You may manually register it, after |nvim-cmp| has been loaded.
         >
             require("crates.src.cmp").setup()
@@ -1474,8 +1474,8 @@ entry(M.schema, "on_attach", {
    default = function(_bufnr) end,
    default_text = "function(bufnr) end",
    description = [[
-      Callback to run when Cargo.toml is opened.
-      Note Ignored if |crates-config-autoload| is disabled.
+      Callback to run when a `Cargo.toml` file is opened.
+      NOTE: Ignored if |crates-config-autoload| is disabled.
     ]],
 })
 
