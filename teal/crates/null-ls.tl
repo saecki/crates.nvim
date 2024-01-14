@@ -13,10 +13,6 @@ end
 local null_ls_methods = require("null-ls.methods")
 local CODE_ACTION = null_ls_methods.internal.CODE_ACTION
 
-local function format_title(name: string): string
-    return name:sub(1, 1):upper() .. name:gsub("_", " "):sub(2)
-end
-
 function M.source(name: string): null_ls.Source
     return {
         name = name,
@@ -36,7 +32,7 @@ function M.source(name: string): null_ls.Source
                 local items: {null_ls.Action} = {}
                 for key,action in pairs(actions.get_actions()) do
                     table.insert(items, {
-                        title = format_title(key),
+                        title = util.format_title(key),
                         action = function()
                             vim.api.nvim_buf_call(params.bufnr, action)
                         end,

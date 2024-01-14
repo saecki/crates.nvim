@@ -488,6 +488,10 @@ global record vim
       buf_request: function(bufnr: integer, method: string, params: table, handler: function): {integer:integer}, function
       buf_request_sync: function(bufnr: integer, method: string, params: table, timeout_ms: integer): {integer:integer}, string
 
+      start: function(config: {string: any}, opts: {string:any}): integer
+      get_client_by_id: function(integer): {string:any}
+      commands: {string:function}
+
       record Client
          request: function(Client)
       end
