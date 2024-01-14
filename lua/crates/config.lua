@@ -251,6 +251,8 @@ local M = {Config = {TextConfig = {}, HighlightConfig = {}, DiagnosticConfig = {
 
 
 
+
+
 local Config = M.Config
 local SchemaElement = M.SchemaElement
 local SchemaType = M.SchemaType
@@ -1518,6 +1520,20 @@ entry(schema_lsp, "on_attach", {
         Callback to run when the in-process language server attaches to a buffer.
 
         NOTE: Ignored if |crates-config-autoload| is disabled.
+    ]],
+})
+entry(schema_lsp, "actions", {
+   type = "boolean",
+   default = false,
+   description = [[
+        Whether to enable the `codeActionProvider` capability.
+    ]],
+})
+entry(schema_lsp, "completion", {
+   type = "boolean",
+   default = false,
+   description = [[
+        Whether to enable the `completionProvider` capability.
     ]],
 })
 

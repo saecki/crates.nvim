@@ -21,6 +21,8 @@ local M = {CompletionList = {}, CompletionItem = {}, CmpCompletionExtension = {}
 
 
 
+
+
 local CompletionItem = M.CompletionItem
 local CompletionList = M.CompletionList
 
@@ -33,6 +35,12 @@ local types = require("crates.types")
 local Range = types.Range
 local Version = types.Version
 local util = require("crates.util")
+
+M.trigger_characters = {
+   '"', "'", ".", "<", ">", "=", "^", "~",
+   "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+}
+
 
 local VALUE_KIND = 12
 

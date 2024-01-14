@@ -269,6 +269,8 @@ require("crates").setup {
         enabled = false,
         name = "crates.nvim",
         on_attach = function(client, bufnr) end,
+        actions = false,
+        completion = false,
     },
 }
 ```

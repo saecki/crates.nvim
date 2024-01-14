@@ -235,6 +235,8 @@ For more information about individual config options see |crates-config|.
             enabled = false,
             name = "crates.nvim",
             on_attach = function(client, bufnr) end,
+            actions = false,
+            completion = false,
         },
     }
 <
@@ -1461,6 +1463,18 @@ lsp.on_attach                                    *crates-config-lsp-on_attach*
     Callback to run when the in-process language server attaches to a buffer.
 
     NOTE: Ignored if |crates-config-autoload| is disabled.
+
+
+lsp.actions                                        *crates-config-lsp-actions*
+    Type: `boolean`, Default: `false`
+
+    Whether to enable the `codeActionProvider` capability.
+
+
+lsp.completion                                  *crates-config-lsp-completion*
+    Type: `boolean`, Default: `false`
+
+    Whether to enable the `completionProvider` capability.
 
 
 

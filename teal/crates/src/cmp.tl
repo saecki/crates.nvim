@@ -101,7 +101,7 @@ end
 
 ---Return trigger characters.
 function M:get_trigger_characters(_: M.cmp.SourceBaseApiParams): {string}
-    return { '"', "'", ".", "<", ">", "=", "^", "~", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
+    return src.trigger_characters
 end
 
 ---Invoke completion (required).

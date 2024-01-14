@@ -1,4 +1,6 @@
 local record M
+    trigger_characters: {string}
+
     record CompletionList
         isIncomplete: boolean
         items: {CompletionItem}
@@ -34,6 +36,12 @@ local Range = types.Range
 local Version = types.Version
 local util = require("crates.util")
 
+M.trigger_characters = {
+    '"', "'", ".", "<", ">", "=", "^", "~",
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+}
+
+-- lsp CompletionItemKind.Value
 local VALUE_KIND = 12
 
 local function complete_versions(crate: toml.Crate, versions: {Version}): CompletionList

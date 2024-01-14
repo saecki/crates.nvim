@@ -220,6 +220,8 @@ local record M
             enabled: boolean
             name: string
             on_attach: function(client: {string:any}, bufnr: integer): nil
+            actions: boolean
+            completion: boolean
         end
     end
 
@@ -1518,6 +1520,20 @@ entry(schema_lsp, "on_attach", {
         Callback to run when the in-process language server attaches to a buffer.
 
         NOTE: Ignored if |crates-config-autoload| is disabled.
+    ]],
+})
+entry(schema_lsp, "actions", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to enable the `codeActionProvider` capability.
+    ]],
+})
+entry(schema_lsp, "completion", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to enable the `completionProvider` capability.
     ]],
 })
 

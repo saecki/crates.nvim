@@ -30,6 +30,7 @@ local Command = M.Command
 local actions = require("crates.actions")
 local util = require("crates.util")
 local state = require("crates.state")
+local src = require("crates.src.common")
 
 function M.server(opts: {string:any}): function(any)
 	opts = opts or {}
@@ -47,8 +48,7 @@ function M.server(opts: {string:any}): function(any)
 			pcall(on_request, method, params)
 			local handler = handlers[method]
 			if handler then
-				local response, err = handler(method, params)
-				callback(err, response)
+				handler(method, params, callback)
 			elseif method == "initialize" then
 				callback(nil, {
 					capabilities = capabilities,
@@ -93,11 +93,13 @@ function M.start_server()
 
 	local server = M.server({
 		capabilities = {
-			codeActionProvider = true,
+			codeActionProvider = state.cfg.lsp.actions,
+            completionProvider = state.cfg.lsp.completion and {
+                triggerCharacters = src.trigger_characters,
+            },
 		},
 		handlers = {
-			---@param params lsp.CodeActionParams
-			["textDocument/codeAction"] = function(_, _): {CodeAction}
+			["textDocument/codeAction"] = function(_, _, callback: function(err: nil, actions: {CodeAction}))
 				local code_actions = {}
 				for key, action in pairs(actions.get_actions()) do
                     local title = util.format_title(key)
@@ -111,7 +113,12 @@ function M.start_server()
                         },
 					})
 				end
-				return code_actions
+				callback(nil, code_actions)
+			end,
+			["textDocument/completion"] = function(_, _, callback: function(err: nil, items: src.CompletionList|nil))
+                src.complete(function(items: src.CompletionList|nil)
+                    callback(nil, items)
+                end)
 			end,
 		},
 	})
