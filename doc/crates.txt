@@ -83,13 +83,14 @@ For more information about individual config options see |crates-config|.
         loading_indicator = true,
         date_format = "%Y-%m-%d",
         thousands_separator = ".",
-        notification_title = "Crates",
+        notification_title = "crates.nvim",
         curl_args = { "-sL", "--retry", "1" },
         max_parallel_requests = 80,
         expand_crate_moves_cursor = true,
         open_programs = { "xdg-open", "open" },
         disable_invalid_feature_diagnostic = false,
         enable_update_available_warning = true,
+        on_attach = function(bufnr) end,
         text = {
             loading = "   Loading",
             version = "   %s",
@@ -223,14 +224,18 @@ For more information about individual config options see |crates-config|.
             },
             coq = {
                 enabled = false,
-                name = "Crates",
+                name = "crates.nvim",
             },
         },
         null_ls = {
             enabled = false,
-            name = "Crates",
+            name = "crates.nvim",
         },
-        on_attach = function(bufnr) end,
+        lsp = {
+            enabled = false,
+            name = "crates.nvim",
+            on_attach = function(client, bufnr) end,
+        },
     }
 <
 
@@ -566,7 +571,7 @@ thousands_separator                        *crates-config-thousands_separator*
 
 
 notification_title                          *crates-config-notification_title*
-    Type: `string`, Default: `"Crates"`
+    Type: `string`, Default: `"crates.nvim"`
 
     The title displayed in notifications.
 
@@ -608,6 +613,14 @@ enable_update_available_warning
     Type: `boolean`, Default: `true`
 
     Enable warnings for outdated crates.
+
+
+on_attach                                            *crates-config-on_attach*
+    Type: `function`, Default: `function(bufnr) end`
+
+    Callback to run when a `Cargo.toml` file is opened.
+
+    NOTE: Ignored if |crates-config-autoload| is disabled.
 
 
 avoid_prerelease                              *crates-config-avoid_prerelease*
@@ -1401,7 +1414,7 @@ src.coq.enabled                                *crates-config-src-coq-enabled*
 
 
 src.coq.name                                      *crates-config-src-coq-name*
-    Type: `string`, Default: `"Crates"`
+    Type: `string`, Default: `"crates.nvim"`
 
     The source name displayed by |coq_nvim|.
 
@@ -1419,17 +1432,35 @@ null_ls.enabled                                *crates-config-null_ls-enabled*
 
 
 null_ls.name                                      *crates-config-null_ls-name*
-    Type: `string`, Default: `"Crates"`
+    Type: `string`, Default: `"crates.nvim"`
 
     The |null-ls.nvim| name.
 
 
-on_attach                                            *crates-config-on_attach*
-    Type: `function`, Default: `function(bufnr) end`
+lsp                                                        *crates-config-lsp*
+    Type: `section`
 
-  Callback to run when a `Cargo.toml` file is opened.
+    Configuration options for the in-process language server.
 
-  NOTE: Ignored if |crates-config-autoload| is disabled.
+
+lsp.enabled                                        *crates-config-lsp-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to enable the in-process language server.
+
+
+lsp.name                                              *crates-config-lsp-name*
+    Type: `string`, Default: `"crates.nvim"`
+
+    The lsp server name.
+
+
+lsp.on_attach                                    *crates-config-lsp-on_attach*
+    Type: `function`, Default: `function(client, bufnr) end`
+
+    Callback to run when the in-process language server attaches to a buffer.
+
+    NOTE: Ignored if |crates-config-autoload| is disabled.
 
 
 

@@ -117,13 +117,14 @@ require("crates").setup {
     loading_indicator = true,
     date_format = "%Y-%m-%d",
     thousands_separator = ".",
-    notification_title = "Crates",
+    notification_title = "crates.nvim",
     curl_args = { "-sL", "--retry", "1" },
     max_parallel_requests = 80,
     expand_crate_moves_cursor = true,
     open_programs = { "xdg-open", "open" },
     disable_invalid_feature_diagnostic = false,
     enable_update_available_warning = true,
+    on_attach = function(bufnr) end,
     text = {
         loading = "   Loading",
         version = "   %s",
@@ -257,14 +258,18 @@ require("crates").setup {
         },
         coq = {
             enabled = false,
-            name = "Crates",
+            name = "crates.nvim",
         },
     },
     null_ls = {
         enabled = false,
-        name = "Crates",
+        name = "crates.nvim",
     },
-    on_attach = function(bufnr) end,
+    lsp = {
+        enabled = false,
+        name = "crates.nvim",
+        on_attach = function(client, bufnr) end,
+    },
 }
 ```
 
