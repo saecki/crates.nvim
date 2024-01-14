@@ -1,4 +1,10 @@
-local M = {Server = {}, ServerOpts = {}, CodeAction = {}, }
+local M = {Server = {}, ServerOpts = {}, CodeAction = {}, Command = {}, }
+
+
+
+
+
+
 
 
 
@@ -19,6 +25,7 @@ local M = {Server = {}, ServerOpts = {}, CodeAction = {}, }
 
 local Server = M.Server
 local CodeAction = M.CodeAction
+local Command = M.Command
 
 local actions = require("crates.actions")
 local util = require("crates.util")
@@ -74,34 +81,15 @@ end
 
 function M.start_server()
    local commands = {
-      "update_crate",
-      "upgrade_crate",
-      "expand_crate_to_inline_table",
-      "extract_crate_into_table",
-      "remove_duplicate_section",
-      "remove_original_section",
-      "remove_invalid_dependency_section",
-      "remove_duplicate_crate",
-      "remove_original_crate",
-      "rename_crate",
-      "remove_duplicate_feature",
-      "remove_original_feature",
-      "remove_invalid_feature",
-      "open_documentation",
-      "open_crates.io",
-      "update_all_crates",
-      "upgrade_all_crates",
-   }
-   for _, value in ipairs(commands) do
-      vim.lsp.commands[value] = function(cmd, ctx)
-         local action = actions.get_actions()[cmd.command]
+      ["crates_command"] = function(cmd, ctx)
+         local action = cmd.arguments[1]
          if action then
             vim.api.nvim_buf_call(ctx.bufnr, action)
          else
             util.notify(vim.log.levels.INFO, "Action not available '%s'", action)
          end
-      end
-   end
+      end,
+   }
 
    local server = M.server({
       capabilities = {
@@ -111,18 +99,27 @@ function M.start_server()
 
          ["textDocument/codeAction"] = function(_, _)
             local code_actions = {}
-            for key, _ in pairs(actions.get_actions()) do
+            for key, action in pairs(actions.get_actions()) do
+               local title = util.format_title(key)
                table.insert(code_actions, {
-                  title = util.format_title(key),
+                  title = title,
                   kind = "refactor.rewrite",
-                  command = key,
+                  command = {
+                     title = title,
+                     command = key,
+                     arguments = { action },
+                  },
                })
             end
             return code_actions
          end,
       },
    })
-   local client_id = vim.lsp.start({ name = state.cfg.lsp.name, cmd = server })
+   local client_id = vim.lsp.start({
+      name = state.cfg.lsp.name,
+      cmd = server,
+      commands = commands,
+   })
    if not client_id then
       return
    end
