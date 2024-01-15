@@ -17,13 +17,14 @@ local record M
         expand_crate_moves_cursor: boolean
         disable_invalid_feature_diagnostic: boolean
         enable_update_available_warning: boolean
+        on_attach: function(bufnr: integer): nil
         text: TextConfig
         highlight: HighlightConfig
         diagnostic: DiagnosticConfig
         popup: PopupConfig
         src: SrcConfig
         null_ls: NullLsConfig
-        on_attach: function(bufnr: integer): nil
+        lsp: LspConfig
 
         record TextConfig
             loading: string
@@ -214,6 +215,14 @@ local record M
             enabled: boolean
             name: string
         end
+
+        record LspConfig
+            enabled: boolean
+            name: string
+            on_attach: function(client: {string:any}, bufnr: integer): nil
+            actions: boolean
+            completion: boolean
+        end
     end
 
     enum SchemaType
@@ -331,7 +340,7 @@ entry(M.schema, "thousands_separator", {
 })
 entry(M.schema, "notification_title", {
     type = "string",
-    default = "Crates",
+    default = "crates.nvim",
     description = [[
         The title displayed in notifications.
     ]],
@@ -378,6 +387,16 @@ entry(M.schema, "enable_update_available_warning", {
     default = true,
     description = [[
         Enable warnings for outdated crates.
+    ]],
+})
+entry(M.schema, "on_attach", {
+    type = "function",
+    default = function(_bufnr) end,
+    default_text = "function(bufnr) end",
+    description = [[
+        Callback to run when a `Cargo.toml` file is opened.
+
+        NOTE: Ignored if |crates-config-autoload| is disabled.
     ]],
 })
 -- deprecated
@@ -1440,7 +1459,7 @@ entry(schema_src_coq, "enabled", {
 })
 entry(schema_src_coq, "name", {
     type = "string",
-    default = "Crates",
+    default = "crates.nvim",
     description = [[
         The source name displayed by |coq_nvim|.
     ]],
@@ -1464,22 +1483,60 @@ entry(schema_null_ls, "enabled", {
 })
 entry(schema_null_ls, "name", {
     type = "string",
-    default = "Crates",
+    default = "crates.nvim",
     description = [[
         The |null-ls.nvim| name.
     ]],
 })
 
-entry(M.schema, "on_attach", {
-    type = "function",
-    default = function(_bufnr) end,
-    default_text = "function(bufnr) end",
-    description = [[
-      Callback to run when a `Cargo.toml` file is opened.
 
-      NOTE: Ignored if |crates-config-autoload| is disabled.
+entry(M.schema, "lsp", {
+    type = "section",
+    description = [[
+        Configuration options for the in-process language server.
+    ]],
+    fields = {},
+})
+local schema_lsp = M.schema.lsp.fields
+entry(schema_lsp, "enabled", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to enable the in-process language server.
     ]],
 })
+entry(schema_lsp, "name", {
+    type = "string",
+    default = "crates.nvim",
+    description = [[
+        The lsp server name.
+    ]],
+})
+entry(schema_lsp, "on_attach", {
+    type = "function",
+    default = function(_client, _bufnr) end,
+    default_text = "function(client, bufnr) end",
+    description = [[
+        Callback to run when the in-process language server attaches to a buffer.
+
+        NOTE: Ignored if |crates-config-autoload| is disabled.
+    ]],
+})
+entry(schema_lsp, "actions", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to enable the `codeActionProvider` capability.
+    ]],
+})
+entry(schema_lsp, "completion", {
+    type = "boolean",
+    default = false,
+    description = [[
+        Whether to enable the `completionProvider` capability.
+    ]],
+})
+
 
 local function warn(s: string, ...:any)
     vim.notify(s:format(...), vim.log.levels.WARN, { title = "crates.nvim" })

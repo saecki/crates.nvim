@@ -2,6 +2,7 @@ Documentation for `crates.nvim` `unstable`
 
 # Features
 - Complete crate versions and features
+- In-process language server
 - Completion sources for:
     - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
     - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
@@ -27,6 +28,24 @@ Documentation for `crates.nvim` `unstable`
     - Indicate if a dependency is optional
 
 # Setup
+
+## lsp
+Enable the in-process language server in the setup and select whether to enable
+code actions and auto completion.
+```lua
+require("crates").setup {
+    ...
+    lsp = {
+        enabled = true,
+        on_attach = function(client, bufnr)
+            -- the same on_attach function as for your other lsp's
+        end,
+        actions = true,
+        completion = true,
+    },
+}
+```
+
 ## Auto completion
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 
@@ -117,13 +136,14 @@ require("crates").setup {
     loading_indicator = true,
     date_format = "%Y-%m-%d",
     thousands_separator = ".",
-    notification_title = "Crates",
+    notification_title = "crates.nvim",
     curl_args = { "-sL", "--retry", "1" },
     max_parallel_requests = 80,
     expand_crate_moves_cursor = true,
     open_programs = { "xdg-open", "open" },
     disable_invalid_feature_diagnostic = false,
     enable_update_available_warning = true,
+    on_attach = function(bufnr) end,
     text = {
         loading = "   Loading",
         version = "   %s",
@@ -257,14 +277,20 @@ require("crates").setup {
         },
         coq = {
             enabled = false,
-            name = "Crates",
+            name = "crates.nvim",
         },
     },
     null_ls = {
         enabled = false,
-        name = "Crates",
+        name = "crates.nvim",
     },
-    on_attach = function(bufnr) end,
+    lsp = {
+        enabled = false,
+        name = "crates.nvim",
+        on_attach = function(client, bufnr) end,
+        actions = false,
+        completion = false,
+    },
 }
 ```
 

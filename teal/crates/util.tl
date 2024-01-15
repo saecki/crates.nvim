@@ -179,4 +179,8 @@ function M.open_url(url: string)
     M.notify(vim.log.levels.WARN, "Couldn't open url")
 end
 
+function M.format_title(name: string): string
+    return name:sub(1, 1):upper() .. name:gsub("_", " "):sub(2)
+end
+
 return M

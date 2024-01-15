@@ -82,6 +82,20 @@ local record AutocmdInfo
   buf: integer
 end
 
+
+function M.attach()
+    if state.cfg.src.cmp.enabled then
+        require("crates.src.cmp").setup()
+    end
+
+    if state.cfg.lsp.enabled then
+        require("crates.lsp").start_server()
+    end
+
+    core.update()
+    state.cfg.on_attach(vim.api.nvim_get_current_buf())
+end
+
 function M.setup(cfg: Config)
     state.cfg = config.build(cfg)
 
@@ -91,24 +105,14 @@ function M.setup(cfg: Config)
     local group = vim.api.nvim_create_augroup("Crates", {})
     if state.cfg.autoload then
         if vim.fn.expand("%:t") == "Cargo.toml" then
-            if state.cfg.src.cmp.enabled then
-                require("crates.src.cmp").setup()
-            end
-
-            core.update()
-            state.cfg.on_attach(vim.api.nvim_get_current_buf())
+            M.attach()
         end
 
         vim.api.nvim_create_autocmd("BufRead", {
             group = group,
             pattern = "Cargo.toml",
-            callback = function(info: AutocmdInfo)
-                if state.cfg.src.cmp.enabled then
-                    require("crates.src.cmp").setup()
-                end
-
-                core.update()
-                state.cfg.on_attach(info.buf)
+            callback = function(_: AutocmdInfo)
+                M.attach()
             end,
         })
     end
