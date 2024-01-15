@@ -2,6 +2,7 @@ Documentation for `crates.nvim` `unstable`
 
 # Features
 - Complete crate versions and features
+- In-process language server
 - Completion sources for:
     - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
     - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
@@ -27,6 +28,24 @@ Documentation for `crates.nvim` `unstable`
     - Indicate if a dependency is optional
 
 # Setup
+
+## lsp
+Enable the in-process language server in the setup and select whether to enable
+code actions and auto completion.
+```lua
+require("crates").setup {
+    ...
+    lsp = {
+        enabled = true,
+        on_attach = function(client, bufnr)
+            -- the same on_attach function as for your other lsp's
+        end,
+        actions = true,
+        completion = true,
+    },
+}
+```
+
 ## Auto completion
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 
