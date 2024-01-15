@@ -1,25 +1,19 @@
-local State = {BufCache = {}, }
+---@class State
+---@field cfg Config
+---@field api_cache table<string,ApiCrate>
+---@field buf_cache table<integer,BufCache>
+---@field visible boolean
+local State = {
+    api_cache = {},
+    buf_cache = {},
+    visible = true,
+}
 
+---@class BufCache
+---@field crates table<string,TomlCrate>
+---@field info table<string,CrateInfo>
+---@field diagnostics CratesDiagnostic[]
 
-
-
-
-
-
-
-
-
-
-
-local config = require("crates.config")
-local Config = config.Config
-local toml = require("crates.toml")
-local types = require("crates.types")
-local Crate = types.Crate
-local CrateInfo = types.CrateInfo
-local Diagnostic = types.Diagnostic
-
-State.cfg = {}
 State.api_cache = {}
 State.buf_cache = {}
 State.visible = true
