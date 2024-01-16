@@ -4,10 +4,11 @@ local state = require("crates.state")
 local M = {}
 
 ---@enum FeatureInfo
-M.FeatureInfo = {
+local FeatureInfo = {
     ENABLED = 1,
     TRANSITIVE = 2,
 }
+M.FeatureInfo = FeatureInfo
 
 local IS_WIN = vim.api.nvim_call_function("has", { "win32" }) == 1
 
@@ -132,7 +133,7 @@ function M.features_info(crate, features)
             if tf then
                 local i = info[m]
                 if not i then
-                    info[m] = M.FeatureInfo.TRANSITIVE
+                    info[m] = FeatureInfo.TRANSITIVE
                     update_transitive(tf)
                 end
             end
@@ -140,7 +141,7 @@ function M.features_info(crate, features)
     end
 
     if not crate.def or crate.def.enabled then
-        info["default"] = M.FeatureInfo.ENABLED
+        info["default"] = FeatureInfo.ENABLED
         local api_feat = features.list[1]
         update_transitive(api_feat)
     end
@@ -153,7 +154,7 @@ function M.features_info(crate, features)
     for _,crate_feat in ipairs(crate_features.items) do
         local api_feat = features:get_feat(crate_feat.name)
         if api_feat then
-            info[api_feat.name] = M.FeatureInfo.ENABLED
+            info[api_feat.name] = FeatureInfo.ENABLED
             update_transitive(api_feat)
         end
     end

@@ -78,7 +78,7 @@ end
 ---@param versions ApiVersion[]
 ---@param opts WinOpts
 function M.open(crate, versions, opts)
-    popup.type = popup.Type.versions
+    popup.type = popup.Type.VERSIONS
 
     local title = string.format(state.cfg.popup.text.title, crate:package())
     local vers_width = 0

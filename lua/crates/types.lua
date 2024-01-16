@@ -8,12 +8,13 @@ local M = {}
 ---@field vers_upgrade ApiVersion|nil
 ---@field match_kind MatchKind
 
+---NOTE: Used to index the user configuration, so keys have to be in sync
 ---@enum MatchKind
 M.MatchKind = {
-    version = 1,
-    yanked = 2,
-    prerelease = 3,
-    nomatch = 4,
+    VERSION = "version",
+    YANKED = "yanked",
+    PRERELEASE = "prerelease",
+    NOMATCH = "nomatch"
 }
 
 ---@class ApiCrate
@@ -48,10 +49,10 @@ M.MatchKind = {
 ---@field vers ApiDependencyVers
 
 ---@enum ApiDependencyKind
-M.DependencyKind = {
-    normal = 1,
-    build = 2,
-    dev = 3,
+M.ApiDependencyKind = {
+    NORMAL = 1,
+    BUILD = 2,
+    DEV = 3,
 }
 
 ---@class ApiDependencyVers
@@ -66,15 +67,15 @@ M.DependencyKind = {
 
 ---@enum Cond
 M.Cond = {
-    eq = "eq",
-    lt = "lt",
-    le = "le",
-    gt = "gt",
-    ge = "ge",
-    cr = "cr",
-    tl = "tl",
-    wl = "wl",
-    bl = "bl",
+    EQ = 1,
+    LT = 2,
+    LE = 3,
+    GT = 4,
+    GE = 5,
+    CR = 6,
+    TL = 7,
+    WL = 8,
+    BL = 9,
 }
 
 ---@class CratesDiagnostic
@@ -102,30 +103,30 @@ function CratesDiagnostic:contains(line, col)
         and (self.end_lnum > line or self.end_lnum == line and self.end_col > col)
 end
 
----keys of DiagnosticConfig
+---NOTE: Used to index the user configuration, so keys have to be in sync
 ---@enum CratesDiagnosticKind
-M.DiagnosticKind = {
+M.CratesDiagnosticKind = {
     -- error
-    section_invalid = "section_invalid",
-    workspace_section_not_default = "workspace_section_not_default",
-    workspace_section_has_target = "workspace_section_has_target",
-    section_dup = "section_dup",
-    crate_dup = "crate_dup",
-    crate_novers = "crate_novers",
-    crate_error_fetching = "crate_error_fetching",
-    crate_name_case = "crate_name_case",
-    vers_nomatch = "vers_nomatch",
-    vers_yanked = "vers_yanked",
-    vers_pre = "vers_pre",
-    def_invalid = "def_invalid",
-    feat_invalid = "feat_invalid",
+    SECTION_INVALID = "section_invalid",
+    WORKSPACE_SECTION_NOT_DEFAULT = "workspace_section_not_default",
+    WORKSPACE_SECTION_HAS_TARGET = "workspace_section_has_target",
+    SECTION_DUP = "section_dup",
+    CRATE_DUP = "crate_dup",
+    CRATE_NOVERS = "crate_novers",
+    CRATE_ERROR_FETCHING = "crate_error_fetching",
+    CRATE_NAME_CASE = "crate_name_case",
+    VERS_NOMATCH = "vers_nomatch",
+    VERS_YANKED = "vers_yanked",
+    VERS_PRE = "vers_pre",
+    DEF_INVALID = "def_invalid",
+    FEAT_INVALID = "feat_invalid",
     -- warning
-    vers_upgrade = "vers_upgrade",
-    feat_dup = "feat_dup",
+    VERS_UPGRADE = "vers_upgrade",
+    FEAT_DUP = "feat_dup",
     -- hint
-    section_dup_orig = "section_dup_orig",
-    crate_dup_orig = "crate_dup_orig",
-    feat_dup_orig = "feat_dup_orig",
+    SECTION_DUP_ORIG = "section_dup_orig",
+    CRATE_DUP_ORIG = "crate_dup_orig",
+    FEAT_DUP_ORIG = "feat_dup_orig",
 }
 
 ---@class ApiFeatures

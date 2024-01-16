@@ -2,6 +2,7 @@ local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local state = require("crates.state")
 local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local util = require("crates.util")
 local FeatureInfo = util.FeatureInfo
 
@@ -79,7 +80,7 @@ local function toggle_feature(ctx, line)
     -- update crate version, features, and default_features positions
     -- because they probably have changed after the edits, so toggling
     -- multiple features will be correct
-    if ctx.crate.syntax == "table" then
+    if ctx.crate.syntax == TomlCrateSyntax.TABLE then
         for line_nr in line_span:iter() do
             ---@type string
             local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
@@ -100,7 +101,7 @@ local function toggle_feature(ctx, line)
 
             ctx.crate = toml.Crate.new(ctx.crate)
         end
-    elseif ctx.crate.syntax == "plain" or ctx.crate.syntax == "inline_table" then
+    elseif ctx.crate.syntax == TomlCrateSyntax.PLAIN or ctx.crate.syntax == TomlCrateSyntax.INLINE_TABLE then
         local line_nr = line_span.s
         ---@type string
         local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
@@ -295,7 +296,7 @@ end
 ---@param version ApiVersion
 ---@param opts WinOpts
 function M.open_features(ctx, crate, version, opts)
-    popup.type = popup.Type.features
+    popup.type = popup.Type.FEATURES
 
     local features = version.features
     local title = string.format(state.cfg.popup.text.title, crate:package().." "..version.num)
@@ -331,7 +332,7 @@ end
 ---@param feature ApiFeature
 ---@param opts WinOpts
 function M.open_feature_details(ctx, crate, version, feature, opts)
-    popup.type = popup.Type.features
+    popup.type = popup.Type.FEATURES
 
     local features = version.features
     local members = feature.members

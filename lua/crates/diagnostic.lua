@@ -1,22 +1,26 @@
 local edit = require("crates.edit")
 local semver = require("crates.semver")
 local state = require("crates.state")
+local toml = require("crates.toml")
+local DepKind = toml.DepKind
 local types = require("crates.types")
 local CratesDiagnostic = types.CratesDiagnostic
+local CratesDiagnosticKind = types.CratesDiagnosticKind
 local MatchKind = types.MatchKind
 local util = require("crates.util")
 
 local M = {}
+
 ---@enum SectionScope
-M.SectionScope = {
-    header = "header",
+local SectionScope = {
+    HEADER = 1,
 }
 
 ---@enum CrateScope
-M.CrateScope = {
-    vers = "vers",
-    def = "def",
-    feat = "feat",
+local CrateScope = {
+    VERS = 1,
+    DEF = 2,
+    FEAT = 3,
 }
 
 ---@param section TomlSection
@@ -36,7 +40,7 @@ local function section_diagnostic(section, kind, severity, scope, data)
         data = data,
     })
 
-    if scope == "header" then
+    if scope == SectionScope.HEADER then
         d.end_lnum = d.lnum + 1
     end
 
@@ -64,21 +68,21 @@ local function crate_diagnostic(crate, kind, severity, scope, data)
         return d
     end
 
-    if scope == "vers" then
+    if scope == CrateScope.VERS then
         if crate.vers then
             d.lnum = crate.vers.line
             d.end_lnum = crate.vers.line
             d.col = crate.vers.col.s
             d.end_col = crate.vers.col.e
         end
-    elseif scope == "def" then
+    elseif scope == CrateScope.DEF then
         if crate.def then
             d.lnum = crate.def.line
             d.end_lnum = crate.def.line
             d.col = crate.def.col.s
             d.end_col = crate.def.col.e
         end
-    elseif scope == "feat" then
+    elseif scope == CrateScope.FEAT then
         if crate.feat then
             d.lnum = crate.feat.line
             d.end_lnum = crate.feat.line
@@ -126,32 +130,32 @@ function M.process_crates(sections, crates)
         if s.workspace and s.kind ~= "default" then
             table.insert(diagnostics, section_diagnostic(
                 s,
-                "workspace_section_not_default",
+                CratesDiagnosticKind.WORKSPACE_SECTION_NOT_DEFAULT,
                 vim.diagnostic.severity.WARN
             ))
         elseif s.workspace and s.target ~= nil then
             table.insert(diagnostics, section_diagnostic(
                 s,
-                "workspace_section_has_target",
+                CratesDiagnosticKind.WORKSPACE_SECTION_HAS_TARGET,
                 vim.diagnostic.severity.ERROR
             ))
         elseif s.invalid then
             table.insert(diagnostics, section_diagnostic(
                 s,
-                "section_invalid",
+                CratesDiagnosticKind.SECTION_INVALID,
                 vim.diagnostic.severity.WARN
             ))
         elseif s_cache[key] then
             table.insert(diagnostics, section_diagnostic(
                 s_cache[key],
-                "section_dup_orig",
+                CratesDiagnosticKind.SECTION_DUP_ORIG,
                 vim.diagnostic.severity.HINT,
-                "header",
+                SectionScope.HEADER,
                 { lines = s_cache[key].lines }
             ))
             table.insert(diagnostics, section_diagnostic(
                 s,
-                "section_dup",
+                CratesDiagnosticKind.SECTION_DUP,
                 vim.diagnostic.severity.ERROR
             ))
         else
@@ -168,12 +172,12 @@ function M.process_crates(sections, crates)
         if cache[key] then
             table.insert(diagnostics, crate_diagnostic(
                 cache[key],
-                "crate_dup_orig",
+                CratesDiagnosticKind.CRATE_DUP_ORIG,
                 vim.diagnostic.severity.HINT
             ))
             table.insert(diagnostics, crate_diagnostic(
                 c,
-                "crate_dup",
+                CratesDiagnosticKind.CRATE_DUP,
                 vim.diagnostic.severity.ERROR
             ))
         else
@@ -183,9 +187,9 @@ function M.process_crates(sections, crates)
                 if c.def.text ~= "false" and c.def.text ~= "true" then
                     table.insert(diagnostics, crate_diagnostic(
                         c,
-                        "def_invalid",
+                        CratesDiagnosticKind.DEF_INVALID,
                         vim.diagnostic.severity.ERROR,
-                        "def"
+                        CrateScope.DEF
                     ))
                 end
             end
@@ -198,14 +202,14 @@ function M.process_crates(sections, crates)
                     table.insert(diagnostics, feat_diagnostic(
                         c,
                         feats[f.name],
-                        "feat_dup_orig",
+                        CratesDiagnosticKind.FEAT_DUP_ORIG,
                         vim.diagnostic.severity.HINT,
                         { feat = orig }
                     ))
                     table.insert(diagnostics, feat_diagnostic(
                         c,
                         f,
-                        "feat_dup",
+                        CratesDiagnosticKind.FEAT_DUP,
                         vim.diagnostic.severity.WARN,
                         { feat = f }
                     ))
@@ -237,12 +241,12 @@ function M.process_api_crate(crate, api_crate)
     }
     local diagnostics = {}
 
-    if crate.dep_kind == "registry" then
+    if crate.dep_kind == DepKind.REGISTRY then
         if api_crate then
             if api_crate.name ~= crate:package() then
                 table.insert(diagnostics, crate_diagnostic(
                     crate,
-                    "crate_name_case",
+                    CratesDiagnosticKind.CRATE_NAME_CASE,
                     vim.diagnostic.severity.ERROR,
                     nil,
                     { crate = crate, crate_name = api_crate.name }
@@ -254,7 +258,7 @@ function M.process_api_crate(crate, api_crate)
             if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
                 -- version matches, no upgrade available
                 info.vers_match = newest
-                info.match_kind = MatchKind.version
+                info.match_kind = MatchKind.VERSION
 
                 if crate.vers and crate.vers.text ~= edit.version_text(crate, newest.parsed) then
                     info.vers_update = newest
@@ -274,54 +278,54 @@ function M.process_api_crate(crate, api_crate)
                 if state.cfg.enable_update_available_warning then
                     table.insert(diagnostics, crate_diagnostic(
                         crate,
-                        "vers_upgrade",
+                        CratesDiagnosticKind.VERS_UPGRADE,
                         vim.diagnostic.severity.WARN,
-                        "vers"
+                        CrateScope.VERS
                     ))
                 end
 
                 if match then
                     -- found a match
-                    info.match_kind = MatchKind.version
+                    info.match_kind = MatchKind.VERSION
                 elseif match_pre then
                     -- found a pre-release match
-                    info.match_kind = MatchKind.prerelease
+                    info.match_kind = MatchKind.PRERELEASE
                     table.insert(diagnostics, crate_diagnostic(
                         crate,
-                        "vers_pre",
+                        CratesDiagnosticKind.VERS_PRE,
                         vim.diagnostic.severity.ERROR,
-                        "vers"
+                        CrateScope.VERS
                     ))
                 elseif match_yanked then
                     -- found a yanked match
-                    info.match_kind = MatchKind.yanked
+                    info.match_kind = MatchKind.YANKED
                     table.insert(diagnostics, crate_diagnostic(
                         crate,
-                        "vers_yanked",
+                        CratesDiagnosticKind.VERS_YANKED,
                         vim.diagnostic.severity.ERROR,
-                        "vers"
+                        CrateScope.VERS
                     ))
                 else
                     -- no match found
-                    info.match_kind = MatchKind.nomatch
-                    local kind = "vers_nomatch"
+                    info.match_kind = MatchKind.NOMATCH
+                    local kind = CratesDiagnosticKind.VERS_NOMATCH
                     if not crate.vers then
-                        kind = "crate_novers"
+                        kind = CratesDiagnosticKind.CRATE_NOVERS
                     end
                     table.insert(diagnostics, crate_diagnostic(
                         crate,
                         kind,
                         vim.diagnostic.severity.ERROR,
-                        "vers"
+                        CrateScope.VERS
                     ))
                 end
             end
         else
             table.insert(diagnostics, crate_diagnostic(
                 crate,
-                "crate_error_fetching",
+                CratesDiagnosticKind.CRATE_ERROR_FETCHING,
                 vim.diagnostic.severity.ERROR,
-                "vers"
+                CrateScope.VERS
             ))
         end
     end
@@ -356,7 +360,7 @@ function M.process_crate_deps(crate, version, deps)
                 table.insert(diagnostics, feat_diagnostic(
                     crate,
                     f,
-                    "feat_invalid",
+                    CratesDiagnosticKind.FEAT_INVALID,
                     vim.diagnostic.severity.ERROR,
                     { feat = f }
                 ))

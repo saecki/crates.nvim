@@ -7,6 +7,7 @@ local DateTime = time.DateTime
 local Job = require("plenary.job")
 local types = require("crates.types")
 local ApiFeatures = types.ApiFeatures
+local ApiDependencyKind = types.ApiDependencyKind
 
 local M = {
     ---@type table<string,CrateJob>
@@ -36,8 +37,8 @@ local M = {
 
 ---@enum JobKind
 local JobKind = {
-    crate = "crate",
-    deps = "deps",
+    CRATE = 1,
+    DEPS = 2,
 }
 
 local ENDPOINT = "https://crates.io/api/v1"
@@ -86,14 +87,14 @@ end
 ---@param callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 local function enqueue_crate_job(name, callbacks)
     for _,j in ipairs(M.queued_jobs) do
-        if j.kind == "crate" and j.name == name then
+        if j.kind == JobKind.CRATE and j.name == name then
             vim.list_extend(j.crate_callbacks, callbacks)
             return
         end
     end
 
     table.insert(M.queued_jobs, {
-        kind = "crate",
+        kind = JobKind.CRATE,
         name = name,
         crate_callbacks = callbacks,
     })
@@ -104,14 +105,14 @@ end
 ---@param callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
 local function enqueue_deps_job(name, version, callbacks)
     for _,j in ipairs(M.queued_jobs) do
-        if j.kind == "deps" and j.name == name and j.version == version then
+        if j.kind == JobKind.DEPS and j.name == name and j.version == version then
             vim.list_extend(j.deps_callbacks, callbacks)
             return
         end
     end
 
     table.insert(M.queued_jobs, {
-        kind = "deps",
+        kind = JobKind.DEPS,
         name = name,
         version = version,
         deps_callbacks = callbacks,
@@ -289,7 +290,7 @@ function M.parse_deps(json_str)
             local dependency = {
                 name = d.crate_id,
                 opt = d.optional or false,
-                kind = d.kind or "normal",
+                kind = d.kind or ApiDependencyKind.NORMAL,
                 vers = {
                     text = d.req,
                     reqs = semver.parse_requirements(d.req),
@@ -424,9 +425,9 @@ function M.run_queued_jobs()
     end
 
     local job = table.remove(M.queued_jobs, 1)
-    if job.kind == "crate" then
+    if job.kind == JobKind.CRATE then
         fetch_crate(job.name, job.crate_callbacks)
-    elseif job.kind == "deps" then
+    elseif job.kind == JobKind.DEPS then
         fetch_deps(job.name, job.version, job.deps_callbacks)
     end
 end

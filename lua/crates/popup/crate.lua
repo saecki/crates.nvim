@@ -81,7 +81,7 @@ end
 ---@param crate ApiCrate
 ---@param opts WinOpts
 function M.open(crate, opts)
-    popup.type = popup.Type.crate
+    popup.type = popup.Type.CRATE
 
     local title = string.format(state.cfg.popup.text.title, crate.name)
     local text = state.cfg.popup.text

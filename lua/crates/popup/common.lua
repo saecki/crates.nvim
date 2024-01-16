@@ -17,11 +17,11 @@ local M = {
 
 ---@enum PopupType
 M.Type = {
-    crate = 1,
-    versions = 2,
-    features = 3,
-    feature_details = 4,
-    dependencies = 5,
+    CRATE = 1,
+    VERSIONS = 2,
+    FEATURES = 3,
+    FEATURE_DETAILS = 4,
+    DEPENDENCIES = 5,
 }
 
 ---@class WinOpts

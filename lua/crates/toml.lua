@@ -18,10 +18,11 @@ M.Section = Section
 
 ---@enum TomlSectionKind
 local TomlSectionKind = {
-    default = "default",
-    dev = "dev",
-    build = "build",
+    DEFAULT = 1,
+    DEV = 2,
+    BUILD = 3,
 }
+M.TomlSectionKind = TomlSectionKind
 
 ---@class TomlCrate
 --- The explicit name is either the name of the package, or a rename
@@ -48,11 +49,12 @@ local Crate = {}
 M.Crate = Crate
 
 ---@enum TomlCrateSyntax
-M.TomlCrateSyntax = {
-    plain = "plain",
-    inline_table = "inline_table",
-    table = "table",
+local TomlCrateSyntax = {
+    PLAIN = 1,
+    INLINE_TABLE = 2,
+    TABLE = 3,
 }
+M.TomlCrateSyntax = TomlCrateSyntax
 
 ---@class TomlCrateVers
 ---@field reqs Requirement[]
@@ -134,12 +136,13 @@ M.TomlCrateSyntax = {
 ---@field decl_col Span
 
 ---@enum DepKind
-M.DepKind = {
-    registry = "registry",
-    path = "path",
-    git = "git",
-    workspace = "workspace",
+local DepKind = {
+    REGISTRY = 1,
+    PATH = 2,
+    GIT = 3,
+    WORKSPACE = 4,
 }
+M.DepKind = DepKind
 
 ---@class TomlFeature
 ---@field name string
@@ -197,13 +200,13 @@ function Crate.new(obj)
     end
 
     if obj.workspace then
-        obj.dep_kind = "workspace"
+        obj.dep_kind = DepKind.WORKSPACE
     elseif obj.path then
-        obj.dep_kind = "path"
+        obj.dep_kind = DepKind.PATH
     elseif obj.git then
-        obj.dep_kind = "git"
+        obj.dep_kind = DepKind.GIT
     else
-        obj.dep_kind = "registry"
+        obj.dep_kind = DepKind.REGISTRY
     end
 
     return setmetatable(obj, { __index = Crate })
@@ -281,11 +284,11 @@ function Section:display(override_name)
         text = text .. "workspace."
     end
 
-    if self.kind == "default" then
+    if self.kind == TomlSectionKind.DEFAULT then
         text = text .. "dependencies"
-    elseif self.kind == "dev" then
+    elseif self.kind == TomlSectionKind.DEV then
         text = text .. "dev-dependencies"
-    elseif self.kind == "build" then
+    elseif self.kind == TomlSectionKind.BUILD then
         text = text .. "build-dependencies"
     end
 
@@ -312,7 +315,7 @@ function M.parse_section(text, start)
         local section = {
             text = text,
             invalid = false,
-            kind = "default",
+            kind = TomlSectionKind.DEFAULT,
         }
 
         local target = prefix
@@ -320,13 +323,13 @@ function M.parse_section(text, start)
         local dev_target = prefix:match("^(.*)dev%-$")
         if dev_target then
             target = vim.trim(dev_target)
-            section.kind = "dev"
+            section.kind = TomlSectionKind.DEV
         end
 
         local build_target = prefix:match("^(.*)build%-$")
         if build_target then
             target = vim.trim(build_target)
-            section.kind = "build"
+            section.kind = TomlSectionKind.BUILD
         end
 
         local workspace_target = target:match("^(.*)workspace%s*%.$")
@@ -354,7 +357,7 @@ function M.parse_section(text, start)
         end
 
         section.invalid = (target ~= "" or suffix ~= "")
-            or (section.workspace and section.kind ~= "default")
+            or (section.workspace and section.kind ~= TomlSectionKind.DEFAULT)
             or (section.workspace and section.target ~= nil)
 
         return Section.new(section)
@@ -579,11 +582,12 @@ function M.parse_inline_crate(line, line_nr)
     do
         local name_s, name, name_e, quote_s, str_s, text, str_e, quote_e = line:match([[^%s*()([^%s]+)()%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
         if name then
+            ---@type TomlCrate
             return {
                 explicit_name = name,
                 explicit_name_col = Span.new(name_s - 1, name_e - 1),
                 lines = Span.new(line_nr, line_nr + 1),
-                syntax = "plain",
+                syntax = TomlCrateSyntax.PLAIN,
                 vers = {
                     text = text,
                     line = line_nr,
@@ -598,7 +602,7 @@ function M.parse_inline_crate(line, line_nr)
     -- inline table
     ---@type TomlCrate
     local crate = {
-        syntax = "inline_table",
+        syntax = TomlCrateSyntax.INLINE_TABLE,
         lines = Span.new(line_nr, line_nr + 1),
     }
 
@@ -766,11 +770,12 @@ function M.parse_crates(buf)
                 dep_section_crate = nil
             end
         elseif dep_section and dep_section.name then
+            ---@type TomlCrate
             local empty_crate = {
                 explicit_name = dep_section.name,
                 explicit_name_col = dep_section.name_col,
                 section = dep_section,
-                syntax = "table",
+                syntax = TomlCrateSyntax.TABLE,
             }
 
             local vers = M.parse_crate_table_vers(line, line_nr)

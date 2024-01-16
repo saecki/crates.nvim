@@ -1,4 +1,6 @@
 local state = require("crates.state")
+local types = require("crates.types")
+local MatchKind = types.MatchKind
 
 ---@class Ui
 ---@field custom_diagnostics table<integer,Diagnostic[]>
@@ -69,7 +71,7 @@ function M.display_crate_info(buf, info, diagnostics)
             string.format(state.cfg.text[info.match_kind], info.vers_match.num),
             state.cfg.highlight[info.match_kind],
         })
-    elseif info.match_kind == "nomatch" then
+    elseif info.match_kind == MatchKind.NOMATCH then
         table.insert(virt_text, {
             state.cfg.text.nomatch,
             state.cfg.highlight.nomatch,

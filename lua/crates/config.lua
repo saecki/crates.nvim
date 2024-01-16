@@ -211,13 +211,13 @@ local M = {}
 ---@enum SchemaType
 local SchemaType = {
     -- A record of grouped options
-    section = "section",
+    SECTION = "section",
     -- The rest are lua types checked at runtime
-    table = "table",
-    string = "string",
-    number = "number",
-    boolean = "boolean",
-    fun = "function",
+    TABLE = "table",
+    STRING = "string",
+    NUMBER = "number",
+    BOOLEAN = "boolean",
+    FUN = "function",
 }
 
 ---@alias SchemaElement

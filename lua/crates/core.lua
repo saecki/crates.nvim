@@ -3,6 +3,7 @@ local async = require("crates.async")
 local diagnostic = require("crates.diagnostic")
 local state = require("crates.state")
 local toml = require("crates.toml")
+local DepKind = toml.DepKind
 local ui = require("crates.ui")
 local util = require("crates.util")
 
@@ -65,7 +66,7 @@ M.reload_crate = async.wrap(function(crate_name)
             -- Don't try to fetch info from crates.io if it's a local or git crate,
             -- or from a registry other than crates.io
             -- TODO: Once there is workspace support, resolve the crate
-            if c.dep_kind ~= "registry" or c.registry ~= nil then
+            if c.dep_kind ~= DepKind.REGISTRY or c.registry ~= nil then
                 goto continue
             end
 
@@ -114,7 +115,7 @@ local function update(buf, reload)
         -- Don't try to fetch info from crates.io if it's a local or git crate,
         -- or from a registry other than crates.io
         -- TODO: Once there is workspace support, resolve the crate
-        if c.dep_kind ~= "registry" or c.registry ~= nil then
+        if c.dep_kind ~= DepKind.REGISTRY or c.registry ~= nil then
             goto continue
         end
 

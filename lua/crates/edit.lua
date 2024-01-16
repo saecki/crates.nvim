@@ -1,6 +1,9 @@
 local semver = require("crates.semver")
 local state = require("crates.state")
+local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local types = require("crates.types")
+local Cond = types.Cond
 local Span = types.Span
 local SemVer = types.SemVer
 
@@ -30,14 +33,14 @@ end
 ---@return Span
 local function insert_version(buf, crate, text)
     if not crate.vers then
-        if crate.syntax == "table" then
+        if crate.syntax == TomlCrateSyntax.TABLE then
             local line = crate.lines.s + 1
             vim.api.nvim_buf_set_lines(
                 buf, line, line, false,
                 { 'version = "' .. text .. '"' }
             )
             return crate.lines:moved(0, 1)
-        elseif crate.syntax == "inline_table" then
+        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
             local col = math.min(
                 crate.pkg and crate.pkg.col.s or 999,
@@ -51,7 +54,7 @@ local function insert_version(buf, crate, text)
                 { ' version = "' .. text .. '",' }
             )
             return Span.pos(line)
-        else -- crate.syntax == "plain"
+        else -- crate.syntax == TomlCrateSyntax.PLAIN
             return Span.empty() -- unreachable
         end
     else
@@ -99,10 +102,10 @@ function M.smart_version_text(crate, version)
     local pos = 1
     local text = ""
     for _,r in ipairs(crate:vers_reqs()) do
-        if r.cond == "eq" then
+        if r.cond == Cond.EQ then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "wl" then
+        elseif r.cond == Cond.WL then
             if version.pre then
                 text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
             else
@@ -114,16 +117,16 @@ function M.smart_version_text(crate, version)
                 local after = string.sub(crate.vers.text, r.vers_col.e + 1, r.cond_col.e)
                 text = text .. before .. v:display() .. after
             end
-        elseif r.cond == "tl" then
+        elseif r.cond == Cond.TL then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "cr" then
+        elseif r.cond == Cond.CR then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "bl" then
+        elseif r.cond == Cond.BL then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "lt" and not semver.matches_requirement(version, r) then
+        elseif r.cond == Cond.LT and not semver.matches_requirement(version, r) then
             local v = SemVer.new {
                 major = version.major,
                 minor = r.vers.minor and version.minor or nil,
@@ -139,7 +142,7 @@ function M.smart_version_text(crate, version)
             end
 
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "le" and not semver.matches_requirement(version, r) then
+        elseif r.cond == Cond.LE and not semver.matches_requirement(version, r) then
             ---@type SemVer
             local v
 
@@ -157,7 +160,7 @@ function M.smart_version_text(crate, version)
             end
 
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "gt" and not semver.matches_requirement(version, r) then
+        elseif r.cond == Cond.GT and not semver.matches_requirement(version, r) then
             local v = SemVer.new {
                 major = r.vers.major and version.major or nil,
                 minor = r.vers.minor and version.minor or nil,
@@ -184,7 +187,7 @@ function M.smart_version_text(crate, version)
             end
 
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == "ge" then
+        elseif r.cond == Cond.GE then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         else
@@ -262,7 +265,7 @@ end
 function M.enable_feature(buf, crate, feature)
     local t = '"' .. feature.name .. '"'
     if not crate.feat then
-        if crate.syntax == "table" then
+        if crate.syntax == TomlCrateSyntax.TABLE then
             local line = math.max(
                 crate.vers and crate.vers.line + 1 or 0,
                 crate.pkg and crate.pkg.line + 1 or 0,
@@ -277,7 +280,7 @@ function M.enable_feature(buf, crate, feature)
                 { "features = [" .. t .."]" }
             )
             return Span.pos(line)
-        elseif crate.syntax == "plain" then
+        elseif crate.syntax == TomlCrateSyntax.PLAIN then
             t = ", features = [" .. t .. "] }"
             local line = crate.vers.line
             local col = crate.vers.col.e
@@ -297,7 +300,7 @@ function M.enable_feature(buf, crate, feature)
                 { "{ version = " }
             )
             return Span.pos(line)
-        elseif crate.syntax == "inline_table" then
+        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
             local text = ", features = [" .. t .. "]"
             local col = math.max(
@@ -412,7 +415,7 @@ local function disable_def_features(buf, crate)
         )
         return crate.lines
     else
-        if crate.syntax == "table" then
+        if crate.syntax == TomlCrateSyntax.TABLE then
             local line = math.max(
                 crate.vers and crate.vers.line + 1 or 0,
                 crate.pkg and crate.pkg.line + 1 or 0
@@ -430,7 +433,7 @@ local function disable_def_features(buf, crate)
                 { "default-features = false" }
             )
             return crate.lines:moved(0, 1)
-        elseif crate.syntax == "plain" then
+        elseif crate.syntax == TomlCrateSyntax.PLAIN then
             local t = ", default-features = false }"
             local col = crate.vers.col.e
             if crate.vers.quote.e then
@@ -457,7 +460,7 @@ local function disable_def_features(buf, crate)
                 { "{ version = " }
             )
             return crate.lines
-        elseif crate.syntax == "inline_table" then
+        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
             local text = ", default-features = false"
             local col = math.max(
@@ -503,7 +506,7 @@ end
 ---@param buf integer
 ---@param crate TomlCrate
 function M.expand_plain_crate_to_inline_table(buf, crate)
-    if crate.syntax ~= "plain" then
+    if crate.syntax ~= TomlCrateSyntax.PLAIN then
         return
     end
 
@@ -522,7 +525,7 @@ end
 ---@param buf integer
 ---@param crate TomlCrate
 function M.extract_crate_into_table(buf, crate)
-    if crate.syntax == "table" then
+    if crate.syntax == TomlCrateSyntax.TABLE then
         return
     end
 

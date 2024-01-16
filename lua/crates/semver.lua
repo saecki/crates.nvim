@@ -1,4 +1,5 @@
 local types = require("crates.types")
+local Cond = types.Cond
 local SemVer = types.SemVer
 local Span = types.Span
 
@@ -78,7 +79,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "eq",
+            cond = Cond.EQ,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -89,7 +90,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "le",
+            cond = Cond.LE,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -100,7 +101,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "lt",
+            cond = Cond.LT,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -111,7 +112,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "ge",
+            cond = Cond.GE,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -122,7 +123,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "gt",
+            cond = Cond.GT,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -133,7 +134,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "tl",
+            cond = Cond.TL,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -144,7 +145,7 @@ function M.parse_requirement(str)
     if wl then
         ---@type Requirement
         return {
-            cond = "wl",
+            cond = Cond.WL,
             cond_col = Span.new(0, 1),
             vers = SemVer.new {},
             vers_col = Span.new(0, 0),
@@ -155,7 +156,7 @@ function M.parse_requirement(str)
     if vers_str and rs and re then
         ---@type Requirement
         return {
-            cond = "wl",
+            cond = Cond.WL,
             cond_col = Span.new(rs - 1, re - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(0, rs - 1),
@@ -166,7 +167,7 @@ function M.parse_requirement(str)
     if vs and vers_str and ve then
         ---@type Requirement
         return {
-            cond = "cr",
+            cond = Cond.CR,
             cond_col = Span.new(0, vs - 1),
             vers = M.parse_version(vers_str),
             vers_col = Span.new(vs - 1, ve - 1),
@@ -175,7 +176,7 @@ function M.parse_requirement(str)
 
     ---@type Requirement
     return {
-        cond = "bl",
+        cond = Cond.BL,
         cond_col = Span.new(0, 0),
         vers = M.parse_version(str),
         vers_col = Span.new(0, str:len()),
@@ -325,19 +326,19 @@ end
 ---@param r Requirement
 ---@return boolean
 function M.matches_requirement(v, r)
-    if r.cond == "cr" or r.cond == "bl" then
+    if r.cond == Cond.CR or r.cond == Cond.BL then
         return matches_caret(v, r.vers)
-    elseif r.cond == "tl" then
+    elseif r.cond == Cond.TL then
         return matches_tilde(v, r.vers)
-    elseif r.cond == "eq" or r.cond == "wl" then
+    elseif r.cond == Cond.EQ or r.cond == Cond.WL then
         return matches_exact(v, r.vers)
-    elseif r.cond == "lt" then
+    elseif r.cond == Cond.LT then
         return matches_less(v, r.vers)
-    elseif r.cond == "le" then
+    elseif r.cond == Cond.LE then
         return matches_exact(v, r.vers) or matches_less(v, r.vers)
-    elseif r.cond == "gt" then
+    elseif r.cond == Cond.GT then
         return matches_greater(v, r.vers)
-    elseif r.cond == "ge" then
+    elseif r.cond == Cond.GE then
         return matches_exact(v, r.vers) or matches_greater(v, r.vers)
     end
 end

@@ -150,7 +150,7 @@ end
 ---@param version ApiVersion
 ---@param opts WinOpts
 function M.open_deps(ctx, crate_name, version, opts)
-    popup.type = popup.Type.dependencies
+    popup.type = popup.Type.DEPENDENCIES
 
     popup.omit_loading_transaction()
 

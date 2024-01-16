@@ -1,7 +1,10 @@
 local edit = require("crates.edit")
 local util = require("crates.util")
 local state = require("crates.state")
+local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local types = require("crates.types")
+local CratesDiagnosticKind = types.CratesDiagnosticKind
 local Span = types.Span
 
 local M = {}
@@ -203,10 +206,10 @@ function M.get_actions()
         end
 
         -- refactorings
-        if crate.syntax == "plain" then
+        if crate.syntax == TomlCrateSyntax.PLAIN then
             actions["expand_crate_to_inline_table"] = M.expand_plain_crate_to_inline_table
         end
-        if crate.syntax ~= "table" then
+        if crate.syntax ~= TomlCrateSyntax.TABLE then
             actions["extract_crate_into_table"] = M.extract_crate_into_table
         end
     end
@@ -217,25 +220,25 @@ function M.get_actions()
             goto continue
         end
 
-        if d.kind == "section_dup" then
+        if d.kind == CratesDiagnosticKind.SECTION_DUP then
             actions["remove_duplicate_section"] = remove_diagnostic_range_action(buf, d)
-        elseif d.kind == "section_dup_orig" then
+        elseif d.kind == CratesDiagnosticKind.SECTION_DUP_ORIG then
             actions["remove_original_section"] = remove_lines_action(buf, d.data["lines"])
-        elseif d.kind == "section_invalid" then
+        elseif d.kind == CratesDiagnosticKind.SECTION_INVALID then
             actions["remove_invalid_dependency_section"] = remove_diagnostic_range_action(buf, d)
 
-        elseif d.kind == "crate_dup" then
+        elseif d.kind == CratesDiagnosticKind.CRATE_DUP then
             actions["remove_duplicate_crate"] = remove_diagnostic_range_action(buf, d)
-        elseif d.kind == "crate_dup_orig" then
+        elseif d.kind == CratesDiagnosticKind.CRATE_DUP_ORIG then
             actions["remove_original_crate"] = remove_diagnostic_range_action(buf, d)
-        elseif d.kind == "crate_name_case" then
+        elseif d.kind == CratesDiagnosticKind.CRATE_NAME_CASE then
             actions["rename_crate"] = rename_crate_package_action(buf, d.data["crate"], d.data["crate_name"])
 
-        elseif crate and d.kind == "feat_dup" then
+        elseif crate and d.kind == CratesDiagnosticKind.FEAT_DUP then
             actions["remove_duplicate_feature"] = remove_feature_action(buf, crate, d.data["feat"])
-        elseif crate and d.kind == "feat_dup_orig" then
+        elseif crate and d.kind == CratesDiagnosticKind.FEAT_DUP_ORIG then
             actions["remove_original_feature"] = remove_feature_action(buf, crate, d.data["feat"])
-        elseif crate and d.kind == "feat_invalid" then
+        elseif crate and d.kind == CratesDiagnosticKind.FEAT_INVALID then
             actions["remove_invalid_feature"] = remove_feature_action(buf, crate, d.data["feat"])
         end
 

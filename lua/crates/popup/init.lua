@@ -4,6 +4,8 @@ local popup_deps = require("crates.popup.dependencies")
 local popup_feat = require("crates.popup.features")
 local popup_vers = require("crates.popup.versions")
 local state = require("crates.state")
+local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local types = require("crates.types")
 local Span = types.Span
 local util = require("crates.util")
@@ -46,11 +48,11 @@ local function line_crate_info()
     }
 
     local function crate_info()
-        info.pref = popup.Type.crate
+        info.pref = popup.Type.CRATE
     end
 
     local function versions_info()
-        info.pref = popup.Type.versions
+        info.pref = popup.Type.VERSIONS
     end
 
     local function features_info()
@@ -62,24 +64,24 @@ local function line_crate_info()
         end
 
         if info.feature then
-            info.pref = popup.Type.feature_details
+            info.pref = popup.Type.FEATURE_DETAILS
         else
-            info.pref = popup.Type.features
+            info.pref = popup.Type.FEATURES
         end
     end
 
     local function default_features_info()
         info.feature = newest.features.list[1]
-        info.pref = popup.Type.feature_details
+        info.pref = popup.Type.FEATURE_DETAILS
     end
 
-    if crate.syntax == "plain" then
+    if crate.syntax == TomlCrateSyntax.PLAIN then
         if crate.vers.col:moved(-1, 1):contains(col) then
             versions_info()
         else
             crate_info()
         end
-    elseif crate.syntax == "table" then
+    elseif crate.syntax == TomlCrateSyntax.TABLE then
         if crate.vers and line == crate.vers.line then
             versions_info()
         elseif crate.feat and line == crate.feat.line then
@@ -89,7 +91,7 @@ local function line_crate_info()
         else
             crate_info()
         end
-    elseif crate.syntax == "inline_table" then
+    elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
         if crate.vers and crate.vers.decl_col:contains(col) then
             versions_info()
         elseif crate.feat and crate.feat.decl_col:contains(col) then
@@ -118,18 +120,18 @@ function M.show()
     local info = line_crate_info()
     if not info then return end
 
-    if info.pref == "crate" then
+    if info.pref == popup.Type.CRATE then
         local crate = state.api_cache[info.crate:package()]
         if crate then
             popup_crate.open(crate, {})
         end
-    elseif info.pref == "versions" then
+    elseif info.pref == popup.Type.VERSIONS then
         popup_vers.open(info.crate, info.versions, {})
-    elseif info.pref == "features" then
+    elseif info.pref == popup.Type.FEATURES then
         popup_feat.open(info.crate, info.newest, {})
-    elseif info.pref == "feature_details" then
+    elseif info.pref == popup.Type.FEATURE_DETAILS then
         popup_feat.open_details(info.crate, info.newest, info.feature, {})
-    elseif info.pref == "dependencies" then
+    elseif info.pref == popup.Type.DEPENDENCIES then
         popup_deps.open(info.crate:package(), info.newest, {})
     end
 end
@@ -144,7 +146,7 @@ end
 
 function M.show_crate()
     if popup.win and vim.api.nvim_win_is_valid(popup.win) then
-        if popup.type == "crate" then
+        if popup.type == popup.Type.CRATE then
             popup.focus()
             return
         else
@@ -163,7 +165,7 @@ end
 
 function M.show_versions()
     if popup.win and vim.api.nvim_win_is_valid(popup.win) then
-        if popup.type == "versions" then
+        if popup.type == popup.Type.VERSIONS then
             popup.focus()
             return
         else
@@ -179,7 +181,7 @@ end
 
 function M.show_features()
     if popup.win and vim.api.nvim_win_is_valid(popup.win) then
-        if popup.type == "features" then
+        if popup.type == popup.Type.FEATURES then
             popup.focus()
             return
         else
@@ -190,9 +192,9 @@ function M.show_features()
     local info = line_crate_info()
     if not info then return end
 
-    if info.pref == "features" then
+    if info.pref == popup.Type.FEATURES then
         popup_feat.open(info.crate, info.newest, {})
-    elseif info.pref == "feature_details" then
+    elseif info.pref == popup.Type.FEATURE_DETAILS then
         popup_feat.open_details(info.crate, info.newest, info.feature, {})
     elseif info.newest then
         popup_feat.open(info.crate, info.newest, {})
@@ -201,7 +203,7 @@ end
 
 function M.show_dependencies()
     if popup.win and vim.api.nvim_win_is_valid(popup.win) then
-        if popup.type == "dependencies" then
+        if popup.type == popup.Type.DEPENDENCIES then
             popup.focus()
             return
         else
