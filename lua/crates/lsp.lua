@@ -24,58 +24,58 @@ local M = {}
 ---@param opts ServerOpts
 ---@return function
 function M.server(opts)
-	opts = opts or {}
-	local capabilities = opts.capabilities or {}
-	local on_request = opts.on_request or function(_, _) end
-	local on_notify = opts.on_notify or function(_, _) end
-	local handlers = opts.handlers or {}
+    opts = opts or {}
+    local capabilities = opts.capabilities or {}
+    local on_request = opts.on_request or function(_, _) end
+    local on_notify = opts.on_notify or function(_, _) end
+    local handlers = opts.handlers or {}
 
-	return function(dispatchers)
-		local closing = false
-		local srv = {}
-		local request_id = 0
+    return function(dispatchers)
+        local closing = false
+        local srv = {}
+        local request_id = 0
 
         ---@param method string
         ---@param params any
         ---@param callback fun(method: string|nil, params: any)
         ---@return boolean
         ---@return integer
-		function srv.request(method, params, callback)
-			pcall(on_request, method, params)
-			local handler = handlers[method]
-			if handler then
-				handler(method, params, callback)
-			elseif method == "initialize" then
-				callback(nil, {
-					capabilities = capabilities,
-				})
-			elseif method == "shutdown" then
-				callback(nil, nil)
-			end
-			request_id = request_id + 1
-			return true, request_id
-		end
+        function srv.request(method, params, callback)
+            pcall(on_request, method, params)
+            local handler = handlers[method]
+            if handler then
+                handler(method, params, callback)
+            elseif method == "initialize" then
+                callback(nil, {
+                    capabilities = capabilities,
+                })
+            elseif method == "shutdown" then
+                callback(nil, nil)
+            end
+            request_id = request_id + 1
+            return true, request_id
+        end
 
         ---@param method string
         ---@param params any
-		function srv.notify(method, params)
-			pcall(on_notify, method, params)
-			if method == "exit" then
-				dispatchers.on_exit(0, 15)
-			end
-		end
+        function srv.notify(method, params)
+            pcall(on_notify, method, params)
+            if method == "exit" then
+                dispatchers.on_exit(0, 15)
+            end
+        end
 
         ---@return boolean
-		function srv.is_closing()
-			return closing
-		end
+        function srv.is_closing()
+            return closing
+        end
 
-		function srv.terminate()
-			closing = true
-		end
+        function srv.terminate()
+            closing = true
+        end
 
-		return srv
-	end
+        return srv
+    end
 end
 
 function M.start_server()
@@ -92,45 +92,45 @@ function M.start_server()
         end
     }
 
-	local server = M.server({
-		capabilities = {
-			codeActionProvider = state.cfg.lsp.actions,
+    local server = M.server({
+        capabilities = {
+            codeActionProvider = state.cfg.lsp.actions,
             completionProvider = state.cfg.lsp.completion and {
                 triggerCharacters = src.trigger_characters,
             },
-		},
-		handlers = {
+        },
+        handlers = {
             ---@param _method string
             ---@param _params any
             ---@param callback fun(err: nil, actions: CodeAction[])
-			["textDocument/codeAction"] = function(_method, _params, callback)
-				local code_actions = {}
-				for key, action in pairs(actions.get_actions()) do
+            ["textDocument/codeAction"] = function(_method, _params, callback)
+                local code_actions = {}
+                for key, action in pairs(actions.get_actions()) do
                     local title = util.format_title(key)
-					table.insert(code_actions, {
-						title = title,
-						kind = "refactor.rewrite",
-						command = {
+                    table.insert(code_actions, {
+                        title = title,
+                        kind = "refactor.rewrite",
+                        command = {
                             title = title,
                             command = key,
                             arguments = { action },
                         },
-					})
-				end
-				callback(nil, code_actions)
-			end,
+                    })
+                end
+                callback(nil, code_actions)
+            end,
             ---@param _method string
             ---@param _params any
             ---@param callback fun(err: nil, items: CompletionList|nil)
-			["textDocument/completion"] = function(_method, _params, callback)
+            ["textDocument/completion"] = function(_method, _params, callback)
                 src.complete(function(items)
                     callback(nil, items)
                 end)
-			end,
-		},
-	})
+            end,
+        },
+    })
     ---@type integer
-	local client_id = vim.lsp.start({
+    local client_id = vim.lsp.start({
         name = state.cfg.lsp.name,
         cmd = server,
         commands = commands,
