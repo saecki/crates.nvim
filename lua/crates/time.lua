@@ -1,10 +1,9 @@
-local M = {
-    DateTime = {},
-}
+local M = {}
 
 ---@class DateTime
 ---@field epoch integer
-local DateTime = M.DateTime
+local DateTime = {}
+M.DateTime = DateTime
 
 ---@param epoch integer
 ---@return DateTime

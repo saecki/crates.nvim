@@ -2,14 +2,15 @@ local api = require("crates.api")
 local time = require("crates.time")
 local DateTime = time.DateTime
 local types = require("crates.types")
-local Features = types.Features
+local ApiFeatures = types.ApiFeatures
 local SemVer = types.SemVer
-local Range = types.Range
+local Span = types.Span
 
 describe("crate", function()
+    ---@type string
 	local json_str
 	it("read file", function()
-		json_str = io.input("test/rand.json"):read("a")
+		json_str = io.open("test/rand.json"):read("a")
 		assert.equals("string", type(json_str))
 	end)
 
@@ -43,7 +44,7 @@ describe("crate", function()
 			versions = {
 				{
 					num = "0.8.5",
-					features = Features.new({
+					features = ApiFeatures.new({
 						{ name = "default", members = { "std", "std_rng" } },
 						{ name = "alloc", members = { "rand_core/alloc" } },
 						{ name = "getrandom", members = { "rand_core/getrandom" } },
@@ -75,7 +76,7 @@ describe("crate", function()
 				},
 				{
 					num = "0.3.5",
-					features = Features.new({
+					features = ApiFeatures.new({
 						{ name = "default", members = {} },
 					}),
 					yanked = false,
@@ -91,7 +92,7 @@ describe("crate", function()
 				},
 				{
 					num = "0.1.1",
-					features = Features.new({
+					features = ApiFeatures.new({
 						{ name = "default", members = {} },
 					}),
 					yanked = true,
@@ -111,9 +112,10 @@ describe("crate", function()
 end)
 
 describe("dependencies", function()
+    ---@type string
 	local json_str
 	it("read file", function()
-		json_str = io.input("test/rand_dependencies.json"):read("a")
+		json_str = io.open("test/rand_dependencies.json"):read("a")
 		assert.equals("string", type(json_str))
 	end)
 
@@ -130,9 +132,9 @@ describe("dependencies", function()
 					reqs = {
 						{
 							cond = "cr",
-							cond_col = Range.new(0, 1),
+							cond_col = Span.new(0, 1),
 							vers = SemVer.new({ major = 0, minor = 9, patch = 2 }),
-							vers_col = Range.new(1, 6),
+							vers_col = Span.new(1, 6),
 						},
 					},
 					text = "^0.9.2",
@@ -146,9 +148,9 @@ describe("dependencies", function()
 					reqs = {
 						{
 							cond = "cr",
-							cond_col = Range.new(0, 1),
+							cond_col = Span.new(0, 1),
 							vers = SemVer.new({ major = 0, minor = 3 }),
-							vers_col = Range.new(1, 4),
+							vers_col = Span.new(1, 4),
 						},
 					},
 					text = "^0.3",
@@ -162,9 +164,9 @@ describe("dependencies", function()
 					reqs = {
 						{
 							cond = "cr",
-							cond_col = Range.new(0, 1),
+							cond_col = Span.new(0, 1),
 							vers = SemVer.new({ major = 0, minor = 2 }),
-							vers_col = Range.new(1, 4),
+							vers_col = Span.new(1, 4),
 						},
 					},
 					text = "^0.2",
@@ -178,9 +180,9 @@ describe("dependencies", function()
 					reqs = {
 						{
 							cond = "cr",
-							cond_col = Range.new(0, 1),
+							cond_col = Span.new(0, 1),
 							vers = SemVer.new({ major = 0, minor = 0, patch = 3 }),
-							vers_col = Range.new(1, 6),
+							vers_col = Span.new(1, 6),
 						},
 					},
 					text = "^0.0.3",
