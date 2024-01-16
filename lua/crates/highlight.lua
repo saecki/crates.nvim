@@ -1,5 +1,14 @@
 local M = {}
 
+---@class HighlightGroup
+---@field default boolean|nil
+---@field ctermfg integer|nil
+---@field fg string|nil
+---@field ctermbg integer|nil
+---@field bg string|nil
+---@field link string|nil
+
+---@type {[1]: string, [2]: HighlightGroup}[]
 M.highlights = {
     { "CratesNvimLoading", { default = true, link = "DiagnosticVirtualTextInfo" } },
     { "CratesNvimVersion" , { default = true, link = "DiagnosticVirtualTextInfo" } },

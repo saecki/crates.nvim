@@ -76,6 +76,7 @@ end
 
 ---@class Crates
 local M = {
+    ---Setup config and auto commands.
     ---@type fun(cfg: Config)
     setup = setup,
 
