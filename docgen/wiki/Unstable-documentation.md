@@ -405,13 +405,14 @@ require("crates").show_crate_popup()
 require("crates").show_versions_popup()
 -- Same as `crates.show_popup()` but always show features or features details.
 require("crates").show_features_popup()
--- Same as `crates.show_popup()` but always show depedencies.
+-- Same as `crates.show_popup()` but always show dependencies.
 require("crates").show_dependencies_popup()
 -- Focus the popup (jump into the floating window).
 -- Optionally specify the line to jump to, inside the popup.
 require("crates").focus_popup(line: integer|nil)
 -- Hide the popup.
 require("crates").hide_popup()
+
 ```
 
 ## Command

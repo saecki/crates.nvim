@@ -448,7 +448,7 @@ show_features_popup()                           *crates.show_features_popup()*
 
 
 show_dependencies_popup()                   *crates.show_dependencies_popup()*
-    Same as `crates.show_popup()` but always show depedencies.
+    Same as `crates.show_popup()` but always show dependencies.
 
 
 focus_popup({line}: `integer|nil`)                      *crates.focus_popup()*
@@ -727,7 +727,7 @@ highlight.error                                *crates-config-highlight-error*
 popup                                                    *crates-config-popup*
     Type: `section`
 
-    popup config
+    Popup configuration.
 
 
 popup.autofocus                                *crates-config-popup-autofocus*

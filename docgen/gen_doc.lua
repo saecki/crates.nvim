@@ -8,15 +8,32 @@ local config = require("lua.crates.config")
 local highlight = require("lua.crates.highlight")
 local version = "unstable"
 
+---@param line_iter fun(): string|nil
+---@param line string
+local function skip_lines_until(line_iter, line)
+    for l in line_iter do
+        if l:match(line) then
+            break
+        end
+    end
+end
+
+---@param lines string[]
+---@param indent integer
+---@param filename string
 local function gen_from_shared_file(lines, indent, filename)
     local infile = io.open("docgen/shared/" .. filename, "r")
+    ---@cast infile -nil
     for l in infile:lines("*l") do
+        ---@type string
         l = string.rep("    ", indent) .. l
         l = l:gsub("%s+$", "")
         table.insert(lines, l)
     end
 end
 
+---@param line string
+---@return string
 local function format_markdown_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
     line = line:gsub("`p#([^`]+)`", "`%1`")
@@ -24,20 +41,31 @@ local function format_markdown_refs(line)
     return line
 end
 
+---@param lines string[]
 local function gen_markdown_functions(lines)
-    local file = io.open("teal/crates/init.tl", "r")
-    for l in file:lines("*l") do
+    local file = io.open("lua/crates/init.lua", "r")
+    ---@cast file -nil
+    ---@type fun(): string|nil
+    local line_iter = file:lines("*l")
+    skip_lines_until(line_iter, "^local M = {$")
+
+    for l in line_iter do
         if l == "end" then
             break
         end
         if l ~= "" then
-            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)(.*)$"
-            local name, params, ret_type = l:match(pat)
-            if name and params and ret_type then
+            ---@type string|nil, string|nil, string|nil|nil
+            local params, ret_type = l:match("^%s*%-%-%-@type fun%(([^%)]*)%)(.*)$")
+            if params then
+                local next_line = line_iter()
+                assert(next_line)
+                local name, _assigned = next_line:match("^%s*(.+) = (.+),")
+
                 local func_text = string.format('require("crates").%s(%s)%s', name, params, ret_type)
                 table.insert(lines, func_text)
             else
-                local doc = l:match("^%s*%-%-%s*(.*)$")
+                ---@type string
+                local doc = l:match("^%s*%-%-%-(.*)$")
                 if doc then
                     local fmt = format_markdown_refs(doc)
                     table.insert(lines, "-- " .. fmt)
@@ -50,22 +78,20 @@ local function gen_markdown_functions(lines)
     file:close()
 end
 
+---@param lines string[]
 local function gen_markdown_subcommands(lines)
-    local file = io.open("teal/crates/command.tl", "r")
+    local file = io.open("lua/crates/command.lua", "r")
+    ---@cast file -nil
     local line_iter = file:lines("*l")
-    for l in line_iter do
-        if l:match("^local sub_commands:") then
-            break
-        end
-    end
+    skip_lines_until(line_iter, "^local sub_commands = {$")
 
     for l in line_iter do
         if l == "}" then
             break
         end
         if l ~= "" then
-            local pat = "^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$"
-            local name = l:match(pat)
+            ---@type string|nil
+            local name = l:match("^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$")
             if name then
                 local doc_ref = string.format("- `%s()`", name)
                 table.insert(lines, doc_ref)
@@ -75,6 +101,8 @@ local function gen_markdown_subcommands(lines)
     file:close()
 end
 
+---@param params string
+---@return string
 local function format_vimdoc_params(params)
     local text = {}
     for p, t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
@@ -84,6 +112,8 @@ local function format_vimdoc_params(params)
     return table.concat(text, ", ")
 end
 
+---@param return_type string|nil
+---@return string
 local function format_vimdoc_ret_type(return_type)
     local type = return_type:match("^%s*:%s*(.+)%s*$")
     if type then
@@ -93,6 +123,8 @@ local function format_vimdoc_ret_type(return_type)
     end
 end
 
+---@param line string
+---@return string
 local function format_vimdoc_refs(line)
     line = line:gsub("`f#([^`]+)`", "`%1`")
     line = line:gsub("`p#([^`]+)`", "{%1}")
@@ -100,6 +132,7 @@ local function format_vimdoc_refs(line)
     if os and opt and oe then
         local pat = "%s|crates-config-%s|%s"
         local before = line:sub(0, os - 1)
+        ---@type string
         local cfg_opt = opt:gsub("%.", "-")
         local after = line:sub(oe, #line)
         line = string.format(pat, before, cfg_opt, after)
@@ -107,18 +140,29 @@ local function format_vimdoc_refs(line)
     return line
 end
 
+---@param lines string[]
 local function gen_vimdoc_functions(lines)
+    ---@type string[]
     local func_doc = {}
 
-    local file = io.open("teal/crates/init.tl", "r")
-    for l in file:lines("*l") do
+    local file = io.open("lua/crates/init.lua", "r")
+    ---@cast file -nil
+    ---@type fun(): string|nil
+    local line_iter = file:lines("*l")
+    skip_lines_until(line_iter, "^local M = {$")
+
+    for l in line_iter do
         if l == "end" then
             break
         end
         if l ~= "" then
-            local pat = "^%s*([^:]+):%s*function%(([^%)]*)%)(.*)$"
-            local name, params, ret_type = l:match(pat)
-            if name and params and ret_type then
+            ---@type string|nil, string|nil, string|nil|nil
+            local params, ret_type = l:match("^%s*%-%-%-@type fun%(([^%)]*)%)(.*)$")
+            if params then
+                local next_line = line_iter()
+                assert(next_line)
+                local name, _assigned = next_line:match("^%s*(.+) = (.+),")
+
                 local doc_params = format_vimdoc_params(params)
                 local doc_ret_type = format_vimdoc_ret_type(ret_type)
                 local doc_title = string.format("%s(%s)%s", name, doc_params, doc_ret_type)
@@ -142,7 +186,8 @@ local function gen_vimdoc_functions(lines)
 
                 func_doc = {}
             else
-                local doc = l:match("^%s*%-%-%s*(.*)$")
+                ---@type string
+                local doc = l:match("^%s*%-%-%-(.*)$")
                 if doc then
                     table.insert(func_doc, doc)
                 end
@@ -152,22 +197,20 @@ local function gen_vimdoc_functions(lines)
     file:close()
 end
 
+---@param lines string[]
 local function gen_vimdoc_subcommands(lines)
-    local file = io.open("teal/crates/command.tl", "r")
+    local file = io.open("lua/crates/command.lua", "r")
+    ---@cast file -nil
     local line_iter = file:lines("*l")
-    for l in line_iter do
-        if l:match("^local sub_commands:") then
-            break
-        end
-    end
+    skip_lines_until(line_iter, "^local sub_commands = {$")
 
     for l in line_iter do
         if l == "}" then
             break
         end
         if l ~= "" then
-            local pat = "^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$"
-            local name = l:match(pat)
+            ---@type string
+            local name = l:match("^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$")
             if name then
                 local doc_ref = string.format("    - |crates.%s()|", name)
                 table.insert(lines, doc_ref)
@@ -177,10 +220,10 @@ local function gen_vimdoc_subcommands(lines)
     file:close()
 end
 
+---@param lines string[]
 local function gen_vimdoc_highlights(lines)
     for _, value in ipairs(highlight.highlights) do
-        local name = value[1]
-        local hl = value[2]
+        local name, hl = value[1], value[2]
         local doc_title = name
         local doc_key = string.format("*crates-hl-%s*", name)
 
@@ -198,12 +241,12 @@ local function gen_vimdoc_highlights(lines)
             table.insert(lines, "")
         else
             local colors = ""
-            local function append_if_not_nil(name, value)
+            local function append_if_not_nil(field, value)
                 if value then
                     if colors ~= "" then
                         colors = colors .. " "
                     end
-                    colors = colors .. string.format("%s=%s", name, value)
+                    colors = colors .. string.format("%s=%s", field, value)
                 end
             end
 
@@ -218,7 +261,11 @@ local function gen_vimdoc_highlights(lines)
     end
 end
 
+---@param path string[]
+---@param component string
+---@return string[]
 local function join_path(path, component)
+    ---@type string[]
     local p = {}
     for i, c in ipairs(path) do
         p[i] = c
@@ -227,6 +274,9 @@ local function join_path(path, component)
     return p
 end
 
+---@param lines string[]
+---@param path string[]
+---@param schema SchemaElement[]
 local function gen_vimdoc_config(lines, path, schema)
     for _, s in ipairs(schema) do
         if s.hidden then
@@ -264,6 +314,7 @@ local function gen_vimdoc_config(lines, path, schema)
                 end
                 local d = s.default_text
                 if not d then
+                    ---@type string
                     d = inspect(s.default)
                 end
                 table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
@@ -283,7 +334,12 @@ local function gen_vimdoc_config(lines, path, schema)
     end
 end
 
+---@param lines string[]
+---@param indent integer
+---@param path string[]
+---@param schema SchemaElement[]
 local function gen_def_config(lines, indent, path, schema)
+    ---@param str string
     local function insert_indent(str)
         local l = string.rep("    ", #path + indent) .. str
         table.insert(lines, l)
@@ -306,7 +362,10 @@ local function gen_def_config(lines, indent, path, schema)
     end
 end
 
+---@param l string
+---@return string|nil, integer|nil
 local function parse_placeholder(l)
+    ---@type integer, string
     local preceeding_spaces, placeholder = l:match("^%s*()<SHARED%:([a-zA-Z0-9_%.]+)>$")
     if placeholder then
         local spaces = preceeding_spaces - 1
@@ -322,9 +381,12 @@ local function gen_vim_doc()
     local lines = {}
 
     local infile = io.open("docgen/templates/crates.txt.in", "r")
-    for l in infile:lines("*l") do
+    ---@cast infile -nil
+    ---@type fun(): string|nil
+    local line_iter = infile:lines("*l")
+    for l in line_iter do
         local ph, indent = parse_placeholder(l)
-        if ph then
+        if ph and indent then
             if ph == "DEFAULT_CONFIGURATION" then
                 gen_def_config(lines, 2, {}, config.schema)
             elseif ph == "FUNCTIONS" then
@@ -347,6 +409,7 @@ local function gen_vim_doc()
 
     local doc = table.concat(lines, "\n")
     local outfile = io.open("doc/crates.txt", "w")
+    ---@cast outfile -nil
     outfile:write(doc)
     outfile:close()
 end
@@ -355,9 +418,12 @@ local function gen_markdown(inpath, outpath)
     local lines = {}
 
     local infile = io.open(inpath, "r")
-    for l in infile:lines("*l") do
+    ---@cast infile -nil
+    ---@type fun(): string|nil
+    local line_iter = infile:lines("*l")
+    for l in line_iter do
         local ph, indent = parse_placeholder(l)
-        if ph then
+        if ph and indent then
             if ph == "DEFAULT_CONFIGURATION" then
                 gen_def_config(lines, 1, {}, config.schema)
             elseif ph == "FUNCTIONS" then
@@ -376,6 +442,7 @@ local function gen_markdown(inpath, outpath)
 
     local doc = table.concat(lines, "\n")
     local outfile = io.open(outpath, "w")
+    ---@cast outfile -nil
     outfile:write(doc)
     outfile:close()
 end
