@@ -38,6 +38,11 @@ make doc
 ```
 
 ## Testing
+
+### Requirements
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
+    - Placed inside the root fo this repository
+
 There are currently only a few tests.
 Execute them by running this command:
 ```
