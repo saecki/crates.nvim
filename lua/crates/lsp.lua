@@ -79,10 +79,12 @@ function M.server(opts)
 end
 
 function M.start_server()
+    local CRATES_COMMAND = "crates_command"
+
     local commands = {
         ---@param cmd Command
         ---@param ctx table<string,any>
-        ["crates_command"] = function(cmd, ctx)
+        [CRATES_COMMAND] = function(cmd, ctx)
             local action = cmd.arguments[1]
             if action then
                 vim.api.nvim_buf_call(ctx.bufnr, action)
@@ -112,7 +114,7 @@ function M.start_server()
                         kind = "refactor.rewrite",
                         command = {
                             title = title,
-                            command = key,
+                            command = CRATES_COMMAND,
                             arguments = { action },
                         },
                     })
