@@ -65,7 +65,7 @@ local function gen_markdown_functions(lines)
                 table.insert(lines, func_text)
             else
                 ---@type string
-                local doc = l:match("^%s*%-%-%s*(.*)$")
+                local doc = l:match("^%s*%-%-%-(.*)$")
                 if doc then
                     local fmt = format_markdown_refs(doc)
                     table.insert(lines, "-- " .. fmt)
