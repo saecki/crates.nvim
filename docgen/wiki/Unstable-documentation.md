@@ -345,72 +345,72 @@ require("crates").setup {
 
 ## Functions
 ```lua
--- -Setup config and auto commands.
+-- Setup config and auto commands.
 require("crates").setup(cfg: Config)
 
--- -Disable UI elements (virtual text and diagnostics).
+-- Disable UI elements (virtual text and diagnostics).
 require("crates").hide()
--- -Enable UI elements (virtual text and diagnostics).
+-- Enable UI elements (virtual text and diagnostics).
 require("crates").show()
--- -Enable or disable UI elements (virtual text and diagnostics).
+-- Enable or disable UI elements (virtual text and diagnostics).
 require("crates").toggle()
--- -Update data. Optionally specify which `buf` to update.
+-- Update data. Optionally specify which `buf` to update.
 require("crates").update(buf: integer|nil)
--- -Reload data (clears cache). Optionally specify which `buf` to reload.
+-- Reload data (clears cache). Optionally specify which `buf` to reload.
 require("crates").reload(buf: integer|nil)
 
--- -Upgrade the crate on the current line.
--- -If the `alt` flag is passed as true, the opposite of the `smart_insert` config
--- -option will be used to insert the version.
+-- Upgrade the crate on the current line.
+-- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
+-- option will be used to insert the version.
 require("crates").upgrade_crate(alt: boolean|nil)
--- -Upgrade the crates on the lines visually selected.
--- -See `crates.upgrade_crate()`.
+-- Upgrade the crates on the lines visually selected.
+-- See `crates.upgrade_crate()`.
 require("crates").upgrade_crates(alt: boolean|nil)
--- -Upgrade all crates in the buffer.
--- -See `crates.upgrade_crate()`.
+-- Upgrade all crates in the buffer.
+-- See `crates.upgrade_crate()`.
 require("crates").upgrade_all_crates(alt: boolean|nil)
 
--- -Update the crate on the current line.
--- -See `crates.upgrade_crate()`.
+-- Update the crate on the current line.
+-- See `crates.upgrade_crate()`.
 require("crates").update_crate(alt: boolean|nil)
--- -Update the crates on the lines visually selected.
--- -See `crates.upgrade_crate()`.
+-- Update the crates on the lines visually selected.
+-- See `crates.upgrade_crate()`.
 require("crates").update_crates(alt: boolean|nil)
--- -Update all crates in the buffer.
--- -See `crates.upgrade_crate()`.
+-- Update all crates in the buffer.
+-- See `crates.upgrade_crate()`.
 require("crates").update_all_crates(alt: boolean|nil)
 
--- -Expand a plain crate declaration into an inline table.
+-- Expand a plain crate declaration into an inline table.
 require("crates").expand_plain_crate_to_inline_table()
--- -Extract an crate declaration from a dependency section into a table.
+-- Extract an crate declaration from a dependency section into a table.
 require("crates").extract_crate_into_table()
 
--- -Open the homepage of the crate on the current line.
+-- Open the homepage of the crate on the current line.
 require("crates").open_homepage()
--- -Open the repository page of the crate on the current line.
+-- Open the repository page of the crate on the current line.
 require("crates").open_repository()
--- -Open the documentation page of the crate on the current line.
+-- Open the documentation page of the crate on the current line.
 require("crates").open_documentation()
--- -Open the `crates.io` page of the crate on the current line.
+-- Open the `crates.io` page of the crate on the current line.
 require("crates").open_crates_io()
 
--- -Returns whether there is information to show in a popup.
+-- Returns whether there is information to show in a popup.
 require("crates").popup_available(): boolean
--- -Show/hide popup with crate details, all versions, all features or details about one feature.
--- -If `popup.autofocus` is disabled calling this again will focus the popup.
+-- Show/hide popup with crate details, all versions, all features or details about one feature.
+-- If `popup.autofocus` is disabled calling this again will focus the popup.
 require("crates").show_popup()
--- -Same as `crates.show_popup()` but always show crate details.
+-- Same as `crates.show_popup()` but always show crate details.
 require("crates").show_crate_popup()
--- -Same as `crates.show_popup()` but always show versions.
+-- Same as `crates.show_popup()` but always show versions.
 require("crates").show_versions_popup()
--- -Same as `crates.show_popup()` but always show features or features details.
+-- Same as `crates.show_popup()` but always show features or features details.
 require("crates").show_features_popup()
--- -Same as `crates.show_popup()` but always show dependencies.
+-- Same as `crates.show_popup()` but always show dependencies.
 require("crates").show_dependencies_popup()
--- -Focus the popup (jump into the floating window).
--- -Optionally specify the line to jump to, inside the popup.
+-- Focus the popup (jump into the floating window).
+-- Optionally specify the line to jump to, inside the popup.
 require("crates").focus_popup(line: integer|nil)
--- -Hide the popup.
+-- Hide the popup.
 require("crates").hide_popup()
 
 ```
