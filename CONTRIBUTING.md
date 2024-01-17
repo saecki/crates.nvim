@@ -1,6 +1,46 @@
 # Contributing
 
-## Documentation
+## Writing Code
+
+### How `core.update()` works
+```
+     ┌─────────┐
+     │  Toml   │
+     │ Parsing │
+     └────┬────┘
+          ├───────────────┐
+          ▼               ▼
+    ┌────────────┐ ┌─────────────┐   ┌────────┐
+    │   Fetch    │ │   Offline   │   │   Ui   │
+    │ Crate Data │ │ Diagnostics ├──▶│ Update │
+    └─────┬──────┘ └─────────────┘   └────────┘
+          ├─────────────────┐
+          ▼                 ▼
+    ┌──────────────┐ ┌─────────────┐   ┌────────┐
+    │    Fetch     │ │    Crate    │   │   Ui   │
+    │ Dependencies │ │ Diagnostics ├──▶│ Update │
+    └──────────────┘ └─────────────┘   └────────┘
+          │
+          ▼
+    ┌──────────────┐   ┌────────┐
+    │   Feature    │   │   Ui   │
+    │ Diagnostics  ├──▶│ Update │
+    └──────────────┘   └────────┘
+```
+
+## Testing
+
+### Requirements
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
+    - Placed inside the root of this repository
+
+There are currently only a few tests.
+Execute them by running this command:
+```
+make test
+```
+
+## Writing Documentation
 
 ### Requirements
 - [Luarocks](https://luarocks.org/)
@@ -35,16 +75,4 @@ Documentation is automatically updated by github actions, but you can also
 generate it yourself by running:
 ```
 make doc
-```
-
-## Testing
-
-### Requirements
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
-    - Placed inside the root fo this repository
-
-There are currently only a few tests.
-Execute them by running this command:
-```
-make test
 ```
