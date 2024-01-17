@@ -3,6 +3,8 @@ local async = require("crates.async")
 local core = require("crates.core")
 local popup = require("crates.popup.common")
 local state = require("crates.state")
+local types = require("crates.types")
+local ApiDependencyKind = types.ApiDependencyKind
 local util = require("crates.util")
 
 local M = {}
@@ -190,11 +192,11 @@ function M.open_deps(ctx, crate_name, version, opts)
         local t = { text = text, hl = hl }
 
         local line = { t, dep = d }
-        if d.kind == "normal" then
+        if d.kind == ApiDependencyKind.NORMAL then
             table.insert(normal_deps_text, line)
-        elseif d.kind == "build" then
+        elseif d.kind == ApiDependencyKind.BUILD then
             table.insert(build_deps_text, line)
-        elseif d.kind == "dev" then
+        elseif d.kind == ApiDependencyKind.DEV then
             table.insert(dev_deps_text, line)
         end
         table.insert(deps_text_index, line)
