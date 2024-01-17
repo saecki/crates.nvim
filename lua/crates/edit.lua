@@ -109,10 +109,10 @@ function M.smart_version_text(crate, version)
             if version.pre then
                 text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
             else
-                local v = SemVer.new {
+                local v = SemVer.new({
                     major = r.vers.major and version.major or nil,
                     minor = r.vers.minor and version.minor or nil,
-                }
+                })
                 local before = string.sub(crate.vers.text, pos, r.vers_col.s)
                 local after = string.sub(crate.vers.text, r.vers_col.e + 1, r.cond_col.e)
                 text = text .. before .. v:display() .. after
@@ -127,11 +127,11 @@ function M.smart_version_text(crate, version)
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == Cond.LT and not semver.matches_requirement(version, r) then
-            local v = SemVer.new {
+            local v = SemVer.new({
                 major = version.major,
                 minor = r.vers.minor and version.minor or nil,
                 patch = r.vers.patch and version.patch or nil,
-            }
+            })
 
             if v.patch then
                 v.patch = v.patch + 1
@@ -149,7 +149,7 @@ function M.smart_version_text(crate, version)
             if version.pre then
                 v = version
             else
-                v = SemVer.new { major = version.major }
+                v = SemVer.new({ major = version.major })
                 if r.vers.minor or version.minor and version.minor > 0 then
                     v.minor = version.minor
                 end
@@ -161,11 +161,11 @@ function M.smart_version_text(crate, version)
 
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
         elseif r.cond == Cond.GT and not semver.matches_requirement(version, r) then
-            local v = SemVer.new {
+            local v = SemVer.new({
                 major = r.vers.major and version.major or nil,
                 minor = r.vers.minor and version.minor or nil,
                 patch = r.vers.patch and version.patch or nil,
-            }
+            })
 
             if v.patch then
                 v.patch = v.patch - 1

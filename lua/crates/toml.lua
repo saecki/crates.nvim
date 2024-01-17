@@ -762,6 +762,8 @@ function M.parse_crates(buf)
             local section = M.parse_section(section_text, section_start - 1)
 
             if section then
+                ---end bound is assigned when the section ends
+                ---@diagnostic disable-next-line: param-type-mismatch
                 section.lines = Span.new(line_nr, nil)
                 dep_section = section
                 dep_section_crate = nil

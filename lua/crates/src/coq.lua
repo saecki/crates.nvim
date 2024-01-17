@@ -6,11 +6,10 @@ local M = {}
 
 local src = require("crates.src.common")
 
----comment
 ---@param map table<integer,any>
----@return integer
+---@return number
 local function new_uid(map)
-    ---@type integer
+    ---@type number
     local key
     repeat
         key = math.floor(math.random() * 10000)
@@ -31,6 +30,7 @@ end
 
 ---@param name string
 function M.setup(name)
+    ---@type table<any,CoqCompletionSource>
     COQsources = COQsources or {}
     COQsources[new_uid(COQsources)] = {
         name = name,

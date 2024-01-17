@@ -107,7 +107,9 @@ local function toggle_feature(ctx, line)
         local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
         text = toml.trim_comments(text)
 
-        local crate = toml.Crate.new(toml.parse_inline_crate(text, line_nr))
+        local raw_crate = toml.parse_inline_crate(text, line_nr)
+        assert(raw_crate, "edits were valid")
+        local crate = toml.Crate.new(raw_crate)
         ctx.crate.syntax = crate.syntax
         ctx.crate.vers = crate.vers
         ctx.crate.feat = crate.feat
@@ -199,7 +201,9 @@ local function jump_back_feature(ctx, line)
         })
     else
         local entry = ctx.history[ctx.hist_idx]
-        if not entry then return end
+        if not entry then
+            return
+        end
 
         M.open_feature_details(ctx, crate, version, entry.feature, {
             focus = true,
@@ -226,7 +230,9 @@ local function jump_forward_feature(ctx, line)
     ctx.hist_idx = ctx.hist_idx + 1
 
     local entry = ctx.history[ctx.hist_idx]
-    if not entry then return end
+    if not entry then
+        return
+    end
 
     M.open_feature_details(ctx, crate, version, entry.feature, {
         focus = true,

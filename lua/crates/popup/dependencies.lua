@@ -28,7 +28,9 @@ local goto_dep = async.wrap(function(ctx, line)
     local hist_entry = ctx.history[ctx.hist_idx]
 
     local selected_dependency = hist_entry.line_mapping[line]
-    if not selected_dependency then return end
+    if not selected_dependency then
+        return
+    end
 
     -- update current entry
     hist_entry.line = line
@@ -51,9 +53,10 @@ local goto_dep = async.wrap(function(ctx, line)
         crate, cancelled = api.await_crate(crate_name)
 
         popup.hide_loading_indicator(transaction)
-        if cancelled then return end
+        if not crate or cancelled then
+            return
+        end
     end
-    ---@cast crate -nil
 
     -- abort if the user has taken other actions
     if popup.transaction ~= transaction then
@@ -62,8 +65,7 @@ local goto_dep = async.wrap(function(ctx, line)
 
     local m, p, y = util.get_newest(crate.versions, selected_dependency.vers.reqs)
     local version = m or p or y
-    -- crates cannot be published if no dependencies match the requirements
-    ---@cast version -nil
+    assert(version, "crates cannot be published if no dependencies match the requirements")
 
     if not version.deps then
         popup.show_loading_indicator()
@@ -74,7 +76,9 @@ local goto_dep = async.wrap(function(ctx, line)
         local _, cancelled = api.await_deps(crate_name, version.num)
 
         popup.hide_loading_indicator(transaction)
-        if cancelled then return end
+        if cancelled then
+            return
+        end
     end
 
     -- abort if the user has taken other actions
@@ -87,7 +91,8 @@ local goto_dep = async.wrap(function(ctx, line)
         ctx.history[i] = nil
     end
 
-    -- TODO: missing line_mapping?
+    ---line_mapping is generated in `M.open_deps`
+    ---@diagnostic disable-next-line: missing-fields
     ctx.history[ctx.hist_idx] = {
         crate_name = crate_name,
         version = version,
@@ -115,7 +120,9 @@ local function jump_back_dep(ctx, line)
     ctx.hist_idx = ctx.hist_idx - 1
 
     local entry = ctx.history[ctx.hist_idx]
-    if not entry then return end
+    if not entry then
+        return
+    end
 
     M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
@@ -138,7 +145,9 @@ local function jump_forward_dep(ctx, line)
     ctx.hist_idx = ctx.hist_idx + 1
 
     local entry = ctx.history[ctx.hist_idx]
-    if not entry then return end
+    if not entry then
+        return
+    end
 
     M.open_deps(ctx, entry.crate_name, entry.version, {
         focus = true,
@@ -166,9 +175,7 @@ function M.open_deps(ctx, crate_name, version, opts)
     ---@type HighlightText[][]
     local deps_text_index = {}
 
-    -- TODO: clean up?
-    ---@class HlTextDepList
-    ---@field self HighlightText[]
+    ---@class HlTextDepList: HighlightText[]
     ---@field dep ApiDependency
 
     ---@type HlTextDepList[]
@@ -191,6 +198,7 @@ function M.open_deps(ctx, crate_name, version, opts)
         ---@type HighlightText
         local t = { text = text, hl = hl }
 
+        ---@type HlTextDepList
         local line = { t, dep = d }
         if d.kind == ApiDependencyKind.NORMAL then
             table.insert(normal_deps_text, line)
@@ -239,6 +247,7 @@ function M.open_deps(ctx, crate_name, version, opts)
         for _, t in ipairs(normal_deps_text) do
             table.insert(deps_text, t)
             line_mapping[line_idx] = t.dep
+            ---@type integer
             line_idx = line_idx + 1
         end
     end

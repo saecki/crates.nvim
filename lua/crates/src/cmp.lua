@@ -1,5 +1,8 @@
 local src = require("crates.src.common")
 
+---@class Cmp
+---@field register_source fun(name: string, src: CmpCompletionSource)
+
 ---@class CmpCompletionSource
 ---@field registered_source boolean|nil
 local M = {}
@@ -105,7 +108,8 @@ function M.setup()
         return
     end
 
-    local cmp = package.loaded["cmp"]
+    ---@type Cmp
+    local cmp = require("cmp")
     if not cmp then
         return
     end

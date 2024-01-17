@@ -19,7 +19,9 @@ local function select_version(ctx, line, alt)
     local index = popup.item_index(line)
     local crate = ctx.crate
     local version = ctx.versions[index]
-    if not version then return end
+    if not version then
+        return
+    end
 
     ---@type Span
     local line_span
@@ -69,7 +71,9 @@ end
 local function copy_version(versions, line)
     local index = popup.item_index(line)
     local version = versions[index]
-    if not version then return end
+    if not version then
+        return
+    end
 
     vim.fn.setreg(state.cfg.popup.copy_register, version.num)
 end

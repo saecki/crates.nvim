@@ -208,17 +208,15 @@ local M = {}
 ---@field actions boolean
 ---@field completion boolean
 
----@enum SchemaType
-local SchemaType = {
-    -- A record of grouped options
-    SECTION = "section",
-    -- The rest are lua types checked at runtime
-    TABLE = "table",
-    STRING = "string",
-    NUMBER = "number",
-    BOOLEAN = "boolean",
-    FUN = "function",
-}
+---@alias SchemaType
+-- A record of grouped options
+---| "section"
+-- The rest are lua types checked at runtime
+---| "table"
+---| "string"
+---| "number"
+---| "boolean"
+---| "function"
 
 ---@alias SchemaElement
 ---| SectionSchemaElement
@@ -231,12 +229,12 @@ local SchemaType = {
 ---@field name string
 ---@field type SchemaType|SchemaType[]
 ---@field description string
----@field fields table<string|integer,SchemaElement>
+---@field fields table<string,SchemaElement>|SchemaElement[]
 
 ---@class HiddenSectionSchemaElement
 ---@field name string
 ---@field type SchemaType|SchemaType[]
----@field fields table<string|integer,SchemaElement>
+---@field fields table<string,SchemaElement>|SchemaElement[]
 ---@field hidden boolean
 
 ---@class FieldSchemaElement
@@ -261,16 +259,16 @@ local SchemaType = {
 ---@field new_field string[]|nil
 ---@field hard boolean|nil
 
----@param schema table<string|integer,SchemaElement>
+---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param elem SchemaElement
 local function entry(schema, elem)
     table.insert(schema, elem)
     schema[elem.name] = elem
 end
 
----@param schema table<string|integer,SchemaElement>
+---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param elem SectionSchemaElement|HiddenSectionSchemaElement
----@return table<string|integer,SchemaElement>
+---@return table<string,SchemaElement>|SchemaElement[]
 local function section_entry(schema, elem)
     table.insert(schema, elem)
     schema[elem.name] = elem
@@ -438,7 +436,7 @@ entry(M.schema, {
     },
 })
 
-entry(M.schema, {
+local schema_text = section_entry(M.schema, {
     name = "text",
     type = "section",
     description = [[
@@ -446,8 +444,6 @@ entry(M.schema, {
     ]],
     fields = {},
 })
----@type table<string|integer,SchemaElement>
-local schema_text = M.schema.text.fields
 entry(schema_text, {
     name = "loading",
     type = "string",
@@ -506,7 +502,7 @@ entry(schema_text, {
 })
 
 
-entry(M.schema, {
+local schema_hi = section_entry(M.schema, {
     name = "highlight",
     type = "section",
     description = [[
@@ -514,8 +510,6 @@ entry(M.schema, {
     ]],
     fields = {},
 })
----@type table<string|integer,SchemaElement>
-local schema_hi = M.schema.highlight.fields
 entry(schema_hi, {
     name = "loading",
     type = "string",
@@ -790,7 +784,7 @@ entry(schema_popup, {
 })
 
 
-entry(schema_popup, {
+local schema_popup_text = section_entry(schema_popup, {
     name = "text",
     type = "section",
     description = [[
@@ -798,7 +792,6 @@ entry(schema_popup, {
     ]],
     fields = {},
 })
-local schema_popup_text = schema_popup.text.fields
 entry(schema_popup_text, {
     name = "title",
     type = "string",
@@ -1086,7 +1079,7 @@ entry(schema_popup_text, {
 })
 
 
-entry(schema_popup, {
+local schema_popup_hi = section_entry(schema_popup, {
     name = "highlight",
     type = "section",
     description = [[
@@ -1094,7 +1087,6 @@ entry(schema_popup, {
     ]],
     fields = {},
 })
-local schema_popup_hi = schema_popup.highlight.fields
 entry(schema_popup_hi, {
     name = "title",
     type = "string",
@@ -1373,7 +1365,7 @@ entry(schema_popup_hi, {
 })
 
 
-entry(schema_popup, {
+local schema_popup_keys = section_entry(schema_popup, {
     name = "keys",
     type = "section",
     description = [[
@@ -1381,7 +1373,6 @@ entry(schema_popup, {
     ]],
     fields = {},
 })
-local schema_popup_keys = schema_popup.keys.fields
 entry(schema_popup_keys, {
     name = "hide",
     type = "table",
@@ -1509,7 +1500,7 @@ entry(schema_src, {
         Insert a closing quote on completion if there is none.
     ]],
 })
-entry(schema_src, {
+local schema_src_text = section_entry(schema_src, {
     name = "text",
     type = "section",
     description = [[
@@ -1517,7 +1508,6 @@ entry(schema_src, {
     ]],
     fields = {},
 })
-local schema_src_text = schema_src.text.fields
 entry(schema_src_text, {
     name = "prerelease",
     type = "string",
@@ -1535,7 +1525,7 @@ entry(schema_src_text, {
     ]],
 })
 
-entry(schema_src, {
+local schema_src_cmp = section_entry(schema_src, {
     name = "cmp",
     type = "section",
     description = [[
@@ -1543,7 +1533,6 @@ entry(schema_src, {
     ]],
     fields = {},
 })
-local schema_src_cmp = schema_src.cmp.fields
 entry(schema_src_cmp, {
     name = "enabled",
     type = "boolean",
@@ -1567,7 +1556,7 @@ entry(schema_src_cmp, {
     ]],
 })
 
-entry(schema_src_cmp, {
+local schema_src_cmp_kind_text = section_entry(schema_src_cmp, {
     name = "kind_text",
     type = "section",
     description = [[
@@ -1575,7 +1564,6 @@ entry(schema_src_cmp, {
     ]],
     fields = {},
 })
-local schema_src_cmp_kind_text = schema_src_cmp.kind_text.fields
 entry(schema_src_cmp_kind_text, {
     name = "version",
     type = "string",
@@ -1593,7 +1581,7 @@ entry(schema_src_cmp_kind_text, {
     ]],
 })
 
-entry(schema_src_cmp, {
+local schema_src_cmp_kind_hi = section_entry(schema_src_cmp, {
     name = "kind_highlight",
     type = "section",
     description = [[
@@ -1601,7 +1589,6 @@ entry(schema_src_cmp, {
     ]],
     fields = {},
 })
-local schema_src_cmp_kind_hi = schema_src_cmp.kind_highlight.fields
 entry(schema_src_cmp_kind_hi, {
     name = "version",
     type = "string",
@@ -1619,7 +1606,7 @@ entry(schema_src_cmp_kind_hi, {
     ]],
 })
 
-entry(schema_src, {
+local schema_src_coq = section_entry(schema_src, {
     name = "coq",
     type = "section",
     description = [[
@@ -1627,7 +1614,6 @@ entry(schema_src, {
     ]],
     fields = {},
 })
-local schema_src_coq = schema_src.coq.fields
 entry(schema_src_coq, {
     name = "enabled",
     type = "boolean",
@@ -1790,13 +1776,42 @@ local function handle_deprecated(path, schema, root_config, user_config)
     end
 end
 
+---@param schema_type SchemaType|SchemaType[]
+---@return SchemaType[]
+local function coerce_to_type_list(schema_type)
+    if type(schema_type) == "string" then
+        ---@cast schema_type SchemaType
+        return { schema_type }
+    else
+        ---@cast schema_type SchemaType[]
+        return schema_type
+    end
+end
+
+---@param value_type type
+---@param schema_type SchemaType|SchemaType[]
+---@return boolean
+local function matches_type(value_type, schema_type)
+    if type(schema_type) == "string" then
+        ---@cast schema_type SchemaType
+        return value_type == schema_type
+    else
+        ---@cast schema_type SchemaType[]
+        return vim.tbl_contains(schema_type, value_type)
+    end
+end
+
 ---@param path string[]
----@param schema table<string,SchemaElement>
+---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param user_config table<string,any>
 local function validate_schema(path, schema, user_config)
     for k, v in pairs(user_config) do
         local p = join_path(path, k)
-        local elem = schema[k]
+        ---@type SchemaElement|nil
+        local elem
+        if type(k) == "string" then
+            elem = schema[k]
+        end
 
         if elem then
             local value_type = type(v)
@@ -1826,7 +1841,6 @@ local function validate_schema(path, schema, user_config)
                 end
             elseif elem.type == "section" then
                 if value_type == "table" then
-                    ---@cast elem SectionSchemaElement|HiddenSectionSchemaElement
                     validate_schema(p, elem.fields, v)
                 else
                     warn(
@@ -1836,20 +1850,11 @@ local function validate_schema(path, schema, user_config)
                     )
                 end
             else
-                ---@type SchemaType[]
-                local elem_types
-                if type(elem.type) == "string" then
-                    elem_types = { elem.type }
-                else
-                    ---@type SchemaType[]
-                    elem_types = elem.type
-                end
-
-                if not vim.tbl_contains(elem_types, value_type) then
+                if not matches_type(value_type, elem.type) then
                     warn(
                         "Config field '%s' was expected to be of type '%s' but was '%s', using default value.",
                         table.concat(p, "."),
-                        table.concat(elem_types, " or "),
+                        table.concat(coerce_to_type_list(elem.type), " | "),
                         value_type
                     )
                 end
@@ -1863,38 +1868,29 @@ local function validate_schema(path, schema, user_config)
     end
 end
 
----@param schema table<string,SchemaElement>
+---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param user_config table<string,any>
 ---@return table
 local function build_config(schema, user_config)
     ---@type table<string,any>
     local config = {}
 
-    for k, elem in pairs(schema) do
-        local v = user_config[k]
-        local value_type = type(v)
+    for _, elem in ipairs(schema) do
+        local key = elem.name
+        local user_value = user_config[key]
+        local value_type = type(user_value)
 
         if elem.type == "section" then
-            ---@cast elem SectionSchemaElement|HiddenSectionSchemaElement
             if value_type == "table" then
-                config[k] = build_config(elem.fields, v)
+                config[key] = build_config(elem.fields, user_value)
             else
-                config[k] = build_config(elem.fields, {})
+                config[key] = build_config(elem.fields, {})
             end
         else
-            ---@type SchemaType[]
-            local elem_types
-            if type(elem.type) == "string" then
-                elem_types = { elem.type }
+            if matches_type(value_type, elem.type) then
+                config[key] = user_value
             else
-                ---@type SchemaType[]
-                elem_types = elem.type
-            end
-
-            if vim.tbl_contains(elem_types, value_type) then
-                config[k] = v
-            else
-                config[k] = elem.default
+                config[key] = elem.default
             end
         end
     end

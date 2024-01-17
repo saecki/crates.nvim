@@ -17,7 +17,9 @@ local M = {
 ---@type fun(crate_name: string, versions: ApiVersion[], version: ApiVersion)
 M.reload_deps = async.wrap(function(crate_name, versions, version)
     local deps, cancelled = api.fetch_deps(crate_name, version.num)
-    if cancelled then return end
+    if cancelled then
+        return
+    end
 
     if deps then
         version.deps = deps
@@ -53,7 +55,9 @@ end)
 M.reload_crate = async.wrap(function(crate_name)
     local crate, cancelled = api.fetch_crate(crate_name)
     local versions = crate and crate.versions
-    if cancelled then return end
+    if cancelled then
+        return
+    end
 
     ---@cast versions -nil
     if crate and next(versions) then

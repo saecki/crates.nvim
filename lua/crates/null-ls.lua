@@ -3,6 +3,9 @@ local actions = require("crates.actions")
 
 local M = {}
 
+---@class NullLs
+---@field register fun(src: NullLsSource)
+
 ---@class NullLsSource
 ---@field name string
 ---@field meta NullLsMeta
@@ -36,10 +39,8 @@ local M = {}
 ---@field CODE_ACTION NullLsMethodKind
 
 ---@enum NullLsMethodKind
-local NullLsMethodKind = {
-    CODE_ACTION = "textDocument/codeAction",
-}
 
+---@type boolean, NullLs
 local ok, null_ls = pcall(require, "null-ls")
 if not ok then
     util.notify(vim.log.levels.WARN, "null-ls.nvim was not found")
@@ -48,8 +49,9 @@ if not ok then
     }
 end
 
-local null_ls_methods = require("null-ls.methods")
 ---@type NullLsMethods
+local null_ls_methods = require("null-ls.methods")
+---@type NullLsMethodKind
 local CODE_ACTION = null_ls_methods.internal.CODE_ACTION
 
 ---@param name string

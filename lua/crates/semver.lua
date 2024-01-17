@@ -34,39 +34,39 @@ function M.parse_version(str)
 
     major, minor, patch, meta = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)%+([^%s]+)$")
     if major then
-        return SemVer.new {
+        return SemVer.new({
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
             meta = meta,
-        }
+        })
     end
 
     major, minor, patch = str:match("^([0-9]+)%.([0-9]+)%.([0-9]+)$")
     if major then
-        return SemVer.new {
+        return SemVer.new({
             major = tonumber(major),
             minor = tonumber(minor),
             patch = tonumber(patch),
-        }
+        })
     end
 
     major, minor = str:match("^([0-9]+)%.([0-9]+)[%.]?$")
     if major then
-        return SemVer.new {
+        return SemVer.new({
             major = tonumber(major),
             minor = tonumber(minor),
-        }
+        })
     end
 
     major = str:match("^([0-9]+)[%.]?$")
     if major then
-        return SemVer.new {
+        return SemVer.new({
             major = tonumber(major),
-        }
+        })
     end
 
-    return SemVer.new {}
+    return SemVer.new({})
 end
 
 ---@param str string
@@ -147,7 +147,7 @@ function M.parse_requirement(str)
         return {
             cond = Cond.WL,
             cond_col = Span.new(0, 1),
-            vers = SemVer.new {},
+            vers = SemVer.new({}),
             vers_col = Span.new(0, 0),
         }
     end
@@ -188,6 +188,7 @@ end
 function M.parse_requirements(str)
     ---@type Requirement[]
     local requirements = {}
+    ---@type integer, string
     for s, r in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1

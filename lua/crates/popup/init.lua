@@ -37,8 +37,7 @@ local function line_crate_info()
 
     local m, p, y = util.get_newest(api_crate.versions, crate:vers_reqs())
     local newest = m or p or y
-    -- crates cannot be published if no dependencies match the requirements
-    ---@cast newest -nil
+    assert(newest, "crates cannot be published if no dependencies match the requirements")
 
     ---@type LineCrateInfo
     local info = {
@@ -118,7 +117,9 @@ function M.show()
     end
 
     local info = line_crate_info()
-    if not info then return end
+    if not info then
+        return
+    end
 
     if info.pref == popup.Type.CRATE then
         local crate = state.api_cache[info.crate:package()]
@@ -155,7 +156,9 @@ function M.show_crate()
     end
 
     local info = line_crate_info()
-    if not info then return end
+    if not info then
+        return
+    end
 
     local crate = state.api_cache[info.crate:package()]
     if crate then
@@ -174,7 +177,9 @@ function M.show_versions()
     end
 
     local info = line_crate_info()
-    if not info then return end
+    if not info then
+        return
+    end
 
     popup_vers.open(info.crate, info.versions, {})
 end
@@ -190,7 +195,9 @@ function M.show_features()
     end
 
     local info = line_crate_info()
-    if not info then return end
+    if not info then
+        return
+    end
 
     if info.pref == popup.Type.FEATURES then
         popup_feat.open(info.crate, info.newest, {})
@@ -212,7 +219,9 @@ function M.show_dependencies()
     end
 
     local info = line_crate_info()
-    if not info then return end
+    if not info then
+        return
+    end
 
     popup_deps.open(info.crate:package(), info.newest, {})
 end
