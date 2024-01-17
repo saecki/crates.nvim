@@ -76,11 +76,11 @@ function M.source(name)
             fn = function(params)
                 ---@type NullLsAction[]
                 local items = {}
-                for key,action in pairs(actions.get_actions()) do
+                for _, action in ipairs(actions.get_actions()) do
                     table.insert(items, {
-                        title = util.format_title(key),
+                        title = util.format_title(action.name),
                         action = function()
-                            vim.api.nvim_buf_call(params.bufnr, action)
+                            vim.api.nvim_buf_call(params.bufnr, action.action)
                         end,
                     })
                 end

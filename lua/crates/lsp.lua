@@ -107,15 +107,15 @@ function M.start_server()
             ---@param callback fun(err: nil, actions: CodeAction[])
             ["textDocument/codeAction"] = function(_method, _params, callback)
                 local code_actions = {}
-                for key, action in pairs(actions.get_actions()) do
-                    local title = util.format_title(key)
+                for _, action in ipairs(actions.get_actions()) do
+                    local title = util.format_title(action.name)
                     table.insert(code_actions, {
                         title = title,
                         kind = "refactor.rewrite",
                         command = {
                             title = title,
                             command = CRATES_COMMAND,
-                            arguments = { action },
+                            arguments = { action.action },
                         },
                     })
                 end
