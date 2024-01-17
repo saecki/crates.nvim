@@ -2,6 +2,8 @@ local api = require("crates.api")
 local time = require("crates.time")
 local DateTime = time.DateTime
 local types = require("crates.types")
+local Cond = types.Cond
+local ApiDependencyKind = types.ApiDependencyKind
 local ApiFeatures = types.ApiFeatures
 local SemVer = types.SemVer
 local Span = types.Span
@@ -127,11 +129,11 @@ describe("dependencies", function()
             {
                 name = "average",
                 opt = false,
-                kind = "dev",
+                kind = ApiDependencyKind.DEV,
                 vers = {
                     reqs = {
                         {
-                            cond = "cr",
+                            cond = Cond.CR,
                             cond_col = Span.new(0, 1),
                             vers = SemVer.new({ major = 0, minor = 9, patch = 2 }),
                             vers_col = Span.new(1, 6),
@@ -143,11 +145,11 @@ describe("dependencies", function()
             {
                 name = "rand_core",
                 opt = false,
-                kind = "normal",
+                kind = ApiDependencyKind.NORMAL,
                 vers = {
                     reqs = {
                         {
-                            cond = "cr",
+                            cond = Cond.CR,
                             cond_col = Span.new(0, 1),
                             vers = SemVer.new({ major = 0, minor = 3 }),
                             vers_col = Span.new(1, 4),
@@ -159,11 +161,11 @@ describe("dependencies", function()
             {
                 name = "rustc_version",
                 opt = false,
-                kind = "build",
+                kind = ApiDependencyKind.BUILD,
                 vers = {
                     reqs = {
                         {
-                            cond = "cr",
+                            cond = Cond.CR,
                             cond_col = Span.new(0, 1),
                             vers = SemVer.new({ major = 0, minor = 2 }),
                             vers_col = Span.new(1, 4),
@@ -175,11 +177,11 @@ describe("dependencies", function()
             {
                 name = "cloudabi",
                 opt = true,
-                kind = "normal",
+                kind = ApiDependencyKind.NORMAL,
                 vers = {
                     reqs = {
                         {
-                            cond = "cr",
+                            cond = Cond.CR,
                             cond_col = Span.new(0, 1),
                             vers = SemVer.new({ major = 0, minor = 0, patch = 3 }),
                             vers_col = Span.new(1, 6),

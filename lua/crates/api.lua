@@ -45,6 +45,12 @@ local ENDPOINT = "https://crates.io/api/v1"
 ---@type string
 local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
 
+local DEPENDENCY_KIND_MAP = {
+    ["normal"] = ApiDependencyKind.NORMAL,
+    ["build"] = ApiDependencyKind.BUILD,
+    ["dev"] = ApiDependencyKind.DEV,
+}
+
 ---@class vim.json.DecodeOpts
 ---@class DecodeOpts
 ---@field luanil Luanil
@@ -290,7 +296,7 @@ function M.parse_deps(json_str)
             local dependency = {
                 name = d.crate_id,
                 opt = d.optional or false,
-                kind = d.kind or ApiDependencyKind.NORMAL,
+                kind = DEPENDENCY_KIND_MAP[d.kind],
                 vers = {
                     text = d.req,
                     reqs = semver.parse_requirements(d.req),
