@@ -2,9 +2,6 @@ local semver = require("crates.semver")
 local state = require("crates.state")
 local time = require("crates.time")
 local DateTime = time.DateTime
--- TODO: fix type
--- TODO: consider removing the plenary job dependency
-local Job = require("plenary.job")
 local types = require("crates.types")
 local ApiFeatures = types.ApiFeatures
 local ApiDependencyKind = types.ApiDependencyKind
@@ -19,6 +16,10 @@ local M = {
     ---@type integer
     num_requests = 0,
 }
+
+---@class Job
+---@field handle uv.uv_process_t|nil
+---@field was_cancelled boolean|nil
 
 ---@class CrateJob
 ---@field job Job
@@ -41,6 +42,7 @@ local JobKind = {
     DEPS = 2,
 }
 
+local SIGTERM = 15
 local ENDPOINT = "https://crates.io/api/v1"
 ---@type string
 local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
@@ -79,14 +81,75 @@ local function parse_json(json_str)
 end
 
 ---@param url string
----@param on_exit fun(job: Job, code: integer, signal: integer)
+---@param on_exit fun(data: string|nil, cancelled: boolean)
 ---@return Job
-local function request_job(url, on_exit)
-    return Job:new {
-        command = "curl",
+local function start_job(url, on_exit)
+    ---@type Job
+    local job = {}
+    ---@type uv.uv_pipe_t
+    local stdout = vim.loop.new_pipe()
+
+    ---@type string|nil
+    local stdout_str = nil
+
+    local opts = {
         args = { unpack(state.cfg.curl_args), "-A", USERAGENT, url },
-        on_exit = vim.schedule_wrap(on_exit),
+        stdio = {nil, stdout, nil},
     }
+    local handle, _pid
+    ---@param code integer
+    ---@param _signal integer
+    ---@type uv.uv_process_t, integer
+    handle, _pid = vim.loop.spawn("curl", opts, function(code, _signal)
+        handle:close()
+
+        ---@type uv.uv_check_t
+        local check = vim.loop.new_check()
+        check:start(function()
+            if not stdout:is_closing() then
+                return
+            end
+            check:stop()
+
+            vim.schedule(function()
+                on_exit(stdout_str, job.was_cancelled)
+            end)
+        end)
+    end)
+
+    if not handle then
+        vim.schedule(function()
+            on_exit(nil, false)
+        end)
+        return job
+    end
+
+    local accum = {}
+    stdout:read_start(function(err, data)
+        if err then
+            stdout:read_stop()
+            stdout:close()
+            return
+        end
+
+        if data ~= nil then
+            table.insert(accum, data)
+        else
+            stdout_str = table.concat(accum)
+            stdout:read_stop()
+            stdout:close()
+        end
+    end)
+
+    job.handle = handle
+    return job
+end
+
+---@param job Job
+local function cancel_job(job)
+    if job.handle then
+        job.handle:kill(SIGTERM)
+    end
 end
 
 ---@param name string
@@ -234,18 +297,9 @@ local function fetch_crate(name, callbacks)
 
     local url = string.format("%s/crates/%s", ENDPOINT, name)
 
-    ---@param j Job
-    ---@param code integer
-    ---@param signal integer
-    local function on_exit(j, code, signal)
-        local cancelled = signal ~= 0
-
-        ---@type string|nil
-        local json_str
-        if code == 0 then
-            json_str = table.concat(j:result(), "\n")
-        end
-
+    ---@param json_str string|nil
+    ---@param cancelled boolean
+    local function on_exit(json_str, cancelled)
         ---@type ApiCrate|nil
         local crate
         if not cancelled and json_str then
@@ -261,13 +315,12 @@ local function fetch_crate(name, callbacks)
         M.run_queued_jobs()
     end
 
-    local job = request_job(url, on_exit)
+    local job = start_job(url, on_exit)
     M.num_requests = M.num_requests + 1
     M.crate_jobs[name] = {
         job = job,
         callbacks = callbacks,
     }
-    job:start()
 end
 
 ---@param name string
@@ -326,18 +379,9 @@ local function fetch_deps(name, version, callbacks)
 
     local url = string.format("%s/crates/%s/%s/dependencies", ENDPOINT, name, version)
 
-    ---@param j Job
-    ---@param code integer
-    ---@param signal integer
-    local function on_exit(j, code, signal)
-        local cancelled = signal ~= 0
-
-        ---@type string|nil
-        local json_str
-        if code == 0 then
-            json_str = table.concat(j:result(), "\n")
-        end
-
+    ---@param json_str string
+    ---@param cancelled boolean
+    local function on_exit(json_str, cancelled)
         ---@type ApiDependency[]|nil
         local deps
         if not cancelled and json_str then
@@ -353,13 +397,12 @@ local function fetch_deps(name, version, callbacks)
         M.run_queued_jobs()
     end
 
-    local job = request_job(url, on_exit)
+    local job = start_job(url, on_exit)
     M.num_requests = M.num_requests + 1
     M.deps_jobs[jobname] = {
         job = job,
         callbacks = callbacks,
     }
-    job:start()
 end
 
 ---@param name string
@@ -438,10 +481,10 @@ end
 
 function M.cancel_jobs()
     for _, r in pairs(M.crate_jobs) do
-        r.job:shutdown(1, 1)
+        cancel_job(r.job)
     end
     for _, r in pairs(M.deps_jobs) do
-        r.job:shutdown(1, 1)
+        cancel_job(r.job)
     end
     M.crate_jobs = {}
     M.deps_jobs = {}
