@@ -15,7 +15,6 @@ To use a stable release.
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
-Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim', { 'tag': 'stable' }
 
 lua require('crates').setup()
@@ -26,7 +25,6 @@ lua require('crates').setup()
 {
     'saecki/crates.nvim',
     tag = 'stable',
-    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
@@ -38,7 +36,6 @@ lua require('crates').setup()
 
 [__vim-plug__](https://github.com/junegunn/vim-plug)
 ```
-Plug 'nvim-lua/plenary.nvim'
 Plug 'saecki/crates.nvim'
 
 lua require('crates').setup()
@@ -48,7 +45,6 @@ lua require('crates').setup()
 ```lua
 {
     'saecki/crates.nvim',
-    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
@@ -64,7 +60,6 @@ lua require('crates').setup()
 {
     'saecki/crates.nvim',
     event = { "BufRead Cargo.toml" },
-    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         require('crates').setup()
     end,
