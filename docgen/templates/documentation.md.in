@@ -1,5 +1,7 @@
 Documentation for `crates.nvim` `<VERSION>`
 
+This shouldn't be uploaded to the wiki
+
 # Features
 - Complete crate versions and features
 - In-process language server
