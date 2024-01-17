@@ -69,12 +69,8 @@ local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 ---@param json_str string
 ---@return table|nil
 local function parse_json(json_str)
-    ---@type boolean, any
-    local success, json = pcall(vim.json.decode, json_str, JSON_DECODE_OPTS)
-    if not success then
-        return
-    end
-
+    ---@type any
+    local json = vim.json.decode(json_str, JSON_DECODE_OPTS)
     if json and type(json) == "table" then
         return json
     end
@@ -82,7 +78,7 @@ end
 
 ---@param url string
 ---@param on_exit fun(data: string|nil, cancelled: boolean)
----@return Job
+---@return Job|nil
 local function start_job(url, on_exit)
     ---@type Job
     local job = {}
@@ -103,6 +99,8 @@ local function start_job(url, on_exit)
     handle, _pid = vim.loop.spawn("curl", opts, function(code, _signal)
         handle:close()
 
+        local success = code == 0
+
         ---@type uv.uv_check_t
         local check = vim.loop.new_check()
         check:start(function()
@@ -112,16 +110,14 @@ local function start_job(url, on_exit)
             check:stop()
 
             vim.schedule(function()
-                on_exit(stdout_str, job.was_cancelled)
+                local data = success and stdout_str or nil
+                on_exit(data, job.was_cancelled)
             end)
         end)
     end)
 
     if not handle then
-        vim.schedule(function()
-            on_exit(nil, false)
-        end)
-        return job
+        return nil
     end
 
     local accum = {}
@@ -202,10 +198,10 @@ function M.parse_crate(json_str)
     ---@type ApiCrate
     local crate = {
         name = c.id,
-        description = c.description,
-        created = DateTime.parse_rfc_3339(c.created_at),
-        updated = DateTime.parse_rfc_3339(c.updated_at),
-        downloads = c.downloads,
+        description = assert(c.description),
+        created = assert(DateTime.parse_rfc_3339(c.created_at)),
+        updated = assert(DateTime.parse_rfc_3339(c.updated_at)),
+        downloads = assert(c.downloads),
         homepage = c.homepage,
         documentation = c.documentation,
         repository = c.repository,
@@ -214,7 +210,9 @@ function M.parse_crate(json_str)
         versions = {},
     }
 
+    ---@diagnostic disable-next-line: no-unknown
     for _, ct_id in ipairs(c.categories) do
+        ---@diagnostic disable-next-line: no-unknown
         for _, ct in ipairs(json.categories) do
             if ct.id == ct_id then
                 table.insert(crate.categories, ct.category)
@@ -222,7 +220,9 @@ function M.parse_crate(json_str)
         end
     end
 
+    ---@diagnostic disable-next-line: no-unknown
     for _, kw_id in ipairs(c.keywords) do
+        ---@diagnostic disable-next-line: no-unknown
         for _, kw in ipairs(json.keywords) do
             if kw.id == kw_id then
                 table.insert(crate.keywords, kw.keyword)
@@ -230,6 +230,7 @@ function M.parse_crate(json_str)
         end
     end
 
+    ---@diagnostic disable-next-line: no-unknown
     for _, v in ipairs(json.versions) do
         if v.num then
             ---@type ApiVersion
@@ -238,9 +239,10 @@ function M.parse_crate(json_str)
                 features = ApiFeatures.new({}),
                 yanked = v.yanked,
                 parsed = semver.parse_version(v.num),
-                created = DateTime.parse_rfc_3339(v.created_at)
+                created = assert(DateTime.parse_rfc_3339(v.created_at)),
             }
 
+            ---@diagnostic disable-next-line: no-unknown
             for n, m in pairs(v.features) do
                 table.sort(m)
                 version.features:insert({
@@ -303,7 +305,10 @@ local function fetch_crate(name, callbacks)
         ---@type ApiCrate|nil
         local crate
         if not cancelled and json_str then
-            crate = M.parse_crate(json_str)
+            local ok, c = pcall(M.parse_crate, json_str)
+            if ok then
+                crate = c
+            end
         end
         for _, c in ipairs(callbacks) do
             c(crate, cancelled)
@@ -316,11 +321,17 @@ local function fetch_crate(name, callbacks)
     end
 
     local job = start_job(url, on_exit)
-    M.num_requests = M.num_requests + 1
-    M.crate_jobs[name] = {
-        job = job,
-        callbacks = callbacks,
-    }
+    if job then
+        M.num_requests = M.num_requests + 1
+        M.crate_jobs[name] = {
+            job = job,
+            callbacks = callbacks,
+        }
+    else
+        for _, c in ipairs(callbacks) do
+            c(nil, false)
+        end
+    end
 end
 
 ---@param name string
@@ -342,6 +353,7 @@ function M.parse_deps(json_str)
 
     ---@type ApiDependency[]
     local dependencies = {}
+    ---@diagnostic disable-next-line: no-unknown
     for _, d in ipairs(json.dependencies) do
         if d.crate_id then
             ---@type ApiDependency
@@ -385,7 +397,10 @@ local function fetch_deps(name, version, callbacks)
         ---@type ApiDependency[]|nil
         local deps
         if not cancelled and json_str then
-            deps = M.parse_deps(json_str)
+            local ok, d = pcall(M.parse_deps, json_str)
+            if ok then
+                deps = d
+            end
         end
         for _, c in ipairs(callbacks) do
             c(deps, cancelled)
@@ -398,11 +413,17 @@ local function fetch_deps(name, version, callbacks)
     end
 
     local job = start_job(url, on_exit)
-    M.num_requests = M.num_requests + 1
-    M.deps_jobs[jobname] = {
-        job = job,
-        callbacks = callbacks,
-    }
+    if job then
+        M.num_requests = M.num_requests + 1
+        M.deps_jobs[jobname] = {
+            job = job,
+            callbacks = callbacks,
+        }
+    else
+        for _, c in ipairs(callbacks) do
+            c(nil, false)
+        end
+    end
 end
 
 ---@param name string
