@@ -188,7 +188,7 @@ end
 function M.parse_requirements(str)
     ---@type Requirement[]
     local requirements = {}
-    for s, r  in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
+    for s, r in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1
         requirement.vers_col.e = requirement.vers_col.e + s - 1
@@ -347,7 +347,7 @@ end
 ---@param requirements Requirement[]
 ---@return boolean
 function M.matches_requirements(version, requirements)
-    for _,r in ipairs(requirements) do
+    for _, r in ipairs(requirements) do
         if not M.matches_requirement(version, r) then
             return false
         end
@@ -359,7 +359,7 @@ end
 ---@param reqs Requirement[]
 ---@return boolean
 function M.allows_pre(reqs)
-    for _,r in ipairs(reqs) do
+    for _, r in ipairs(reqs) do
         if r.vers.pre then
             return true
         end

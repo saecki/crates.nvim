@@ -118,12 +118,12 @@ local function toggle_feature(ctx, line)
     local features_text = {}
     local features_info = util.features_info(ctx.crate, features)
     if entry.feature then
-        for _,m in ipairs(entry.feature.members) do
+        for _, m in ipairs(entry.feature.members) do
             local hi_text = feature_text(features_info, m)
             table.insert(features_text, hi_text)
         end
     else
-        for _,f in ipairs(features.list) do
+        for _, f in ipairs(features.list) do
             local hi_text = feature_text(features_info, f.name)
             table.insert(features_text, hi_text)
         end
@@ -164,7 +164,7 @@ local function goto_feature(ctx, line)
     current.line = line
 
     ctx.hist_idx = ctx.hist_idx + 1
-    for i=ctx.hist_idx, #ctx.history, 1 do
+    for i = ctx.hist_idx, #ctx.history, 1 do
         ctx.history[i] = nil
     end
 
@@ -241,7 +241,7 @@ local function config_feat_win(ctx)
     ---@param _win integer
     ---@param buf integer
     return function(_win, buf)
-        for _,k in ipairs(state.cfg.popup.keys.toggle_feature) do
+        for _, k in ipairs(state.cfg.popup.keys.toggle_feature) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -253,7 +253,7 @@ local function config_feat_win(ctx)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.goto_item) do
+        for _, k in ipairs(state.cfg.popup.keys.goto_item) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -265,7 +265,7 @@ local function config_feat_win(ctx)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.jump_forward) do
+        for _, k in ipairs(state.cfg.popup.keys.jump_forward) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -277,7 +277,7 @@ local function config_feat_win(ctx)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.jump_back) do
+        for _, k in ipairs(state.cfg.popup.keys.jump_back) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -299,17 +299,17 @@ function M.open_features(ctx, crate, version, opts)
     popup.type = popup.Type.FEATURES
 
     local features = version.features
-    local title = string.format(state.cfg.popup.text.title, crate:package().." "..version.num)
+    local title = string.format(state.cfg.popup.text.title, crate:package() .. " " .. version.num)
     local feat_width = 0
     ---@type HighlightText[][]
     local features_text = {}
 
     local features_info = util.features_info(crate, features)
-    for _,f in ipairs(features.list) do
+    for _, f in ipairs(features.list) do
         local hl_text = feature_text(features_info, f.name)
         table.insert(features_text, hl_text)
         local w = 0
-        for _,t in ipairs(hl_text) do
+        for _, t in ipairs(hl_text) do
             ---@type integer
             w = w + vim.fn.strdisplaywidth(t.text)
         end
@@ -336,16 +336,16 @@ function M.open_feature_details(ctx, crate, version, feature, opts)
 
     local features = version.features
     local members = feature.members
-    local title = string.format(state.cfg.popup.text.title, crate:package().." "..version.num.." "..feature.name)
+    local title = string.format(state.cfg.popup.text.title, crate:package() .. " " .. version.num .. " " .. feature.name)
     local feat_width = 0
     local features_text = {}
 
     local features_info = util.features_info(crate, features)
-    for _,m in ipairs(members) do
+    for _, m in ipairs(members) do
         local hl_text = feature_text(features_info, m)
         table.insert(features_text, hl_text)
         local w = 0
-        for _,t in ipairs(hl_text) do
+        for _, t in ipairs(hl_text) do
             ---@type integer
             w = w + vim.fn.strdisplaywidth(t.text)
         end
@@ -389,7 +389,7 @@ function M.open_details(crate, version, feature, opts)
         crate = crate,
         version = version,
         history = {
-            { feature = nil, line = 2 },
+            { feature = nil,     line = 2 },
             { feature = feature, line = opts.line or 3 },
         },
         hist_idx = 2,

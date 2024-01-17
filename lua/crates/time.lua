@@ -16,8 +16,8 @@ end
 function DateTime.parse_rfc_3339(str)
     -- lua regex suports no {n} occurences
     local pat = "^([0-9][0-9][0-9][0-9])%-([0-9][0-9])%-([0-9][0-9])" -- date
-        .. "T([0-9][0-9]):([0-9][0-9]):([0-9][0-9])%.[0-9]+" -- time
-        .. "([%+%-])([0-9][0-9]):([0-9][0-9])$" -- offset
+        .. "T([0-9][0-9]):([0-9][0-9]):([0-9][0-9])%.[0-9]+"          -- time
+        .. "([%+%-])([0-9][0-9]):([0-9][0-9])$"                       -- offset
 
     local year, month, day, hour, minute, second, offset, offset_hour, offset_minute = str:match(pat)
     if year then

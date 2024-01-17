@@ -18,7 +18,7 @@ function M.upgrade_crate(alt)
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
-    local info  = util.get_buf_info(buf)
+    local info = util.get_buf_info(buf)
     if next(crates) and info then
         edit.upgrade_crates(buf, crates, info, alt)
     end
@@ -32,7 +32,7 @@ function M.upgrade_crates(alt)
         vim.api.nvim_buf_get_mark(0, ">")[1]
     )
     local crates = util.get_line_crates(buf, lines)
-    local info  = util.get_buf_info(buf)
+    local info = util.get_buf_info(buf)
     if next(crates) and info then
         edit.upgrade_crates(buf, crates, info, alt)
     end
@@ -102,7 +102,7 @@ function M.open_homepage()
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if crate then
         local crate_info = state.api_cache[crate:package()]
         if crate_info and crate_info.homepage then
@@ -117,7 +117,7 @@ function M.open_repository()
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if crate then
         local crate_info = state.api_cache[crate:package()]
         if crate_info and crate_info.repository then
@@ -132,7 +132,7 @@ function M.open_documentation()
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if crate then
         local crate_info = state.api_cache[crate:package()]
         local url = crate_info and crate_info.documentation
@@ -145,7 +145,7 @@ function M.open_crates_io()
     local buf = util.current_buf()
     local line = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if crate then
         util.open_url(util.crates_io_url(crate:package()))
     end
@@ -231,7 +231,7 @@ function M.get_actions()
     end
 
     local diagnostics = util.get_buf_diagnostics(buf) or {}
-    for _,d in ipairs(diagnostics) do
+    for _, d in ipairs(diagnostics) do
         if not d:contains(line, col) then
             goto continue
         end
@@ -251,7 +251,6 @@ function M.get_actions()
                 name = "remove_invalid_dependency_section",
                 action = remove_diagnostic_range_action(buf, d),
             })
-
         elseif d.kind == CratesDiagnosticKind.CRATE_DUP then
             table.insert(actions, {
                 name = "remove_duplicate_crate",
@@ -267,7 +266,6 @@ function M.get_actions()
                 name = "rename_crate",
                 action = rename_crate_package_action(buf, d.data["crate"], d.data["crate_name"]),
             })
-
         elseif crate and d.kind == CratesDiagnosticKind.FEAT_DUP then
             table.insert(actions, {
                 name = "remove_duplicate_feature",
@@ -294,9 +292,9 @@ function M.get_actions()
             action = M.open_documentation,
         })
         table.insert(actions, {
-        name = "open_crates.io",
-        action = M.open_crates_io,
-    })
+            name = "open_crates.io",
+            action = M.open_crates_io,
+        })
     end
 
     table.insert(actions, {

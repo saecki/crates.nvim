@@ -88,10 +88,10 @@ end
 ---@param text HighlightText[][]
 local function set_buf_body(text)
     local lines = {}
-    for _,line in ipairs(text) do
+    for _, line in ipairs(text) do
         local padding = string.rep(" ", state.cfg.popup.padding)
         local line_text = padding
-        for _,t in ipairs(line) do
+        for _, t in ipairs(line) do
             line_text = line_text .. t.text
         end
         line_text = line_text .. padding
@@ -99,9 +99,9 @@ local function set_buf_body(text)
     end
     vim.api.nvim_buf_set_lines(M.buf, M.TOP_OFFSET, M.TOP_OFFSET + #lines, false, lines)
 
-    for i,line in ipairs(text) do
+    for i, line in ipairs(text) do
         local pos = state.cfg.popup.padding
-        for _,t in ipairs(line) do
+        for _, t in ipairs(line) do
             vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
             pos = pos + t.text:len()
         end
@@ -182,7 +182,7 @@ function M.open_win(width, height, title, text, opts, configure)
     })
 
     -- add key mappings
-    for _,k in ipairs(state.cfg.popup.keys.hide) do
+    for _, k in ipairs(state.cfg.popup.keys.hide) do
         vim.api.nvim_buf_set_keymap(M.buf, "n", k, "", {
             callback = function()
                 M.hide()

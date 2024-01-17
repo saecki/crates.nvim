@@ -21,7 +21,7 @@ M.reload_deps = async.wrap(function(crate_name, versions, version)
 
     if deps then
         version.deps = deps
-        for _,d in ipairs(deps) do
+        for _, d in ipairs(deps) do
             -- optional dependencies are automatically promoted to features
             if d.opt and not version.features:get_feat(d.name) then
                 version.features:insert({
@@ -32,9 +32,9 @@ M.reload_deps = async.wrap(function(crate_name, versions, version)
         end
         version.features:sort()
 
-        for b,cache in pairs(state.buf_cache) do
+        for b, cache in pairs(state.buf_cache) do
             -- update crate in all dependency sections
-            for _,c in pairs(cache.crates) do
+            for _, c in pairs(cache.crates) do
                 if c:package() == crate_name then
                     local m, p, y = util.get_newest(versions, c:vers_reqs())
                     local match = m or p or y
@@ -60,9 +60,9 @@ M.reload_crate = async.wrap(function(crate_name)
         state.api_cache[crate.name] = crate
     end
 
-    for b,cache in pairs(state.buf_cache) do
+    for b, cache in pairs(state.buf_cache) do
         -- update crate in all dependency sections
-        for k,c in pairs(cache.crates) do
+        for k, c in pairs(cache.crates) do
             -- Don't try to fetch info from crates.io if it's a local or git crate,
             -- or from a registry other than crates.io
             -- TODO: Once there is workspace support, resolve the crate
@@ -111,7 +111,7 @@ local function update(buf, reload)
 
     ui.clear(buf)
     ui.display_diagnostics(buf, diagnostics)
-    for k,c in pairs(crate_cache) do
+    for k, c in pairs(crate_cache) do
         -- Don't try to fetch info from crates.io if it's a local or git crate,
         -- or from a registry other than crates.io
         -- TODO: Once there is workspace support, resolve the crate
@@ -153,7 +153,7 @@ local function update(buf, reload)
 
     local callbacks = M.throttled_updates[buf]
     if callbacks then
-        for _,callback in ipairs(callbacks) do
+        for _, callback in ipairs(callbacks) do
             callback()
         end
     end
@@ -190,7 +190,7 @@ end
 
 function M.hide()
     state.visible = false
-    for b,_ in pairs(state.buf_cache) do
+    for b, _ in pairs(state.buf_cache) do
         ui.clear(b)
     end
 end
@@ -202,7 +202,7 @@ function M.show()
     local buf = util.current_buf()
     update(buf, false)
 
-    for b,_ in pairs(state.buf_cache) do
+    for b, _ in pairs(state.buf_cache) do
         if b ~= buf then
             update(b, false)
         end

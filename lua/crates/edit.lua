@@ -55,7 +55,7 @@ local function insert_version(buf, crate, text)
             )
             return Span.pos(line)
         else -- crate.syntax == TomlCrateSyntax.PLAIN
-            return Span.empty() -- unreachable
+            error("unreachable")
         end
     else
         local t = text
@@ -101,7 +101,7 @@ function M.smart_version_text(crate, version)
 
     local pos = 1
     local text = ""
-    for _,r in ipairs(crate:vers_reqs()) do
+    for _, r in ipairs(crate:vers_reqs()) do
         if r.cond == Cond.EQ then
             local v = replace_existing(r, version)
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
@@ -149,7 +149,7 @@ function M.smart_version_text(crate, version)
             if version.pre then
                 v = version
             else
-                v =  SemVer.new { major = version.major }
+                v = SemVer.new { major = version.major }
                 if r.vers.minor or version.minor and version.minor > 0 then
                     v.minor = version.minor
                 end
@@ -229,7 +229,7 @@ end
 ---@param info table<string,CrateInfo>
 ---@param alt boolean|nil
 function M.upgrade_crates(buf, crates, info, alt)
-    for k,c in pairs(crates) do
+    for k, c in pairs(crates) do
         local i = info[k]
 
         if i then
@@ -246,7 +246,7 @@ end
 ---@param info table<string,CrateInfo>
 ---@param alt boolean|nil
 function M.update_crates(buf, crates, info, alt)
-    for k,c in pairs(crates) do
+    for k, c in pairs(crates) do
         local i = info[k]
 
         if i then
@@ -277,7 +277,7 @@ function M.enable_feature(buf, crate, feature)
             )
             vim.api.nvim_buf_set_lines(
                 buf, line, line, false,
-                { "features = [" .. t .."]" }
+                { "features = [" .. t .. "]" }
             )
             return Span.pos(line)
         elseif crate.syntax == TomlCrateSyntax.PLAIN then
@@ -352,7 +352,7 @@ function M.disable_feature(buf, crate, feature)
     -- check reference in case of duplicates
     ---@type integer
     local index
-    for i,f in ipairs(crate.feat.items) do
+    for i, f in ipairs(crate.feat.items) do
         if f == feature then
             index = i
             break
@@ -530,44 +530,44 @@ function M.extract_crate_into_table(buf, crate)
     end
 
     -- remove original line
-    vim.api.nvim_buf_set_lines( buf, crate.lines.s, crate.lines.e, false, {})
+    vim.api.nvim_buf_set_lines(buf, crate.lines.s, crate.lines.e, false, {})
 
     -- insert table after dependency section
     local lines = {
         crate.section:display(crate.explicit_name),
     }
     if crate.vers then
-        table.insert(lines, "version = " .. '"' .. crate.vers.text ..'"')
+        table.insert(lines, "version = " .. '"' .. crate.vers.text .. '"')
     end
     if crate.registry then
-        table.insert(lines, "registry = " .. '"' .. crate.registry.text ..'"')
+        table.insert(lines, "registry = " .. '"' .. crate.registry.text .. '"')
     end
     if crate.path then
-        table.insert(lines, "path = " .. '"' .. crate.path.text ..'"')
+        table.insert(lines, "path = " .. '"' .. crate.path.text .. '"')
     end
     if crate.git then
-        table.insert(lines, "git = " .. '"' .. crate.git.text ..'"')
+        table.insert(lines, "git = " .. '"' .. crate.git.text .. '"')
     end
     if crate.branch then
-        table.insert(lines, "branch = " .. '"' .. crate.branch.text ..'"')
+        table.insert(lines, "branch = " .. '"' .. crate.branch.text .. '"')
     end
     if crate.rev then
-        table.insert(lines, "rev = " .. '"' .. crate.rev.text ..'"')
+        table.insert(lines, "rev = " .. '"' .. crate.rev.text .. '"')
     end
     if crate.pkg then
-        table.insert(lines, "package = " .. '"' .. crate.pkg.text ..'"')
+        table.insert(lines, "package = " .. '"' .. crate.pkg.text .. '"')
     end
     if crate.workspace then
-        table.insert(lines, "workspace = " .. '"' .. crate.workspace.text ..'"')
+        table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
     end
     if crate.def then
-        table.insert(lines, "default-features = " .. '"' .. crate.def.text ..'"')
+        table.insert(lines, "default-features = " .. '"' .. crate.def.text .. '"')
     end
     if crate.feat then
         table.insert(lines, "features = [" .. crate.feat.text .. "]")
     end
     if crate.opt then
-        table.insert(lines, "optional = " .. '"' .. crate.opt.text ..'"')
+        table.insert(lines, "optional = " .. '"' .. crate.opt.text .. '"')
     end
 
     table.insert(lines, "")

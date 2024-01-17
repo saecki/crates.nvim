@@ -83,7 +83,7 @@ local goto_dep = async.wrap(function(ctx, line)
     end
 
     ctx.hist_idx = ctx.hist_idx + 1
-    for i=ctx.hist_idx, #ctx.history, 1 do
+    for i = ctx.hist_idx, #ctx.history, 1 do
         ctx.history[i] = nil
     end
 
@@ -161,7 +161,7 @@ function M.open_deps(ctx, crate_name, version, opts)
         return
     end
 
-    local title = string.format(state.cfg.popup.text.title, crate_name.." "..version.num)
+    local title = string.format(state.cfg.popup.text.title, crate_name .. " " .. version.num)
     local deps_width = 0
     ---@type HighlightText[][]
     local deps_text_index = {}
@@ -178,7 +178,7 @@ function M.open_deps(ctx, crate_name, version, opts)
     ---@type HlTextDepList[]
     local dev_deps_text = {}
 
-    for _,d in ipairs(deps) do
+    for _, d in ipairs(deps) do
         ---@type string, string
         local text, hl
         if d.opt then
@@ -205,12 +205,12 @@ function M.open_deps(ctx, crate_name, version, opts)
 
     local vers_width = 0
     if state.cfg.popup.show_dependency_version then
-        for i,line in ipairs(deps_text_index) do
+        for i, line in ipairs(deps_text_index) do
             local dep_text = line[1]
             ---@type integer
             local diff = deps_width - vim.fn.strdisplaywidth(dep_text.text)
             local vers = deps[i].vers.text
-            dep_text.text = dep_text.text..string.rep(" ", diff)
+            dep_text.text = dep_text.text .. string.rep(" ", diff)
 
             ---@type HighlightText
             local vers_text = {
@@ -230,10 +230,13 @@ function M.open_deps(ctx, crate_name, version, opts)
     local line_mapping = {}
     local line_idx = popup.TOP_OFFSET
     if #normal_deps_text > 0 then
-        table.insert(deps_text, {{ text = state.cfg.popup.text.normal_dependencies_title, hl = state.cfg.popup.highlight.normal_dependencies_title }})
+        table.insert(deps_text, { {
+            text = state.cfg.popup.text.normal_dependencies_title,
+            hl = state.cfg.popup.highlight.normal_dependencies_title,
+        } })
         line_idx = line_idx + 1
 
-        for _,t in ipairs(normal_deps_text) do
+        for _, t in ipairs(normal_deps_text) do
             table.insert(deps_text, t)
             line_mapping[line_idx] = t.dep
             line_idx = line_idx + 1
@@ -244,10 +247,13 @@ function M.open_deps(ctx, crate_name, version, opts)
             table.insert(deps_text, {})
             line_idx = line_idx + 1
         end
-        table.insert(deps_text, {{ text = state.cfg.popup.text.build_dependencies_title, hl = state.cfg.popup.highlight.build_dependencies_title }})
+        table.insert(deps_text, { {
+            text = state.cfg.popup.text.build_dependencies_title,
+            hl = state.cfg.popup.highlight.build_dependencies_title,
+        } })
         line_idx = line_idx + 1
 
-        for _,t in ipairs(build_deps_text) do
+        for _, t in ipairs(build_deps_text) do
             table.insert(deps_text, t)
             line_mapping[line_idx] = t.dep
             line_idx = line_idx + 1
@@ -258,10 +264,13 @@ function M.open_deps(ctx, crate_name, version, opts)
             table.insert(deps_text, {})
             line_idx = line_idx + 1
         end
-        table.insert(deps_text, {{ text = state.cfg.popup.text.dev_dependencies_title, hl = state.cfg.popup.highlight.dev_dependencies_title }})
+        table.insert(deps_text, { {
+            text = state.cfg.popup.text.dev_dependencies_title,
+            hl = state.cfg.popup.highlight.dev_dependencies_title,
+        } })
         line_idx = line_idx + 1
 
-        for _,t in ipairs(dev_deps_text) do
+        for _, t in ipairs(dev_deps_text) do
             table.insert(deps_text, t)
             line_mapping[line_idx] = t.dep
             line_idx = line_idx + 1
@@ -279,7 +288,7 @@ function M.open_deps(ctx, crate_name, version, opts)
         ---@param _win integer
         ---@param buf integer
         popup.open_win(width, height, title, deps_text, opts, function(_win, buf)
-            for _,k in ipairs(state.cfg.popup.keys.goto_item) do
+            for _, k in ipairs(state.cfg.popup.keys.goto_item) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         local line = util.cursor_pos()
@@ -291,7 +300,7 @@ function M.open_deps(ctx, crate_name, version, opts)
                 })
             end
 
-            for _,k in ipairs(state.cfg.popup.keys.jump_forward) do
+            for _, k in ipairs(state.cfg.popup.keys.jump_forward) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         local line = util.cursor_pos()
@@ -303,7 +312,7 @@ function M.open_deps(ctx, crate_name, version, opts)
                 })
             end
 
-            for _,k in ipairs(state.cfg.popup.keys.jump_back) do
+            for _, k in ipairs(state.cfg.popup.keys.jump_back) do
                 vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                     callback = function()
                         local line = util.cursor_pos()

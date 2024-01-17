@@ -140,7 +140,7 @@ M.ApiFeatures = ApiFeatures
 function ApiFeatures.new(list)
     ---@type table<string,ApiFeature>
     local map = {}
-    for _,f in ipairs(list) do
+    for _, f in ipairs(list) do
         map[f.name] = f
     end
     return setmetatable({ list = list, map = map }, { __index = ApiFeatures })
@@ -153,7 +153,7 @@ function ApiFeatures:get_feat(name)
 end
 
 function ApiFeatures:sort()
-    table.sort(self.list, function (a, b)
+    table.sort(self.list, function(a, b)
         if a.name == "default" then
             return true
         elseif b.name == "default" then
@@ -238,7 +238,7 @@ end
 ---@param pos integer
 ---@return boolean
 function Span:contains(pos)
-    return self.s <= pos and pos <  self.e
+    return self.s <= pos and pos < self.e
 end
 
 ---Create a new span with moved start and end bounds

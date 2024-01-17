@@ -65,7 +65,7 @@ function M.get_line_crates(buf, lines)
 
     ---@type table<string,TomlCrate>
     local line_crates = {}
-    for k,c in pairs(crates) do
+    for k, c in pairs(crates) do
         if lines:contains(c.lines.s) or c.lines:contains(lines.s) then
             line_crates[k] = c
         end
@@ -89,7 +89,7 @@ function M.get_newest(versions, reqs)
     ---@type ApiVersion|nil, ApiVersion|nil, ApiVersion|nil
     local newest_yanked, newest_pre, newest
 
-    for _,v in ipairs(versions) do
+    for _, v in ipairs(versions) do
         if not reqs or semver.matches_requirements(v.parsed, reqs) then
             if not v.yanked then
                 if allow_pre or not v.parsed.pre then
@@ -128,7 +128,7 @@ function M.features_info(crate, features)
 
     ---@param f ApiFeature
     local function update_transitive(f)
-        for _,m in ipairs(f.members) do
+        for _, m in ipairs(f.members) do
             local tf = features:get_feat(m)
             if tf then
                 local i = info[m]
@@ -151,7 +151,7 @@ function M.features_info(crate, features)
         return info
     end
 
-    for _,crate_feat in ipairs(crate_features.items) do
+    for _, crate_feat in ipairs(crate_features.items) do
         local api_feat = features:get_feat(crate_feat.name)
         if api_feat then
             info[api_feat.name] = FeatureInfo.ENABLED
@@ -191,13 +191,13 @@ end
 ---@param name string
 ---@return string
 function M.docs_rs_url(name)
-    return "https://docs.rs/"..name
+    return "https://docs.rs/" .. name
 end
 
 ---@param name string
 ---@return string
 function M.crates_io_url(name)
-    return "https://crates.io/crates/"..name
+    return "https://crates.io/crates/" .. name
 end
 
 ---@param url string

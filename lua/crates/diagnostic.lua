@@ -124,7 +124,7 @@ function M.process_crates(sections, crates)
     ---@type table<string,TomlCrate>
     local cache = {}
 
-    for _,s in ipairs(sections) do
+    for _, s in ipairs(sections) do
         local key = s.text:gsub("%s+", "")
 
         if s.workspace and s.kind ~= "default" then
@@ -163,7 +163,7 @@ function M.process_crates(sections, crates)
         end
     end
 
-    for _,c in ipairs(crates) do
+    for _, c in ipairs(crates) do
         local key = c:cache_key()
         if c.section.invalid then
             goto continue
@@ -196,7 +196,7 @@ function M.process_crates(sections, crates)
 
             ---@type table<string,TomlFeature>
             local feats = {}
-            for _,f in ipairs(c:feats()) do
+            for _, f in ipairs(c:feats()) do
                 local orig = feats[f.name]
                 if orig then
                     table.insert(diagnostics, feat_diagnostic(
@@ -254,7 +254,7 @@ function M.process_api_crate(crate, api_crate)
             end
         end
 
-        if  newest then
+        if newest then
             if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
                 -- version matches, no upgrade available
                 info.vers_match = newest
@@ -345,17 +345,17 @@ function M.process_crate_deps(crate, version, deps)
     local diagnostics = {}
 
     local valid_feats = {}
-    for _,f in ipairs(version.features.list) do
+    for _, f in ipairs(version.features.list) do
         table.insert(valid_feats, f.name)
     end
-    for _,d in ipairs(deps) do
+    for _, d in ipairs(deps) do
         if d.opt then
             table.insert(valid_feats, d.name)
         end
     end
 
     if not state.cfg.disable_invalid_feature_diagnostic then
-        for _,f in ipairs(crate:feats()) do
+        for _, f in ipairs(crate:feats()) do
             if not vim.tbl_contains(valid_feats, f.name) then
                 table.insert(diagnostics, feat_diagnostic(
                     crate,

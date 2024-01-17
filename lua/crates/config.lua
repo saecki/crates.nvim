@@ -649,7 +649,8 @@ entry(schema_diagnostic, {
 entry(schema_diagnostic, {
     name = "vers_pre",
     type = "string",
-    default = "Requirement only matches a pre-release version\nIf you want to use the pre-release package, it needs to be specified explicitly",
+    default =
+    "Requirement only matches a pre-release version\nIf you want to use the pre-release package, it needs to be specified explicitly",
     hidden = true,
 })
 entry(schema_diagnostic, {
@@ -1735,7 +1736,7 @@ end
 local function join_path(path, component)
     ---@type string[]
     local p = {}
-    for i,c in ipairs(path) do
+    for i, c in ipairs(path) do
         p[i] = c
     end
     table.insert(p, component)
@@ -1748,7 +1749,7 @@ end
 local function table_set_path(t, path, value)
     ---@type table<string,any>
     local current = t
-    for i,c in ipairs(path) do
+    for i, c in ipairs(path) do
         if i == #path then
             current[c] = value
         elseif type(current[c]) == "table" then
@@ -1769,7 +1770,7 @@ end
 ---@param root_config table<string,any>
 ---@param user_config table<string,any>
 local function handle_deprecated(path, schema, root_config, user_config)
-    for k,v in pairs(user_config) do
+    for k, v in pairs(user_config) do
         local elem = schema[k]
 
         if elem then
@@ -1793,7 +1794,7 @@ end
 ---@param schema table<string,SchemaElement>
 ---@param user_config table<string,any>
 local function validate_schema(path, schema, user_config)
-    for k,v in pairs(user_config) do
+    for k, v in pairs(user_config) do
         local p = join_path(path, k)
         local elem = schema[k]
 
@@ -1869,7 +1870,7 @@ local function build_config(schema, user_config)
     ---@type table<string,any>
     local config = {}
 
-    for k,elem in pairs(schema) do
+    for k, elem in pairs(schema) do
         local v = user_config[k]
         local value_type = type(v)
 

@@ -85,7 +85,7 @@ function M.open(crate, versions, opts)
     ---@type HighlightText[][]
     local versions_text = {}
 
-    for _,v in ipairs(versions) do
+    for _, v in ipairs(versions) do
         ---@type string, string
         local text, hl
         if v.yanked then
@@ -107,12 +107,12 @@ function M.open(crate, versions, opts)
 
     local date_width = 0
     if state.cfg.popup.show_version_date then
-        for i,line in ipairs(versions_text) do
+        for i, line in ipairs(versions_text) do
             local vers_text = line[1]
             ---@type integer
             local diff = vers_width - vim.fn.strdisplaywidth(vers_text.text)
             local date = versions[i].created:display(state.cfg.date_format)
-            vers_text.text = vers_text.text..string.rep(" ", diff)
+            vers_text.text = vers_text.text .. string.rep(" ", diff)
 
             ---@type HighlightText
             local date_text = {
@@ -134,7 +134,7 @@ function M.open(crate, versions, opts)
             crate = crate,
             versions = versions,
         }
-        for _,k in ipairs(state.cfg.popup.keys.select) do
+        for _, k in ipairs(state.cfg.popup.keys.select) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -146,7 +146,7 @@ function M.open(crate, versions, opts)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.select_alt) do
+        for _, k in ipairs(state.cfg.popup.keys.select_alt) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()
@@ -158,7 +158,7 @@ function M.open(crate, versions, opts)
             })
         end
 
-        for _,k in ipairs(state.cfg.popup.keys.copy_value) do
+        for _, k in ipairs(state.cfg.popup.keys.copy_value) do
             vim.api.nvim_buf_set_keymap(buf, "n", k, "", {
                 callback = function()
                     local line = util.cursor_pos()

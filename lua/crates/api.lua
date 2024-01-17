@@ -92,7 +92,7 @@ end
 ---@param name string
 ---@param callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 local function enqueue_crate_job(name, callbacks)
-    for _,j in ipairs(M.queued_jobs) do
+    for _, j in ipairs(M.queued_jobs) do
         if j.kind == JobKind.CRATE and j.name == name then
             vim.list_extend(j.crate_callbacks, callbacks)
             return
@@ -110,7 +110,7 @@ end
 ---@param version string
 ---@param callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
 local function enqueue_deps_job(name, version, callbacks)
-    for _,j in ipairs(M.queued_jobs) do
+    for _, j in ipairs(M.queued_jobs) do
         if j.kind == JobKind.DEPS and j.name == name and j.version == version then
             vim.list_extend(j.deps_callbacks, callbacks)
             return
@@ -151,23 +151,23 @@ function M.parse_crate(json_str)
         versions = {},
     }
 
-    for _,ct_id in ipairs(c.categories) do
-        for _,ct in ipairs(json.categories) do
+    for _, ct_id in ipairs(c.categories) do
+        for _, ct in ipairs(json.categories) do
             if ct.id == ct_id then
                 table.insert(crate.categories, ct.category)
             end
         end
     end
 
-    for _,kw_id in ipairs(c.keywords) do
-        for _,kw in ipairs(json.keywords) do
+    for _, kw_id in ipairs(c.keywords) do
+        for _, kw in ipairs(json.keywords) do
             if kw.id == kw_id then
                 table.insert(crate.keywords, kw.keyword)
             end
         end
     end
 
-    for _,v in ipairs(json.versions) do
+    for _, v in ipairs(json.versions) do
         if v.num then
             ---@type ApiVersion
             local version = {
@@ -178,7 +178,7 @@ function M.parse_crate(json_str)
                 created = DateTime.parse_rfc_3339(v.created_at)
             }
 
-            for n,m in pairs(v.features) do
+            for n, m in pairs(v.features) do
                 table.sort(m)
                 version.features:insert({
                     name = n,
@@ -187,8 +187,8 @@ function M.parse_crate(json_str)
             end
 
             -- add optional dependency members as features
-            for _,f in ipairs(version.features.list) do
-                for _,m in ipairs(f.members) do
+            for _, f in ipairs(version.features.list) do
+                for _, m in ipairs(f.members) do
                     -- don't add dependency features
                     if not string.find(m, "/") and not version.features:get_feat(m) then
                         version.features:insert({
@@ -251,7 +251,7 @@ local function fetch_crate(name, callbacks)
         if not cancelled and json_str then
             crate = M.parse_crate(json_str)
         end
-        for _,c in ipairs(callbacks) do
+        for _, c in ipairs(callbacks) do
             c(crate, cancelled)
         end
 
@@ -275,10 +275,9 @@ end
 function M.fetch_crate(name)
     ---@param resolve fun(crate: ApiCrate|nil, cancelled: boolean)
     return coroutine.yield(function(resolve)
-        fetch_crate(name, {resolve})
+        fetch_crate(name, { resolve })
     end)
 end
-
 
 ---@param json_str string
 ---@return ApiDependency[]|nil
@@ -290,7 +289,7 @@ function M.parse_deps(json_str)
 
     ---@type ApiDependency[]
     local dependencies = {}
-    for _,d in ipairs(json.dependencies) do
+    for _, d in ipairs(json.dependencies) do
         if d.crate_id then
             ---@type ApiDependency
             local dependency = {
@@ -344,7 +343,7 @@ local function fetch_deps(name, version, callbacks)
         if not cancelled and json_str then
             deps = M.parse_deps(json_str)
         end
-        for _,c in ipairs(callbacks) do
+        for _, c in ipairs(callbacks) do
             c(deps, cancelled)
         end
 
@@ -369,10 +368,9 @@ end
 function M.fetch_deps(name, version)
     ---@param resolve fun(deps: ApiDependency[]|nil, cancelled: boolean)
     return coroutine.yield(function(resolve)
-        fetch_deps(name, version, {resolve})
+        fetch_deps(name, version, { resolve })
     end)
 end
-
 
 ---@param name string
 ---@return boolean
@@ -439,10 +437,10 @@ function M.run_queued_jobs()
 end
 
 function M.cancel_jobs()
-    for _,r in pairs(M.crate_jobs) do
+    for _, r in pairs(M.crate_jobs) do
         r.job:shutdown(1, 1)
     end
-    for _,r in pairs(M.deps_jobs) do
+    for _, r in pairs(M.deps_jobs) do
         r.job:shutdown(1, 1)
     end
     M.crate_jobs = {}

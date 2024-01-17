@@ -42,7 +42,7 @@ local VALUE_KIND = 12
 local function complete_versions(crate, versions)
     local items = {}
 
-    for i,v in ipairs(versions) do
+    for i, v in ipairs(versions) do
         ---@type CompletionItem
         local r = {
             label = v.num,
@@ -91,7 +91,7 @@ local function complete_features(crate, cf, versions)
     end
 
     local items = {}
-    for _,f in ipairs(newest.features.list) do
+    for _, f in ipairs(newest.features.list) do
         local crate_feat = crate:get_feat(f.name)
         if not crate_feat then
             ---@type CompletionItem
@@ -134,7 +134,7 @@ local function complete()
 
     local line, col = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.new(line, line + 1))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if not crate then
         return
     end
@@ -142,7 +142,7 @@ local function complete()
     local api_crate = state.api_cache[crate:package()]
 
     if not api_crate and api.is_fetching_crate(crate:package()) then
-        local _api_crate,cancelled = api.await_crate(crate:package())
+        local _api_crate, cancelled = api.await_crate(crate:package())
 
         if cancelled or buf ~= util.current_buf() then
             return
@@ -150,7 +150,7 @@ local function complete()
 
         line, col = util.cursor_pos()
         crates = util.get_line_crates(buf, Span.new(line, line + 1))
-        _,crate = next(crates)
+        _, crate = next(crates)
         if not crate then
             return
         end
@@ -165,7 +165,7 @@ local function complete()
     if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
         return complete_versions(crate, api_crate.versions)
     elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
-        for _,f in ipairs(crate.feat.items) do
+        for _, f in ipairs(crate.feat.items) do
             if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
                 return complete_features(crate, f, api_crate.versions)
             end

@@ -225,7 +225,7 @@ function Crate:get_feat(name)
         return nil, nil
     end
 
-    for i,f in ipairs(self.feat.items) do
+    for i, f in ipairs(self.feat.items) do
         if f.name == name then
             return f, i
         end
@@ -580,7 +580,8 @@ end
 function M.parse_inline_crate(line, line_nr)
     -- plain version
     do
-        local name_s, name, name_e, quote_s, str_s, text, str_e, quote_e = line:match([[^%s*()([^%s]+)()%s*=%s*(["'])()([^"']*)()(["']?)%s*$]])
+        local pat = [[^%s*()([^%s]+)()%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
+        local name_s, name, name_e, quote_s, str_s, text, str_e, quote_e = line:match(pat)
         if name then
             ---@type TomlCrate
             return {
@@ -740,7 +741,7 @@ function M.parse_crates(buf)
     ---@type TomlCrate|nil
     local dep_section_crate = nil
 
-    for i,line in ipairs(lines) do
+    for i, line in ipairs(lines) do
         line = M.trim_comments(line)
         local line_nr = i - 1
 

@@ -25,7 +25,7 @@ local function line_crate_info()
     local line, col = util.cursor_pos()
 
     local crates = util.get_line_crates(buf, Span.new(line, line + 1))
-    local _,crate = next(crates)
+    local _, crate = next(crates)
     if not crate then
         return
     end
@@ -56,7 +56,7 @@ local function line_crate_info()
     end
 
     local function features_info()
-        for _,cf in ipairs(crate.feat.items) do
+        for _, cf in ipairs(crate.feat.items) do
             if cf.decl_col:contains(col - crate.feat.col.s) then
                 info.feature = newest.features:get_feat(cf.name)
                 break
@@ -96,7 +96,7 @@ local function line_crate_info()
             versions_info()
         elseif crate.feat and crate.feat.decl_col:contains(col) then
             features_info()
-        elseif crate.def and  crate.def.decl_col:contains(col) then
+        elseif crate.def and crate.def.decl_col:contains(col) then
             default_features_info()
         else
             crate_info()
