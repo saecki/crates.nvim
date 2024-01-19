@@ -31,8 +31,11 @@ function DateTime.parse_rfc_3339(str)
             m = tonumber(minute) - tonumber(offset_minute)
         end
         return DateTime.new(os.time({
+            ---@diagnostic disable-next-line: assign-type-mismatch
             year = tonumber(year),
+            ---@diagnostic disable-next-line: assign-type-mismatch
             month = tonumber(month),
+            ---@diagnostic disable-next-line: assign-type-mismatch
             day = tonumber(day),
             hour = h,
             min = m,

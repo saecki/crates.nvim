@@ -44,11 +44,8 @@ local function line_crate_info()
         crate = crate,
         versions = api_crate.versions,
         newest = newest,
+        pref = popup.Type.CRATE,
     }
-
-    local function crate_info()
-        info.pref = popup.Type.CRATE
-    end
 
     local function versions_info()
         info.pref = popup.Type.VERSIONS
@@ -78,7 +75,7 @@ local function line_crate_info()
         if crate.vers.col:moved(-1, 1):contains(col) then
             versions_info()
         else
-            crate_info()
+            -- crate_info()
         end
     elseif crate.syntax == TomlCrateSyntax.TABLE then
         if crate.vers and line == crate.vers.line then
@@ -88,7 +85,7 @@ local function line_crate_info()
         elseif crate.def and line == crate.def.line then
             default_features_info()
         else
-            crate_info()
+            -- crate_info()
         end
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
         if crate.vers and crate.vers.decl_col:contains(col) then
@@ -98,7 +95,7 @@ local function line_crate_info()
         elseif crate.def and crate.def.decl_col:contains(col) then
             default_features_info()
         else
-            crate_info()
+            -- crate_info()
         end
     end
 

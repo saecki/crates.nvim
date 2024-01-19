@@ -24,8 +24,8 @@ end
 local function gen_from_shared_file(lines, indent, filename)
     local infile = io.open("docgen/shared/" .. filename, "r")
     ---@cast infile -nil
+    ---@param l string
     for l in infile:lines("*l") do
-        ---@type string
         l = string.rep("    ", indent) .. l
         l = l:gsub("%s+$", "")
         table.insert(lines, l)
@@ -105,6 +105,8 @@ end
 ---@return string
 local function format_vimdoc_params(params)
     local text = {}
+    ---@param p string
+    ---@param t string
     for p, t in params:gmatch("[,]?([^:]+):%s*([^,]+)[,]?") do
         local fmt = string.format("{%s}: `%s`", p, t)
         table.insert(text, fmt)
@@ -112,7 +114,7 @@ local function format_vimdoc_params(params)
     return table.concat(text, ", ")
 end
 
----@param return_type string|nil
+---@param return_type string
 ---@return string
 local function format_vimdoc_ret_type(return_type)
     local type = return_type:match("^%s*:%s*(.+)%s*$")
@@ -401,6 +403,7 @@ local function gen_vim_doc()
                 gen_from_shared_file(lines, indent, ph)
             end
         else
+            ---@type string
             l = l:gsub("<VERSION>", version)
             table.insert(lines, l)
         end

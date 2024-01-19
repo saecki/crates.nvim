@@ -92,7 +92,6 @@ local goto_dep = async.wrap(function(ctx, line)
     end
 
     ---line_mapping is generated in `M.open_deps`
-    ---@diagnostic disable-next-line: missing-fields
     ctx.history[ctx.hist_idx] = {
         crate_name = crate_name,
         version = version,

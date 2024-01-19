@@ -11,7 +11,7 @@ local M = {}
 ---@field target string|nil
 ---@field kind TomlSectionKind
 ---@field name string|nil
----@field name_col Span
+---@field name_col Span|nil
 ---@field lines Span
 local Section = {}
 M.Section = Section
@@ -165,6 +165,14 @@ M.TomlFeature = TomlFeature
 function M.parse_crate_features(text)
     ---@type TomlFeature[]
     local feats = {}
+    ---@param fds integer
+    ---@param qs string
+    ---@param fs integer
+    ---@param f string
+    ---@param fe integer
+    ---@param qe string|nil
+    ---@param fde integer
+    ---@param c string|nil
     for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
         ---@type TomlFeature
         local feat = {
@@ -303,9 +311,10 @@ function Section:display(override_name)
 end
 
 ---@param text string
+---@param line_nr integer
 ---@param start integer
 ---@return TomlSection|nil
-function M.parse_section(text, start)
+function M.parse_section(text, line_nr, start)
     ---@type string, integer, string
     local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
     if prefix and suffix then
@@ -316,6 +325,9 @@ function M.parse_section(text, start)
             text = text,
             invalid = false,
             kind = TomlSectionKind.DEFAULT,
+            ---end bound is assigned when the section ends
+            ---@diagnostic disable-next-line: param-type-mismatch
+            lines = Span.new(line_nr, nil),
         }
 
         local target = prefix
@@ -759,18 +771,10 @@ function M.parse_crates(buf)
                 end
             end
 
-            local section = M.parse_section(section_text, section_start - 1)
-
-            if section then
-                ---end bound is assigned when the section ends
-                ---@diagnostic disable-next-line: param-type-mismatch
-                section.lines = Span.new(line_nr, nil)
-                dep_section = section
-                dep_section_crate = nil
+            dep_section = M.parse_section(section_text, line_nr, section_start - 1)
+            dep_section_crate = nil
+            if dep_section then
                 table.insert(sections, dep_section)
-            else
-                dep_section = nil
-                dep_section_crate = nil
             end
         elseif dep_section and dep_section.name then
             ---@type TomlCrate

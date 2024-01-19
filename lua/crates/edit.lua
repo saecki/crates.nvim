@@ -300,7 +300,7 @@ function M.enable_feature(buf, crate, feature)
                 { "{ version = " }
             )
             return Span.pos(line)
-        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        else -- if crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
             local text = ", features = [" .. t .. "]"
             local col = math.max(
@@ -460,7 +460,7 @@ local function disable_def_features(buf, crate)
                 { "{ version = " }
             )
             return crate.lines
-        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        else -- if crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
             local text = ", default-features = false"
             local col = math.max(

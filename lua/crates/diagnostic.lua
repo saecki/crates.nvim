@@ -238,6 +238,7 @@ function M.process_api_crate(crate, api_crate)
     local info = {
         lines = crate.lines,
         vers_line = crate.vers and crate.vers.line or crate.lines.s,
+        match_kind = MatchKind.NOMATCH,
     }
     local diagnostics = {}
 
@@ -307,7 +308,6 @@ function M.process_api_crate(crate, api_crate)
                     ))
                 else
                     -- no match found
-                    info.match_kind = MatchKind.NOMATCH
                     local kind = CratesDiagnosticKind.VERS_NOMATCH
                     if not crate.vers then
                         kind = CratesDiagnosticKind.CRATE_NOVERS

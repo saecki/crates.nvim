@@ -188,7 +188,8 @@ end
 function M.parse_requirements(str)
     ---@type Requirement[]
     local requirements = {}
-    ---@type integer, string
+    ---@param s integer
+    ---@param r string
     for s, r in str:gmatch("[,]?%s*()([^,]+)%s*[,]?") do
         local requirement = M.parse_requirement(r)
         requirement.vers_col.s = requirement.vers_col.s + s - 1
@@ -339,7 +340,7 @@ function M.matches_requirement(v, r)
         return matches_exact(v, r.vers) or matches_less(v, r.vers)
     elseif r.cond == Cond.GT then
         return matches_greater(v, r.vers)
-    elseif r.cond == Cond.GE then
+    else -- if r.cond == Cond.GE then
         return matches_exact(v, r.vers) or matches_greater(v, r.vers)
     end
 end
