@@ -1,214 +1,10 @@
 local M = {}
 
----@class Config
----@field smart_insert boolean
----@field insert_closing_quote boolean
----@field autoload boolean
----@field autoupdate boolean
----@field autoupdate_throttle integer
----@field loading_indicator boolean
----@field date_format string
----@field thousands_separator string
----@field notification_title string
----@field curl_args string[]
----@field open_programs string[]
----@field max_parallel_requests integer
----@field expand_crate_moves_cursor boolean
----@field disable_invalid_feature_diagnostic boolean
----@field enable_update_available_warning boolean
----@field on_attach fun(bufnr: integer)
----@field text TextConfig
----@field highlight HighlightConfig
----@field diagnostic DiagnosticConfig
----@field popup PopupConfig
----@field src SrcConfig
----@field null_ls NullLsConfig
----@field lsp LspConfig
+---@class SchemaType
+---@field config_type ConfigType|ConfigType[]
+---@field emmylua_annotation string
 
----@class TextConfig
----@field loading string
----@field version string
----@field prerelease string
----@field yanked string
----@field nomatch string
----@field upgrade string
----@field error string
-
----@class HighlightConfig
----@field loading string
----@field version string
----@field prerelease string
----@field yanked string
----@field nomatch string
----@field upgrade string
----@field error string
-
----@class DiagnosticConfig
----@field section_invalid string
----@field workspace_section_not_default string
----@field workspace_section_has_target string
----@field section_dup string
----@field section_dup_orig string
----@field crate_dup string
----@field crate_dup_orig string
----@field crate_novers string
----@field crate_error_fetching string
----@field crate_name_case string
----@field vers_upgrade string
----@field vers_pre string
----@field vers_yanked string
----@field vers_nomatch string
----@field def_invalid string
----@field feat_dup string
----@field feat_dup_orig string
----@field feat_invalid string
-
----@class PopupConfig
----@field autofocus boolean
----@field hide_on_select boolean
----@field copy_register string
----@field style string
----@field border string|string[]
----@field show_version_date boolean
----@field show_dependency_version boolean
----@field max_height integer
----@field min_width integer
----@field padding integer
----@field text PopupTextConfig
----@field highlight PopupHighlightConfig
----@field keys PopupKeyConfig
-
----@class PopupTextConfig
----@field title string
----@field pill_left string
----@field pill_right string
--- crate
----@field description string
----@field created string
----@field created_label string
----@field updated string
----@field updated_label string
----@field downloads string
----@field downloads_label string
----@field homepage string
----@field homepage_label string
----@field repository string
----@field repository_label string
----@field documentation string
----@field documentation_label string
----@field crates_io string
----@field crates_io_label string
----@field categories_label string
----@field keywords_label string
--- version
----@field version string
----@field prerelease string
----@field yanked string
----@field version_date string
--- feature
----@field feature string
----@field enabled string
----@field transitive string
--- dependencies
----@field normal_dependencies_title string
----@field build_dependencies_title string
----@field dev_dependencies_title string
----@field dependency string
----@field optional string
----@field dependency_version string
----@field loading string
-
----@class PopupHighlightConfig
----@field title string
----@field pill_text string
----@field pill_border string
--- crate
----@field created string
----@field created_label string
----@field updated string
----@field updated_label string
----@field description string
----@field downloads string
----@field downloads_label string
----@field homepage string
----@field homepage_label string
----@field repository string
----@field repository_label string
----@field documentation string
----@field documentation_label string
----@field crates_io string
----@field crates_io_label string
----@field categories_label string
----@field keywords_label string
--- version
----@field version string
----@field prerelease string
----@field yanked string
----@field version_date string
--- feature
----@field feature string
----@field enabled string
----@field transitive string
--- dependencies
----@field normal_dependencies_title string
----@field build_dependencies_title string
----@field dev_dependencies_title string
----@field dependency string
----@field optional string
----@field dependency_version string
----@field loading string
-
----@class PopupKeyConfig
----@field hide string[]
----@field open_url string[]
----@field select string[]
----@field select_alt string[]
----@field toggle_feature string[]
----@field copy_value string[]
----@field goto_item string[]
----@field jump_forward string[]
----@field jump_back string[]
-
----@class SrcConfig
----@field insert_closing_quote boolean
----@field text SrcTextConfig
----@field coq CoqConfig
----@field cmp CmpConfig
-
----@class SrcTextConfig
----@field prerelease string
----@field yanked string
-
----@class CoqConfig
----@field enabled boolean
----@field name string
-
----@class CmpConfig
----@field enabled boolean
----@field use_custom_kind boolean
----@field kind_text CmpKindTextConfig
----@field kind_highlight CmpKindHighlightConfig
-
----@class CmpKindTextConfig
----@field version string
----@field feature string
-
----@class CmpKindHighlightConfig
----@field version string
----@field feature string
-
----@class NullLsConfig
----@field enabled boolean
----@field name string
-
----@class LspConfig
----@field enabled boolean
----@field name string
----@field on_attach fun(client: lsp.Client, bufnr: integer)
----@field actions boolean
----@field completion boolean
-
----@alias SchemaType
+---@alias ConfigType
 -- A record of grouped options
 ---| "section"
 -- The rest are lua types checked at runtime
@@ -275,10 +71,34 @@ local function section_entry(schema, elem)
     return elem.fields
 end
 
+---@type SchemaType
+local STRING_TYPE = {
+    config_type = "string",
+    emmylua_annotation = "string",
+}
+
+---@type SchemaType
+local BOOLEAN_TYPE = {
+    config_type = "boolean",
+    emmylua_annotation = "boolean",
+}
+
+---@type SchemaType
+local INTEGER_TYPE = {
+    config_type = "number",
+    emmylua_annotation = "integer",
+}
+
+---@type SchemaType
+local STRING_ARRAY_TYPE = {
+    config_type = "table",
+    emmylua_annotation = "string[]"
+}
+
 M.schema = {}
 entry(M.schema, {
     name = "smart_insert",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Try to be smart about inserting versions, by respecting existing version requirements.
@@ -297,7 +117,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "insert_closing_quote",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Insert a closing quote when updating or upgrading a version, if there is none.
@@ -305,7 +125,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "autoload",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Automatically run update when opening a Cargo.toml.
@@ -313,7 +133,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "autoupdate",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Automatically update when editing text.
@@ -321,7 +141,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "autoupdate_throttle",
-    type = "number",
+    type = INTEGER_TYPE,
     default = 250,
     description = [[
         Rate limit the auto update in milliseconds
@@ -329,7 +149,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "loading_indicator",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Show a loading indicator while fetching crate versions.
@@ -337,7 +157,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "date_format",
-    type = "string",
+    type = STRING_TYPE,
     default = "%Y-%m-%d",
     description = [[
         The date format passed to `os.date`.
@@ -345,7 +165,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "thousands_separator",
-    type = "string",
+    type = STRING_TYPE,
     default = ".",
     description = [[
         The separator used to separate thousands of a number:
@@ -360,7 +180,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "notification_title",
-    type = "string",
+    type = STRING_TYPE,
     default = "crates.nvim",
     description = [[
         The title displayed in notifications.
@@ -368,7 +188,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "curl_args",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "-sL", "--retry", "1" },
     description = [[
         A list of arguments passed to curl when fetching metadata from crates.io.
@@ -376,32 +196,32 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "max_parallel_requests",
-    type = "number",
+    type = INTEGER_TYPE,
     default = 80,
     description = [[
         Maximum number of parallel requests.
     ]],
 })
 entry(M.schema, {
-    name = "expand_crate_moves_cursor",
-    type = "boolean",
-    default = true,
-    description = [[
-        Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
-    ]],
-})
-entry(M.schema, {
     name = "open_programs",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "xdg-open", "open" },
     description = [[
         A list of programs that used to open urls.
     ]],
 })
+entry(M.schema, {
+    name = "expand_crate_moves_cursor",
+    type = BOOLEAN_TYPE,
+    default = true,
+    description = [[
+        Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
+    ]],
+})
 -- TODO: Blocked on: https://github.com/rust-lang/crates.io/issues/1539
 entry(M.schema, {
     name = "disable_invalid_feature_diagnostic",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         This is a temporary solution for:
@@ -410,7 +230,7 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "enable_update_available_warning",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Enable warnings for outdated crates.
@@ -418,7 +238,10 @@ entry(M.schema, {
 })
 entry(M.schema, {
     name = "on_attach",
-    type = "function",
+    type = {
+        config_type = "function",
+        emmylua_annotation = "fun(bufnr: integer)",
+    },
     default = function(_) end,
     default_text = "function(bufnr) end",
     description = [[
@@ -430,7 +253,7 @@ entry(M.schema, {
 -- deprecated
 entry(M.schema, {
     name = "avoid_prerelease",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     deprecated = {
         hard = true,
     },
@@ -438,7 +261,10 @@ entry(M.schema, {
 
 local schema_text = section_entry(M.schema, {
     name = "text",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "TextConfig",
+    },
     description = [[
         Strings used to format virtual text.
     ]],
@@ -446,7 +272,7 @@ local schema_text = section_entry(M.schema, {
 })
 entry(schema_text, {
     name = "loading",
-    type = "string",
+    type = STRING_TYPE,
     default = "   Loading",
     description = [[
         Format string used while loading crate information.
@@ -454,7 +280,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "   %s",
     description = [[
         format string used for the latest compatible version
@@ -462,7 +288,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "prerelease",
-    type = "string",
+    type = STRING_TYPE,
     default = "   %s",
     description = [[
         Format string used for pre-release versions.
@@ -470,7 +296,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = "   %s",
     description = [[
         Format string used for yanked versions.
@@ -478,7 +304,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "nomatch",
-    type = "string",
+    type = STRING_TYPE,
     default = "   No match",
     description = [[
         Format string used when there is no matching version.
@@ -486,7 +312,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "upgrade",
-    type = "string",
+    type = STRING_TYPE,
     default = "   %s",
     description = [[
         Format string used when there is an upgrade candidate.
@@ -494,7 +320,7 @@ entry(schema_text, {
 })
 entry(schema_text, {
     name = "error",
-    type = "string",
+    type = STRING_TYPE,
     default = "   Error fetching crate",
     description = [[
         Format string used when there was an error loading crate information.
@@ -502,65 +328,68 @@ entry(schema_text, {
 })
 
 
-local schema_hi = section_entry(M.schema, {
+local schema_hl = section_entry(M.schema, {
     name = "highlight",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "HighlightConfig",
+    },
     description = [[
         Highlight groups used for virtual text.
     ]],
     fields = {},
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "loading",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimLoading",
     description = [[
         Highlight group used while loading crate information.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimVersion",
     description = [[
         Highlight group used for the latest compatible version.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "prerelease",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPreRelease",
     description = [[
         Highlight group used for pre-release versions.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimYanked",
     description = [[
         Highlight group used for yanked versions.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "nomatch",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimNoMatch",
     description = [[
         Highlight group used when there is no matching version.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "upgrade",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimUpgrade",
     description = [[
         Highlight group used when there is an upgrade candidate.
     ]],
 })
-entry(schema_hi, {
+entry(schema_hl, {
     name = "error",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimError",
     description = [[
         Highlight group used when there was an error loading crate information.
@@ -570,116 +399,119 @@ entry(schema_hi, {
 
 local schema_diagnostic = section_entry(M.schema, {
     name = "diagnostic",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "DiagnosticConfig",
+    },
     fields = {},
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "section_invalid",
-    type = "string",
+    type = STRING_TYPE,
     default = "Invalid dependency section",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "workspace_section_not_default",
-    type = "string",
+    type = STRING_TYPE,
     default = "Workspace dependency sections don't support other kinds of dependencies like build or dev",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "workspace_section_has_target",
-    type = "string",
+    type = STRING_TYPE,
     default = "Workspace dependency sections don't support target specifiers",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "section_dup",
-    type = "string",
+    type = STRING_TYPE,
     default = "Duplicate dependency section",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "section_dup_orig",
-    type = "string",
+    type = STRING_TYPE,
     default = "Original dependency section is defined here",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "crate_dup",
-    type = "string",
+    type = STRING_TYPE,
     default = "Duplicate crate entry",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "crate_dup_orig",
-    type = "string",
+    type = STRING_TYPE,
     default = "Original crate entry is defined here",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "crate_novers",
-    type = "string",
+    type = STRING_TYPE,
     default = "Missing version requirement",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "crate_error_fetching",
-    type = "string",
+    type = STRING_TYPE,
     default = "Error fetching crate",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "crate_name_case",
-    type = "string",
+    type = STRING_TYPE,
     default = "Incorrect crate name casing",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "vers_upgrade",
-    type = "string",
+    type = STRING_TYPE,
     default = "There is an upgrade available",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "vers_pre",
-    type = "string",
+    type = STRING_TYPE,
     default =
     "Requirement only matches a pre-release version\nIf you want to use the pre-release package, it needs to be specified explicitly",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "vers_yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = "Requirement only matches a yanked version",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "vers_nomatch",
-    type = "string",
+    type = STRING_TYPE,
     default = "Requirement doesn't match a version",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "def_invalid",
-    type = "string",
+    type = STRING_TYPE,
     default = "Invalid boolean value",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "feat_dup",
-    type = "string",
+    type = STRING_TYPE,
     default = "Duplicate feature entry",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "feat_dup_orig",
-    type = "string",
+    type = STRING_TYPE,
     default = "Original feature entry is defined here",
     hidden = true,
 })
 entry(schema_diagnostic, {
     name = "feat_invalid",
-    type = "string",
+    type = STRING_TYPE,
     default = "Invalid feature",
     hidden = true,
 })
@@ -687,7 +519,10 @@ entry(schema_diagnostic, {
 
 local schema_popup = section_entry(M.schema, {
     name = "popup",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "PopupConfig",
+    },
     description = [[
         Popup configuration.
     ]],
@@ -695,7 +530,7 @@ local schema_popup = section_entry(M.schema, {
 })
 entry(schema_popup, {
     name = "autofocus",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Focus the versions popup when opening it.
@@ -703,7 +538,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "hide_on_select",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Hides the popup after selecting a version.
@@ -711,7 +546,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "copy_register",
-    type = "string",
+    type = STRING_TYPE,
     default = '"',
     description = [[
         The register into which the version will be copied.
@@ -719,7 +554,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "style",
-    type = "string",
+    type = STRING_TYPE,
     default = "minimal",
     description = [[
         Same as nvim_open_win config.style.
@@ -727,7 +562,10 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "border",
-    type = { "string", "table" },
+    type = {
+        config_type = { "string", "table" },
+        emmylua_annotation = "string|string[]",
+    },
     default = "none",
     description = [[
         Same as nvim_open_win config.border.
@@ -735,7 +573,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "show_version_date",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Display when a version was released.
@@ -743,7 +581,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "show_dependency_version",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Display when a version was released.
@@ -751,7 +589,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "max_height",
-    type = "number",
+    type = INTEGER_TYPE,
     default = 30,
     description = [[
         The maximum height of the popup.
@@ -759,7 +597,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "min_width",
-    type = "number",
+    type = INTEGER_TYPE,
     default = 20,
     description = [[
         The minimum width of the popup.
@@ -767,7 +605,7 @@ entry(schema_popup, {
 })
 entry(schema_popup, {
     name = "padding",
-    type = "number",
+    type = INTEGER_TYPE,
     default = 1,
     description = [[
         The horizontal padding of the popup.
@@ -776,7 +614,7 @@ entry(schema_popup, {
 -- deprecated
 entry(schema_popup, {
     name = "version_date",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     deprecated = {
         new_field = { "popup", "show_version_date" },
         hard = true,
@@ -786,7 +624,10 @@ entry(schema_popup, {
 
 local schema_popup_text = section_entry(schema_popup, {
     name = "text",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "PopupTextConfig",
+    },
     description = [[
         Strings used to format the text inside the popup.
     ]],
@@ -794,7 +635,7 @@ local schema_popup_text = section_entry(schema_popup, {
 })
 entry(schema_popup_text, {
     name = "title",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for the popup title.
@@ -802,7 +643,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "pill_left",
-    type = "string",
+    type = STRING_TYPE,
     default = "",
     description = [[
         Left border of a pill (keywords and categories).
@@ -810,7 +651,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "pill_right",
-    type = "string",
+    type = STRING_TYPE,
     default = "",
     description = [[
         Right border of a pill (keywords and categories).
@@ -819,7 +660,7 @@ entry(schema_popup_text, {
 -- crate
 entry(schema_popup_text, {
     name = "description",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the description.
@@ -827,7 +668,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "created_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " created        ",
     description = [[
         Label string used for the creation date.
@@ -835,7 +676,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "created",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the creation date.
@@ -843,7 +684,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "updated_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " updated        ",
     description = [[
         Label string used for the updated date.
@@ -851,7 +692,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "updated",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the updated date.
@@ -859,7 +700,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "downloads_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " downloads      ",
     description = [[
         Label string used for the download count.
@@ -867,7 +708,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "downloads",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the download count.
@@ -875,7 +716,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "homepage_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " homepage       ",
     description = [[
         Label string used for the homepage url.
@@ -883,7 +724,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "homepage",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the homepage url.
@@ -891,7 +732,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "repository_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " repository     ",
     description = [[
         Label string used for the repository url.
@@ -899,7 +740,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "repository",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the repository url.
@@ -907,7 +748,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "documentation_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " documentation  ",
     description = [[
         Label string used for the documentation url.
@@ -915,7 +756,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "documentation",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the documentation url.
@@ -923,7 +764,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "crates_io_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " crates.io      ",
     description = [[
         Label string used for the crates.io url.
@@ -931,7 +772,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "crates_io",
-    type = "string",
+    type = STRING_TYPE,
     default = "%s",
     description = [[
         Format string used for the crates.io url.
@@ -939,7 +780,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "categories_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " categories     ",
     description = [[
         Label string used for the categories label.
@@ -947,7 +788,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "keywords_label",
-    type = "string",
+    type = STRING_TYPE,
     default = " keywords       ",
     description = [[
         Label string used for the keywords label.
@@ -956,7 +797,7 @@ entry(schema_popup_text, {
 -- versions
 entry(schema_popup_text, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "  %s",
     description = [[
         Format string used for release versions.
@@ -964,7 +805,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "prerelease",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for prerelease versions.
@@ -972,7 +813,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for yanked versions.
@@ -980,7 +821,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "version_date",
-    type = "string",
+    type = STRING_TYPE,
     default = "  %s",
     description = [[
         Format string used for appending the version release date.
@@ -989,7 +830,7 @@ entry(schema_popup_text, {
 -- features
 entry(schema_popup_text, {
     name = "feature",
-    type = "string",
+    type = STRING_TYPE,
     default = "  %s",
     description = [[
         Format string used for disabled features.
@@ -997,7 +838,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "enabled",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for enabled features.
@@ -1005,7 +846,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "transitive",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for transitively enabled features.
@@ -1014,7 +855,7 @@ entry(schema_popup_text, {
 -- dependencies
 entry(schema_popup_text, {
     name = "normal_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = " Dependencies",
     description = [[
         Format string used for the title of the normal dependencies section.
@@ -1022,7 +863,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "build_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = " Build dependencies",
     description = [[
         Format string used for the title of the build dependencies section.
@@ -1030,7 +871,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "dev_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = " Dev dependencies",
     description = [[
         Format string used for the title of the dev dependencies section.
@@ -1038,7 +879,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "dependency",
-    type = "string",
+    type = STRING_TYPE,
     default = "  %s",
     description = [[
         Format string used for dependencies and their version requirement.
@@ -1046,7 +887,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "optional",
-    type = "string",
+    type = STRING_TYPE,
     default = " %s",
     description = [[
         Format string used for optional dependencies and their version requirement.
@@ -1054,7 +895,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "dependency_version",
-    type = "string",
+    type = STRING_TYPE,
     default = "  %s",
     description = [[
         Format string used for appending the dependency version.
@@ -1062,7 +903,7 @@ entry(schema_popup_text, {
 })
 entry(schema_popup_text, {
     name = "loading",
-    type = "string",
+    type = STRING_TYPE,
     default = "  ",
     description = [[
         Format string used as a loading indicator when fetching dependencies.
@@ -1071,7 +912,7 @@ entry(schema_popup_text, {
 -- deprecated
 entry(schema_popup_text, {
     name = "date",
-    type = "string",
+    type = STRING_TYPE,
     deprecated = {
         new_field = { "popup", "text", "version_date" },
         hard = true,
@@ -1079,285 +920,288 @@ entry(schema_popup_text, {
 })
 
 
-local schema_popup_hi = section_entry(schema_popup, {
+local schema_popup_hl = section_entry(schema_popup, {
     name = "highlight",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "PopupHighlightConfig",
+    },
     description = [[
         Highlight groups for popup elements.
     ]],
     fields = {},
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "title",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupTitle",
     description = [[
         Highlight group used for the popup title.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "pill_text",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupPillText",
     description = [[
         Highlight group used for a pill's text (keywords and categories).
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "pill_border",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupPillBorder",
     description = [[
         Highlight group used for a pill's border (keywords and categories).
     ]],
 })
 -- crate
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "description",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupDescription",
     description = [[
         Highlight group used for the crate description.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "created_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the creation date label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "created",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupValue",
     description = [[
         Highlight group used for the creation date.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "updated_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the updated date label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "updated",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupValue",
     description = [[
         Highlight group used for the updated date.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "downloads_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the download count label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "downloads",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupValue",
     description = [[
         Highlight group used for the download count.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "homepage_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the homepage url label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "homepage",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the homepage url.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "repository_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the repository url label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "repository",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the repository url.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "documentation_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the documentation url label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "documentation",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the documentation url.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "crates_io_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the crates.io url label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "crates_io",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the crates.io url.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "categories_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the categories label.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "keywords_label",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLabel",
     description = [[
         Highlight group used for the keywords label.
     ]],
 })
 -- versions
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupVersion",
     description = [[
         Highlight group used for versions inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "prerelease",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupPreRelease",
     description = [[
         Highlight group used for pre-release versions inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupYanked",
     description = [[
         Highlight group used for yanked versions inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "version_date",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupVersionDate",
     description = [[
         Highlight group used for the version date inside the popup.
     ]],
 })
 -- features
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "feature",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupFeature",
     description = [[
         Highlight group used for disabled features inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "enabled",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupEnabled",
     description = [[
         Highlight group used for enabled features inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "transitive",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupTransitive",
     description = [[
         Highlight group used for transitively enabled features inside the popup.
     ]],
 })
 -- dependencies
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "normal_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupNormalDependenciesTitle",
     description = [[
         Highlight group used for the title of the normal dependencies section.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "build_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupBuildDependenciesTitle",
     description = [[
         Highlight group used for the title of the build dependencies section.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "dev_dependencies_title",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupDevDependenciesTitle",
     description = [[
         Highlight group used for the title of the dev dependencies section.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "dependency",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupDependency",
     description = [[
         Highlight group used for dependencies inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "optional",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupOptional",
     description = [[
         Highlight group used for optional dependencies inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "dependency_version",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupDependencyVersion",
     description = [[
         Highlight group used for the dependency version inside the popup.
     ]],
 })
-entry(schema_popup_hi, {
+entry(schema_popup_hl, {
     name = "loading",
-    type = "string",
+    type = STRING_TYPE,
     default = "CratesNvimPopupLoading",
     description = [[
         Highlight group for the loading indicator inside the popup.
@@ -1367,7 +1211,10 @@ entry(schema_popup_hi, {
 
 local schema_popup_keys = section_entry(schema_popup, {
     name = "keys",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "PopupKeyConfig",
+    },
     description = [[
         Key mappings inside the popup.
     ]],
@@ -1375,7 +1222,7 @@ local schema_popup_keys = section_entry(schema_popup, {
 })
 entry(schema_popup_keys, {
     name = "hide",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "q", "<esc>" },
     description = [[
         Hides the popup.
@@ -1384,7 +1231,7 @@ entry(schema_popup_keys, {
 -- crate
 entry(schema_popup_keys, {
     name = "open_url",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "<cr>" },
     description = [[
         Key mappings to open the url on the current line.
@@ -1393,7 +1240,7 @@ entry(schema_popup_keys, {
 -- versions
 entry(schema_popup_keys, {
     name = "select",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "<cr>" },
     description = [[
         Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
@@ -1401,7 +1248,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "select_alt",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "s" },
     description = [[
         Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
@@ -1410,7 +1257,7 @@ entry(schema_popup_keys, {
 -- features
 entry(schema_popup_keys, {
     name = "toggle_feature",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "<cr>" },
     description = [[
         Key mappings to enable or disable the feature on the current line inside the popup.
@@ -1419,7 +1266,7 @@ entry(schema_popup_keys, {
 -- common
 entry(schema_popup_keys, {
     name = "copy_value",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "yy" },
     description = [[
         Key mappings to copy the value on the current line inside the popup.
@@ -1427,7 +1274,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "goto_item",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "gd", "K", "<C-LeftMouse>" },
     description = [[
         Key mappings to go to the item on the current line inside the popup.
@@ -1435,7 +1282,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "jump_forward",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "<c-i>" },
     description = [[
         Key mappings to jump forward in the popup jump history.
@@ -1443,7 +1290,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "jump_back",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     default = { "<c-o>", "<C-RightMouse>" },
     description = [[
         Key mappings to go back in the popup jump history.
@@ -1452,7 +1299,7 @@ entry(schema_popup_keys, {
 -- deprecated
 entry(schema_popup_keys, {
     name = "goto_feature",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     deprecated = {
         new_field = { "popup", "keys", "goto_item" },
         hard = true,
@@ -1460,7 +1307,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "jump_forward_feature",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     deprecated = {
         new_field = { "popup", "keys", "jump_forward" },
         hard = true,
@@ -1468,7 +1315,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "jump_back_feature",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     deprecated = {
         new_field = { "popup", "keys", "jump_back" },
         hard = true,
@@ -1476,7 +1323,7 @@ entry(schema_popup_keys, {
 })
 entry(schema_popup_keys, {
     name = "copy_version",
-    type = "table",
+    type = STRING_ARRAY_TYPE,
     deprecated = {
         new_field = { "popup", "keys", "copy_value" },
         hard = true,
@@ -1486,7 +1333,10 @@ entry(schema_popup_keys, {
 
 local schema_src = section_entry(M.schema, {
     name = "src",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "SrcConfig",
+    },
     description = [[
         Configuration options for completion sources.
     ]],
@@ -1494,7 +1344,7 @@ local schema_src = section_entry(M.schema, {
 })
 entry(schema_src, {
     name = "insert_closing_quote",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Insert a closing quote on completion if there is none.
@@ -1502,7 +1352,10 @@ entry(schema_src, {
 })
 local schema_src_text = section_entry(schema_src, {
     name = "text",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "SrcTextConfig",
+    },
     description = [[
         Text shown in the completion source documentation preview.
     ]],
@@ -1510,7 +1363,7 @@ local schema_src_text = section_entry(schema_src, {
 })
 entry(schema_src_text, {
     name = "prerelease",
-    type = "string",
+    type = STRING_TYPE,
     default = "  pre-release ",
     description = [[
         Text shown in the completion source documentation preview for pre-release versions.
@@ -1518,7 +1371,7 @@ entry(schema_src_text, {
 })
 entry(schema_src_text, {
     name = "yanked",
-    type = "string",
+    type = STRING_TYPE,
     default = "  yanked ",
     description = [[
         Text shown in the completion source documentation preview for yanked versions.
@@ -1527,7 +1380,10 @@ entry(schema_src_text, {
 
 local schema_src_cmp = section_entry(schema_src, {
     name = "cmp",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CmpConfig",
+    },
     description = [[
         Configuration options for the |nvim-cmp| completion source.
     ]],
@@ -1535,7 +1391,7 @@ local schema_src_cmp = section_entry(schema_src, {
 })
 entry(schema_src_cmp, {
     name = "enabled",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to load and register the |nvim-cmp| source.
@@ -1549,7 +1405,7 @@ entry(schema_src_cmp, {
 })
 entry(schema_src_cmp, {
     name = "use_custom_kind",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = true,
     description = [[
         Use custom a custom kind to display inside the |nvim-cmp| completion menu.
@@ -1558,7 +1414,10 @@ entry(schema_src_cmp, {
 
 local schema_src_cmp_kind_text = section_entry(schema_src_cmp, {
     name = "kind_text",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CmpKindTextConfig",
+    },
     description = [[
         The kind text shown in the |nvim-cmp| completion menu.
     ]],
@@ -1566,7 +1425,7 @@ local schema_src_cmp_kind_text = section_entry(schema_src_cmp, {
 })
 entry(schema_src_cmp_kind_text, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "Version",
     description = [[
         The version kind text shown in the |nvim-cmp| completion menu.
@@ -1574,32 +1433,35 @@ entry(schema_src_cmp_kind_text, {
 })
 entry(schema_src_cmp_kind_text, {
     name = "feature",
-    type = "string",
+    type = STRING_TYPE,
     default = "Feature",
     description = [[
         The feature kind text shown in the |nvim-cmp| completion menu.
     ]],
 })
 
-local schema_src_cmp_kind_hi = section_entry(schema_src_cmp, {
+local schema_src_cmp_kind_hl = section_entry(schema_src_cmp, {
     name = "kind_highlight",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CmpKindHighlightConfig",
+    },
     description = [[
         Highlight groups used for the kind text in the |nvim-cmp| completion menu.
     ]],
     fields = {},
 })
-entry(schema_src_cmp_kind_hi, {
+entry(schema_src_cmp_kind_hl, {
     name = "version",
-    type = "string",
+    type = STRING_TYPE,
     default = "CmpItemKindVersion",
     description = [[
         Highlight group used for the version kind text in the |nvim-cmp| completion menu.
     ]],
 })
-entry(schema_src_cmp_kind_hi, {
+entry(schema_src_cmp_kind_hl, {
     name = "feature",
-    type = "string",
+    type = STRING_TYPE,
     default = "CmpItemKindFeature",
     description = [[
         Highlight group used for the feature kind text in the |nvim-cmp| completion menu.
@@ -1608,7 +1470,10 @@ entry(schema_src_cmp_kind_hi, {
 
 local schema_src_coq = section_entry(schema_src, {
     name = "coq",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CoqConfig",
+    },
     description = [[
         Configuration options for the |coq_nvim| completion source.
     ]],
@@ -1616,7 +1481,7 @@ local schema_src_coq = section_entry(schema_src, {
 })
 entry(schema_src_coq, {
     name = "enabled",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to load and register the |coq_nvim| source.
@@ -1624,7 +1489,7 @@ entry(schema_src_coq, {
 })
 entry(schema_src_coq, {
     name = "name",
-    type = "string",
+    type = STRING_TYPE,
     default = "crates.nvim",
     description = [[
         The source name displayed by |coq_nvim|.
@@ -1634,7 +1499,10 @@ entry(schema_src_coq, {
 
 local schema_null_ls = section_entry(M.schema, {
     name = "null_ls",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "NullLsConfig",
+    },
     description = [[
         Configuration options for null-ls.nvim actions.
     ]],
@@ -1642,7 +1510,7 @@ local schema_null_ls = section_entry(M.schema, {
 })
 entry(schema_null_ls, {
     name = "enabled",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to register the |null-ls.nvim| source.
@@ -1650,7 +1518,7 @@ entry(schema_null_ls, {
 })
 entry(schema_null_ls, {
     name = "name",
-    type = "string",
+    type = STRING_TYPE,
     default = "crates.nvim",
     description = [[
         The |null-ls.nvim| name.
@@ -1660,7 +1528,10 @@ entry(schema_null_ls, {
 
 local schema_lsp = section_entry(M.schema, {
     name = "lsp",
-    type = "section",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "LspConfig",
+    },
     description = [[
         Configuration options for the in-process language server.
     ]],
@@ -1668,7 +1539,7 @@ local schema_lsp = section_entry(M.schema, {
 })
 entry(schema_lsp, {
     name = "enabled",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to enable the in-process language server.
@@ -1676,7 +1547,7 @@ entry(schema_lsp, {
 })
 entry(schema_lsp, {
     name = "name",
-    type = "string",
+    type = STRING_TYPE,
     default = "crates.nvim",
     description = [[
         The lsp server name.
@@ -1684,7 +1555,10 @@ entry(schema_lsp, {
 })
 entry(schema_lsp, {
     name = "on_attach",
-    type = "function",
+    type = {
+        config_type = "function",
+        emmylua_annotation = "fun(client: lsp.Client, bufnr: integer)",
+    },
     default = function(_client, _bufnr) end,
     default_text = "function(client, bufnr) end",
     description = [[
@@ -1695,7 +1569,7 @@ entry(schema_lsp, {
 })
 entry(schema_lsp, {
     name = "actions",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to enable the `codeActionProvider` capability.
@@ -1703,7 +1577,7 @@ entry(schema_lsp, {
 })
 entry(schema_lsp, {
     name = "completion",
-    type = "boolean",
+    type = BOOLEAN_TYPE,
     default = false,
     description = [[
         Whether to enable the `completionProvider` capability.
@@ -1757,7 +1631,11 @@ end
 ---@param user_config table<string,any>
 local function handle_deprecated(path, schema, root_config, user_config)
     for k, v in pairs(user_config) do
-        local elem = schema[k]
+        ---@type SchemaElement|nil
+        local elem
+        if type(k) == "string" then
+            elem = schema[k]
+        end
 
         if elem then
             local p = join_path(path, k)
@@ -1767,7 +1645,7 @@ local function handle_deprecated(path, schema, root_config, user_config)
                 if dep.new_field and not dep.hard then
                     table_set_path(root_config, dep.new_field, v)
                 end
-            elseif elem.type == "section" and type(v) == "table" then
+            elseif elem.type.config_type == "section" and type(v) == "table" then
                 ---@cast elem SectionSchemaElement|HiddenSectionSchemaElement
                 ---@cast v table<string,any>
                 handle_deprecated(p, elem.fields, root_config, v)
@@ -1776,28 +1654,30 @@ local function handle_deprecated(path, schema, root_config, user_config)
     end
 end
 
----@param schema_type SchemaType|SchemaType[]
----@return SchemaType[]
-local function coerce_to_type_list(schema_type)
-    if type(schema_type) == "string" then
-        ---@cast schema_type SchemaType
-        return { schema_type }
+---@param schema_type SchemaType
+---@return string
+local function to_user_config_type_string(schema_type)
+    local config_type = schema_type.config_type
+    if config_type == "section" then
+        return "table"
+    elseif type(config_type) == "string" then
+        return config_type
     else
-        ---@cast schema_type SchemaType[]
-        return schema_type
+        return table.concat(config_type, "|")
     end
 end
 
 ---@param value_type type
----@param schema_type SchemaType|SchemaType[]
+---@param schema_type SchemaType
 ---@return boolean
 local function matches_type(value_type, schema_type)
-    if type(schema_type) == "string" then
-        ---@cast schema_type SchemaType
-        return value_type == schema_type
+    local config_type = schema_type.config_type
+    if type(config_type) == "string" then
+        ---@cast config_type ConfigType
+        return value_type == config_type
     else
-        ---@cast schema_type SchemaType[]
-        return vim.tbl_contains(schema_type, value_type)
+        ---@cast schema_type ConfigType[]
+        return vim.tbl_contains(config_type, value_type)
     end
 end
 
@@ -1839,7 +1719,7 @@ local function validate_schema(path, schema, user_config)
                         table.concat(p, ".")
                     )
                 end
-            elseif elem.type == "section" then
+            elseif elem.type.config_type == "section" then
                 if value_type == "table" then
                     validate_schema(p, elem.fields, v)
                 else
@@ -1854,7 +1734,7 @@ local function validate_schema(path, schema, user_config)
                     warn(
                         "Config field '%s' was expected to be of type '%s' but was '%s', using default value.",
                         table.concat(p, "."),
-                        table.concat(coerce_to_type_list(elem.type), " | "),
+                        to_user_config_type_string(elem.type),
                         value_type
                     )
                 end
@@ -1880,7 +1760,7 @@ local function build_config(schema, user_config)
         local user_value = user_config[key]
         local value_type = type(user_value)
 
-        if elem.type == "section" then
+        if elem.type.config_type == "section" then
             if value_type == "table" then
                 config[key] = build_config(elem.fields, user_value)
             else
@@ -1903,9 +1783,9 @@ end
 ---@return Config
 function M.build(user_config)
     user_config = user_config or {}
-    local config_type = type(user_config)
-    if config_type ~= "table" then
-        warn("Expected config of type 'table' found '%s'", config_type)
+    local user_config_type = type(user_config)
+    if user_config_type ~= "table" then
+        warn("Expected config of type 'table' found '%s'", user_config_type)
         user_config = {}
     end
 

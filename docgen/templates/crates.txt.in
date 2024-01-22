@@ -92,13 +92,14 @@ commands:
 ==============================================================================
 CONFIGURATION                                                  *crates-config*
 
-This section describes the configuration options which can be passed to
-`crates.setup()`.
+This section describes the configuration table which can be passed to
+`crates.setup()`. The type of this table is available as an EmmyLua annotation
+named `crates.UserConfig`.
 
-NOTE: The type `section` indicates that the field is a table of subfields and
-use their default values, if not specified. This is different from fields
-with the type `table`. If a config option with the type `table` is spedified
-it completely overrides the default value.
+NOTE: If a field is labeled `Section` it's a table of subfields and uses their
+default values if not specified. This is different from other fields with
+table types like `string[]`. Non `Section` fields will completely override the
+default value, not extend them.
 
 <SHARED:CONFIGURATION>
 

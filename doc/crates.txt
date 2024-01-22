@@ -86,8 +86,8 @@ For more information about individual config options see |crates-config|.
         notification_title = "crates.nvim",
         curl_args = { "-sL", "--retry", "1" },
         max_parallel_requests = 80,
-        expand_crate_moves_cursor = true,
         open_programs = { "xdg-open", "open" },
+        expand_crate_moves_cursor = true,
         disable_invalid_feature_diagnostic = false,
         enable_update_available_warning = true,
         on_attach = function(bufnr) end,
@@ -346,7 +346,7 @@ They can be accessed like this.
     require('crates').function_name()
 <
 
-setup({cfg}: `Config`)                                        *crates.setup()*
+setup({cfg}: `crates.UserConfig`)                             *crates.setup()*
     Setup config and auto commands.
 
 
@@ -498,13 +498,14 @@ commands:
 ==============================================================================
 CONFIGURATION                                                  *crates-config*
 
-This section describes the configuration options which can be passed to
-`crates.setup()`.
+This section describes the configuration table which can be passed to
+`crates.setup()`. The type of this table is available as an EmmyLua annotation
+named `crates.UserConfig`.
 
-NOTE: The type `section` indicates that the field is a table of subfields and
-use their default values, if not specified. This is different from fields
-with the type `table`. If a config option with the type `table` is spedified
-it completely overrides the default value.
+NOTE: If a field is labeled `Section` it's a table of subfields and uses their
+default values if not specified. This is different from other fields with
+table types like `string[]`. Non `Section` fields will completely override the
+default value, not extend them.
 
 smart_insert                                      *crates-config-smart_insert*
     Type: `boolean`, Default: `true`
@@ -542,7 +543,7 @@ autoupdate                                          *crates-config-autoupdate*
 
 
 autoupdate_throttle                        *crates-config-autoupdate_throttle*
-    Type: `number`, Default: `250`
+    Type: `integer`, Default: `250`
 
     Rate limit the auto update in milliseconds
 
@@ -579,27 +580,27 @@ notification_title                          *crates-config-notification_title*
 
 
 curl_args                                            *crates-config-curl_args*
-    Type: `table`, Default: `{ "-sL", "--retry", "1" }`
+    Type: `string[]`, Default: `{ "-sL", "--retry", "1" }`
 
     A list of arguments passed to curl when fetching metadata from crates.io.
 
 
 max_parallel_requests                    *crates-config-max_parallel_requests*
-    Type: `number`, Default: `80`
+    Type: `integer`, Default: `80`
 
     Maximum number of parallel requests.
+
+
+open_programs                                    *crates-config-open_programs*
+    Type: `string[]`, Default: `{ "xdg-open", "open" }`
+
+    A list of programs that used to open urls.
 
 
 expand_crate_moves_cursor            *crates-config-expand_crate_moves_cursor*
     Type: `boolean`, Default: `true`
 
     Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
-
-
-open_programs                                    *crates-config-open_programs*
-    Type: `table`, Default: `{ "xdg-open", "open" }`
-
-    A list of programs that used to open urls.
 
 
                             *crates-config-disable_invalid_feature_diagnostic*
@@ -618,7 +619,7 @@ enable_update_available_warning
 
 
 on_attach                                            *crates-config-on_attach*
-    Type: `function`, Default: `function(bufnr) end`
+    Type: `fun(bufnr: integer)`, Default: `function(bufnr) end`
 
     Callback to run when a `Cargo.toml` file is opened.
 
@@ -629,7 +630,7 @@ avoid_prerelease                              *crates-config-avoid_prerelease*
     DEPRECATED
 
 text                                                      *crates-config-text*
-    Type: `section`
+    Section type: `TextConfig`
 
     Strings used to format virtual text.
 
@@ -677,7 +678,7 @@ text.error                                          *crates-config-text-error*
 
 
 highlight                                            *crates-config-highlight*
-    Type: `section`
+    Section type: `HighlightConfig`
 
     Highlight groups used for virtual text.
 
@@ -725,7 +726,7 @@ highlight.error                                *crates-config-highlight-error*
 
 
 popup                                                    *crates-config-popup*
-    Type: `section`
+    Section type: `PopupConfig`
 
     Popup configuration.
 
@@ -755,7 +756,7 @@ popup.style                                        *crates-config-popup-style*
 
 
 popup.border                                      *crates-config-popup-border*
-    Type: `string or table`, Default: `"none"`
+    Type: `string|string[]`, Default: `"none"`
 
     Same as nvim_open_win config.border.
 
@@ -773,19 +774,19 @@ popup.show_dependency_version    *crates-config-popup-show_dependency_version*
 
 
 popup.max_height                              *crates-config-popup-max_height*
-    Type: `number`, Default: `30`
+    Type: `integer`, Default: `30`
 
     The maximum height of the popup.
 
 
 popup.min_width                                *crates-config-popup-min_width*
-    Type: `number`, Default: `20`
+    Type: `integer`, Default: `20`
 
     The minimum width of the popup.
 
 
 popup.padding                                    *crates-config-popup-padding*
-    Type: `number`, Default: `1`
+    Type: `integer`, Default: `1`
 
     The horizontal padding of the popup.
 
@@ -796,7 +797,7 @@ popup.version_date                          *crates-config-popup-version_date*
     Please use |crates-config-popup-show_version_date| instead.
 
 popup.text                                          *crates-config-popup-text*
-    Type: `section`
+    Section type: `PopupTextConfig`
 
     Strings used to format the text inside the popup.
 
@@ -1014,7 +1015,7 @@ popup.text.date                                *crates-config-popup-text-date*
     Please use |crates-config-popup-text-version_date| instead.
 
 popup.highlight                                *crates-config-popup-highlight*
-    Type: `section`
+    Section type: `PopupHighlightConfig`
 
     Highlight groups for popup elements.
 
@@ -1233,61 +1234,61 @@ popup.highlight.loading                *crates-config-popup-highlight-loading*
 
 
 popup.keys                                          *crates-config-popup-keys*
-    Type: `section`
+    Section type: `PopupKeyConfig`
 
     Key mappings inside the popup.
 
 
 popup.keys.hide                                *crates-config-popup-keys-hide*
-    Type: `table`, Default: `{ "q", "<esc>" }`
+    Type: `string[]`, Default: `{ "q", "<esc>" }`
 
     Hides the popup.
 
 
 popup.keys.open_url                        *crates-config-popup-keys-open_url*
-    Type: `table`, Default: `{ "<cr>" }`
+    Type: `string[]`, Default: `{ "<cr>" }`
 
     Key mappings to open the url on the current line.
 
 
 popup.keys.select                            *crates-config-popup-keys-select*
-    Type: `table`, Default: `{ "<cr>" }`
+    Type: `string[]`, Default: `{ "<cr>" }`
 
     Key mappings to insert the version respecting the |crates-config-smart_insert| flag.
 
 
 popup.keys.select_alt                    *crates-config-popup-keys-select_alt*
-    Type: `table`, Default: `{ "s" }`
+    Type: `string[]`, Default: `{ "s" }`
 
     Key mappings to insert the version using the opposite of |crates-config-smart_insert| flag.
 
 
 popup.keys.toggle_feature            *crates-config-popup-keys-toggle_feature*
-    Type: `table`, Default: `{ "<cr>" }`
+    Type: `string[]`, Default: `{ "<cr>" }`
 
     Key mappings to enable or disable the feature on the current line inside the popup.
 
 
 popup.keys.copy_value                    *crates-config-popup-keys-copy_value*
-    Type: `table`, Default: `{ "yy" }`
+    Type: `string[]`, Default: `{ "yy" }`
 
     Key mappings to copy the value on the current line inside the popup.
 
 
 popup.keys.goto_item                      *crates-config-popup-keys-goto_item*
-    Type: `table`, Default: `{ "gd", "K", "<C-LeftMouse>" }`
+    Type: `string[]`, Default: `{ "gd", "K", "<C-LeftMouse>" }`
 
     Key mappings to go to the item on the current line inside the popup.
 
 
 popup.keys.jump_forward                *crates-config-popup-keys-jump_forward*
-    Type: `table`, Default: `{ "<c-i>" }`
+    Type: `string[]`, Default: `{ "<c-i>" }`
 
     Key mappings to jump forward in the popup jump history.
 
 
 popup.keys.jump_back                      *crates-config-popup-keys-jump_back*
-    Type: `table`, Default: `{ "<c-o>", "<C-RightMouse>" }`
+    Type: `string[]`, Default: `{ "<c-o>", "<C-RightMouse>" }`
 
     Key mappings to go back in the popup jump history.
 
@@ -1314,7 +1315,7 @@ popup.keys.copy_version                *crates-config-popup-keys-copy_version*
     Please use |crates-config-popup-keys-copy_value| instead.
 
 src                                                        *crates-config-src*
-    Type: `section`
+    Section type: `SrcConfig`
 
     Configuration options for completion sources.
 
@@ -1326,7 +1327,7 @@ src.insert_closing_quote              *crates-config-src-insert_closing_quote*
 
 
 src.text                                              *crates-config-src-text*
-    Type: `section`
+    Section type: `SrcTextConfig`
 
     Text shown in the completion source documentation preview.
 
@@ -1344,7 +1345,7 @@ src.text.yanked                                *crates-config-src-text-yanked*
 
 
 src.cmp                                                *crates-config-src-cmp*
-    Type: `section`
+    Section type: `CmpConfig`
 
     Configuration options for the |nvim-cmp| completion source.
 
@@ -1368,7 +1369,7 @@ src.cmp.use_custom_kind                *crates-config-src-cmp-use_custom_kind*
 
 
 src.cmp.kind_text                            *crates-config-src-cmp-kind_text*
-    Type: `section`
+    Section type: `CmpKindTextConfig`
 
     The kind text shown in the |nvim-cmp| completion menu.
 
@@ -1386,7 +1387,7 @@ src.cmp.kind_text.feature            *crates-config-src-cmp-kind_text-feature*
 
 
 src.cmp.kind_highlight                  *crates-config-src-cmp-kind_highlight*
-    Type: `section`
+    Section type: `CmpKindHighlightConfig`
 
     Highlight groups used for the kind text in the |nvim-cmp| completion menu.
 
@@ -1404,7 +1405,7 @@ src.cmp.kind_highlight.feature  *crates-config-src-cmp-kind_highlight-feature*
 
 
 src.coq                                                *crates-config-src-coq*
-    Type: `section`
+    Section type: `CoqConfig`
 
     Configuration options for the |coq_nvim| completion source.
 
@@ -1422,7 +1423,7 @@ src.coq.name                                      *crates-config-src-coq-name*
 
 
 null_ls                                                *crates-config-null_ls*
-    Type: `section`
+    Section type: `NullLsConfig`
 
     Configuration options for null-ls.nvim actions.
 
@@ -1440,7 +1441,7 @@ null_ls.name                                      *crates-config-null_ls-name*
 
 
 lsp                                                        *crates-config-lsp*
-    Type: `section`
+    Section type: `LspConfig`
 
     Configuration options for the in-process language server.
 
@@ -1458,7 +1459,7 @@ lsp.name                                              *crates-config-lsp-name*
 
 
 lsp.on_attach                                    *crates-config-lsp-on_attach*
-    Type: `function`, Default: `function(client, bufnr) end`
+    Type: `fun(client: lsp.Client, bufnr: integer)`, Default: `function(client, bufnr) end`
 
     Callback to run when the in-process language server attaches to a buffer.
 

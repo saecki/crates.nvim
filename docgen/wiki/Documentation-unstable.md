@@ -139,8 +139,8 @@ require("crates").setup {
     notification_title = "crates.nvim",
     curl_args = { "-sL", "--retry", "1" },
     max_parallel_requests = 80,
-    expand_crate_moves_cursor = true,
     open_programs = { "xdg-open", "open" },
+    expand_crate_moves_cursor = true,
     disable_invalid_feature_diagnostic = false,
     enable_update_available_warning = true,
     on_attach = function(bufnr) end,
@@ -346,7 +346,7 @@ require("crates").setup {
 ## Functions
 ```lua
 -- Setup config and auto commands.
-require("crates").setup(cfg: Config)
+require("crates").setup(cfg: crates.UserConfig)
 
 -- Disable UI elements (virtual text and diagnostics).
 require("crates").hide()

@@ -4,7 +4,7 @@ exec lua "$0" "$@"
 ]]
 
 local inspect = require("inspect")
-local config = require("lua.crates.config")
+local config = require("lua.crates.config.init")
 local highlight = require("lua.crates.highlight")
 local version = "unstable"
 
@@ -158,9 +158,9 @@ local function gen_vimdoc_functions(lines)
             break
         end
         if l ~= "" then
-            ---@type string|nil, string|nil, string|nil|nil
+            ---@type string|nil, string|nil
             local params, ret_type = l:match("^%s*%-%-%-@type fun%(([^%)]*)%)(.*)$")
-            if params then
+            if params and ret_type then
                 local next_line = line_iter()
                 assert(next_line)
                 local name, _assigned = next_line:match("^%s*(.+) = (.+),")
@@ -243,12 +243,12 @@ local function gen_vimdoc_highlights(lines)
             table.insert(lines, "")
         else
             local colors = ""
-            local function append_if_not_nil(field, value)
-                if value then
+            local function append_if_not_nil(field, val)
+                if val then
                     if colors ~= "" then
                         colors = colors .. " "
                     end
-                    colors = colors .. string.format("%s=%s", field, value)
+                    colors = colors .. string.format("%s=%s", field, val)
                 end
             end
 
@@ -306,19 +306,12 @@ local function gen_vimdoc_config(lines, path, schema)
             end
             table.insert(lines, "")
         else
-            if s.type == "section" then
-                table.insert(lines, "    Type: `section`")
+            if s.type.config_type == "section" then
+                table.insert(lines, string.format("    Section type: `%s`", s.type.emmylua_annotation))
                 table.insert(lines, "")
             else
-                local t = s.type
-                if type(t) == "table" then
-                    t = table.concat(t, " or ")
-                end
-                local d = s.default_text
-                if not d then
-                    ---@type string
-                    d = inspect(s.default)
-                end
+                local t = s.type.emmylua_annotation
+                local d = s.default_text or inspect(s.default)
                 table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
                 table.insert(lines, "")
             end
@@ -328,7 +321,7 @@ local function gen_vimdoc_config(lines, path, schema)
             table.insert(lines, "")
         end
 
-        if s.type == "section" then
+        if s.type.config_type == "section" then
             gen_vimdoc_config(lines, p, s.fields)
         end
 
@@ -351,7 +344,7 @@ local function gen_def_config(lines, indent, path, schema)
         if not s.hidden and not s.deprecated then
             local name = s.name
 
-            if s.type == "section" then
+            if s.type.config_type == "section" then
                 local p = join_path(path, name)
                 insert_indent(name .. " = {")
                 gen_def_config(lines, indent, p, s.fields)
