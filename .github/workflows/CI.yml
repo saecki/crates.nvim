@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  doc:
+  build:
     runs-on: ubuntu-latest
     permissions:
       checks: write
@@ -27,9 +27,19 @@ jobs:
 
     - name: Install inspect
       run: luarocks install inspect
+
+    - name: Generate types
+      run: make types
+
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        file_pattern: lua/crates/config/types.lua
+        commit_message: "chore: generate types"
+
     - name: Generate docs
       run: make doc
-    
+
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
@@ -51,7 +61,7 @@ jobs:
       uses: rhysd/action-setup-vim@v1
       with:
         neovim: true
-    
+
     - name: Install plenary.nvim
       uses: actions/checkout@v4
       with:

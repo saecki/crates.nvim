@@ -21,7 +21,7 @@ local function attach()
     state.cfg.on_attach(util.current_buf())
 end
 
----@param cfg Config
+---@param cfg crates.UserConfig
 local function setup(cfg)
     state.cfg = config.build(cfg)
 
@@ -77,7 +77,7 @@ end
 ---@class Crates
 local M = {
     ---Setup config and auto commands.
-    ---@type fun(cfg: Config)
+    ---@type fun(cfg: crates.UserConfig)
     setup = setup,
 
     ---Disable UI elements (virtual text and diagnostics).
