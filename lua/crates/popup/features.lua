@@ -121,13 +121,13 @@ local function toggle_feature(ctx, line)
     local features_info = util.features_info(ctx.crate, features)
     if entry.feature then
         for _, m in ipairs(entry.feature.members) do
-            local hi_text = feature_text(features_info, m)
-            table.insert(features_text, hi_text)
+            local hl_text = feature_text(features_info, m)
+            table.insert(features_text, hl_text)
         end
     else
         for _, f in ipairs(features.list) do
-            local hi_text = feature_text(features_info, f.name)
-            table.insert(features_text, hi_text)
+            local hl_text = feature_text(features_info, f.name)
+            table.insert(features_text, hl_text)
         end
     end
 
