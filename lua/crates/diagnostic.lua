@@ -127,7 +127,7 @@ function M.process_crates(sections, crates)
     for _, s in ipairs(sections) do
         local key = s.text:gsub("%s+", "")
 
-        if s.workspace and s.kind ~= "default" then
+        if s.workspace and s.kind ~= toml.TomlSectionKind.DEFAULT then
             table.insert(diagnostics, section_diagnostic(
                 s,
                 CratesDiagnosticKind.WORKSPACE_SECTION_NOT_DEFAULT,
