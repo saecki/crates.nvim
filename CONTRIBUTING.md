@@ -2,6 +2,13 @@
 
 ## Writing Code
 
+> [!IMPORTANT]
+> `lua/crates/config/types.lua` is automatically generated.
+
+__To update it:__
+1. Edit the schema in `lua/crates/config/init.lua`
+2. Generate it by running `make types`
+
 ### How `core.update()` works
 ```
      ┌─────────┐
@@ -51,10 +58,13 @@ make test
 - [Inspect](https://github.com/kikito/inspect.lua)
     - `luarocks install inspect`
 
-__Do not edit the `README.md`, `doc/crates.txt` or wiki files.__
+> [!IMPORTANT]
+> Do not edit the `README.md`, `doc/crates.txt` or wiki files.\
+> They are automatically generated.
 
-To update the README, vimdoc or wiki edit the files in `docgen/templates/*`
-instead of their generated counter parts.
+__To update them:__
+1. Edit the files in `docgen/templates` or `docgen/shared`
+2. Optionally run `make doc` or let github actions do it
 
 The generation finds placeholders inside the templates and uses either
 some custom generation logic, or a file inside `docgen/shared/*` as a replacement.
@@ -69,10 +79,3 @@ would be replaced by the generated default configuration, but
 is replaced by the contents of the `docgen/shared/keymaps.lua` file.\
 The indentation of the placeholder has to be a multiple of 4 spaces
 and will be applied to the replacement file.
-
-
-Documentation is automatically updated by github actions, but you can also
-generate it yourself by running:
-```
-make doc
-```
