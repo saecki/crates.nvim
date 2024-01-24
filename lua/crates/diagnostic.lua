@@ -3,6 +3,7 @@ local semver = require("crates.semver")
 local state = require("crates.state")
 local toml = require("crates.toml")
 local DepKind = toml.DepKind
+local TomlSectionKind = toml.TomlSectionKind
 local types = require("crates.types")
 local CratesDiagnostic = types.CratesDiagnostic
 local CratesDiagnosticKind = types.CratesDiagnosticKind
@@ -127,7 +128,7 @@ function M.process_crates(sections, crates)
     for _, s in ipairs(sections) do
         local key = s.text:gsub("%s+", "")
 
-        if s.workspace and s.kind ~= toml.TomlSectionKind.DEFAULT then
+        if s.workspace and s.kind ~= TomlSectionKind.DEFAULT then
             table.insert(diagnostics, section_diagnostic(
                 s,
                 CratesDiagnosticKind.WORKSPACE_SECTION_NOT_DEFAULT,
