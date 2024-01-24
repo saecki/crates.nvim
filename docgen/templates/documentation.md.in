@@ -1,35 +1,39 @@
 Documentation for `crates.nvim` `<VERSION>`
 
 # Features
-- Complete crate versions and features
-- In-process language server
-- Completion sources for:
-    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
-    - [coq.nvim](https://github.com/ms-jpq/coq_nvim)
-- [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) code actions
+- Complete crate versions and features using one of:
+    - In-process language server (`lsp`)
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`src.cmp`)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`src.coq`)
+- Code actions using one of:
+    - In-process language server (`lsp`)
+    - [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim)
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
 - Automatically load when opening a `Cargo.toml` file (`autoload`)
 - Live update while editing (`autoupdate`)
 - Show version and upgrade candidates
-    - Indicate if compatible version is a pre-release or yanked
-    - Indicate if no version is compatible
-- Open floating window with crate info
+    - Show if compatible version is a pre-release or yanked
+    - Show if no version is compatible
+- Open popup with crate info
     - Open documentation, crates.io, repository and homepage urls
-- Open floating window with crate versions
+- Open popup with crate versions
     - Select a version by pressing enter (`popup.keys.select`)
-- Open floating window with crate features
+- Open popup with crate features
     - Navigate the feature hierarchy
     - Enable/disable features
     - Indicate if a feature is enabled directly or transitively
-- Open floating window with crate dependencies
+- Open popup with crate dependencies
     - Navigate the dependency hierarchy
-    - Indicate if a dependency is optional
+    - Show `normal`, `build` and `dev` dependencies
+    - Show optional dependencies
 
 # Setup
 
-## lsp
+## In-process language server
+This is the recommended way to enable completion and code actions.
+
 Enable the in-process language server in the setup and select whether to enable
 code actions and auto completion.
 ```lua
@@ -47,6 +51,9 @@ require("crates").setup {
 ```
 
 ## Auto completion
+Completion is supported in a few different ways, either by the [in-process language server],
+which also supports code actions, or by one of the following sources.
+
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 
 Enable it in the setup.
@@ -106,6 +113,9 @@ require("crates").setup {
 ```
 
 ## Code actions
+Code actions are supported in a few different ways, either by the [in-process language server],
+which also supports completion, or by the null-ls/none-ls source.
+
 ### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
