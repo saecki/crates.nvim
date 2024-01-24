@@ -14,8 +14,9 @@ local function gen_config_types(lines, schema, type_name, user)
     table.insert(lines, string.format("---@class %s%s", prefix, type_name))
 
     ---@param s SchemaElement
+    ---@return boolean
     local function skip(s)
-        return s.deprecated or s.hidden and user
+        return s.deprecated ~= nil or s.hidden and user
     end
 
     for _, s in ipairs(schema) do
