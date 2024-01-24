@@ -76,3 +76,4 @@ lua require('crates').setup()
 - [mhinz/vim-crates](https://github.com/mhinz/vim-crates)
 - [shift-d/crates.nvim](https://github.com/shift-d/crates.nvim)
 - [kahgeh/ls-crates.nvim](https://github.com/kahgeh/ls-crates.nvim)
+

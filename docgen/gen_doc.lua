@@ -403,10 +403,11 @@ local function gen_vim_doc()
     end
     infile:close()
 
-    local doc = table.concat(lines, "\n")
+    table.insert(lines, "")
+    local text = table.concat(lines, "\n")
     local outfile = io.open("doc/crates.txt", "w")
     ---@cast outfile -nil
-    outfile:write(doc)
+    outfile:write(text)
     outfile:close()
 end
 
@@ -436,10 +437,11 @@ local function gen_markdown(inpath, outpath)
     end
     infile:close()
 
-    local doc = table.concat(lines, "\n")
+    table.insert(lines, "")
+    local text = table.concat(lines, "\n")
     local outfile = io.open(outpath, "w")
     ---@cast outfile -nil
-    outfile:write(doc)
+    outfile:write(text)
     outfile:close()
 end
 

@@ -51,6 +51,7 @@ local function gen_types()
     table.insert(lines, "")
     gen_config_types(lines, config.schema, "Config", true)
 
+    table.insert(lines, "")
     local text = table.concat(lines, "\n")
     local outfile = io.open("lua/crates/config/types.lua", "w")
     ---@cast outfile -nil
