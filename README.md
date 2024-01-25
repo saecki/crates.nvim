@@ -68,8 +68,8 @@ lua require('crates').setup()
 </details>
 
 ## [Documentation](https://github.com/Saecki/crates.nvim/wiki)
-- [Stable](https://github.com/Saecki/crates.nvim/wiki/Stable-documentation)
-- [Unstable](https://github.com/Saecki/crates.nvim/wiki/Unstable-documentation)
+- [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-unstable)
+- [Unstable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.4.0)
 
 ## Related projects
 - [simrat39/rust-tools.nvim](https://github.com/simrat39/rust-tools.nvim)
