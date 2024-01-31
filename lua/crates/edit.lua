@@ -561,7 +561,7 @@ function M.extract_crate_into_table(buf, crate)
         table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
     end
     if crate.def then
-        table.insert(lines, "default-features = " .. '"' .. crate.def.text .. '"')
+        table.insert(lines, "default-features = " .. crate.def.text)
     end
     if crate.feat then
         table.insert(lines, "features = [" .. crate.feat.text .. "]")
