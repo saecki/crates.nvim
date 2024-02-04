@@ -1583,6 +1583,14 @@ entry(schema_lsp, {
         Whether to enable the `completionProvider` capability.
     ]],
 })
+entry(schema_lsp, {
+    name = "hover",
+    type = BOOLEAN_TYPE,
+    default = false,
+    description = [[
+        Whether to enable the `hover` capability.
+    ]],
+})
 
 ---@param s string
 ---@param ... any

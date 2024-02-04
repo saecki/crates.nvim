@@ -202,6 +202,7 @@
 ---@field on_attach fun(client: lsp.Client, bufnr: integer)
 ---@field actions boolean
 ---@field completion boolean
+---@field hover boolean
 
 
 ---@class crates.UserConfig
@@ -382,4 +383,5 @@
 ---@field public on_attach? fun(client: lsp.Client, bufnr: integer)
 ---@field public actions? boolean
 ---@field public completion? boolean
+---@field public hover? boolean
 
