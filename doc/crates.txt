@@ -237,6 +237,7 @@ For more information about individual config options see |crates-config|.
             on_attach = function(client, bufnr) end,
             actions = false,
             completion = false,
+            hover = false,
         },
     }
 <
@@ -1476,6 +1477,12 @@ lsp.completion                                  *crates-config-lsp-completion*
     Type: `boolean`, Default: `false`
 
     Whether to enable the `completionProvider` capability.
+
+
+lsp.hover                                            *crates-config-lsp-hover*
+    Type: `boolean`, Default: `false`
+
+    Whether to enable the `hover` capability.
 
 
 

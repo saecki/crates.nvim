@@ -35,7 +35,7 @@ Documentation for `crates.nvim` `unstable`
 This is the recommended way to enable completion and code actions.
 
 Enable the in-process language server in the setup and select whether to enable
-code actions and auto completion.
+code actions, auto completion and hover.
 ```lua
 require("crates").setup {
     ...
@@ -46,6 +46,7 @@ require("crates").setup {
         end,
         actions = true,
         completion = true,
+        hover = true,
     },
 }
 ```
@@ -300,6 +301,7 @@ require("crates").setup {
         on_attach = function(client, bufnr) end,
         actions = false,
         completion = false,
+        hover = false,
     },
 }
 ```
