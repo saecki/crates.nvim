@@ -517,21 +517,8 @@ nnoremap <silent> <leader>cC :lua require("crates").open_crates_io()<cr>
 </details>
 
 ## Show appropriate documentation in `Cargo.toml`
-How you might integrate `show_popup` into your `init.vim`.
-```vim
-nnoremap <silent> K :call <SID>show_documentation()<cr>
-function! s:show_documentation()
-    if (index(["vim","help"], &filetype) >= 0)
-        execute "h ".expand("<cword>")
-    elseif (&filetype == "man")
-        execute "Man ".expand("<cword>")
-    elseif (expand("%:t") == "Cargo.toml" && luaeval("require('crates').popup_available()"))
-        lua require("crates").show_popup()
-    else
-        lua vim.lsp.buf.hover()
-    endif
-endfunction
-```
+> [!NOTE]
+> If you're using the in-process language server and `lsp.hover` is enabled, this isn't necessary.
 
 How you might integrate `show_popup` into your `init.lua`.
 ```lua
@@ -550,3 +537,22 @@ end
 
 vim.keymap.set('n', 'K', show_documentation, { silent = true })
 ```
+
+<details>
+<summary>How you might integrate `show_popup` into your `init.vim`.</summary>
+
+```vim
+nnoremap <silent> K :call <SID>show_documentation()<cr>
+function! s:show_documentation()
+    if (index(["vim","help"], &filetype) >= 0)
+        execute "h ".expand("<cword>")
+    elseif (&filetype == "man")
+        execute "Man ".expand("<cword>")
+    elseif (expand("%:t") == "Cargo.toml" && luaeval("require('crates').popup_available()"))
+        lua require("crates").show_popup()
+    else
+        lua vim.lsp.buf.hover()
+    endif
+endfunction
+```
+</details>

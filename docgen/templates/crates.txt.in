@@ -58,6 +58,9 @@ And here are the same ones in vimscript.
 To integrate the crates popup in an idiomatic way into your configuration, you
 might want to use one of the following snippets for contextual documentation.
 
+NOTE: If you're using the in-process language server and |crates-config-lsp-hover|
+is enabled, this isn't necessary.
+
 How you might integrate `show_popup` into your `init.lua`.
 >lua
     <SHARED:show_docs.lua>

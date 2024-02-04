@@ -180,12 +180,18 @@ Some examples of key mappings.
 </details>
 
 ## Show appropriate documentation in `Cargo.toml`
-How you might integrate `show_popup` into your `init.vim`.
-```vim
-<SHARED:show_docs.vim>
-```
+> [!NOTE]
+> If you're using the in-process language server and `lsp.hover` is enabled, this isn't necessary.
 
 How you might integrate `show_popup` into your `init.lua`.
 ```lua
 <SHARED:show_docs.lua>
 ```
+
+<details>
+<summary>How you might integrate `show_popup` into your `init.vim`.</summary>
+
+```vim
+<SHARED:show_docs.vim>
+```
+</details>
