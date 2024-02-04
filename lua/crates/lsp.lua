@@ -2,6 +2,7 @@ local actions = require("crates.actions")
 local util = require("crates.util")
 local state = require("crates.state")
 local src = require("crates.src.common")
+local popup = require("crates.popup")
 
 local M = {}
 
@@ -100,6 +101,7 @@ function M.start_server()
             completionProvider = state.cfg.lsp.completion and {
                 triggerCharacters = src.trigger_characters,
             },
+            hoverProvider = state.cfg.lsp.hover,
         },
         handlers = {
             ---@param _method string
@@ -129,6 +131,7 @@ function M.start_server()
                     callback(nil, items)
                 end)
             end,
+            ["textDocument/hover"] = popup.show
         },
     })
     ---@type integer
