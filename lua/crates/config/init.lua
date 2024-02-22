@@ -636,7 +636,7 @@ local schema_popup_text = section_entry(schema_popup, {
 entry(schema_popup_text, {
     name = "title",
     type = STRING_TYPE,
-    default = " %s",
+    default = " %s",
     description = [[
         Format string used for the popup title.
     ]],
@@ -765,7 +765,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "crates_io_label",
     type = STRING_TYPE,
-    default = " crates.io      ",
+    default = " crates.io      ",
     description = [[
         Label string used for the crates.io url.
     ]],
