@@ -281,7 +281,7 @@ entry(schema_text, {
 entry(schema_text, {
     name = "version",
     type = STRING_TYPE,
-    default = "   %s",
+    default = "   %s",
     description = [[
         format string used for the latest compatible version
     ]],
@@ -305,7 +305,7 @@ entry(schema_text, {
 entry(schema_text, {
     name = "nomatch",
     type = STRING_TYPE,
-    default = "   No match",
+    default = "   No match",
     description = [[
         Format string used when there is no matching version.
     ]],
@@ -313,7 +313,7 @@ entry(schema_text, {
 entry(schema_text, {
     name = "upgrade",
     type = STRING_TYPE,
-    default = "   %s",
+    default = "   %s",
     description = [[
         Format string used when there is an upgrade candidate.
     ]],
@@ -321,7 +321,7 @@ entry(schema_text, {
 entry(schema_text, {
     name = "error",
     type = STRING_TYPE,
-    default = "   Error fetching crate",
+    default = "   Error fetching crate",
     description = [[
         Format string used when there was an error loading crate information.
     ]],
@@ -701,7 +701,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "downloads_label",
     type = STRING_TYPE,
-    default = " downloads      ",
+    default = " downloads      ",
     description = [[
         Label string used for the download count.
     ]],
@@ -733,7 +733,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "repository_label",
     type = STRING_TYPE,
-    default = " repository     ",
+    default = " repository     ",
     description = [[
         Label string used for the repository url.
     ]],
@@ -749,7 +749,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "documentation_label",
     type = STRING_TYPE,
-    default = " documentation  ",
+    default = " documentation  ",
     description = [[
         Label string used for the documentation url.
     ]],
@@ -864,7 +864,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "build_dependencies_title",
     type = STRING_TYPE,
-    default = " Build dependencies",
+    default = " Build dependencies",
     description = [[
         Format string used for the title of the build dependencies section.
     ]],
