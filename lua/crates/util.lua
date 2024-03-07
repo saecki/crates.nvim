@@ -1,5 +1,7 @@
 local semver = require("crates.semver")
 local state = require("crates.state")
+local types = require("crates.types")
+local Span = types.Span
 
 local M = {}
 
@@ -19,9 +21,25 @@ end
 
 ---@return integer, integer
 function M.cursor_pos()
-    ---@type integer[2]
+    ---@type integer[]
     local cursor = vim.api.nvim_win_get_cursor(0)
     return cursor[1] - 1, cursor[2]
+end
+
+---@return Span
+function M.selected_lines()
+    local info = vim.api.nvim_get_mode()
+    if info.mode:match("[vV]") then
+        ---@type integer
+        local s = vim.fn.getpos("v")[2]
+        ---@type integer
+        local e = vim.fn.getcurpos()[2]
+        return Span.new(s, e)
+    else
+        local s = vim.api.nvim_buf_get_mark(0, "<")[1]
+        local e = vim.api.nvim_buf_get_mark(0, ">")[1]
+        return Span.new(s, e)
+    end
 end
 
 ---@param buf integer

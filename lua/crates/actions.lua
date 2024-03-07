@@ -27,10 +27,7 @@ end
 ---@param alt boolean|nil
 function M.upgrade_crates(alt)
     local buf = util.current_buf()
-    local lines = Span.new(
-        vim.api.nvim_buf_get_mark(0, "<")[1],
-        vim.api.nvim_buf_get_mark(0, ">")[1]
-    )
+    local lines = util.selected_lines()
     local crates = util.get_line_crates(buf, lines)
     local info = util.get_buf_info(buf)
     if next(crates) and info then
@@ -60,10 +57,7 @@ end
 
 function M.update_crates(alt)
     local buf = util.current_buf()
-    local lines = Span.new(
-        vim.api.nvim_buf_get_mark(0, "<")[1],
-        vim.api.nvim_buf_get_mark(0, ">")[1]
-    )
+    local lines = util.selected_lines()
     local crates = util.get_line_crates(buf, lines)
     local info = util.get_buf_info(buf)
     if next(crates) and info then
