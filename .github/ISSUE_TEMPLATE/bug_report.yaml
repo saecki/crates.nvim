@@ -22,6 +22,13 @@ body:
       required: true
   - type: input
     attributes:
+      label: "Health check"
+      description: |
+        Output of `:checkhealth crates`
+    validations:
+      required: true
+  - type: input
+    attributes:
       label: "Operating system and version"
     validations:
       required: true
