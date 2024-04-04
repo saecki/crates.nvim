@@ -192,37 +192,6 @@ function M.get_actions()
     local line, col = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local key, crate = next(crates)
-    if crate then
-        local info = util.get_crate_info(buf, key)
-        if info then
-            if info.vers_update then
-                table.insert(actions, {
-                    name = "update_crate",
-                    action = M.update_crate,
-                })
-            end
-            if info.vers_upgrade then
-                table.insert(actions, {
-                    name = "upgrade_crate",
-                    action = M.upgrade_crate,
-                })
-            end
-        end
-
-        -- refactorings
-        if crate.syntax == TomlCrateSyntax.PLAIN then
-            table.insert(actions, {
-                name = "expand_crate_to_inline_table",
-                action = M.expand_plain_crate_to_inline_table,
-            })
-        end
-        if crate.syntax ~= TomlCrateSyntax.TABLE then
-            table.insert(actions, {
-                name = "extract_crate_into_table",
-                action = M.extract_crate_into_table,
-            })
-        end
-    end
 
     local diagnostics = util.get_buf_diagnostics(buf) or {}
     for _, d in ipairs(diagnostics) do
@@ -278,6 +247,38 @@ function M.get_actions()
         end
 
         ::continue::
+    end
+
+    if crate then
+        local info = util.get_crate_info(buf, key)
+        if info then
+            if info.vers_update then
+                table.insert(actions, {
+                    name = "update_crate",
+                    action = M.update_crate,
+                })
+            end
+            if info.vers_upgrade then
+                table.insert(actions, {
+                    name = "upgrade_crate",
+                    action = M.upgrade_crate,
+                })
+            end
+        end
+
+        -- refactorings
+        if crate.syntax == TomlCrateSyntax.PLAIN then
+            table.insert(actions, {
+                name = "expand_crate_to_inline_table",
+                action = M.expand_plain_crate_to_inline_table,
+            })
+        end
+        if crate.syntax ~= TomlCrateSyntax.TABLE then
+            table.insert(actions, {
+                name = "extract_crate_into_table",
+                action = M.extract_crate_into_table,
+            })
+        end
     end
 
     if crate then
