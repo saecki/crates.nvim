@@ -36,8 +36,7 @@ local function line_crate_info()
     end
 
     local m, p, y = util.get_newest(api_crate.versions, crate:vers_reqs())
-    local newest = m or p or y
-    assert(newest, "crates cannot be published if no dependencies match the requirements")
+    local newest = m or p or y or api_crate.versions[1]
 
     ---@type LineCrateInfo
     local info = {
