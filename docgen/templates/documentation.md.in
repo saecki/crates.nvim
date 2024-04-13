@@ -131,7 +131,7 @@ require("crates").setup {
 
 # Config
 
-For more information about the type of some fields see [`teal/crates/config.tl`](teal/crates/config.tl).
+For more information about the config types have a look at the vimdoc or [`lua/crates/config/types.lua`](https://github.com/Saecki/crates.nvim/blob/main/lua/crates/config/types.lua).
 
 ## Default
 
