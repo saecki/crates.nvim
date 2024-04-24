@@ -4,7 +4,9 @@ local state = require("crates.state")
 local src = require("crates.src.common")
 local popup = require("crates.popup")
 
-local M = {}
+local M = {
+    id = nil,
+}
 
 ---@class ServerOpts
 ---@field capabilities table
@@ -79,6 +81,18 @@ function M.server(opts)
     end
 end
 
+-- The default Neovim reuse_client function checks root_dir,
+-- which is not used or needed by our LSP client.
+--
+-- So just check the client name.
+--
+--- @param client vim.lsp.Client
+--- @param config vim.lsp.ClientConfig
+--- @return boolean
+local function reuse_client(client, config)
+    return client.name == config.name
+end
+
 function M.start_server()
     local CRATES_COMMAND = "crates_command"
 
@@ -92,7 +106,7 @@ function M.start_server()
             else
                 util.notify(vim.log.levels.INFO, "Action not available")
             end
-        end
+        end,
     }
 
     local server = M.server({
@@ -131,16 +145,27 @@ function M.start_server()
                     callback(nil, items)
                 end)
             end,
-            ["textDocument/hover"] = popup.show
+            ["textDocument/hover"] = popup.show,
         },
+        on_exit = function(_code, _signal, client_id)
+            if M.id == client_id then
+                vim.lsp.stop_client(client_id)
+            end
+        end,
     })
+
     ---@type integer
     local client_id = vim.lsp.start({
         name = state.cfg.lsp.name,
         cmd = server,
         commands = commands,
+    }, {
+        reuse_client = reuse_client,
     })
-    if not client_id then
+
+    if client_id then
+        M.id = client_id
+    else
         return
     end
 
