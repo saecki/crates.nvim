@@ -252,8 +252,9 @@ end
 ---@return fun(): integer|nil
 function Span:iter()
     local i = self.s
+    local e = self.e
     return function()
-        if i >= self.e then
+        if i >= e then
             return nil
         end
 
