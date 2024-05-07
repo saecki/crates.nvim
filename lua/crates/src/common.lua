@@ -92,29 +92,32 @@ local function complete_features(crate, cf, versions)
 
     local items = {}
     for _, f in ipairs(newest.features.list) do
-        local crate_feat = crate:get_feat(f.name)
-        if not crate_feat then
-            ---@type CompletionItem
-            local r = {
-                label = f.name,
-                kind = VALUE_KIND,
-                sortText = f.name,
-                documentation = table.concat(f.members, "\n"),
-            }
-            if state.cfg.src.insert_closing_quote then
-                if not cf.quote.e then
-                    r.insertText = f.name .. cf.quote.s
-                end
-            end
-            if state.cfg.src.cmp.use_custom_kind then
-                r.cmp = {
-                    kind_text = state.cfg.src.cmp.kind_text.feature,
-                    kind_hl_group = state.cfg.src.cmp.kind_highlight.feature,
-                }
-            end
-
-            table.insert(items, r)
+        if f.name == "default" or crate:get_feat(f.name) then
+            goto continue
         end
+
+        ---@type CompletionItem
+        local r = {
+            label = f.name,
+            kind = VALUE_KIND,
+            sortText = f.name,
+            documentation = table.concat(f.members, "\n"),
+        }
+        if state.cfg.src.insert_closing_quote then
+            if not cf.quote.e then
+                r.insertText = f.name .. cf.quote.s
+            end
+        end
+        if state.cfg.src.cmp.use_custom_kind then
+            r.cmp = {
+                kind_text = state.cfg.src.cmp.kind_text.feature,
+                kind_hl_group = state.cfg.src.cmp.kind_highlight.feature,
+            }
+        end
+
+        table.insert(items, r)
+
+        ::continue::
     end
 
     return {
