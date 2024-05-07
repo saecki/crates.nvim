@@ -490,7 +490,7 @@ end
 ---@return Span
 function M.disable_def_features(buf, crate, feature)
     if feature then
-        if crate.def and crate.def.col.s < crate.feat.col.s then
+        if not crate.def or crate.def.col.s < crate.feat.col.s then
             M.disable_feature(buf, crate, feature)
             return disable_def_features(buf, crate)
         else
