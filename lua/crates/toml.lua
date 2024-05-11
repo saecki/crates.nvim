@@ -932,7 +932,6 @@ function M.parse_metadata(buf)
             ---@cast current table<string, table>
             ---@cast current_real table<string, table>
             if section_text then
-                print(section_text)
                 for tbl in section_text:gmatch '%.([%w-_]+)' do
                     if current_real[tbl] then
                         current_real = current_real[tbl]
