@@ -27,6 +27,7 @@
 ---@field src SrcConfig
 ---@field null_ls NullLsConfig
 ---@field lsp LspConfig
+---@field crate_completion CrateCompletionConfig
 
 ---@class TextConfig
 ---@field loading string
@@ -204,6 +205,10 @@
 ---@field completion boolean
 ---@field hover boolean
 
+---@class CrateCompletionConfig
+---@field enabled boolean
+---@field min_chars integer
+---@field max_results integer
 
 ---@class crates.UserConfig
 ---@field public smart_insert? boolean
@@ -228,6 +233,7 @@
 ---@field public src? crates.UserSrcConfig
 ---@field public null_ls? crates.UserNullLsConfig
 ---@field public lsp? crates.UserLspConfig
+---@field public crate_completion? crates.UserCrateCompletionConfig
 
 ---@class crates.UserTextConfig
 ---@field public loading? string
@@ -385,3 +391,7 @@
 ---@field public completion? boolean
 ---@field public hover? boolean
 
+---@class crates.UserCrateCompletionConfig
+---@field public enabled? boolean
+---@field public min_chars? integer
+---@field public max_results? integer

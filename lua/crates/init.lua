@@ -8,12 +8,28 @@ local popup = require("crates.popup")
 local state = require("crates.state")
 local util = require("crates.util")
 
+local function extend_triggers()
+    if state.cfg.crate_completion.enabled then
+        local triggers = require('crates.src.common').trigger_characters
+        for _, v in ipairs {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g',
+            'h', 'i', 'j', 'k', 'l', 'm', 'n',
+            'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z', '-', '_',
+        } do
+            triggers[#triggers+1] = v
+        end
+    end
+end
+
 local function attach()
     if state.cfg.src.cmp.enabled then
+        extend_triggers()
         require("crates.src.cmp").setup()
     end
 
     if state.cfg.lsp.enabled then
+        extend_triggers()
         require("crates.lsp").start_server()
     end
 

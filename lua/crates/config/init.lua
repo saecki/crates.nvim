@@ -1592,6 +1592,44 @@ entry(schema_lsp, {
     ]],
 })
 
+local schema_crate_completion = section_entry(M.schema, {
+    name = "crate_completion",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CrateCompletionConfig",
+    },
+    description = [[
+        Settings for completing the names of crates.
+    ]],
+    fields = {},
+})
+entry(schema_crate_completion, {
+    name = "enabled",
+    type = BOOLEAN_TYPE,
+    default = false,
+    description = [[
+        Enable completing crate names from crates.io search results.
+    ]],
+})
+entry(schema_crate_completion, {
+    name = "min_chars",
+    type = INTEGER_TYPE,
+    default = 3,
+    description = [[
+        The minimum number of characters of a crate name you need to
+        type before the plugin tries to complete the crate name.
+    ]],
+})
+entry(schema_crate_completion, {
+    name = "max_results",
+    type = INTEGER_TYPE,
+    default = 8,
+    description = [[
+        The maximum number of visible results when attempting to
+        complete a crate name.
+    ]],
+})
+
 ---@param s string
 ---@param ... any
 local function warn(s, ...)

@@ -741,6 +741,7 @@ end
 ---@param buf integer
 ---@return TomlSection[]
 ---@return TomlCrate[]
+---@return WorkingCrate?
 function M.parse_crates(buf)
     ---@type string[]
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -748,10 +749,12 @@ function M.parse_crates(buf)
     local sections = {}
     local crates = {}
 
-    ---@type TomlSection|nil
-    local dep_section = nil
-    ---@type TomlCrate|nil
-    local dep_section_crate = nil
+    ---@type TomlSection?
+    local dep_section
+    ---@type TomlCrate?
+    local dep_section_crate
+    ---@type WorkingCrate?
+    local working_crate
 
     for i, line in ipairs(lines) do
         line = M.trim_comments(line)
@@ -774,10 +777,17 @@ function M.parse_crates(buf)
             dep_section = M.parse_section(section_text, line_nr, section_start - 1)
             dep_section_crate = nil
             if dep_section then
+                if dep_section.name then
+                    working_crate = {
+                        name = dep_section.name,
+                        span = dep_section.name_col,
+                    }
+                end
+
                 table.insert(sections, dep_section)
             end
         elseif dep_section and dep_section.name then
-            ---@type TomlCrate
+            ---@class EmptyCrate: TomlCrate
             local empty_crate = {
                 explicit_name = dep_section.name,
                 explicit_name_col = dep_section.name_col,
@@ -855,6 +865,14 @@ function M.parse_crates(buf)
             if crate then
                 crate.section = dep_section
                 table.insert(crates, Crate.new(crate))
+            else
+                local name_s, name, name_e = line:match [[^%s*()([^%s]+)()%s*$]]
+                if name_s and name and name_e then
+                    working_crate = {
+                        name = name,
+                        span = Span.new(name_s - 1, name_e - 1)
+                    }
+                end
             end
         end
     end
@@ -870,7 +888,7 @@ function M.parse_crates(buf)
         end
     end
 
-    return sections, crates
+    return sections, crates, working_crate
 end
 
 return M

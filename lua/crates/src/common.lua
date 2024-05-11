@@ -126,6 +126,54 @@ local function complete_features(crate, cf, versions)
     }
 end
 
+local do_search = async.wrap(function(prefix)
+    local search, cancelled = api.fetch_search(prefix)
+
+    if not search or cancelled then
+        return
+    end
+
+    state.search_cache.searches[prefix] = {}
+    for _, result in ipairs(search) do
+        state.search_cache.results[result.name] = result
+        table.insert(state.search_cache.searches[prefix], result.name)
+    end
+end)
+
+---@param prefix string
+---@param complete_with_version boolean
+---@return CompletionList?
+local function complete_crates(prefix, complete_with_version)
+    if #prefix < state.cfg.crate_completion.min_chars then
+        return
+    end
+
+    local search = state.search_cache.searches[prefix]
+    if not search then
+        do_search(prefix)
+        search = state.search_cache.searches[prefix]
+        if not search then return end
+    end
+
+    local results = {}
+    for _, r in ipairs(search) do
+        local result = state.search_cache.results[r]
+        table.insert(results, {
+            label = result.name,
+            kind = VALUE_KIND,
+            detail = result.description,
+            insertText = complete_with_version
+                and ('%s = "%s"'):format(result.name, result.newest_version)
+                or result.name,
+        })
+    end
+
+    return {
+        isIncomplete = false,
+        items = results,
+    }
+end
+
 ---@return CompletionList|nil
 local function complete()
     local buf = util.current_buf()
@@ -138,8 +186,28 @@ local function complete()
     local line, col = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.new(line, line + 1))
     local _, crate = next(crates)
+
+    if state.cfg.crate_completion.enabled then
+        ---@type WorkingCrate
+        local working_crate = state.buf_cache[buf].working_crate
+        if working_crate and working_crate.span:moved(0, 1):contains(col) then
+            local prefix = working_crate.name:sub(1, col - working_crate.span.s)
+            return complete_crates(prefix, true);
+        end
+    end
+
     if not crate then
         return
+    end
+
+    if state.cfg.crate_completion.enabled then
+        if crate.pkg and crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col)
+        or not crate.pkg and crate.explicit_name and crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col)
+        then
+            local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
+                or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
+            return complete_crates(prefix, false);
+        end
     end
 
     local api_crate = state.api_cache[crate:package()]

@@ -17,6 +17,14 @@ M.MatchKind = {
     NOMATCH = "nomatch"
 }
 
+---NOTE: Completion only shows a very minimal summary at the moment,
+---`crates.io/api/v1/crates?q=<search>` gives a lot more information
+---that may be displayed in the future.
+---@class ApiCrateSummary
+---@field name string
+---@field description string
+---@field newest_version string
+
 ---@class ApiCrate
 ---@field name string
 ---@field description string

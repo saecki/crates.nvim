@@ -11,8 +11,12 @@ local M = {
     crate_jobs = {},
     ---@type table<string,DepsJob>
     deps_jobs = {},
+    ---@type table<string,SearchJob>
+    search_jobs = {},
     ---@type QueuedJob[]
     queued_jobs = {},
+    ---@type QueuedSearchJob[]
+    search_queue = {},
     ---@type integer
     num_requests = 0,
 }
@@ -29,12 +33,20 @@ local M = {
 ---@field job Job
 ---@field callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
 
+---@class SearchJob
+---@field job Job
+---@field callbacks fun(search: ApiCrateSummary[]?, cancelled: boolean)[]
+
 ---@class QueuedJob
 ---@field kind JobKind
 ---@field name string
 ---@field crate_callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 ---@field version string
 ---@field deps_callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
+
+---@class QueuedSearchJob
+---@field name string
+---@field callbacks fun(deps: ApiCrateSummary[]?, cancelled: boolean)[]
 
 ---@enum JobKind
 local JobKind = {
@@ -184,6 +196,110 @@ local function enqueue_deps_job(name, version, callbacks)
     })
 end
 
+---@param name string
+---@param callbacks fun(search: ApiCrateSummary[]?, cancelled: boolean)[]
+local function enqueue_search_job(name, callbacks)
+    for _, j in ipairs(M.search_queue) do
+        if j.name == name then
+            vim.list_extend(j.callbacks, callbacks)
+            return
+        end
+    end
+
+    table.insert(M.search_queue, {
+        name = name,
+        callbacks = callbacks,
+    })
+end
+
+---@param json_str string
+---@return ApiCrateSummary[]?
+function M.parse_search(json_str)
+    local json = parse_json(json_str)
+    if not (json and json.crates) then
+        return
+    end
+
+    ---@type ApiCrateSummary[]
+    local search = {}
+    ---@diagnostic disable-next-line: no-unknown
+    for _, c in ipairs(json.crates) do
+        ---@type ApiCrateSummary
+        local result = {
+            name = c.name,
+            description = c.description,
+            newest_version = c.newest_version,
+        }
+        table.insert(search, result)
+    end
+
+    return search
+end
+
+---@param name string
+---@param callbacks fun(search: ApiCrateSummary[]?, cancelled: boolean)[]
+local function fetch_search(name, callbacks)
+    local existing = M.search_jobs[name]
+    if existing then
+        vim.list_extend(existing.callbacks, callbacks)
+        return
+    end
+
+    if M.num_requests >= state.cfg.max_parallel_requests then
+        enqueue_search_job(name, callbacks)
+        return
+    end
+
+    local url = string.format(
+        "%s/crates?q=%s&per_page=%s",
+        ENDPOINT,
+        name,
+        state.cfg.crate_completion.max_results
+    )
+
+    ---@param json_str string?
+    ---@param cancelled boolean
+    local function on_exit(json_str, cancelled)
+        ---@type ApiCrateSummary[]?
+        local search
+        if not cancelled and json_str then
+            local ok, s = pcall(M.parse_search, json_str)
+            if ok then
+                search = s
+            end
+        end
+        for _, c in ipairs(callbacks) do
+            c(search, cancelled)
+        end
+
+        M.search_jobs[name] = nil
+        M.num_requests = M.num_requests - 1
+
+        M.run_queued_jobs()
+    end
+
+    local job = start_job(url, on_exit)
+    if job then
+        M.num_requests = M.num_requests + 1
+        M.crate_jobs[name] = {
+            job = job,
+            callbacks = callbacks,
+        }
+    else
+        for _, c in ipairs(callbacks) do
+            c(nil, false)
+        end
+    end
+end
+
+---@param name string
+---@return ApiCrateSummary[]?, boolean
+function M.fetch_search(name)
+    ---@param resolve fun(search: ApiCrateSummary[]?, cancelled: boolean)
+    return coroutine.yield(function(resolve)
+        fetch_search(name, { resolve })
+    end)
+end
 
 ---@param json_str string
 ---@return ApiCrate|nil
@@ -487,7 +603,32 @@ function M.await_deps(name, version)
     end)
 end
 
+---@param name string
+---@param callback fun(deps: ApiCrateSummary[]?, cancelled: boolean)
+local function add_search_callback(name, callback)
+    table.insert(
+        M.search_jobs[name].callbacks,
+        callback
+    )
+end
+
+---@param name string
+---@return ApiCrateSummary[]?, boolean
+function M.await_search(name)
+    ---@param resolve fun(crate: ApiCrateSummary[]?, cancelled: boolean)
+    return coroutine.yield(function(resolve)
+        add_search_callback(name, resolve)
+    end)
+end
+
 function M.run_queued_jobs()
+    -- Prioritise crate searches
+    if #M.search_queue > 0 then
+        local job = table.remove(M.search_queue, 1)
+        fetch_search(job.name, job.search_callbacks)
+        return
+    end
+
     if #M.queued_jobs == 0 then
         return
     end
@@ -507,8 +648,13 @@ function M.cancel_jobs()
     for _, r in pairs(M.deps_jobs) do
         cancel_job(r.job)
     end
+    for _, r in pairs(M.search_jobs) do
+        cancel_job(r.job)
+    end
+
     M.crate_jobs = {}
     M.deps_jobs = {}
+    M.search_jobs = {}
 end
 
 return M
