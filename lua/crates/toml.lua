@@ -1,5 +1,6 @@
 local semver = require("crates.semver")
 local types = require("crates.types")
+local state = require("crates.state")
 local Span = types.Span
 
 local M = {}
@@ -871,6 +872,88 @@ function M.parse_crates(buf)
     end
 
     return sections, crates
+end
+
+---@param str string
+---@return any
+local function parse_value(str)
+    local strval = str:match '^(%b"")$' or str:match "^(%b'')$"
+    if strval then return strval:sub(2, #strval - 1) end
+
+    if str == "true" then return true end
+    if str == "false" then return false end
+
+    local numval = tonumber(str)
+    if numval then return numval end
+
+    ---@type string
+    local inline = str:match '(%b{})'
+    if inline then
+        ---@type table<string, any>
+        local tbl = {}
+        inline = inline:sub(2, #inline - 1)
+        ::continue::
+        local wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(['"]?[%w_-]+['"]?)]]
+        if not v then
+          wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(%b{})]]
+        end
+        if v then
+          tbl[k] = parse_value(v)
+          inline = inline:sub(#wsp_s + #k + #wsp_m + #v + 2)
+          if #inline > 0 then
+            goto continue
+          end
+        end
+
+        return tbl
+    end
+end
+
+---@param buf integer
+---@return crates.UserConfig
+function M.parse_metadata(buf)
+    ---@type string[]
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+    ---@type crates.UserConfig
+    local root = {}
+    ---@type table<string, any>?
+    local current
+    ---@type table<string, any>?
+    local current_real
+
+    for _, line in ipairs(lines) do
+        ---@type string
+        local section_text = line:match '^%s*%[package%.metadata%.lsp([%.%w-_]*)%]$'
+
+        if section_text then
+            current = root
+            current_real = state._cfg
+            ---@cast current table<string, table>
+            ---@cast current_real table<string, table>
+            if section_text then
+                print(section_text)
+                for tbl in section_text:gmatch '%.([%w-_]+)' do
+                    if current_real[tbl] then
+                        current_real = current_real[tbl]
+                        current[tbl] = current[tbl] or setmetatable({}, {
+                            __index = current_real
+                        })
+                        current = current[tbl]
+                    end
+                end
+            end
+        elseif line:match '%s*%[.*%]$' then
+            current = nil
+        elseif current then
+            local k, v = line:match [[^%s*["']?([%w_-]+)["']?%s*=%s*(.*)$]]
+            if k and v then
+                current[k] = parse_value(v)
+            end
+        end
+    end
+
+    return root
 end
 
 return M

@@ -23,7 +23,7 @@ end
 
 ---@param cfg crates.UserConfig
 local function setup(cfg)
-    state.cfg = config.build(cfg)
+    state:set_cfg(config.build(cfg))
 
     command.register()
     highlight.define()

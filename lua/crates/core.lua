@@ -103,6 +103,8 @@ local function update(buf, reload)
         api.cancel_jobs()
     end
 
+    local local_config = toml.parse_metadata(buf)
+    vim.print(local_config)
     local sections, crates = toml.parse_crates(buf)
     local crate_cache, diagnostics = diagnostic.process_crates(sections, crates)
     ---@type BufCache
@@ -110,6 +112,7 @@ local function update(buf, reload)
         crates = crate_cache,
         info = {},
         diagnostics = diagnostics,
+        local_config = local_config,
     }
     state.buf_cache[buf] = cache
 
