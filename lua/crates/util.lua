@@ -218,6 +218,12 @@ function M.crates_io_url(name)
     return "https://crates.io/crates/" .. name
 end
 
+---@param name string
+---@return string
+function M.lib_rs_url(name)
+    return "https://lib.rs/crates/" .. name
+end
+
 ---@param url string
 function M.open_url(url)
     for _, prg in ipairs(state.cfg.open_programs) do

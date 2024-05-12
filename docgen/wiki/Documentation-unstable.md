@@ -203,6 +203,8 @@ require("crates").setup {
             documentation = "%s",
             crates_io_label = " crates.io      ",
             crates_io = "%s",
+            lib_rs_label = " lib.rs         ",
+            lib_rs = "%s",
             categories_label = " categories     ",
             keywords_label = " keywords       ",
             version = "  %s",
@@ -239,6 +241,8 @@ require("crates").setup {
             documentation = "CratesNvimPopupUrl",
             crates_io_label = "CratesNvimPopupLabel",
             crates_io = "CratesNvimPopupUrl",
+            lib_rs_label = "CratesNvimPopupLabel",
+            lib_rs = "CratesNvimPopupUrl",
             categories_label = "CratesNvimPopupLabel",
             keywords_label = "CratesNvimPopupLabel",
             version = "CratesNvimPopupVersion",
@@ -405,6 +409,8 @@ require("crates").open_repository()
 require("crates").open_documentation()
 -- Open the `crates.io` page of the crate on the current line.
 require("crates").open_crates_io()
+-- Open the `lib.rs` page of the crate on the current line.
+require("crates").open_lib_rs()
 
 -- Returns whether there is information to show in a popup.
 require("crates").popup_available(): boolean
@@ -486,6 +492,7 @@ vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
 vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
 vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
 vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
+vim.keymap.set("n", "<leader>cL", crates.open_lib_rs, opts)
 ```
 
 <details>
@@ -513,6 +520,7 @@ nnoremap <silent> <leader>cH :lua require("crates").open_homepage()<cr>
 nnoremap <silent> <leader>cR :lua require("crates").open_repository()<cr>
 nnoremap <silent> <leader>cD :lua require("crates").open_documentation()<cr>
 nnoremap <silent> <leader>cC :lua require("crates").open_crates_io()<cr>
+nnoremap <silent> <leader>cL :lua require("crates").open_lib_rs()<cr>
 ```
 </details>
 

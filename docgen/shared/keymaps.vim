@@ -19,3 +19,4 @@ nnoremap <silent> <leader>cH :lua require("crates").open_homepage()<cr>
 nnoremap <silent> <leader>cR :lua require("crates").open_repository()<cr>
 nnoremap <silent> <leader>cD :lua require("crates").open_documentation()<cr>
 nnoremap <silent> <leader>cC :lua require("crates").open_crates_io()<cr>
+nnoremap <silent> <leader>cL :lua require("crates").open_lib_rs()<cr>

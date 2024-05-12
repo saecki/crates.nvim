@@ -100,6 +100,8 @@
 ---@field documentation string
 ---@field crates_io_label string
 ---@field crates_io string
+---@field lib_rs_label string
+---@field lib_rs string
 ---@field categories_label string
 ---@field keywords_label string
 ---@field version string
@@ -136,6 +138,8 @@
 ---@field documentation string
 ---@field crates_io_label string
 ---@field crates_io string
+---@field lib_rs_label string
+---@field lib_rs string
 ---@field categories_label string
 ---@field keywords_label string
 ---@field version string
@@ -281,6 +285,8 @@
 ---@field public documentation? string
 ---@field public crates_io_label? string
 ---@field public crates_io? string
+---@field public lib_rs_label? string
+---@field public lib_rs? string
 ---@field public categories_label? string
 ---@field public keywords_label? string
 ---@field public version? string
@@ -317,6 +323,8 @@
 ---@field public documentation? string
 ---@field public crates_io_label? string
 ---@field public crates_io? string
+---@field public lib_rs_label? string
+---@field public lib_rs? string
 ---@field public categories_label? string
 ---@field public keywords_label? string
 ---@field public version? string

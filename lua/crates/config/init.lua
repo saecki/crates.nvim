@@ -779,6 +779,22 @@ entry(schema_popup_text, {
     ]],
 })
 entry(schema_popup_text, {
+    name = "lib_rs_label",
+    type = STRING_TYPE,
+    default = " lib.rs         ",
+    description = [[
+        Label string used for the lib.rs url.
+    ]],
+})
+entry(schema_popup_text, {
+    name = "lib_rs",
+    type = STRING_TYPE,
+    default = "%s",
+    description = [[
+        Format string used for the lib.rs url.
+    ]],
+})
+entry(schema_popup_text, {
     name = "categories_label",
     type = STRING_TYPE,
     default = " categories     ",
@@ -1074,6 +1090,22 @@ entry(schema_popup_hl, {
     default = "CratesNvimPopupUrl",
     description = [[
         Highlight group used for the crates.io url.
+    ]],
+})
+entry(schema_popup_hl, {
+    name = "lib_rs_label",
+    type = STRING_TYPE,
+    default = "CratesNvimPopupLabel",
+    description = [[
+        Highlight group used for the lib.rs url label.
+    ]],
+})
+entry(schema_popup_hl, {
+    name = "lib_rs",
+    type = STRING_TYPE,
+    default = "CratesNvimPopupUrl",
+    description = [[
+        Highlight group used for the lib.rs url.
     ]],
 })
 entry(schema_popup_hl, {
