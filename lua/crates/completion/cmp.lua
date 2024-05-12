@@ -1,4 +1,4 @@
-local src = require("crates.src.common")
+local completion = require("crates.completion.common")
 
 ---@class Cmp
 ---@field register_source fun(name: string, src: CmpCompletionSource)
@@ -92,7 +92,7 @@ end
 ---@param _params CmpSourceBaseApiParams
 ---@return string[]
 function M:get_trigger_characters(_params)
-    return src.trigger_characters
+    return completion.trigger_characters
 end
 
 ---Invoke completion (required).
@@ -100,7 +100,7 @@ end
 ---@param _params CmpSourceBaseApiParams
 ---@param callback fun(list: CompletionList|nil)
 function M:complete(_params, callback)
-    src.complete(callback)
+    completion.complete(callback)
 end
 
 function M.setup()

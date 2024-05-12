@@ -1,7 +1,7 @@
 local actions = require("crates.actions")
 local util = require("crates.util")
 local state = require("crates.state")
-local src = require("crates.src.common")
+local completion = require("crates.completion.common")
 local popup = require("crates.popup")
 
 local M = {
@@ -113,7 +113,7 @@ function M.start_server()
         capabilities = {
             codeActionProvider = state.cfg.lsp.actions,
             completionProvider = state.cfg.lsp.completion and {
-                triggerCharacters = src.trigger_characters,
+                triggerCharacters = completion.trigger_characters,
             },
             hoverProvider = state.cfg.lsp.hover,
         },
@@ -141,7 +141,7 @@ function M.start_server()
             ---@param _params any
             ---@param callback fun(err: nil, items: CompletionList|nil)
             ["textDocument/completion"] = function(_method, _params, callback)
-                src.complete(function(items)
+                completion.complete(function(items)
                     callback(nil, items)
                 end)
             end,

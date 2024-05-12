@@ -49,21 +49,21 @@ local function complete_versions(crate, versions)
             kind = VALUE_KIND,
             sortText = string.format("%04d", i),
         }
-        if state.cfg.src.insert_closing_quote then
+        if state.cfg.completion.insert_closing_quote then
             if crate.vers and not crate.vers.quote.e then
                 r.insertText = v.num .. crate.vers.quote.s
             end
         end
         if v.yanked then
             r.deprecated = true
-            r.documentation = state.cfg.src.text.yanked
+            r.documentation = state.cfg.completion.text.yanked
         elseif v.parsed.pre then
-            r.documentation = state.cfg.src.text.prerelease
+            r.documentation = state.cfg.completion.text.prerelease
         end
-        if state.cfg.src.cmp.use_custom_kind then
+        if state.cfg.completion.cmp.use_custom_kind then
             r.cmp = {
-                kind_text = state.cfg.src.cmp.kind_text.version,
-                kind_hl_group = state.cfg.src.cmp.kind_highlight.version,
+                kind_text = state.cfg.completion.cmp.kind_text.version,
+                kind_hl_group = state.cfg.completion.cmp.kind_highlight.version,
             }
         end
 
@@ -103,15 +103,15 @@ local function complete_features(crate, cf, versions)
             sortText = f.name,
             documentation = table.concat(f.members, "\n"),
         }
-        if state.cfg.src.insert_closing_quote then
+        if state.cfg.completion.insert_closing_quote then
             if not cf.quote.e then
                 r.insertText = f.name .. cf.quote.s
             end
         end
-        if state.cfg.src.cmp.use_custom_kind then
+        if state.cfg.completion.cmp.use_custom_kind then
             r.cmp = {
-                kind_text = state.cfg.src.cmp.kind_text.feature,
-                kind_hl_group = state.cfg.src.cmp.kind_highlight.feature,
+                kind_text = state.cfg.completion.cmp.kind_text.feature,
+                kind_hl_group = state.cfg.completion.cmp.kind_highlight.feature,
             }
         end
 
@@ -144,7 +144,7 @@ end)
 ---@param complete_with_version boolean
 ---@return CompletionList?
 local function complete_crates(prefix, complete_with_version)
-    if #prefix < state.cfg.crate_completion.min_chars then
+    if #prefix < state.cfg.completion.crates.min_chars then
         return
     end
 
@@ -187,7 +187,7 @@ local function complete()
     local crates = util.get_line_crates(buf, Span.new(line, line + 1))
     local _, crate = next(crates)
 
-    if state.cfg.crate_completion.enabled then
+    if state.cfg.completion.crates.enabled then
         ---@type WorkingCrate
         local working_crate = state.buf_cache[buf].working_crate
         if working_crate and working_crate.span:moved(0, 1):contains(col) then
@@ -200,7 +200,7 @@ local function complete()
         return
     end
 
-    if state.cfg.crate_completion.enabled then
+    if state.cfg.completion.crates.enabled then
         if crate.pkg and crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col)
         or not crate.pkg and crate.explicit_name and crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col)
         then

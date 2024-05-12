@@ -1331,18 +1331,18 @@ entry(schema_popup_keys, {
 })
 
 
-local schema_src = section_entry(M.schema, {
-    name = "src",
+local schema_completion = section_entry(M.schema, {
+    name = "completion",
     type = {
         config_type = "section",
-        emmylua_annotation = "SrcConfig",
+        emmylua_annotation = "CompletionConfig",
     },
     description = [[
         Configuration options for completion sources.
     ]],
     fields = {},
 })
-entry(schema_src, {
+entry(schema_completion, {
     name = "insert_closing_quote",
     type = BOOLEAN_TYPE,
     default = true,
@@ -1350,18 +1350,18 @@ entry(schema_src, {
         Insert a closing quote on completion if there is none.
     ]],
 })
-local schema_src_text = section_entry(schema_src, {
+local schema_completion_text = section_entry(schema_completion, {
     name = "text",
     type = {
         config_type = "section",
-        emmylua_annotation = "SrcTextConfig",
+        emmylua_annotation = "CompletionTextConfig",
     },
     description = [[
         Text shown in the completion source documentation preview.
     ]],
     fields = {},
 })
-entry(schema_src_text, {
+entry(schema_completion_text, {
     name = "prerelease",
     type = STRING_TYPE,
     default = "  pre-release ",
@@ -1369,7 +1369,7 @@ entry(schema_src_text, {
         Text shown in the completion source documentation preview for pre-release versions.
     ]],
 })
-entry(schema_src_text, {
+entry(schema_completion_text, {
     name = "yanked",
     type = STRING_TYPE,
     default = "  yanked ",
@@ -1378,7 +1378,7 @@ entry(schema_src_text, {
     ]],
 })
 
-local schema_src_cmp = section_entry(schema_src, {
+local schema_completion_cmp = section_entry(schema_completion, {
     name = "cmp",
     type = {
         config_type = "section",
@@ -1389,7 +1389,7 @@ local schema_src_cmp = section_entry(schema_src, {
     ]],
     fields = {},
 })
-entry(schema_src_cmp, {
+entry(schema_completion_cmp, {
     name = "enabled",
     type = BOOLEAN_TYPE,
     default = false,
@@ -1399,11 +1399,11 @@ entry(schema_src_cmp, {
         NOTE: Ignored if |crates-config-autoload| is disabled.
         You may manually register it, after |nvim-cmp| has been loaded.
         >
-            require("crates.src.cmp").setup()
+            require("crates.completion.cmp").setup()
         <
     ]],
 })
-entry(schema_src_cmp, {
+entry(schema_completion_cmp, {
     name = "use_custom_kind",
     type = BOOLEAN_TYPE,
     default = true,
@@ -1412,7 +1412,7 @@ entry(schema_src_cmp, {
     ]],
 })
 
-local schema_src_cmp_kind_text = section_entry(schema_src_cmp, {
+local schema_completion_cmp_kind_text = section_entry(schema_completion_cmp, {
     name = "kind_text",
     type = {
         config_type = "section",
@@ -1423,7 +1423,7 @@ local schema_src_cmp_kind_text = section_entry(schema_src_cmp, {
     ]],
     fields = {},
 })
-entry(schema_src_cmp_kind_text, {
+entry(schema_completion_cmp_kind_text, {
     name = "version",
     type = STRING_TYPE,
     default = "Version",
@@ -1431,7 +1431,7 @@ entry(schema_src_cmp_kind_text, {
         The version kind text shown in the |nvim-cmp| completion menu.
     ]],
 })
-entry(schema_src_cmp_kind_text, {
+entry(schema_completion_cmp_kind_text, {
     name = "feature",
     type = STRING_TYPE,
     default = "Feature",
@@ -1440,7 +1440,7 @@ entry(schema_src_cmp_kind_text, {
     ]],
 })
 
-local schema_src_cmp_kind_hl = section_entry(schema_src_cmp, {
+local schema_completion_cmp_kind_hl = section_entry(schema_completion_cmp, {
     name = "kind_highlight",
     type = {
         config_type = "section",
@@ -1451,7 +1451,7 @@ local schema_src_cmp_kind_hl = section_entry(schema_src_cmp, {
     ]],
     fields = {},
 })
-entry(schema_src_cmp_kind_hl, {
+entry(schema_completion_cmp_kind_hl, {
     name = "version",
     type = STRING_TYPE,
     default = "CmpItemKindVersion",
@@ -1459,7 +1459,7 @@ entry(schema_src_cmp_kind_hl, {
         Highlight group used for the version kind text in the |nvim-cmp| completion menu.
     ]],
 })
-entry(schema_src_cmp_kind_hl, {
+entry(schema_completion_cmp_kind_hl, {
     name = "feature",
     type = STRING_TYPE,
     default = "CmpItemKindFeature",
@@ -1468,7 +1468,7 @@ entry(schema_src_cmp_kind_hl, {
     ]],
 })
 
-local schema_src_coq = section_entry(schema_src, {
+local schema_completion_coq = section_entry(schema_completion, {
     name = "coq",
     type = {
         config_type = "section",
@@ -1479,7 +1479,7 @@ local schema_src_coq = section_entry(schema_src, {
     ]],
     fields = {},
 })
-entry(schema_src_coq, {
+entry(schema_completion_coq, {
     name = "enabled",
     type = BOOLEAN_TYPE,
     default = false,
@@ -1487,12 +1487,50 @@ entry(schema_src_coq, {
         Whether to load and register the |coq_nvim| source.
     ]],
 })
-entry(schema_src_coq, {
+entry(schema_completion_coq, {
     name = "name",
     type = STRING_TYPE,
     default = "crates.nvim",
     description = [[
         The source name displayed by |coq_nvim|.
+    ]],
+})
+
+local schema_completion_crates = section_entry(schema_completion, {
+    name = "crates",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "CrateCompletionConfig",
+    },
+    description = [[
+        Settings for completing the names of crates.
+    ]],
+    fields = {},
+})
+entry(schema_completion_crates, {
+    name = "enabled",
+    type = BOOLEAN_TYPE,
+    default = false,
+    description = [[
+        Enable completing crate names from crates.io search results.
+    ]],
+})
+entry(schema_completion_crates, {
+    name = "min_chars",
+    type = INTEGER_TYPE,
+    default = 3,
+    description = [[
+        The minimum number of characters of a crate name you need to
+        type before the plugin tries to complete the crate name.
+    ]],
+})
+entry(schema_completion_crates, {
+    name = "max_results",
+    type = INTEGER_TYPE,
+    default = 8,
+    description = [[
+        The maximum number of visible results when attempting to
+        complete a crate name.
     ]],
 })
 
@@ -1592,43 +1630,6 @@ entry(schema_lsp, {
     ]],
 })
 
-local schema_crate_completion = section_entry(M.schema, {
-    name = "crate_completion",
-    type = {
-        config_type = "section",
-        emmylua_annotation = "CrateCompletionConfig",
-    },
-    description = [[
-        Settings for completing the names of crates.
-    ]],
-    fields = {},
-})
-entry(schema_crate_completion, {
-    name = "enabled",
-    type = BOOLEAN_TYPE,
-    default = false,
-    description = [[
-        Enable completing crate names from crates.io search results.
-    ]],
-})
-entry(schema_crate_completion, {
-    name = "min_chars",
-    type = INTEGER_TYPE,
-    default = 3,
-    description = [[
-        The minimum number of characters of a crate name you need to
-        type before the plugin tries to complete the crate name.
-    ]],
-})
-entry(schema_crate_completion, {
-    name = "max_results",
-    type = INTEGER_TYPE,
-    default = 8,
-    description = [[
-        The maximum number of visible results when attempting to
-        complete a crate name.
-    ]],
-})
 
 ---@param s string
 ---@param ... any

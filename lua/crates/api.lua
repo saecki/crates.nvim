@@ -254,7 +254,7 @@ local function fetch_search(name, callbacks)
         "%s/crates?q=%s&per_page=%s",
         ENDPOINT,
         name,
-        state.cfg.crate_completion.max_results
+        state.cfg.completion.crates.max_results
     )
 
     ---@param json_str string?

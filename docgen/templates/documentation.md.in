@@ -3,8 +3,8 @@ Documentation for `crates.nvim` `<VERSION>`
 # Features
 - Complete crate names, versions and features using one of:
     - In-process language server (`lsp`)
-    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`src.cmp`)
-    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`src.coq`)
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`completion.cmp`)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`completion.coq`)
 - Code actions using one of:
     - In-process language server (`lsp`)
     - [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim)
@@ -61,7 +61,7 @@ Enable it in the setup.
 ```lua
 require("crates").setup {
     ...
-    src = {
+    completion = {
         ...
         cmp = {
             enabled = true,
@@ -103,7 +103,7 @@ Enable it in the setup, and optionally change the display name.
 ```lua
 require("crates").setup {
     ...
-    src = {
+    completion = {
         ...
         coq = {
             enabled = true,
@@ -121,10 +121,12 @@ enabled seperately:
 ```lua
 require("crates").setup {
     ...
-    crate_completion = {
-        enabled = true -- disabled by default
-        max_results = 8 -- The maximum number of search results to display
-        min_chars = 3 -- The minimum number of charaters to type before completions begin appearing
+    completion = {
+        crates = {
+            enabled = true -- disabled by default
+            max_results = 8 -- The maximum number of search results to display
+            min_chars = 3 -- The minimum number of charaters to type before completions begin appearing
+        }
     }
 }
 ```
