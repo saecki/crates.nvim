@@ -910,7 +910,6 @@ local function parse_value(str)
     ---@type string
     local array = str:match '(%b[])'
     if array then
-        print("ara ara")
         ---@type table<string, any>
         local tbl = {}
         array = array:sub(2, #array - 1)
