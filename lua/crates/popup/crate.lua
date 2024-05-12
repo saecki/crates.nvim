@@ -13,6 +13,7 @@ local M = {}
 ---@field repo_index integer
 ---@field docs_index integer
 ---@field crates_io_index integer
+---@field lib_rs_index integer
 
 ---@param ctx CrateContext
 ---@param line integer
@@ -35,6 +36,8 @@ local function copy_value(ctx, line)
         copy(ctx.crate.documentation or util.docs_rs_url(ctx.crate.name))
     elseif ctx.crates_io_index == index then
         copy(util.crates_io_url(ctx.crate.name))
+    elseif ctx.lib_rs_index == index then
+        copy(util.lib_rs_url(ctx.crate.name))
     end
 end
 
@@ -50,6 +53,8 @@ local function open_url(ctx, line)
         util.open_url(ctx.crate.documentation or util.docs_rs_url(ctx.crate.name))
     elseif ctx.crates_io_index == index then
         util.open_url(util.crates_io_url(ctx.crate.name))
+    elseif ctx.lib_rs_index == index then
+        util.open_url(util.lib_rs_url(ctx.crate.name))
     end
 end
 
@@ -208,6 +213,18 @@ function M.open(crate, opts)
         },
     })
     ctx.crates_io_index = #info_text
+
+    table.insert(info_text, {
+        {
+            text = text.lib_rs_label,
+            hl = highlight.lib_rs_label,
+        },
+        {
+            text = string.format(text.lib_rs, util.lib_rs_url(crate.name)),
+            hl = highlight.lib_rs,
+        },
+    })
+    ctx.lib_rs_index = #info_text
 
     if next(crate.categories) then
         ---@type HighlightText[]
