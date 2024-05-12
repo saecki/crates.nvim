@@ -909,45 +909,56 @@ local function parse_value(str)
     end
 end
 
----@param buf integer
----@return crates.UserConfig
-function M.parse_metadata(buf)
-    ---@type string[]
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+---@param h file*
+---@return table
+function M.parse_local_config(h)
+    local root = { package = { metadata = { lsp = {}}}}
+    ---@type table<string, any>
+    local current = root
+    ---@type table<string, any>
+    local current_real = state._cfg
 
-    ---@type crates.UserConfig
-    local root = {}
-    ---@type table<string, any>?
-    local current
-    ---@type table<string, any>?
-    local current_real
-
-    for _, line in ipairs(lines) do
+    for line in h:lines() do
         ---@type string
-        local section_text = line:match '^%s*%[package%.metadata%.lsp([%.%w-_]*)%]$'
+        local section_text = line:match '^%s*%[([%.%w-_]*)%]'
 
         if section_text then
+            ---@type string
+            local directory = '.' .. section_text
             current = root
             current_real = state._cfg
-            ---@cast current table<string, table>
-            ---@cast current_real table<string, table>
-            if section_text then
-                for tbl in section_text:gmatch '%.([%w-_]+)' do
-                    if current_real[tbl] then
-                        current_real = current_real[tbl]
-                        current[tbl] = current[tbl] or setmetatable({}, {
-                            __index = current_real
-                        })
-                        current = current[tbl]
-                    end
+            ---@cast current table<string, any>
+            ---@cast current_real table<string, any>
+            for tbl in directory:gmatch '%.([%w-_]+)' do
+                if current_real[tbl] then
+                    current_real = current_real[tbl]
+                    current[tbl] = current[tbl] or setmetatable({}, {
+                        __index = current_real
+                    })
+                    current = current[tbl]
+                else
+                    current_real = setmetatable({}, {
+                        __newindex = function (_, _, _) end
+                    })
                 end
             end
-        elseif line:match '%s*%[.*%]$' then
-            current = nil
-        elseif current then
-            local k, v = line:match [[^%s*["']?([%w_-]+)["']?%s*=%s*(.*)$]]
+        else
+            ---@type string, string
+            local k, v = line:match [[^%s*["']?([%.%w_-]+)["']?%s*=%s*(.*)$]]
             if k and v then
-                current[k] = parse_value(v)
+                local tmp_current = current
+
+                ::continue::
+                ---@type string, string
+                local lhs, rhs = k:match '([%w-_]+)([%.%w_-]*)'
+                tmp_current[lhs] = tmp_current[lhs] or {}
+                if rhs and #rhs > 0 then
+                    tmp_current = tmp_current[lhs]
+                    k = rhs:sub(2)
+                    goto continue
+                end
+
+                tmp_current[lhs] = parse_value(v)
             end
         end
     end
