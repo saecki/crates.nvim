@@ -894,9 +894,8 @@ local function parse_value(str)
         inline = inline:sub(2, #inline - 1)
         ::continue::
         local wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(['"]?[%w_-]+['"]?)]]
-        if not v then
-          wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(%b{})]]
-        end
+        if not v then wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(%b{})]] end
+        if not v then wsp_s, k, wsp_m, v = inline:match [[^(%s*)([%w_-]+)(%s*=%s*)(%b[])]] end
         if v then
           tbl[k] = parse_value(v)
           inline = inline:sub(#wsp_s + #k + #wsp_m + #v + 2)
@@ -907,12 +906,34 @@ local function parse_value(str)
 
         return tbl
     end
+
+    ---@type string
+    local array = str:match '(%b[])'
+    if array then
+        print("ara ara")
+        ---@type table<string, any>
+        local tbl = {}
+        array = array:sub(2, #array - 1)
+        ::continue::
+        local wsp, v = array:match [[^(%s*)(['"]?[%w_-]+['"]?)]]
+        if not v then wsp, v = array:match [[^(%s*)(%b{})]] end
+        if not v then wsp, v = array:match [[^(%s*)(%b[])]] end
+        if v then
+            table.insert(tbl, parse_value(v))
+            array = array:sub(#wsp + #v + 2)
+            if #array > 0 then
+                goto continue
+            end
+        end
+
+        return tbl
+    end
 end
 
 ---@param h file*
 ---@return table
 function M.parse_local_config(h)
-    local root = { package = { metadata = { lsp = {}}}}
+    local root = {}
     ---@type table<string, any>
     local current = root
     ---@type table<string, any>
