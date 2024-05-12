@@ -59,7 +59,7 @@ Setup for plain text (without patched font).
                 loading = " ...",
             },
         },
-        src = {
+        completion = {
             text = {
                 prerelease = " pre-release ",
                 yanked = " yanked ",
@@ -208,7 +208,7 @@ For more information about individual config options see |crates-config|.
                 jump_back = { "<c-o>", "<C-RightMouse>" },
             },
         },
-        src = {
+        completion = {
             insert_closing_quote = true,
             text = {
                 prerelease = "  pre-release ",
@@ -229,6 +229,11 @@ For more information about individual config options see |crates-config|.
             coq = {
                 enabled = false,
                 name = "crates.nvim",
+            },
+            crates = {
+                enabled = false,
+                min_chars = 3,
+                max_results = 8,
             },
         },
         null_ls = {
@@ -1352,43 +1357,44 @@ popup.keys.copy_version                *crates-config-popup-keys-copy_version*
 
     Please use |crates-config-popup-keys-copy_value| instead.
 
-src                                                        *crates-config-src*
-    Section type: `SrcConfig`
+completion                                          *crates-config-completion*
+    Section type: `CompletionConfig`
 
     Configuration options for completion sources.
 
 
-src.insert_closing_quote              *crates-config-src-insert_closing_quote*
+                               *crates-config-completion-insert_closing_quote*
+completion.insert_closing_quote
     Type: `boolean`, Default: `true`
 
     Insert a closing quote on completion if there is none.
 
 
-src.text                                              *crates-config-src-text*
-    Section type: `SrcTextConfig`
+completion.text                                *crates-config-completion-text*
+    Section type: `CompletionTextConfig`
 
     Text shown in the completion source documentation preview.
 
 
-src.text.prerelease                        *crates-config-src-text-prerelease*
+completion.text.prerelease          *crates-config-completion-text-prerelease*
     Type: `string`, Default: `"  pre-release "`
 
     Text shown in the completion source documentation preview for pre-release versions.
 
 
-src.text.yanked                                *crates-config-src-text-yanked*
+completion.text.yanked                  *crates-config-completion-text-yanked*
     Type: `string`, Default: `"  yanked "`
 
     Text shown in the completion source documentation preview for yanked versions.
 
 
-src.cmp                                                *crates-config-src-cmp*
+completion.cmp                                  *crates-config-completion-cmp*
     Section type: `CmpConfig`
 
     Configuration options for the |nvim-cmp| completion source.
 
 
-src.cmp.enabled                                *crates-config-src-cmp-enabled*
+completion.cmp.enabled                  *crates-config-completion-cmp-enabled*
     Type: `boolean`, Default: `false`
 
     Whether to load and register the |nvim-cmp| source.
@@ -1396,68 +1402,98 @@ src.cmp.enabled                                *crates-config-src-cmp-enabled*
     NOTE: Ignored if |crates-config-autoload| is disabled.
     You may manually register it, after |nvim-cmp| has been loaded.
     >
-        require("crates.src.cmp").setup()
+        require("crates.completion.cmp").setup()
     <
 
 
-src.cmp.use_custom_kind                *crates-config-src-cmp-use_custom_kind*
+completion.cmp.use_custom_kind  *crates-config-completion-cmp-use_custom_kind*
     Type: `boolean`, Default: `true`
 
     Use custom a custom kind to display inside the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_text                            *crates-config-src-cmp-kind_text*
+completion.cmp.kind_text              *crates-config-completion-cmp-kind_text*
     Section type: `CmpKindTextConfig`
 
     The kind text shown in the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_text.version            *crates-config-src-cmp-kind_text-version*
+                              *crates-config-completion-cmp-kind_text-version*
+completion.cmp.kind_text.version
     Type: `string`, Default: `"Version"`
 
     The version kind text shown in the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_text.feature            *crates-config-src-cmp-kind_text-feature*
+                              *crates-config-completion-cmp-kind_text-feature*
+completion.cmp.kind_text.feature
     Type: `string`, Default: `"Feature"`
 
     The feature kind text shown in the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_highlight                  *crates-config-src-cmp-kind_highlight*
+completion.cmp.kind_highlight    *crates-config-completion-cmp-kind_highlight*
     Section type: `CmpKindHighlightConfig`
 
     Highlight groups used for the kind text in the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_highlight.version  *crates-config-src-cmp-kind_highlight-version*
+                         *crates-config-completion-cmp-kind_highlight-version*
+completion.cmp.kind_highlight.version
     Type: `string`, Default: `"CmpItemKindVersion"`
 
     Highlight group used for the version kind text in the |nvim-cmp| completion menu.
 
 
-src.cmp.kind_highlight.feature  *crates-config-src-cmp-kind_highlight-feature*
+                         *crates-config-completion-cmp-kind_highlight-feature*
+completion.cmp.kind_highlight.feature
     Type: `string`, Default: `"CmpItemKindFeature"`
 
     Highlight group used for the feature kind text in the |nvim-cmp| completion menu.
 
 
-src.coq                                                *crates-config-src-coq*
+completion.coq                                  *crates-config-completion-coq*
     Section type: `CoqConfig`
 
     Configuration options for the |coq_nvim| completion source.
 
 
-src.coq.enabled                                *crates-config-src-coq-enabled*
+completion.coq.enabled                  *crates-config-completion-coq-enabled*
     Type: `boolean`, Default: `false`
 
     Whether to load and register the |coq_nvim| source.
 
 
-src.coq.name                                      *crates-config-src-coq-name*
+completion.coq.name                        *crates-config-completion-coq-name*
     Type: `string`, Default: `"crates.nvim"`
 
     The source name displayed by |coq_nvim|.
+
+
+completion.crates                            *crates-config-completion-crates*
+    Section type: `CrateCompletionConfig`
+
+    Settings for completing the names of crates.
+
+
+completion.crates.enabled            *crates-config-completion-crates-enabled*
+    Type: `boolean`, Default: `false`
+
+    Enable completing crate names from crates.io search results.
+
+
+completion.crates.min_chars        *crates-config-completion-crates-min_chars*
+    Type: `integer`, Default: `3`
+
+    The minimum number of characters of a crate name you need to
+    type before the plugin tries to complete the crate name.
+
+
+completion.crates.max_results    *crates-config-completion-crates-max_results*
+    Type: `integer`, Default: `8`
+
+    The maximum number of visible results when attempting to
+    complete a crate name.
 
 
 null_ls                                                *crates-config-null_ls*

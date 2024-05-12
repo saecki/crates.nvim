@@ -1,10 +1,10 @@
 Documentation for `crates.nvim` `unstable`
 
 # Features
-- Complete crate versions and features using one of:
+- Complete crate names, versions and features using one of:
     - In-process language server (`lsp`)
-    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`src.cmp`)
-    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`src.coq`)
+    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`completion.cmp`)
+    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`completion.coq`)
 - Code actions using one of:
     - In-process language server (`lsp`)
     - [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim)
@@ -61,7 +61,7 @@ Enable it in the setup.
 ```lua
 require("crates").setup {
     ...
-    src = {
+    completion = {
         ...
         cmp = {
             enabled = true,
@@ -103,13 +103,31 @@ Enable it in the setup, and optionally change the display name.
 ```lua
 require("crates").setup {
     ...
-    src = {
+    completion = {
         ...
         coq = {
             enabled = true,
             name = "crates.nvim",
         },
     },
+}
+```
+
+### Crate name completion
+
+Crate names in dependencies can be completed from searches on `crates.io`. This has to be
+enabled seperately:
+
+```lua
+require("crates").setup {
+    ...
+    completion = {
+        crates = {
+            enabled = true -- disabled by default
+            max_results = 8 -- The maximum number of search results to display
+            min_chars = 3 -- The minimum number of charaters to type before completions begin appearing
+        }
+    }
 }
 ```
 
@@ -272,7 +290,7 @@ require("crates").setup {
             jump_back = { "<c-o>", "<C-RightMouse>" },
         },
     },
-    src = {
+    completion = {
         insert_closing_quote = true,
         text = {
             prerelease = "  pre-release ",
@@ -293,6 +311,11 @@ require("crates").setup {
         coq = {
             enabled = false,
             name = "crates.nvim",
+        },
+        crates = {
+            enabled = false,
+            min_chars = 3,
+            max_results = 8,
         },
     },
     null_ls = {
@@ -350,7 +373,7 @@ require("crates").setup {
             loading = " ...",
         },
     },
-    src = {
+    completion = {
         text = {
             prerelease = " pre-release ",
             yanked = " yanked ",
