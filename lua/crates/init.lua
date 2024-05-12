@@ -142,7 +142,9 @@ local M = {
     ---Open the `crates.io` page of the crate on the current line.
     ---@type fun()
     open_crates_io = actions.open_crates_io,
-
+    ---Opens the page of the crate in the set crate frontend (default `crates.io`)
+    ---@type fun()
+    open_crates_index = actions.open_crates_index,
     ---Returns whether there is information to show in a popup.
     ---@type fun(): boolean
     popup_available = popup.available,

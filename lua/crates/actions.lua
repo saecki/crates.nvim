@@ -141,6 +141,16 @@ function M.open_crates_io()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local _, crate = next(crates)
     if crate then
+        util.open_url('https://crates.io/crates/' .. crate:package())
+    end
+end
+
+function M.open_crates_index()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Span.pos(line))
+    local _, crate = next(crates)
+    if crate then
         util.open_url(util.crates_io_url(crate:package()))
     end
 end
@@ -287,8 +297,12 @@ function M.get_actions()
             action = M.open_documentation,
         })
         table.insert(actions, {
-            name = "open_in_browser",
+            name = "open_in_crates.io",
             action = M.open_crates_io,
+        })
+        table.insert(actions, {
+            name = "open_in_browser",
+            action = M.open_crates_index,
         })
     end
 
