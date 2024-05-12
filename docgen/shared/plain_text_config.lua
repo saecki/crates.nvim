@@ -19,6 +19,7 @@ popup = {
         repository_label = "repository     ",
         documentation_label = "documentation  ",
         crates_io_label = "crates.io      ",
+        lib_rs_label = "lib.rs         ",
         categories_label = "categories     ",
         keywords_label = "keywords       ",
         version = "%s",
