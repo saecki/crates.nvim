@@ -274,7 +274,7 @@ end
 
 --- Converts it into the expected format for LSP completion items
 ---@param line integer
----@return table
+---@return lsp.Range
 function Span:range(line)
     return {
         start = {
@@ -290,9 +290,9 @@ end
 
 ---@class WorkingCrate
 ---@field name string
----@field span Span
----@field kind WorkingCrateKind
 ---@field line integer
+---@field col Span
+---@field kind WorkingCrateKind
 
 ---@enum WorkingCrateKind
 M.WorkingCrateKind = {

@@ -780,7 +780,7 @@ function M.parse_crates(buf)
                 if dep_section.name then
                     table.insert(working_crates, {
                         name = dep_section.name,
-                        span = dep_section.name_col,
+                        col = dep_section.name_col,
                         kind = types.WorkingCrateKind.TABLE,
                         line = line_nr,
                     })
@@ -872,9 +872,9 @@ function M.parse_crates(buf)
                 if name_s and name and name_e then
                     table.insert(working_crates, {
                         name = name,
-                        span = Span.new(name_s - 1, name_e - 1),
-                        kind = types.WorkingCrateKind.INLINE,
                         line = line_nr,
+                        col = Span.new(name_s - 1, name_e - 1),
+                        kind = types.WorkingCrateKind.INLINE,
                     })
                 end
             end

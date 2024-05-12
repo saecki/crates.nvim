@@ -127,11 +127,11 @@ local function complete_features(crate, cf, versions)
 end
 
 ---@param prefix string
----@param span Span
+---@param col Span
 ---@param line integer
 ---@param kind WorkingCrateKind?
 ---@return CompletionList?
-local function complete_crates(prefix, span, line, kind)
+local function complete_crates(prefix, col, line, kind)
     if #prefix < state.cfg.completion.crates.min_chars then
         return
     end
@@ -162,7 +162,7 @@ local function complete_crates(prefix, span, line, kind)
 
     local itemDefaults = {
         insertTextFormat = kind and 2 or 1,
-        editRange = span:range(line),
+        editRange = kind and col:range(line),
     }
 
     local function insertText(name) return name end
@@ -171,10 +171,11 @@ local function complete_crates(prefix, span, line, kind)
             return ('%s = "${1:%s}"'):format(name, version)
         end
     elseif kind and kind == types.WorkingCrateKind.TABLE then
-        itemDefaults.editRange = span:moved(0, 1):range(line)
+        itemDefaults.editRange = col:moved(0, 1):range(line)
         insertText = function(name, version)
             return ('%s]\nversion = "${1:%s}"'):format(name, version)
         end
+    else
     end
 
     local results = {}
@@ -211,9 +212,9 @@ local function complete()
     if state.cfg.completion.crates.enabled then
         local working_crates = state.buf_cache[buf].working_crates
         for _,wcrate in ipairs(working_crates) do
-            if wcrate and wcrate.span:moved(0, 1):contains(col) and line == wcrate.line then
-                local prefix = wcrate.name:sub(1, col - wcrate.span.s)
-                return complete_crates(prefix, wcrate.span, wcrate.line, wcrate.kind);
+            if wcrate and wcrate.col:moved(0, 1):contains(col) and line == wcrate.line then
+                local prefix = wcrate.name:sub(1, col - wcrate.col.s)
+                return complete_crates(prefix, wcrate.col, wcrate.line, wcrate.kind);
             end
         end
     end
@@ -228,8 +229,8 @@ local function complete()
         then
             local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
                 or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
-            local span = crate.pkg and crate.pkg.col or crate.explicit_name_col
-            return complete_crates(prefix, span, line);
+            local name_col = crate.pkg and crate.pkg.col or crate.explicit_name_col
+            return complete_crates(prefix, name_col, line);
         end
     end
 
