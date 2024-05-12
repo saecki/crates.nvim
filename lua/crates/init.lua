@@ -10,6 +10,13 @@ local util = require("crates.util")
 local toml = require("crates.toml")
 
 local function attach()
+    local buf = util.current_buf()
+    local h = io.open('.crates.nvim.toml', 'r')
+    if h then
+        local local_config = toml.parse_local_config(h)
+        state.local_config[buf] = local_config
+    end
+
     if state.cfg.src.cmp.enabled then
         require("crates.src.cmp").setup()
     end
@@ -18,12 +25,6 @@ local function attach()
         require("crates.lsp").start_server()
     end
 
-    local buf = util.current_buf()
-    local h = io.open('.crates.nvim.toml', 'r')
-    if h then
-        local local_config = toml.parse_local_config(h)
-        state.local_config[buf] = local_config
-    end
     core.update()
     state.cfg.on_attach(buf)
 end

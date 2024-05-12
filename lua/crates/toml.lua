@@ -914,7 +914,7 @@ local function parse_value(str)
         local tbl = {}
         array = array:sub(2, #array - 1)
         ::continue::
-        local wsp, v = array:match [[^(%s*)(['"]?[%w_-]+['"]?)]]
+        local wsp, v = array:match [[^(%s*)(['"]?[^%[%]{},]+['"]?)]]
         if not v then wsp, v = array:match [[^(%s*)(%b{})]] end
         if not v then wsp, v = array:match [[^(%s*)(%b[])]] end
         if v then
@@ -927,18 +927,35 @@ local function parse_value(str)
 
         return tbl
     end
+
+    local multiline_array = str:match'%['
+    if multiline_array then
+        local tbl = {}
+        ::next::
+        local line = coroutine.yield()
+        --- Unterminated multiline array, not sure how best to deal with this error
+        if not line then return end
+        if not line:match '%b[]' and line:match '%]' then
+            return tbl
+        end
+        local v = parse_value(line)
+        if v then table.insert(tbl, v) end
+        goto next
+    end
 end
 
----@param h file*
----@return table
-function M.parse_local_config(h)
-    local root = {}
-    ---@type table<string, any>
-    local current = root
-    ---@type table<string, any>
-    local current_real = state._cfg
 
-    for line in h:lines() do
+---@param h file*
+---@return table?
+function M.parse_local_config(h)
+    local parse_local_config = coroutine.create(function(line)
+        local root = {}
+        ---@type table<string, any>
+        local current = root
+        ---@type table<string, any>
+        local current_real = state._cfg
+
+        ::step::
         ---@type string
         local section_text = line:match '^%s*%[([%.%w-_]*)%]'
 
@@ -950,17 +967,11 @@ function M.parse_local_config(h)
             ---@cast current table<string, any>
             ---@cast current_real table<string, any>
             for tbl in directory:gmatch '%.([%w-_]+)' do
-                if current_real[tbl] then
-                    current_real = current_real[tbl]
-                    current[tbl] = current[tbl] or setmetatable({}, {
-                        __index = current_real
-                    })
-                    current = current[tbl]
-                else
-                    current_real = setmetatable({}, {
-                        __newindex = function (_, _, _) end
-                    })
-                end
+                current_real = current_real[tbl]
+                current[tbl] = current[tbl] or setmetatable({}, {
+                    __index = current_real
+                })
+                current = current[tbl]
             end
         else
             ---@type string, string
@@ -981,9 +992,18 @@ function M.parse_local_config(h)
                 tmp_current[lhs] = parse_value(v)
             end
         end
+        line = coroutine.yield()
+        if line then goto step end
+        return root
+    end)
+
+    for line in h:lines() do
+        local ok = coroutine.resume(parse_local_config, line)
+        if not ok then return end
     end
 
-    return root
+    local ok, root = coroutine.resume(parse_local_config)
+    if ok then return root end
 end
 
 return M
