@@ -20,6 +20,7 @@
 ---@field disable_invalid_feature_diagnostic boolean
 ---@field enable_update_available_warning boolean
 ---@field on_attach fun(bufnr: integer)
+---@field frontend string
 ---@field text TextConfig
 ---@field highlight HighlightConfig
 ---@field diagnostic DiagnosticConfig

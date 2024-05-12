@@ -287,7 +287,7 @@ function M.get_actions()
             action = M.open_documentation,
         })
         table.insert(actions, {
-            name = "open_crates.io",
+            name = "open_in_browser",
             action = M.open_crates_io,
         })
     end

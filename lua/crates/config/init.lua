@@ -250,6 +250,14 @@ entry(M.schema, {
         NOTE: Ignored if |crates-config-autoload| is disabled.
     ]],
 })
+entry(M.schema, {
+    name = "frontend",
+    type = STRING_TYPE,
+    default = "crates.io/crates",
+    description = [[
+        The url to the crates.io frontend used to view crates online.
+    ]],
+})
 -- deprecated
 entry(M.schema, {
     name = "avoid_prerelease",
