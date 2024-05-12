@@ -145,6 +145,16 @@ function M.open_crates_io()
     end
 end
 
+function M.open_lib_rs()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Span.pos(line))
+    local _, crate = next(crates)
+    if crate then
+        util.open_url(util.lib_rs_url(crate:package()))
+    end
+end
+
 ---@param buf integer
 ---@param crate TomlCrate
 ---@param name string
@@ -279,9 +289,7 @@ function M.get_actions()
                 action = M.extract_crate_into_table,
             })
         end
-    end
 
-    if crate then
         table.insert(actions, {
             name = "open_documentation",
             action = M.open_documentation,
@@ -289,6 +297,10 @@ function M.get_actions()
         table.insert(actions, {
             name = "open_crates.io",
             action = M.open_crates_io,
+        })
+        table.insert(actions, {
+            name = "open_lib.rs",
+            action = M.open_lib_rs,
         })
     end
 

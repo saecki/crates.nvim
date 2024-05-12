@@ -142,6 +142,9 @@ local M = {
     ---Open the `crates.io` page of the crate on the current line.
     ---@type fun()
     open_crates_io = actions.open_crates_io,
+    ---Open the `lib.rs` page of the crate on the current line.
+    ---@type fun()
+    open_lib_rs = actions.open_lib_rs,
 
     ---Returns whether there is information to show in a popup.
     ---@type fun(): boolean
