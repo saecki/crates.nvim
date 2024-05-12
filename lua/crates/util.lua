@@ -215,7 +215,7 @@ end
 ---@param name string
 ---@return string
 function M.crates_io_url(name)
-    return "https://" .. state.cfg.frontend .. "/" .. name
+    return state.cfg.frontend:format(name)
 end
 
 ---@param url string

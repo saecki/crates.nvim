@@ -253,7 +253,7 @@ entry(M.schema, {
 entry(M.schema, {
     name = "frontend",
     type = STRING_TYPE,
-    default = "crates.io/crates",
+    default = "https://crates.io/crates/%s",
     description = [[
         The url to the crates.io frontend used to view crates online.
     ]],
