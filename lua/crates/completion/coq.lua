@@ -4,7 +4,7 @@ local M = {}
 ---@field name string
 ---@field fn fun(ctx: table, callback: fun(list: CompletionList|nil))
 
-local src = require("crates.src.common")
+local completion = require("crates.completion.common")
 
 ---@param map table<integer,any>
 ---@return number
@@ -25,7 +25,7 @@ function M.complete(_ctx, callback)
         return
     end
 
-    src.complete(callback)
+    completion.complete(callback)
 end
 
 ---@param name string

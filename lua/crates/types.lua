@@ -17,6 +17,14 @@ M.MatchKind = {
     NOMATCH = "nomatch"
 }
 
+---NOTE: Completion only shows a very minimal summary at the moment,
+---`crates.io/api/v1/crates?q=<search>` gives a lot more information
+---that may be displayed in the future.
+---@class ApiCrateSummary
+---@field name string
+---@field description string
+---@field newest_version string
+
 ---@class ApiCrate
 ---@field name string
 ---@field description string
@@ -263,5 +271,33 @@ function Span:iter()
         return val
     end
 end
+
+--- Converts it into the expected format for LSP completion items
+---@param line integer
+---@return table
+function Span:range(line)
+    return {
+        start = {
+            line = line,
+            character = self.s
+        },
+        ['end'] = {
+            line = line,
+            character = self.e
+        },
+    }
+end
+
+---@class WorkingCrate
+---@field name string
+---@field span Span
+---@field kind WorkingCrateKind
+---@field line integer
+
+---@enum WorkingCrateKind
+M.WorkingCrateKind = {
+    INLINE = 1,
+    TABLE = 2,
+}
 
 return M

@@ -24,7 +24,7 @@
 ---@field highlight HighlightConfig
 ---@field diagnostic DiagnosticConfig
 ---@field popup PopupConfig
----@field src SrcConfig
+---@field completion CompletionConfig
 ---@field null_ls NullLsConfig
 ---@field lsp LspConfig
 
@@ -168,13 +168,14 @@
 ---@field jump_forward string[]
 ---@field jump_back string[]
 
----@class SrcConfig
+---@class CompletionConfig
 ---@field insert_closing_quote boolean
----@field text SrcTextConfig
+---@field text CompletionTextConfig
 ---@field cmp CmpConfig
 ---@field coq CoqConfig
+---@field crates CrateCompletionConfig
 
----@class SrcTextConfig
+---@class CompletionTextConfig
 ---@field prerelease string
 ---@field yanked string
 
@@ -195,6 +196,11 @@
 ---@class CoqConfig
 ---@field enabled boolean
 ---@field name string
+
+---@class CrateCompletionConfig
+---@field enabled boolean
+---@field min_chars integer
+---@field max_results integer
 
 ---@class NullLsConfig
 ---@field enabled boolean
@@ -229,7 +235,7 @@
 ---@field public text? crates.UserTextConfig
 ---@field public highlight? crates.UserHighlightConfig
 ---@field public popup? crates.UserPopupConfig
----@field public src? crates.UserSrcConfig
+---@field public completion? crates.UserCompletionConfig
 ---@field public null_ls? crates.UserNullLsConfig
 ---@field public lsp? crates.UserLspConfig
 
@@ -353,13 +359,14 @@
 ---@field public jump_forward? string[]
 ---@field public jump_back? string[]
 
----@class crates.UserSrcConfig
+---@class crates.UserCompletionConfig
 ---@field public insert_closing_quote? boolean
----@field public text? crates.UserSrcTextConfig
+---@field public text? crates.UserCompletionTextConfig
 ---@field public cmp? crates.UserCmpConfig
 ---@field public coq? crates.UserCoqConfig
+---@field public crates? crates.UserCrateCompletionConfig
 
----@class crates.UserSrcTextConfig
+---@class crates.UserCompletionTextConfig
 ---@field public prerelease? string
 ---@field public yanked? string
 
@@ -380,6 +387,11 @@
 ---@class crates.UserCoqConfig
 ---@field public enabled? boolean
 ---@field public name? string
+
+---@class crates.UserCrateCompletionConfig
+---@field public enabled? boolean
+---@field public min_chars? integer
+---@field public max_results? integer
 
 ---@class crates.UserNullLsConfig
 ---@field public enabled? boolean

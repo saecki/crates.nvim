@@ -33,7 +33,7 @@ popup = {
         loading = " ...",
     },
 },
-src = {
+completion = {
     text = {
         prerelease = " pre-release ",
         yanked = " yanked ",

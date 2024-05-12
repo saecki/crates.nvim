@@ -49,21 +49,21 @@ local function complete_versions(crate, versions)
             kind = VALUE_KIND,
             sortText = string.format("%04d", i),
         }
-        if state.cfg.src.insert_closing_quote then
+        if state.cfg.completion.insert_closing_quote then
             if crate.vers and not crate.vers.quote.e then
                 r.insertText = v.num .. crate.vers.quote.s
             end
         end
         if v.yanked then
             r.deprecated = true
-            r.documentation = state.cfg.src.text.yanked
+            r.documentation = state.cfg.completion.text.yanked
         elseif v.parsed.pre then
-            r.documentation = state.cfg.src.text.prerelease
+            r.documentation = state.cfg.completion.text.prerelease
         end
-        if state.cfg.src.cmp.use_custom_kind then
+        if state.cfg.completion.cmp.use_custom_kind then
             r.cmp = {
-                kind_text = state.cfg.src.cmp.kind_text.version,
-                kind_hl_group = state.cfg.src.cmp.kind_highlight.version,
+                kind_text = state.cfg.completion.cmp.kind_text.version,
+                kind_hl_group = state.cfg.completion.cmp.kind_highlight.version,
             }
         end
 
@@ -103,15 +103,15 @@ local function complete_features(crate, cf, versions)
             sortText = f.name,
             documentation = table.concat(f.members, "\n"),
         }
-        if state.cfg.src.insert_closing_quote then
+        if state.cfg.completion.insert_closing_quote then
             if not cf.quote.e then
                 r.insertText = f.name .. cf.quote.s
             end
         end
-        if state.cfg.src.cmp.use_custom_kind then
+        if state.cfg.completion.cmp.use_custom_kind then
             r.cmp = {
-                kind_text = state.cfg.src.cmp.kind_text.feature,
-                kind_hl_group = state.cfg.src.cmp.kind_highlight.feature,
+                kind_text = state.cfg.completion.cmp.kind_text.feature,
+                kind_hl_group = state.cfg.completion.cmp.kind_highlight.feature,
             }
         end
 
@@ -123,6 +123,75 @@ local function complete_features(crate, cf, versions)
     return {
         isIncomplete = not newest.deps,
         items = items,
+    }
+end
+
+---@param prefix string
+---@param span Span
+---@param line integer
+---@param kind WorkingCrateKind?
+---@return CompletionList?
+local function complete_crates(prefix, span, line, kind)
+    if #prefix < state.cfg.completion.crates.min_chars then
+        return
+    end
+
+    ---@type string[]
+    local search
+    repeat
+        search = state.search_cache.searches[prefix]
+        if not search then
+            ---@type ApiCrateSummary[]?, boolean?
+            local searches, cancelled
+            if api.is_fetching_search(prefix) then
+                searches, cancelled = api.await_search(prefix)
+            else
+                api.cancel_search_jobs()
+                searches, cancelled = api.fetch_search(prefix)
+            end
+            if cancelled then return end
+            if searches then
+                state.search_cache.searches[prefix] = {}
+                for _, result in ipairs(searches) do
+                    state.search_cache.results[result.name] = result
+                    table.insert(state.search_cache.searches[prefix], result.name)
+                end
+            end
+        end
+    until search
+
+    local itemDefaults = {
+        insertTextFormat = kind and 2 or 1,
+        editRange = span:range(line),
+    }
+
+    local function insertText(name) return name end
+    if kind and kind == types.WorkingCrateKind.INLINE then
+        insertText = function(name, version)
+            return ('%s = "${1:%s}"'):format(name, version)
+        end
+    elseif kind and kind == types.WorkingCrateKind.TABLE then
+        itemDefaults.editRange = span:moved(0, 1):range(line)
+        insertText = function(name, version)
+            return ('%s]\nversion = "${1:%s}"'):format(name, version)
+        end
+    end
+
+    local results = {}
+    for _, r in ipairs(search) do
+        local result = state.search_cache.results[r]
+        table.insert(results, {
+            label = result.name,
+            kind = VALUE_KIND,
+            detail = result.description,
+            textEditText =  insertText(result.name, result.newest_version),
+        })
+    end
+
+    return {
+        isIncomplete = false,
+        items = results,
+        itemDefaults = itemDefaults,
     }
 end
 
@@ -138,8 +207,30 @@ local function complete()
     local line, col = util.cursor_pos()
     local crates = util.get_line_crates(buf, Span.new(line, line + 1))
     local _, crate = next(crates)
+
+    if state.cfg.completion.crates.enabled then
+        local working_crates = state.buf_cache[buf].working_crates
+        for _,wcrate in ipairs(working_crates) do
+            if wcrate and wcrate.span:moved(0, 1):contains(col) and line == wcrate.line then
+                local prefix = wcrate.name:sub(1, col - wcrate.span.s)
+                return complete_crates(prefix, wcrate.span, wcrate.line, wcrate.kind);
+            end
+        end
+    end
+
     if not crate then
         return
+    end
+
+    if state.cfg.completion.crates.enabled then
+        if crate.pkg and crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col)
+        or not crate.pkg and crate.explicit_name and crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col)
+        then
+            local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
+                or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
+            local span = crate.pkg and crate.pkg.col or crate.explicit_name_col
+            return complete_crates(prefix, span, line);
+        end
     end
 
     local api_crate = state.api_cache[crate:package()]
