@@ -733,7 +733,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "repository_label",
     type = STRING_TYPE,
-    default = " repository     ",
+    default = " repository     ",
     description = [[
         Label string used for the repository url.
     ]],
@@ -781,7 +781,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "lib_rs_label",
     type = STRING_TYPE,
-    default = " lib.rs         ",
+    default = " lib.rs         ",
     description = [[
         Label string used for the lib.rs url.
     ]],
@@ -797,7 +797,7 @@ entry(schema_popup_text, {
 entry(schema_popup_text, {
     name = "categories_label",
     type = STRING_TYPE,
-    default = " categories     ",
+    default = " categories     ",
     description = [[
         Label string used for the categories label.
     ]],
