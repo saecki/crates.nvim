@@ -103,14 +103,14 @@ local function update(buf, reload)
         api.cancel_jobs()
     end
 
-    local sections, crates, working_crate = toml.parse_crates(buf)
+    local sections, crates, working_crates = toml.parse_crates(buf)
     local crate_cache, diagnostics = diagnostic.process_crates(sections, crates)
     ---@type BufCache
     local cache = {
         crates = crate_cache,
         info = {},
         diagnostics = diagnostics,
-        working_crate = working_crate,
+        working_crates = working_crates,
     }
     state.buf_cache[buf] = cache
 

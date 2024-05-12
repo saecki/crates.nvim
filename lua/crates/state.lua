@@ -18,11 +18,7 @@ local State = {
 ---@field crates table<string,TomlCrate>
 ---@field info table<string,CrateInfo>
 ---@field diagnostics CratesDiagnostic[]
----@field working_crate WorkingCrate?
-
----@class WorkingCrate
----@field name string
----@field span Span
+---@field working_crates WorkingCrate[]
 
 ---@class SearchCache
 ---@field searches table<string, string[]>

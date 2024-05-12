@@ -141,9 +141,11 @@ local do_search = async.wrap(function(prefix)
 end)
 
 ---@param prefix string
----@param complete_with_version boolean
+---@param span Span
+---@param line integer
+---@param kind WorkingCrateKind?
 ---@return CompletionList?
-local function complete_crates(prefix, complete_with_version)
+local function complete_crates(prefix, span, line, kind)
     if #prefix < state.cfg.completion.crates.min_chars then
         return
     end
@@ -155,6 +157,23 @@ local function complete_crates(prefix, complete_with_version)
         if not search then return end
     end
 
+    local itemDefaults = {
+        insertTextFormat = kind and 2 or 1,
+        editRange = span:range(line - 1),
+    }
+
+    local function insertText(name) return name end
+    if kind and kind == types.WorkingCrateKind.INLINE then
+        insertText = function(name, version)
+            return ('%s = "${1:%s}"'):format(name, version)
+        end
+    elseif kind and kind == types.WorkingCrateKind.TABLE then
+        itemDefaults.editRange = span:moved(0, 1):range(line - 1)
+        insertText = function(name, version)
+            return ('%s]\nversion = "${1:%s}"'):format(name, version)
+        end
+    end
+
     local results = {}
     for _, r in ipairs(search) do
         local result = state.search_cache.results[r]
@@ -162,15 +181,14 @@ local function complete_crates(prefix, complete_with_version)
             label = result.name,
             kind = VALUE_KIND,
             detail = result.description,
-            insertText = complete_with_version
-                and ('%s = "%s"'):format(result.name, result.newest_version)
-                or result.name,
+            textEditText =  insertText(result.name, result.newest_version),
         })
     end
 
     return {
         isIncomplete = false,
         items = results,
+        itemDefaults = itemDefaults,
     }
 end
 
@@ -188,11 +206,12 @@ local function complete()
     local _, crate = next(crates)
 
     if state.cfg.completion.crates.enabled then
-        ---@type WorkingCrate
-        local working_crate = state.buf_cache[buf].working_crate
-        if working_crate and working_crate.span:moved(0, 1):contains(col) then
-            local prefix = working_crate.name:sub(1, col - working_crate.span.s)
-            return complete_crates(prefix, true);
+        local working_crates = state.buf_cache[buf].working_crates
+        for _,wcrate in ipairs(working_crates) do
+            if wcrate and wcrate.span:moved(0, 1):contains(col) then
+                local prefix = wcrate.name:sub(1, col - wcrate.span.s)
+                return complete_crates(prefix, wcrate.span, wcrate.line, wcrate.kind);
+            end
         end
     end
 
@@ -206,7 +225,9 @@ local function complete()
         then
             local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
                 or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
-            return complete_crates(prefix, false);
+            local span = crate.pkg and crate.pkg.col or crate.explicit_name_col
+            local line = crate.pkg and crate.pkg.line or crate.lines.s
+            return complete_crates(prefix, span, line);
         end
     end
 

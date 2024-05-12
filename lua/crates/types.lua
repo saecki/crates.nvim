@@ -272,4 +272,32 @@ function Span:iter()
     end
 end
 
+--- Converts it into the expected format for LSP completion items
+---@param line integer
+---@return table
+function Span:range(line)
+    return {
+        start = {
+            line = line,
+            character = self.s
+        },
+        ['end'] = {
+            line = line,
+            character = self.e
+        },
+    }
+end
+
+---@class WorkingCrate
+---@field name string
+---@field span Span
+---@field kind WorkingCrateKind
+---@field line integer
+
+---@enum WorkingCrateKind
+M.WorkingCrateKind = {
+    INLINE = 1,
+    TABLE = 2,
+}
+
 return M

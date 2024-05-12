@@ -741,7 +741,7 @@ end
 ---@param buf integer
 ---@return TomlSection[]
 ---@return TomlCrate[]
----@return WorkingCrate?
+---@return WorkingCrate[]
 function M.parse_crates(buf)
     ---@type string[]
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -753,8 +753,8 @@ function M.parse_crates(buf)
     local dep_section
     ---@type TomlCrate?
     local dep_section_crate
-    ---@type WorkingCrate?
-    local working_crate
+    ---@type WorkingCrate[]
+    local working_crates = {}
 
     for i, line in ipairs(lines) do
         line = M.trim_comments(line)
@@ -778,10 +778,12 @@ function M.parse_crates(buf)
             dep_section_crate = nil
             if dep_section then
                 if dep_section.name then
-                    working_crate = {
+                    table.insert(working_crates, {
                         name = dep_section.name,
                         span = dep_section.name_col,
-                    }
+                        kind = types.WorkingCrateKind.TABLE,
+                        line = i,
+                    })
                 end
 
                 table.insert(sections, dep_section)
@@ -868,10 +870,12 @@ function M.parse_crates(buf)
             else
                 local name_s, name, name_e = line:match [[^%s*()([^%s]+)()%s*$]]
                 if name_s and name and name_e then
-                    working_crate = {
+                    table.insert(working_crates, {
                         name = name,
-                        span = Span.new(name_s - 1, name_e - 1)
-                    }
+                        span = Span.new(name_s - 1, name_e - 1),
+                        kind = types.WorkingCrateKind.INLINE,
+                        line = i,
+                    })
                 end
             end
         end
@@ -888,7 +892,7 @@ function M.parse_crates(buf)
         end
     end
 
-    return sections, crates, working_crate
+    return sections, crates, working_crates
 end
 
 return M
