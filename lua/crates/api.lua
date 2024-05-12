@@ -281,7 +281,7 @@ local function fetch_search(name, callbacks)
     local job = start_job(url, on_exit)
     if job then
         M.num_requests = M.num_requests + 1
-        M.crate_jobs[name] = {
+        M.search_jobs[name] = {
             job = job,
             callbacks = callbacks,
         }
@@ -566,6 +566,12 @@ function M.is_fetching_deps(name, version)
 end
 
 ---@param name string
+---@return boolean
+function M.is_fetching_search(name)
+    return M.search_jobs[name] ~= nil
+end
+
+---@param name string
 ---@param callback fun(crate: ApiCrate|nil, cancelled: boolean)
 local function add_crate_callback(name, callback)
     table.insert(
@@ -654,6 +660,13 @@ function M.cancel_jobs()
 
     M.crate_jobs = {}
     M.deps_jobs = {}
+    M.search_jobs = {}
+end
+
+function M.cancel_search_jobs()
+    for _, r in pairs(M.search_jobs) do
+        cancel_job(r.job)
+    end
     M.search_jobs = {}
 end
 

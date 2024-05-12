@@ -126,20 +126,6 @@ local function complete_features(crate, cf, versions)
     }
 end
 
-local do_search = async.wrap(function(prefix)
-    local search, cancelled = api.fetch_search(prefix)
-
-    if not search or cancelled then
-        return
-    end
-
-    state.search_cache.searches[prefix] = {}
-    for _, result in ipairs(search) do
-        state.search_cache.results[result.name] = result
-        table.insert(state.search_cache.searches[prefix], result.name)
-    end
-end)
-
 ---@param prefix string
 ---@param span Span
 ---@param line integer
@@ -150,16 +136,31 @@ local function complete_crates(prefix, span, line, kind)
         return
     end
 
+    ::poll::
     local search = state.search_cache.searches[prefix]
     if not search then
-        do_search(prefix)
-        search = state.search_cache.searches[prefix]
-        if not search then return end
+        ---@type ApiCrateSummary[]?, boolean?
+        local searches, cancelled
+        if api.is_fetching_search(prefix) then
+            searches, cancelled = api.await_search(prefix)
+        else
+            api.cancel_search_jobs()
+            searches, cancelled = api.fetch_search(prefix)
+        end
+        if cancelled then return end
+        if searches then
+            state.search_cache.searches[prefix] = {}
+            for _, result in ipairs(searches) do
+                state.search_cache.results[result.name] = result
+                table.insert(state.search_cache.searches[prefix], result.name)
+            end
+        end
+        goto poll
     end
 
     local itemDefaults = {
         insertTextFormat = kind and 2 or 1,
-        editRange = span:range(line - 1),
+        editRange = span:range(line),
     }
 
     local function insertText(name) return name end
@@ -168,7 +169,7 @@ local function complete_crates(prefix, span, line, kind)
             return ('%s = "${1:%s}"'):format(name, version)
         end
     elseif kind and kind == types.WorkingCrateKind.TABLE then
-        itemDefaults.editRange = span:moved(0, 1):range(line - 1)
+        itemDefaults.editRange = span:moved(0, 1):range(line)
         insertText = function(name, version)
             return ('%s]\nversion = "${1:%s}"'):format(name, version)
         end
@@ -208,7 +209,7 @@ local function complete()
     if state.cfg.completion.crates.enabled then
         local working_crates = state.buf_cache[buf].working_crates
         for _,wcrate in ipairs(working_crates) do
-            if wcrate and wcrate.span:moved(0, 1):contains(col) then
+            if wcrate and wcrate.span:moved(0, 1):contains(col) and line == wcrate.line then
                 local prefix = wcrate.name:sub(1, col - wcrate.span.s)
                 return complete_crates(prefix, wcrate.span, wcrate.line, wcrate.kind);
             end
@@ -226,7 +227,6 @@ local function complete()
             local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
                 or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
             local span = crate.pkg and crate.pkg.col or crate.explicit_name_col
-            local line = crate.pkg and crate.pkg.line or crate.lines.s
             return complete_crates(prefix, span, line);
         end
     end

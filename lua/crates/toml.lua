@@ -782,7 +782,7 @@ function M.parse_crates(buf)
                         name = dep_section.name,
                         span = dep_section.name_col,
                         kind = types.WorkingCrateKind.TABLE,
-                        line = i,
+                        line = line_nr,
                     })
                 end
 
@@ -874,7 +874,7 @@ function M.parse_crates(buf)
                         name = name,
                         span = Span.new(name_s - 1, name_e - 1),
                         kind = types.WorkingCrateKind.INLINE,
-                        line = i,
+                        line = line_nr,
                     })
                 end
             end
