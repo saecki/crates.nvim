@@ -45,6 +45,7 @@ Setup for plain text (without patched font).
                 repository_label = "repository     ",
                 documentation_label = "documentation  ",
                 crates_io_label = "crates.io      ",
+                lib_rs_label = "lib.rs         ",
                 categories_label = "categories     ",
                 keywords_label = "keywords       ",
                 version = "%s",
@@ -133,15 +134,15 @@ For more information about individual config options see |crates-config|.
                 downloads = "%s",
                 homepage_label = " homepage       ",
                 homepage = "%s",
-                repository_label = " repository     ",
+                repository_label = " repository     ",
                 repository = "%s",
                 documentation_label = " documentation  ",
                 documentation = "%s",
                 crates_io_label = " crates.io      ",
                 crates_io = "%s",
-                lib_rs_label = " lib.rs         ",
+                lib_rs_label = " lib.rs         ",
                 lib_rs = "%s",
-                categories_label = " categories     ",
+                categories_label = " categories     ",
                 keywords_label = " keywords       ",
                 version = "  %s",
                 prerelease = " %s",
@@ -894,7 +895,7 @@ popup.text.homepage                        *crates-config-popup-text-homepage*
 
 
 popup.text.repository_label        *crates-config-popup-text-repository_label*
-    Type: `string`, Default: `" repository     "`
+    Type: `string`, Default: `" repository     "`
 
     Label string used for the repository url.
 
@@ -930,7 +931,7 @@ popup.text.crates_io                      *crates-config-popup-text-crates_io*
 
 
 popup.text.lib_rs_label                *crates-config-popup-text-lib_rs_label*
-    Type: `string`, Default: `" lib.rs         "`
+    Type: `string`, Default: `" lib.rs         "`
 
     Label string used for the lib.rs url.
 
@@ -942,7 +943,7 @@ popup.text.lib_rs                            *crates-config-popup-text-lib_rs*
 
 
 popup.text.categories_label        *crates-config-popup-text-categories_label*
-    Type: `string`, Default: `" categories     "`
+    Type: `string`, Default: `" categories     "`
 
     Label string used for the categories label.
 
