@@ -69,7 +69,7 @@ body:
         end
 
         require("crates").setup({
-            src = {
+            completion = {
                 -- cmp = { enabled = true },
                 -- coq = { enabled = true },
             },
