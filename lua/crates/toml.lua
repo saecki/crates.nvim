@@ -760,7 +760,11 @@ function M.parse_crates(buf)
         line = M.trim_comments(line)
         local line_nr = i - 1
 
-        local section_start, section_text = line:match("^%s*%[()([^%]]+)%]?%s*$")
+        ---@type string, string
+        local section_start, section_text = line:match("^%s*%[()(.+)%s*$")
+        if section_text and section_text:sub(-1) == ']' then
+            section_text = section_text:sub(1, -2)
+        end
 
         if section_text then
             if dep_section then
