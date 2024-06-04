@@ -29,8 +29,6 @@ local M = {
 ---@class CompletionItem
 ---@field label string
 ---@field kind integer|nil -- CompletionItemKind|nil
----@field detail string|nil
----@field documentation string|nil
 ---@field deprecated boolean|nil
 ---@field sortText string|nil
 ---@field insertText string|nil
@@ -67,12 +65,14 @@ local function complete_versions(crate, versions)
                 r.insertText = v.num .. crate.vers.quote.s
             end
         end
+        local detail = { v.created:display(state.cfg.date_format) }
         if v.yanked then
             r.deprecated = true
-            r.documentation = state.cfg.completion.text.yanked
+            table.insert(detail, state.cfg.completion.text.yanked)
         elseif v.parsed.pre then
-            r.documentation = state.cfg.completion.text.prerelease
+            table.insert(detail, state.cfg.completion.text.prerelease)
         end
+        r.detail = table.concat(detail, "\n")
         if state.cfg.completion.cmp.use_custom_kind then
             r.cmp = {
                 kind_text = state.cfg.completion.cmp.kind_text.version,
@@ -114,7 +114,7 @@ local function complete_features(crate, cf, versions)
             label = f.name,
             kind = CompletionItemKind.VALUE,
             sortText = f.name,
-            documentation = table.concat(f.members, "\n"),
+            detail = table.concat(f.members, "\n"),
         }
         if state.cfg.completion.insert_closing_quote then
             if not cf.quote.e then
@@ -242,7 +242,7 @@ local function complete_crates(buf, prefix, line, col, crate)
         table.insert(results, {
             label = result.name,
             kind = CompletionItemKind.VALUE,
-            detail = result.description,
+            detail = table.concat({ result.newest_version, result.description}, "\n"),
             textEditText = insertText(result.name, result.newest_version),
             additionalTextEdits = additionalTextEdits(result.newest_version),
         })
