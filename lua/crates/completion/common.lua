@@ -1,11 +1,17 @@
 local api = require("crates.api")
 local async = require("crates.async")
 local core = require("crates.core")
+local edit = require("crates.edit")
+local semver = require("crates.semver")
 local state = require("crates.state")
+local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local types = require("crates.types")
 local Span = types.Span
 local ui = require("crates.ui")
 local util = require("crates.util")
+
+
 
 ---@class CompletionSource
 ---@field trigger_characters string[]
@@ -34,8 +40,14 @@ local M = {
 ---@field kind_text string
 ---@field kind_hl_group string
 
--- lsp CompletionItemKind.Value
-local VALUE_KIND = 12
+-- lsp spec: https://microsoft.github.io/language-server-protocol/specifications/specification-current
+local CompletionItemKind = {
+    VALUE = 12,
+}
+local InsertTextFormat = {
+    PLAIN_TEXT = 1,
+    SNIPPET = 2,
+}
 
 ---@param crate TomlCrate
 ---@param versions ApiVersion[]
@@ -47,7 +59,7 @@ local function complete_versions(crate, versions)
         ---@type CompletionItem
         local r = {
             label = v.num,
-            kind = VALUE_KIND,
+            kind = CompletionItemKind.VALUE,
             sortText = string.format("%04d", i),
         }
         if state.cfg.completion.insert_closing_quote then
@@ -100,7 +112,7 @@ local function complete_features(crate, cf, versions)
         ---@type CompletionItem
         local r = {
             label = f.name,
-            kind = VALUE_KIND,
+            kind = CompletionItemKind.VALUE,
             sortText = f.name,
             documentation = table.concat(f.members, "\n"),
         }
@@ -131,9 +143,9 @@ end
 ---@param prefix string
 ---@param line integer
 ---@param col Span
----@param kind WorkingCrateKind?
+---@param crate TomlCrate?
 ---@return CompletionList?
-local function complete_crates(buf, prefix, line, col, kind)
+local function complete_crates(buf, prefix, line, col, crate)
     if #prefix < state.cfg.completion.crates.min_chars then
         return
     end
@@ -181,21 +193,47 @@ local function complete_crates(buf, prefix, line, col, kind)
     end
 
     local itemDefaults = {
-        insertTextFormat = kind and 2 or 1,
-        editRange = kind and col:range(line),
+        insertTextFormat = InsertTextFormat.PLAIN_TEXT,
+        editRange = nil,
     }
-
     local function insertText(name) return name end
-    if kind and kind == types.WorkingCrateKind.INLINE then
+    local function additionalTextEdits(_version) end
+
+    if crate then
+        if crate.vers then
+            additionalTextEdits = function(version)
+                local parsed = semver.parse_version(version)
+                local text = edit.version_text(crate, parsed)
+                return { {
+                    range = crate.vers.col:range(crate.vers.line),
+                    newText = text,
+                } }
+            end
+        else
+            if crate.syntax == TomlCrateSyntax.TABLE then
+                itemDefaults.insertTextFormat = InsertTextFormat.SNIPPET
+                itemDefaults.editRange = Span.new(col.s, crate.section.header_col.e):range(line)
+                insertText = function(name, version)
+                    return ('%s]\nversion = "${1:%s}"'):format(name, version)
+                end
+            elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+                local vers_col = edit.col_to_insert(crate, "vers")
+                additionalTextEdits = function(version)
+                    return { {
+                        range = Span.new(vers_col, vers_col):range(line),
+                        newText = string.format(' version = "%s",', version),
+                    } }
+                end
+            else -- crate.syntax == TomlCrateSyntax.PLAIN
+                error("unreachable")
+            end
+        end
+    else
+        itemDefaults.insertTextFormat = InsertTextFormat.SNIPPET
+        itemDefaults.editRange = col:range(line)
         insertText = function(name, version)
             return ('%s = "${1:%s}"'):format(name, version)
         end
-    elseif kind and kind == types.WorkingCrateKind.TABLE then
-        itemDefaults.editRange = col:moved(0, 1):range(line)
-        insertText = function(name, version)
-            return ('%s]\nversion = "${1:%s}"'):format(name, version)
-        end
-    else
     end
 
     local results = {}
@@ -203,9 +241,10 @@ local function complete_crates(buf, prefix, line, col, kind)
         local result = state.search_cache.results[r]
         table.insert(results, {
             label = result.name,
-            kind = VALUE_KIND,
+            kind = CompletionItemKind.VALUE,
             detail = result.description,
-            textEditText =  insertText(result.name, result.newest_version),
+            textEditText = insertText(result.name, result.newest_version),
+            additionalTextEdits = additionalTextEdits(result.newest_version),
         })
     end
 
@@ -231,10 +270,10 @@ local function complete()
 
     if state.cfg.completion.crates.enabled then
         local working_crates = state.buf_cache[buf].working_crates
-        for _,wcrate in ipairs(working_crates) do
+        for _, wcrate in ipairs(working_crates) do
             if wcrate and wcrate.col:moved(0, 1):contains(col) and line == wcrate.line then
                 local prefix = wcrate.name:sub(1, col - wcrate.col.s)
-                return complete_crates(buf, prefix, wcrate.line, wcrate.col, wcrate.kind);
+                return complete_crates(buf, prefix, wcrate.line, wcrate.col, nil);
             end
         end
     end
@@ -244,13 +283,16 @@ local function complete()
     end
 
     if state.cfg.completion.crates.enabled then
-        if crate.pkg and crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col)
-        or not crate.pkg and crate.explicit_name and crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col)
-        then
-            local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
-                or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
-            local name_col = crate.pkg and crate.pkg.col or crate.explicit_name_col
-            return complete_crates(buf, prefix, line, name_col);
+        if crate.pkg then
+            if crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col) then
+                local prefix = crate.pkg.text:sub(1, col - crate.pkg.col.s)
+                return complete_crates(buf, prefix, line, crate.pkg.col, crate);
+            end
+        else
+            if crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col) then
+                local prefix = crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
+                return complete_crates(buf, prefix, line, crate.explicit_name_col, crate);
+            end
         end
     end
 
