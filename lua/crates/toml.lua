@@ -521,7 +521,7 @@ end
 ---@param name string
 ---@return string
 local function inline_table_str_pattern(name)
-    return [[^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*()[,]?.*[}]?%s*$]]
+    return [[^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*]] .. name .. [[%s*=%s*(["'])()([^"',%s}]*)()(["']?)%s*()[,]?.*[}]?%s*$]]
 end
 
 ---@param name string
