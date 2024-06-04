@@ -9,6 +9,89 @@ local SemVer = types.SemVer
 
 local M = {}
 
+local default_key_order = {
+    "vers",
+    "registry",
+    "path",
+    "git",
+    "branch",
+    "rev",
+    "pkg",
+    "def",
+    "feat",
+    "workspace",
+    "opt",
+}
+
+---Returns the column at which to insert the key and whether there is another key before that
+---Requires that the key to insert isn't present in the crate,
+---and that at least one other key is present
+---@param crate TomlCrate
+---@param key string
+---@return integer, boolean
+function M.col_to_insert(crate, key)
+    local col = 0
+    local before = true
+    for _, k in ipairs(default_key_order) do
+        if key == k then
+            if col ~= 0 then
+                return col, true
+            end
+
+            before = false
+            goto continue
+        end
+
+        ---@type TomlCrateEntry
+        local entry = crate[k]
+        if entry then
+            if before then
+                col = entry.decl_col.e
+            else
+                return entry.decl_col.s, false
+            end
+        end
+
+        ::continue::
+    end
+
+    error("no other keys present")
+end
+
+---Returns the line at which to insert the key
+---Requires that the key to insert isn't present in the crate
+---@param crate TomlCrate
+---@param key string
+---@return integer
+function M.line_to_insert(crate, key)
+    local line = 0
+    local before = false
+    for _, k in ipairs(default_key_order) do
+        if key == k then
+            if line ~= 0 then
+                return line
+            end
+
+            before = false
+            goto continue
+        end
+
+        ---@type TomlCrateEntry
+        local entry = crate[k]
+        if entry then
+            if before then
+                line = entry.decl_col.e
+            else
+                return entry.line
+            end
+        end
+
+        ::continue::
+    end
+
+    return crate.lines.s + 1
+end
+
 ---comment
 ---@param buf integer
 ---@param crate TomlCrate
@@ -42,13 +125,7 @@ local function insert_version(buf, crate, text)
             return crate.lines:moved(0, 1)
         elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
             local line = crate.lines.s
-            local col = math.min(
-                crate.pkg and crate.pkg.col.s or 999,
-                crate.def and crate.def.col.s or 999,
-                crate.feat and crate.def.col.s or 999,
-                crate.git and crate.git.decl_col.s or 999,
-                crate.path and crate.path.decl_col.s or 999
-            )
+            local col = M.col_to_insert(crate, "vers")
             vim.api.nvim_buf_set_text(
                 buf, line, col, line, col,
                 { ' version = "' .. text .. '",' }
@@ -264,64 +341,7 @@ end
 ---@return Span
 function M.enable_feature(buf, crate, feature)
     local t = '"' .. feature.name .. '"'
-    if not crate.feat then
-        if crate.syntax == TomlCrateSyntax.TABLE then
-            local line = math.max(
-                crate.vers and crate.vers.line + 1 or 0,
-                crate.pkg and crate.pkg.line + 1 or 0,
-                crate.def and crate.def.line + 1 or 0
-            )
-            line = line ~= 0 and line or math.min(
-                crate.git and crate.git.line or 999,
-                crate.path and crate.path.line or 999
-            )
-            vim.api.nvim_buf_set_lines(
-                buf, line, line, false,
-                { "features = [" .. t .. "]" }
-            )
-            return Span.pos(line)
-        elseif crate.syntax == TomlCrateSyntax.PLAIN then
-            t = ", features = [" .. t .. "] }"
-            local line = crate.vers.line
-            local col = crate.vers.col.e
-            if crate.vers.quote.e then
-                col = col + 1
-            else
-                t = crate.vers.quote.s .. t
-            end
-            vim.api.nvim_buf_set_text(buf, line, col, line, col, { t })
-
-            vim.api.nvim_buf_set_text(
-                buf,
-                line,
-                crate.vers.col.s - 1,
-                line,
-                crate.vers.col.s - 1,
-                { "{ version = " }
-            )
-            return Span.pos(line)
-        else -- if crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-            local line = crate.lines.s
-            local text = ", features = [" .. t .. "]"
-            local col = math.max(
-                crate.vers and crate.vers.col.e + (crate.vers.quote.e and 1 or 0) or 0,
-                crate.pkg and crate.pkg.col.e or 0,
-                crate.def and crate.def.col.e or 0
-            )
-            if col == 0 then
-                text = " features = [" .. t .. "],"
-                col = math.min(
-                    crate.git and crate.git.decl_col.s or 999,
-                    crate.path and crate.path.decl_col.s or 999
-                )
-            end
-            vim.api.nvim_buf_set_text(
-                buf, line, col, line, col,
-                { text }
-            )
-            return Span.pos(line)
-        end
-    else
+    if crate.feat then
         local last_feat = crate.feat.items[#crate.feat.items]
         if last_feat then
             if not last_feat.comma then
@@ -341,6 +361,46 @@ function M.enable_feature(buf, crate, feature)
             { t }
         )
         return Span.pos(crate.feat.line)
+    end
+
+    if crate.syntax == TomlCrateSyntax.TABLE then
+        local line = M.line_to_insert(crate, "feat")
+        vim.api.nvim_buf_set_lines(
+            buf, line, line, false,
+            { "features = [" .. t .. "]" }
+        )
+        return Span.pos(line)
+    elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        local line = crate.lines.s
+        local col, before = M.col_to_insert(crate, "feat")
+        local text = ", features = [" .. t .. "]"
+        if not before then
+            text = " features = [" .. t .. "],"
+        end
+        vim.api.nvim_buf_set_text(
+            buf, line, col, line, col,
+            { text }
+        )
+        return Span.pos(line)
+    else -- crate.syntax == TomlCrateSyntax.PLAIN then
+        t = ", features = [" .. t .. "] }"
+        local line = crate.vers.line
+        local col = crate.vers.col.e
+        if crate.vers.quote.e then
+            col = col + 1
+        else
+            t = crate.vers.quote.s .. t
+        end
+        vim.api.nvim_buf_set_text(buf, line, col, line, col, { t })
+        vim.api.nvim_buf_set_text(
+            buf,
+            line,
+            crate.vers.col.s - 1,
+            line,
+            crate.vers.col.s - 1,
+            { "{ version = " }
+        )
+        return Span.pos(line)
     end
 end
 
@@ -414,73 +474,57 @@ local function disable_def_features(buf, crate)
             { "false" }
         )
         return crate.lines
-    else
-        if crate.syntax == TomlCrateSyntax.TABLE then
-            local line = math.max(
-                crate.vers and crate.vers.line + 1 or 0,
-                crate.pkg and crate.pkg.line + 1 or 0
-            )
-            line = line ~= 0 and line or math.min(
-                crate.feat and crate.feat.line or 999,
-                crate.git and crate.git.line or 999,
-                crate.path and crate.path.line or 999
-            )
-            vim.api.nvim_buf_set_lines(
-                buf,
-                line,
-                line,
-                false,
-                { "default-features = false" }
-            )
-            return crate.lines:moved(0, 1)
-        elseif crate.syntax == TomlCrateSyntax.PLAIN then
-            local t = ", default-features = false }"
-            local col = crate.vers.col.e
-            if crate.vers.quote.e then
-                col = col + 1
-            else
-                t = crate.vers.quote.s .. t
-            end
-            local line = crate.vers.line
-            vim.api.nvim_buf_set_text(
-                buf,
-                line,
-                col,
-                line,
-                col,
-                { t }
-            )
+    end
 
-            vim.api.nvim_buf_set_text(
-                buf,
-                line,
-                crate.vers.col.s - 1,
-                line,
-                crate.vers.col.s - 1,
-                { "{ version = " }
-            )
-            return crate.lines
-        else -- if crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-            local line = crate.lines.s
-            local text = ", default-features = false"
-            local col = math.max(
-                crate.vers and crate.vers.col.e + (crate.vers.quote.e and 1 or 0) or 0,
-                crate.pkg and crate.pkg.col.e or 0
-            )
-            if col == 0 then
-                text = " default-features = false,"
-                col = math.min(
-                    crate.feat and crate.def.col.s or 999,
-                    crate.git and crate.git.decl_col.s or 999,
-                    crate.path and crate.path.decl_col.s or 999
-                )
-            end
-            vim.api.nvim_buf_set_text(
-                buf, line, col, line, col,
-                { text }
-            )
-            return crate.lines
+    if crate.syntax == TomlCrateSyntax.TABLE then
+        local line = M.line_to_insert(crate, "def")
+        vim.api.nvim_buf_set_lines(
+            buf,
+            line,
+            line,
+            false,
+            { "default-features = false" }
+        )
+        return crate.lines:moved(0, 1)
+    elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        local line = crate.lines.s
+        local col, before = M.col_to_insert(crate, "def")
+        local text = ", default-features = false"
+        if not before then
+            text = " default-features = false,"
         end
+        vim.api.nvim_buf_set_text(
+            buf, line, col, line, col,
+            { text }
+        )
+        return crate.lines
+    else -- crate.syntax == TomlCrateSyntax.PLAIN then
+        local t = ", default-features = false }"
+        local col = crate.vers.col.e
+        if crate.vers.quote.e then
+            col = col + 1
+        else
+            t = crate.vers.quote.s .. t
+        end
+        local line = crate.vers.line
+        vim.api.nvim_buf_set_text(
+            buf,
+            line,
+            col,
+            line,
+            col,
+            { t }
+        )
+
+        vim.api.nvim_buf_set_text(
+            buf,
+            line,
+            crate.vers.col.s - 1,
+            line,
+            crate.vers.col.s - 1,
+            { "{ version = " }
+        )
+        return crate.lines
     end
 end
 
@@ -550,6 +594,9 @@ function M.extract_crate_into_table(buf, crate)
     end
     if crate.branch then
         table.insert(lines, "branch = " .. '"' .. crate.branch.text .. '"')
+    end
+    if crate.branch then
+        table.insert(lines, "tag = " .. '"' .. crate.tag.text .. '"')
     end
     if crate.rev then
         table.insert(lines, "rev = " .. '"' .. crate.rev.text .. '"')
