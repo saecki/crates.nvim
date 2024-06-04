@@ -46,7 +46,7 @@ local goto_dep = async.wrap(function(ctx, line)
         popup.show_loading_indicator()
 
         if not api.is_fetching_crate(crate_name) then
-            core.reload_crate(crate_name)
+            core.load_crate(crate_name)
         end
 
         local cancelled
@@ -71,7 +71,7 @@ local goto_dep = async.wrap(function(ctx, line)
         popup.show_loading_indicator()
 
         if not api.is_fetching_deps(crate_name, version.num) then
-            core.reload_deps(crate_name, crate.versions, version)
+            core.load_deps(crate_name, crate.versions, version)
         end
         local _, cancelled = api.await_deps(crate_name, version.num)
 

@@ -15,7 +15,7 @@ local M = {
 }
 
 ---@type fun(crate_name: string, versions: ApiVersion[], version: ApiVersion)
-M.reload_deps = async.wrap(function(crate_name, versions, version)
+M.load_deps = async.wrap(function(crate_name, versions, version)
     local deps, cancelled = api.fetch_deps(crate_name, version.num)
     if cancelled then
         return
@@ -52,7 +52,7 @@ M.reload_deps = async.wrap(function(crate_name, versions, version)
 end)
 
 ---@type fun(crate_name: string)
-M.reload_crate = async.wrap(function(crate_name)
+M.load_crate = async.wrap(function(crate_name)
     local crate, cancelled = api.fetch_crate(crate_name)
     local versions = crate and crate.versions
     if cancelled then
@@ -84,7 +84,7 @@ M.reload_crate = async.wrap(function(crate_name)
                 local version = info.vers_match or info.vers_upgrade
                 if version then
                     ---@cast versions -nil
-                    M.reload_deps(c:package(), versions, version)
+                    M.load_deps(c:package(), versions, version)
                 end
             end
 
@@ -142,7 +142,7 @@ local function update(buf, reload)
 
                     ui.display_diagnostics(buf, d_diagnostics)
                 else
-                    M.reload_deps(c:package(), versions, version)
+                    M.load_deps(c:package(), versions, version)
                 end
             end
         else
@@ -150,7 +150,7 @@ local function update(buf, reload)
                 ui.display_loading(buf, c)
             end
 
-            M.reload_crate(c:package())
+            M.load_crate(c:package())
         end
 
         ::continue::
