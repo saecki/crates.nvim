@@ -13,6 +13,7 @@ local M = {}
 ---@field name string|nil
 ---@field name_col Span|nil
 ---@field lines Span
+---@field header_col Span
 local Section = {}
 M.Section = Section
 
@@ -32,17 +33,18 @@ M.TomlSectionKind = TomlSectionKind
 ---@field explicit_name_col Span
 ---@field lines Span
 ---@field syntax TomlCrateSyntax
----@field vers TomlCrateVers|nil
----@field registry TomlCrateRegistry|nil
----@field path TomlCratePath|nil
----@field git TomlCrateGit|nil
----@field branch TomlCrateBranch|nil
----@field rev TomlCrateRev|nil
----@field pkg TomlCratePkg|nil
----@field workspace TomlCrateWorkspace|nil
----@field opt TomlCrateOpt|nil
----@field def TomlCrateDef|nil
----@field feat TomlCrateFeat|nil
+---@field vers TomlCrateVers?
+---@field registry TomlCrateString?
+---@field path TomlCrateString?
+---@field git TomlCrateString?
+---@field branch TomlCrateString?
+---@field tag TomlCrateString?
+---@field rev TomlCrateString?
+---@field pkg TomlCrateString?
+---@field workspace TomlCrateBool?
+---@field opt TomlCrateBool?
+---@field def TomlCrateBool?
+---@field feat TomlCrateFeat?
 ---@field section TomlSection
 ---@field dep_kind DepKind
 local Crate = {}
@@ -56,84 +58,24 @@ local TomlCrateSyntax = {
 }
 M.TomlCrateSyntax = TomlCrateSyntax
 
----@class TomlCrateVers
+---@class TomlCrateEntry
+---@field line integer -- 0-indexed
+---@field col Span
+---@field decl_col Span
+---@field text string
+
+---@class TomlCrateVers: TomlCrateEntry
 ---@field reqs Requirement[]
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
 ---@field quote Quotes
 
----@class TomlCrateRegistry
----@field text string
----@field is_pre boolean
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
+---@class TomlCrateString: TomlCrateEntry
 ---@field quote Quotes
 
----@class TomlCratePath
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
----@field quote Quotes
-
----@class TomlCrateGit
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
----@field quote Quotes
-
----@class TomlCrateBranch
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
----@field quote Quotes
-
----@class TomlCrateRev
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
----@field quote Quotes
-
----@class TomlCratePkg
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
----@field quote Quotes
-
----@class TomlCrateWorkspace
+---@class TomlCrateBool: TomlCrateEntry
 ---@field enabled boolean
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
 
----@class TomlCrateOpt
----@field enabled boolean
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
-
----@class TomlCrateDef
----@field enabled boolean
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
-
----@class TomlCrateFeat
+---@class TomlCrateFeat: TomlCrateEntry
 ---@field items TomlFeature[]
----@field text string
----@field line integer -- 0-indexed
----@field col Span
----@field decl_col Span
 
 ---@enum DepKind
 local DepKind = {
@@ -312,9 +254,9 @@ end
 
 ---@param text string
 ---@param line_nr integer
----@param start integer
+---@param header_col Span
 ---@return TomlSection|nil
-function M.parse_section(text, line_nr, start)
+function M.parse_section(text, line_nr, header_col)
     ---@type string, integer, string
     local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
     if prefix and suffix then
@@ -328,6 +270,7 @@ function M.parse_section(text, line_nr, start)
             ---end bound is assigned when the section ends
             ---@diagnostic disable-next-line: param-type-mismatch
             lines = Span.new(line_nr, nil),
+            header_col = header_col,
         }
 
         local target = prefix
@@ -362,7 +305,7 @@ function M.parse_section(text, line_nr, start)
             local n_s, n, n_e = suffix:match("^%.%s*()(.+)()%s*$")
             if n then
                 section.name = vim.trim(n)
-                local offset = start + suffix_s - 1
+                local offset = header_col.s + 1 + suffix_s - 1
                 section.name_col = Span.new(n_s - 1 + offset, n_e - 1 + offset)
                 suffix = ""
             end
@@ -378,138 +321,22 @@ function M.parse_section(text, line_nr, start)
     return nil
 end
 
----@param line string
----@param line_nr integer
----@param pattern string
----@return table|nil
-local function parse_crate_table_str(line, line_nr, pattern)
-    local quote_s, str_s, text, str_e, quote_e = line:match(pattern)
-    if text then
-        return {
-            text = text,
-            line = line_nr,
-            col = Span.new(str_s - 1, str_e - 1),
-            decl_col = Span.new(0, line:len()),
-            quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
-        }
-    end
-
-    return nil
+---@param name string
+---@return string
+local function table_bool_pattern(name)
+    return "^%s*".. name .. "%s*=%s*()([^%s]*)()%s*$"
 end
 
----@param line string
----@param line_nr integer
----@param pattern string
----@return table|nil
-local function parse_crate_table_bool(line, line_nr, pattern)
-    local bool_s, text, bool_e = line:match(pattern)
-    if text then
-        return {
-            text = text,
-            line = line_nr,
-            col = Span.new(bool_s - 1, bool_e - 1),
-            decl_col = Span.new(0, line:len()),
-        }
-    end
-
-    return nil
+---@param name string
+---@return string
+local function table_str_pattern(name)
+    return [[^%s*]] .. name .. [[%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
 end
 
----@param line string
----@param line_nr integer
----@return TomlCrateVers|nil
-function M.parse_crate_table_vers(line, line_nr)
-    local pat = [[^%s*version%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateRegistry|nil
-function M.parse_crate_table_registry(line, line_nr)
-    local pat = [[^%s*registry%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCratePath|nil
-function M.parse_crate_table_path(line, line_nr)
-    local pat = [[^%s*path%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateGit|nil
-function M.parse_crate_table_git(line, line_nr)
-    local pat = [[^%s*git%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateBranch|nil
-function M.parse_crate_table_branch(line, line_nr)
-    local pat = [[^%s*branch%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateRev|nil
-function M.parse_crate_table_rev(line, line_nr)
-    local pat = [[^%s*rev%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCratePkg|nil
-function M.parse_crate_table_pkg(line, line_nr)
-    local pat = [[^%s*package%s*=%s*(["'])()([^"']*)()(["']?)%s*$]]
-    return parse_crate_table_str(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateDef|nil
-function M.parse_crate_table_def(line, line_nr)
-    local pat = "^%s*default[_-]features%s*=%s*()([^%s]*)()%s*$"
-    return parse_crate_table_bool(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateWorkspace|nil
-function M.parse_crate_table_workspace(line, line_nr)
-    local pat = "^%s*workspace%s*=%s*()([^%s]*)()%s*$"
-    return parse_crate_table_bool(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateOpt|nil
-function M.parse_crate_table_opt(line, line_nr)
-    local pat = "^%s*optional%s*=%s*()([^%s]*)()%s*$"
-    return parse_crate_table_bool(line, line_nr, pat)
-end
-
----@param line string
----@param line_nr integer
----@return TomlCrateFeat|nil
-function M.parse_crate_table_feat(line, line_nr)
-    local array_s, text, array_e = line:match("%s*features%s*=%s*%[()([^%]]*)()[%]]?%s*$")
-    if text then
-        return {
-            text = text,
-            line = line_nr,
-            col = Span.new(array_s - 1, array_e - 1),
-            decl_col = Span.new(0, line:len()),
-        }
-    end
-
-    return nil
+---@param name string
+---@return string
+local function table_str_array_pattern(name)
+    return "%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*$"
 end
 
 ---@param name string
@@ -530,11 +357,25 @@ local function inline_table_str_array_pattern(name)
     return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
 end
 
+local TABLE_VERS_PATTERN = table_str_pattern("version")
+local TABLE_REGISTRY_PATTERN = table_str_pattern("registry")
+local TABLE_PATH_PATTERN = table_str_pattern("path")
+local TABLE_GIT_PATTERN = table_str_pattern("git")
+local TABLE_BRANCH_PATTERN = table_str_pattern("branch")
+local TABLE_TAG_PATTERN = table_str_pattern("tag")
+local TABLE_REV_PATTERN = table_str_pattern("rev")
+local TABLE_PKG_PATTERN = table_str_pattern("package")
+local TABLE_FEAT_PATTERN = table_str_array_pattern("features")
+local TABLE_DEF_PATTERN = table_bool_pattern("default[_-]features")
+local TABLE_WORKSPACE_PATTERN = table_bool_pattern("workspace")
+local TABLE_OPT_PATTERN = table_bool_pattern("optional")
+
 local INLINE_TABLE_VERS_PATTERN = inline_table_str_pattern("version")
 local INLINE_TABLE_REGISTRY_PATTERN = inline_table_str_pattern("registry")
 local INLINE_TABLE_PATH_PATTERN = inline_table_str_pattern("path")
 local INLINE_TABLE_GIT_PATTERN = inline_table_str_pattern("git")
 local INLINE_TABLE_BRANCH_PATTERN = inline_table_str_pattern("branch")
+local INLINE_TABLE_TAG_PATTERN = inline_table_str_pattern("tag")
 local INLINE_TABLE_REV_PATTERN = inline_table_str_pattern("rev")
 local INLINE_TABLE_PKG_PATTERN = inline_table_str_pattern("package")
 local INLINE_TABLE_FEAT_PATTERN = inline_table_str_array_pattern("features")
@@ -545,43 +386,108 @@ local INLINE_TABLE_OPT_PATTERN = inline_table_bool_pattern("optional")
 ---@param line string
 ---@param line_nr integer
 ---@param pattern string
----@return string|nil
----@return Span
----@return table<string,any>
-local function parse_inline_table_str(line, line_nr, pattern)
+---@return table<string,any>?
+local function parse_crate_table_str(line, line_nr, pattern)
+    local quote_s, str_s, text, str_e, quote_e = line:match(pattern)
+    if text then
+        return {
+            text = text,
+            line = line_nr,
+            col = Span.new(str_s - 1, str_e - 1),
+            decl_col = Span.new(0, line:len()),
+            quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
+        }
+    end
+end
+
+---@param line string
+---@param line_nr integer
+---@param pattern string
+---@return table<string,any>?
+local function parse_crate_table_bool(line, line_nr, pattern)
+    local bool_s, text, bool_e = line:match(pattern)
+    if text then
+        return {
+            text = text,
+            line = line_nr,
+            col = Span.new(bool_s - 1, bool_e - 1),
+            decl_col = Span.new(0, line:len()),
+        }
+    end
+end
+
+---@param line string
+---@param line_nr integer
+---@param pattern string
+---@return table<string,any>?
+function parse_crate_table_str_array(line, line_nr, pattern)
+    local array_s, text, array_e = line:match(pattern)
+    if text then
+        return {
+            text = text,
+            line = line_nr,
+            col = Span.new(array_s - 1, array_e - 1),
+            decl_col = Span.new(0, line:len()),
+        }
+    end
+end
+
+---@param crate TomlCrate
+---@param line string
+---@param line_nr integer
+---@param pattern string
+---@return table<string,any>?
+local function parse_inline_table_str(crate, line, line_nr, pattern)
     local name_s, name, name_e, decl_s, quote_s, str_s, text, str_e, quote_e, decl_e = line:match(pattern)
     if name then
-        local name_col = Span.new(name_s - 1, name_e - 1)
-        local entry = {
+        crate.explicit_name = name
+        crate.explicit_name_col = Span.new(name_s - 1, name_e - 1)
+        return {
             text = text,
             line = line_nr,
             col = Span.new(str_s - 1, str_e - 1),
             decl_col = Span.new(decl_s - 1, decl_e - 1),
             quote = { s = quote_s, e = quote_e ~= "" and quote_e or nil },
         }
+    end
+end
 
-        return name, name_col, entry
+---@param crate TomlCrate
+---@param line string
+---@param line_nr integer
+---@param pattern string
+---@return table<string,any>?
+local function parse_inline_table_str_array(crate, line, line_nr, pattern)
+    local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(pattern)
+    if name then
+        crate.explicit_name = name
+        crate.explicit_name_col = Span.new(name_s - 1, name_e - 1)
+        return {
+            text = text,
+            line = line_nr,
+            col = Span.new(array_s - 1, array_e - 1),
+            decl_col = Span.new(decl_s - 1, decl_e - 1),
+        }
     end
 end
 
 ---comment
+---@param crate TomlCrate
 ---@param line string
 ---@param line_nr integer
 ---@param pattern string
----@return string|nil
----@return Span
----@return table<string,any>
-local function parse_inline_table_bool(line, line_nr, pattern)
+---@return table<string,any>?
+local function parse_inline_table_bool(crate, line, line_nr, pattern)
     local name_s, name, name_e, decl_s, str_s, text, str_e, decl_e = line:match(pattern)
     if name then
-        local name_col = Span.new(name_s - 1, name_e - 1)
-        local entry = {
+        crate.explicit_name = name
+        crate.explicit_name_col = Span.new(name_s - 1, name_e - 1)
+        return {
             text = text,
             line = line_nr,
             col = Span.new(str_s - 1, str_e - 1),
             decl_col = Span.new(decl_s - 1, decl_e - 1),
         }
-        return name, name_col, entry
     end
 end
 
@@ -618,110 +524,18 @@ function M.parse_inline_crate(line, line_nr)
         syntax = TomlCrateSyntax.INLINE_TABLE,
         lines = Span.new(line_nr, line_nr + 1),
     }
-
-    do
-        local name, name_col, vers = parse_inline_table_str(line, line_nr, INLINE_TABLE_VERS_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.vers = vers
-        end
-    end
-
-    do
-        local name, name_col, registry = parse_inline_table_str(line, line_nr, INLINE_TABLE_REGISTRY_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.registry = registry
-        end
-    end
-
-    do
-        local name, name_col, path = parse_inline_table_str(line, line_nr, INLINE_TABLE_PATH_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.path = path
-        end
-    end
-
-    do
-        local name, name_col, git = parse_inline_table_str(line, line_nr, INLINE_TABLE_GIT_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.git = git
-        end
-    end
-
-    do
-        local name, name_col, branch = parse_inline_table_str(line, line_nr, INLINE_TABLE_BRANCH_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.branch = branch
-        end
-    end
-
-    do
-        local name, name_col, rev = parse_inline_table_str(line, line_nr, INLINE_TABLE_REV_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.rev = rev
-        end
-    end
-
-    do
-        local name, name_col, pkg = parse_inline_table_str(line, line_nr, INLINE_TABLE_PKG_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.pkg = pkg
-        end
-    end
-
-    do
-        local name, name_col, def = parse_inline_table_bool(line, line_nr, INLINE_TABLE_DEF_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.def = def
-        end
-    end
-
-    do
-        local name, name_col, workspace = parse_inline_table_bool(line, line_nr, INLINE_TABLE_WORKSPACE_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.workspace = workspace
-        end
-    end
-
-    do
-        local name, name_col, opt = parse_inline_table_bool(line, line_nr, INLINE_TABLE_OPT_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = name_col
-            crate.opt = opt
-        end
-    end
-
-    do
-        local name_s, name, name_e, decl_s, array_s, text, array_e, decl_e = line:match(INLINE_TABLE_FEAT_PATTERN)
-        if name then
-            crate.explicit_name = name
-            crate.explicit_name_col = Span.new(name_s - 1, name_e - 1)
-            crate.feat = {
-                text = text,
-                line = line_nr,
-                col = Span.new(array_s - 1, array_e - 1),
-                decl_col = Span.new(decl_s - 1, decl_e - 1),
-            }
-        end
-    end
+    crate.vers = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_VERS_PATTERN)
+    crate.registry = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_REGISTRY_PATTERN)
+    crate.path = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_PATH_PATTERN)
+    crate.git = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_GIT_PATTERN)
+    crate.branch = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_BRANCH_PATTERN)
+    crate.tag = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_TAG_PATTERN)
+    crate.rev = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_REV_PATTERN)
+    crate.pkg = parse_inline_table_str(crate, line, line_nr, INLINE_TABLE_PKG_PATTERN)
+    crate.def = parse_inline_table_bool(crate, line, line_nr, INLINE_TABLE_DEF_PATTERN)
+    crate.workspace = parse_inline_table_bool(crate, line, line_nr, INLINE_TABLE_WORKSPACE_PATTERN)
+    crate.opt = parse_inline_table_bool(crate, line, line_nr, INLINE_TABLE_OPT_PATTERN)
+    crate.feat = parse_inline_table_str_array(crate, line, line_nr, INLINE_TABLE_FEAT_PATTERN)
 
     if crate.explicit_name then
         return crate
@@ -761,11 +575,7 @@ function M.parse_crates(buf)
         local line_nr = i - 1
 
         ---@type string, string
-        local section_start, section_text = line:match("^%s*%[()(.+)%s*$")
-        if section_text and section_text:sub(-1) == ']' then
-            section_text = section_text:sub(1, -2)
-        end
-
+        local section_start, section_text, section_end = line:match("^%s*()%[(.+)()%s*$")
         if section_text then
             if dep_section then
                 -- close line span
@@ -778,18 +588,14 @@ function M.parse_crates(buf)
                 end
             end
 
-            dep_section = M.parse_section(section_text, line_nr, section_start - 1)
+            local header_col = Span.new(section_start - 1, section_end - 1)
+            if section_text and section_text:sub(-1) == ']' then
+                section_text = section_text:sub(1, -2)
+            end
+
+            dep_section = M.parse_section(section_text, line_nr, header_col)
             dep_section_crate = nil
             if dep_section then
-                if dep_section.name then
-                    table.insert(working_crates, {
-                        name = dep_section.name,
-                        col = dep_section.name_col,
-                        kind = types.WorkingCrateKind.TABLE,
-                        line = line_nr,
-                    })
-                end
-
                 table.insert(sections, dep_section)
             end
         elseif dep_section and dep_section.name then
@@ -801,71 +607,69 @@ function M.parse_crates(buf)
                 syntax = TomlCrateSyntax.TABLE,
             }
 
-            local vers = M.parse_crate_table_vers(line, line_nr)
+            local vers = parse_crate_table_str(line, line_nr, TABLE_VERS_PATTERN)
             if vers then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.vers = vers
             end
-
-            local registry = M.parse_crate_table_registry(line, line_nr)
+            local registry = parse_crate_table_str(line, line_nr, TABLE_REGISTRY_PATTERN)
             if registry then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.registry = registry
             end
 
-            local path = M.parse_crate_table_path(line, line_nr)
+            local path = parse_crate_table_str(line, line_nr, TABLE_PATH_PATTERN)
             if path then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.path = path
             end
 
-            local git = M.parse_crate_table_git(line, line_nr)
+            local git = parse_crate_table_str(line, line_nr, TABLE_GIT_PATTERN)
             if git then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.git = git
             end
-
-            local branch = M.parse_crate_table_branch(line, line_nr)
+            local branch = parse_crate_table_str(line, line_nr, TABLE_BRANCH_PATTERN)
             if branch then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.branch = branch
             end
-
-            local rev = M.parse_crate_table_rev(line, line_nr)
+            local tag = parse_crate_table_str(line, line_nr, TABLE_TAG_PATTERN)
+            if branch then
+                dep_section_crate = dep_section_crate or empty_crate
+                dep_section_crate.tag = tag
+            end
+            local rev = parse_crate_table_str(line, line_nr, TABLE_REV_PATTERN)
             if rev then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.rev = rev
             end
-
-            local pkg = M.parse_crate_table_pkg(line, line_nr)
+            local pkg = parse_crate_table_str(line, line_nr, TABLE_PKG_PATTERN)
             if pkg then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.pkg = pkg
             end
-
-            local def = M.parse_crate_table_def(line, line_nr)
+            local def = parse_crate_table_bool(line, line_nr, TABLE_DEF_PATTERN)
             if def then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.def = def
             end
-
-            local workspace = M.parse_crate_table_workspace(line, line_nr)
+            local workspace = parse_crate_table_bool(line, line_nr, TABLE_WORKSPACE_PATTERN)
             if workspace then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.workspace = workspace
             end
-
-            local opt = M.parse_crate_table_opt(line, line_nr)
+            local opt = parse_crate_table_bool(line, line_nr, TABLE_OPT_PATTERN)
             if opt then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.opt = opt
             end
-
-            local feat = M.parse_crate_table_feat(line, line_nr)
+            local feat = parse_crate_table_str_array(line, line_nr, TABLE_FEAT_PATTERN)
             if feat then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.feat = feat
             end
+
         elseif dep_section then
             local crate = M.parse_inline_crate(line, line_nr)
             if crate then
@@ -878,7 +682,6 @@ function M.parse_crates(buf)
                         name = name,
                         line = line_nr,
                         col = Span.new(name_s - 1, name_e - 1),
-                        kind = types.WorkingCrateKind.INLINE,
                     })
                 end
             end
