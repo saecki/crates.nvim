@@ -137,28 +137,29 @@ local function complete_crates(prefix, col, line, kind)
     end
 
     ---@type string[]
-    local search
-    repeat
-        search = state.search_cache.searches[prefix]
-        if not search then
-            ---@type ApiCrateSummary[]?, boolean?
-            local searches, cancelled
-            if api.is_fetching_search(prefix) then
-                searches, cancelled = api.await_search(prefix)
-            else
-                api.cancel_search_jobs()
-                searches, cancelled = api.fetch_search(prefix)
-            end
-            if cancelled then return end
-            if searches then
-                state.search_cache.searches[prefix] = {}
-                for _, result in ipairs(searches) do
-                    state.search_cache.results[result.name] = result
-                    table.insert(state.search_cache.searches[prefix], result.name)
-                end
+    local search = state.search_cache.searches[prefix]
+    if not search then
+        ---@type ApiCrateSummary[]?, boolean?
+        local searches, cancelled
+        if api.is_fetching_search(prefix) then
+            searches, cancelled = api.await_search(prefix)
+        else
+            api.cancel_search_jobs()
+            searches, cancelled = api.fetch_search(prefix)
+        end
+        if cancelled then return end
+        if searches then
+            state.search_cache.searches[prefix] = {}
+            for _, result in ipairs(searches) do
+                state.search_cache.results[result.name] = result
+                table.insert(state.search_cache.searches[prefix], result.name)
             end
         end
-    until search
+        search = state.search_cache.searches[prefix]
+        if not search then
+            return
+        end
+    end
 
     local itemDefaults = {
         insertTextFormat = kind and 2 or 1,
