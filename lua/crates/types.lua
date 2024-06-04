@@ -292,12 +292,5 @@ end
 ---@field name string
 ---@field line integer
 ---@field col Span
----@field kind WorkingCrateKind
-
----@enum WorkingCrateKind
-M.WorkingCrateKind = {
-    INLINE = 1,
-    TABLE = 2,
-}
 
 return M
