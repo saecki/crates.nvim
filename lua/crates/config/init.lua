@@ -156,6 +156,14 @@ entry(M.schema, {
     ]],
 })
 entry(M.schema, {
+    name = "search_indicator",
+    type = BOOLEAN_TYPE,
+    default = true,
+    description = [[
+        Show a search indicator while searching for crates.
+    ]],
+})
+entry(M.schema, {
     name = "date_format",
     type = STRING_TYPE,
     default = "%Y-%m-%d",
@@ -271,6 +279,14 @@ local schema_text = section_entry(M.schema, {
     fields = {},
 })
 entry(schema_text, {
+    name = "searching",
+    type = STRING_TYPE,
+    default = "   Searching",
+    description = [[
+        Format string used while searching for crates.
+    ]],
+})
+entry(schema_text, {
     name = "loading",
     type = STRING_TYPE,
     default = "   Loading",
@@ -338,6 +354,14 @@ local schema_hl = section_entry(M.schema, {
         Highlight groups used for virtual text.
     ]],
     fields = {},
+})
+entry(schema_hl, {
+    name = "searching",
+    type = STRING_TYPE,
+    default = "CratesNvimSearching",
+    description = [[
+        Highlight group used while searching for crates.
+    ]],
 })
 entry(schema_hl, {
     name = "loading",

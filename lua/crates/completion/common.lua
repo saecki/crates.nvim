@@ -4,6 +4,7 @@ local core = require("crates.core")
 local state = require("crates.state")
 local types = require("crates.types")
 local Span = types.Span
+local ui = require("crates.ui")
 local util = require("crates.util")
 
 ---@class CompletionSource
@@ -126,12 +127,13 @@ local function complete_features(crate, cf, versions)
     }
 end
 
+---@param buf integer
 ---@param prefix string
----@param col Span
 ---@param line integer
+---@param col Span
 ---@param kind WorkingCrateKind?
 ---@return CompletionList?
-local function complete_crates(prefix, col, line, kind)
+local function complete_crates(buf, prefix, line, col, kind)
     if #prefix < state.cfg.completion.crates.min_chars then
         return
     end
@@ -139,6 +141,12 @@ local function complete_crates(prefix, col, line, kind)
     ---@type string[]
     local search = state.search_cache.searches[prefix]
     if not search then
+        ---@type number?
+        local transaction
+        if state.cfg.search_indicator then
+            transaction = ui.show_search_indicator(buf, line)
+        end
+
         ---@type ApiCrateSummary[]?, boolean?
         local searches, cancelled
         if api.is_fetching_search(prefix) then
@@ -147,7 +155,10 @@ local function complete_crates(prefix, col, line, kind)
             api.cancel_search_jobs()
             searches, cancelled = api.fetch_search(prefix)
         end
-        if cancelled then return end
+        if cancelled then
+            return
+        end
+
         if searches then
             state.search_cache.searches[prefix] = {}
             for _, result in ipairs(searches) do
@@ -156,6 +167,14 @@ local function complete_crates(prefix, col, line, kind)
             end
         end
         search = state.search_cache.searches[prefix]
+
+        if transaction then
+            local cancelled = ui.hide_search_indicator(buf, transaction)
+            if cancelled then
+                return
+            end
+        end
+
         if not search then
             return
         end
@@ -215,7 +234,7 @@ local function complete()
         for _,wcrate in ipairs(working_crates) do
             if wcrate and wcrate.col:moved(0, 1):contains(col) and line == wcrate.line then
                 local prefix = wcrate.name:sub(1, col - wcrate.col.s)
-                return complete_crates(prefix, wcrate.col, wcrate.line, wcrate.kind);
+                return complete_crates(buf, prefix, wcrate.line, wcrate.col, wcrate.kind);
             end
         end
     end
@@ -231,7 +250,7 @@ local function complete()
             local prefix = crate.pkg and crate.pkg.text:sub(1, col - crate.pkg.col.s)
                 or crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
             local name_col = crate.pkg and crate.pkg.col or crate.explicit_name_col
-            return complete_crates(prefix, name_col, line);
+            return complete_crates(buf, prefix, line, name_col);
         end
     end
 

@@ -10,6 +10,7 @@ local M = {}
 
 ---@type {[1]: string, [2]: HighlightGroup}[]
 M.highlights = {
+    { "CratesNvimSearching",                    { default = true, link = "DiagnosticVirtualTextInfo" } },
     { "CratesNvimLoading",                      { default = true, link = "DiagnosticVirtualTextInfo" } },
     { "CratesNvimVersion",                      { default = true, link = "DiagnosticVirtualTextInfo" } },
     { "CratesNvimPreRelease",                   { default = true, link = "DiagnosticVirtualTextError" } },
