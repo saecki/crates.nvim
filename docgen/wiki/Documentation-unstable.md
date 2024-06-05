@@ -163,6 +163,7 @@ require("crates").setup {
     autoupdate = true,
     autoupdate_throttle = 250,
     loading_indicator = true,
+    search_indicator = true,
     date_format = "%Y-%m-%d",
     thousands_separator = ".",
     notification_title = "crates.nvim",
@@ -174,6 +175,7 @@ require("crates").setup {
     enable_update_available_warning = true,
     on_attach = function(bufnr) end,
     text = {
+        searching = "   Searching",
         loading = "   Loading",
         version = "   %s",
         prerelease = "   %s",
@@ -183,6 +185,7 @@ require("crates").setup {
         error = "   Error fetching crate",
     },
     highlight = {
+        searching = "CratesNvimSearching",
         loading = "CratesNvimLoading",
         version = "CratesNvimVersion",
         prerelease = "CratesNvimPreRelease",

@@ -82,6 +82,7 @@ For more information about individual config options see |crates-config|.
         autoupdate = true,
         autoupdate_throttle = 250,
         loading_indicator = true,
+        search_indicator = true,
         date_format = "%Y-%m-%d",
         thousands_separator = ".",
         notification_title = "crates.nvim",
@@ -93,6 +94,7 @@ For more information about individual config options see |crates-config|.
         enable_update_available_warning = true,
         on_attach = function(bufnr) end,
         text = {
+            searching = "   Searching",
             loading = "   Loading",
             version = "   %s",
             prerelease = "   %s",
@@ -102,6 +104,7 @@ For more information about individual config options see |crates-config|.
             error = "   Error fetching crate",
         },
         highlight = {
+            searching = "CratesNvimSearching",
             loading = "CratesNvimLoading",
             version = "CratesNvimVersion",
             prerelease = "CratesNvimPreRelease",
@@ -574,6 +577,12 @@ loading_indicator                            *crates-config-loading_indicator*
     Show a loading indicator while fetching crate versions.
 
 
+search_indicator                              *crates-config-search_indicator*
+    Type: `boolean`, Default: `true`
+
+    Show a search indicator while searching for crates.
+
+
 date_format                                        *crates-config-date_format*
     Type: `string`, Default: `"%Y-%m-%d"`
 
@@ -655,6 +664,12 @@ text                                                      *crates-config-text*
     Strings used to format virtual text.
 
 
+text.searching                                  *crates-config-text-searching*
+    Type: `string`, Default: `"   Searching"`
+
+    Format string used while searching for crates.
+
+
 text.loading                                      *crates-config-text-loading*
     Type: `string`, Default: `"   Loading"`
 
@@ -701,6 +716,12 @@ highlight                                            *crates-config-highlight*
     Section type: `HighlightConfig`
 
     Highlight groups used for virtual text.
+
+
+highlight.searching                        *crates-config-highlight-searching*
+    Type: `string`, Default: `"CratesNvimSearching"`
+
+    Highlight group used while searching for crates.
 
 
 highlight.loading                            *crates-config-highlight-loading*
@@ -1566,6 +1587,9 @@ HIGHLIGHTS                                                 *crates-highlights*
 This is a list of the default highlight groups used by crates.nvim. To change
 them, you can either overwrite them or use different ones in
 |crates-config-highlight| and |crates-config-popup-highlight|.
+
+CratesNvimSearching                            *crates-hl-CratesNvimSearching*
+    Default: links to |DiagnosticVirtualTextInfo|
 
 CratesNvimLoading                                *crates-hl-CratesNvimLoading*
     Default: links to |DiagnosticVirtualTextInfo|

@@ -10,6 +10,7 @@
 ---@field autoupdate boolean
 ---@field autoupdate_throttle integer
 ---@field loading_indicator boolean
+---@field search_indicator boolean
 ---@field date_format string
 ---@field thousands_separator string
 ---@field notification_title string
@@ -29,6 +30,7 @@
 ---@field lsp LspConfig
 
 ---@class TextConfig
+---@field searching string
 ---@field loading string
 ---@field version string
 ---@field prerelease string
@@ -38,6 +40,7 @@
 ---@field error string
 
 ---@class HighlightConfig
+---@field searching string
 ---@field loading string
 ---@field version string
 ---@field prerelease string
@@ -222,6 +225,7 @@
 ---@field public autoupdate? boolean
 ---@field public autoupdate_throttle? integer
 ---@field public loading_indicator? boolean
+---@field public search_indicator? boolean
 ---@field public date_format? string
 ---@field public thousands_separator? string
 ---@field public notification_title? string
@@ -240,6 +244,7 @@
 ---@field public lsp? crates.UserLspConfig
 
 ---@class crates.UserTextConfig
+---@field public searching? string
 ---@field public loading? string
 ---@field public version? string
 ---@field public prerelease? string
@@ -249,6 +254,7 @@
 ---@field public error? string
 
 ---@class crates.UserHighlightConfig
+---@field public searching? string
 ---@field public loading? string
 ---@field public version? string
 ---@field public prerelease? string
