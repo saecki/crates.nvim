@@ -110,16 +110,17 @@ end
 
 ---@param text HighlightText[][]
 function M.update_buf_body(text)
-    vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
+    vim.api.nvim_set_option_value("modifiable", true, { buf = M.buf })
     set_buf_body(text)
-    vim.api.nvim_buf_set_option(M.buf, "modifiable", false)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = M.buf })
 end
 
 ---@param buf integer
 ---@param title string
 ---@param text HighlightText[][]
 local function set_buf_content(buf, title, text)
-    vim.api.nvim_buf_set_option(buf, "modifiable", true)
+    local opts = { buf = buf }
+    vim.api.nvim_set_option_value("modifiable", true, opts)
 
     -- clear buffer
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
@@ -133,10 +134,10 @@ local function set_buf_content(buf, title, text)
 
     set_buf_body(text)
 
-    vim.api.nvim_buf_set_option(buf, "modifiable", false)
-    vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-    vim.api.nvim_buf_set_option(buf, "swapfile", false)
-    vim.api.nvim_buf_set_option(buf, "filetype", "crates.nvim")
+    vim.api.nvim_set_option_value("modifiable", false, opts)
+    vim.api.nvim_set_option_value("buftype", "nofile", opts)
+    vim.api.nvim_set_option_value("swapfile", false, opts)
+    vim.api.nvim_set_option_value("filetype", "crates.nvim", opts)
     vim.api.nvim_buf_set_name(buf, "crates:popup")
 end
 
