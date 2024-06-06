@@ -153,18 +153,20 @@ local function insert_version(buf, crate, text)
     end
 end
 
+---Return a requirement version string with the same fields as `r` but values from `version`
 ---@param r Requirement
 ---@param version SemVer
----@return SemVer
-local function replace_existing(r, version)
+---@return string
+local function req_version_like(r, version)
     if version.pre then
-        return version
+        return version:display_req()
     else
-        return SemVer.new({
+        local v = SemVer.new({
             major = version.major,
             minor = r.vers.minor and version.minor or nil,
             patch = r.vers.patch and version.patch or nil,
         })
+        return v:display_req()
     end
 end
 
@@ -180,11 +182,11 @@ function M.smart_version_text(crate, version)
     local text = ""
     for _, r in ipairs(crate:vers_reqs()) do
         if r.cond == Cond.EQ then
-            local v = replace_existing(r, version)
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            local v = req_version_like(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v
         elseif r.cond == Cond.WL then
             if version.pre then
-                text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display()
+                text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. version:display_req()
             else
                 local v = SemVer.new({
                     major = r.vers.major and version.major or nil,
@@ -192,17 +194,17 @@ function M.smart_version_text(crate, version)
                 })
                 local before = string.sub(crate.vers.text, pos, r.vers_col.s)
                 local after = string.sub(crate.vers.text, r.vers_col.e + 1, r.cond_col.e)
-                text = text .. before .. v:display() .. after
+                text = text .. before .. v:display_req() .. after
             end
         elseif r.cond == Cond.TL then
-            local v = replace_existing(r, version)
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            local v = req_version_like(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v
         elseif r.cond == Cond.CR then
-            local v = replace_existing(r, version)
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            local v = req_version_like(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v
         elseif r.cond == Cond.BL then
-            local v = replace_existing(r, version)
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            local v = req_version_like(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v
         elseif r.cond == Cond.LT and not semver.matches_requirement(version, r) then
             local v = SemVer.new({
                 major = version.major,
@@ -218,7 +220,7 @@ function M.smart_version_text(crate, version)
                 v.major = v.major + 1
             end
 
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display_req()
         elseif r.cond == Cond.LE and not semver.matches_requirement(version, r) then
             ---@type SemVer
             local v
@@ -236,7 +238,7 @@ function M.smart_version_text(crate, version)
                 end
             end
 
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display_req()
         elseif r.cond == Cond.GT and not semver.matches_requirement(version, r) then
             local v = SemVer.new({
                 major = r.vers.major and version.major or nil,
@@ -263,10 +265,10 @@ function M.smart_version_text(crate, version)
                 end
             end
 
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
-        elseif r.cond == Cond.GE then
-            local v = replace_existing(r, version)
-            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display()
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v:display_req()
+        elseif r.cond == Cond.GE and not semver.matches_requirement(version, r) then
+            local v = req_version_like(r, version)
+            text = text .. string.sub(crate.vers.text, pos, r.vers_col.s) .. v
         else
             text = text .. string.sub(crate.vers.text, pos, r.vers_col.e)
         end
@@ -287,7 +289,7 @@ function M.version_text(crate, version, alt)
     if smart then
         return M.smart_version_text(crate, version)
     else
-        return version:display()
+        return version:display_req()
     end
 end
 

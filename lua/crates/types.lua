@@ -193,8 +193,9 @@ function SemVer.new(obj)
     return setmetatable(obj, { __index = SemVer })
 end
 
+---Display the full verison *without* the build-metadata
 ---@return string
-function SemVer:display()
+function SemVer:display_req()
     local text = ""
     if self.major then
         text = text .. self.major
@@ -211,6 +212,13 @@ function SemVer:display()
     if self.pre then
         text = text .. "-" .. self.pre
     end
+
+    return text
+end
+
+---@return string
+function SemVer:display()
+    local text = self:display_req()
 
     if self.meta then
         text = text .. "+" .. self.meta
