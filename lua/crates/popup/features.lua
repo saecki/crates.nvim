@@ -86,22 +86,18 @@ local function toggle_feature(ctx, line)
             local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
             text = toml.trim_comments(text)
 
-            local vers = toml.parse_crate_table_vers(text, line_nr)
-            if vers then
-                ctx.crate.vers = vers
-            end
-            local def = toml.parse_crate_table_def(text, line_nr)
+            local def = toml.parse_crate_table_bool(text, line_nr, toml.TABLE_DEF_PATTERN)
             if def then
                 ctx.crate.def = def
             end
-            local feat = toml.parse_crate_table_feat(text, line_nr)
+            local feat = toml.parse_crate_table_str_array(text, line_nr, toml.TABLE_FEAT_PATTERN)
             if feat then
                 ctx.crate.feat = feat
             end
 
             ctx.crate = toml.Crate.new(ctx.crate)
         end
-    elseif ctx.crate.syntax == TomlCrateSyntax.PLAIN or ctx.crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+    else -- ctx.crate.syntax == TomlCrateSyntax.INLINE_TABLE or ctx.crate.syntax == TomlCrateSyntax.PLAIN then
         local line_nr = line_span.s
         ---@type string
         local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]

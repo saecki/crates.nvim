@@ -2,6 +2,7 @@ local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local state = require("crates.state")
 local toml = require("crates.toml")
+local TomlCrateSyntax = toml.TomlCrateSyntax
 local util = require("crates.util")
 
 local M = {}
@@ -30,13 +31,13 @@ local function select_version(ctx, line, alt)
     -- update only crate version position, not the parsed requirements
     -- (or any other semantic information), so selecting another version
     -- with `smart_insert` will behave predictable
-    if crate.syntax == "table" then
+    if crate.syntax == TomlCrateSyntax.TABLE then
         for line_nr in line_span:iter() do
             ---@type string
             local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
             text = toml.trim_comments(text)
 
-            local vers = toml.parse_crate_table_vers(text, line_nr)
+            local vers = toml.parse_crate_table_str(text, line_nr, toml.TABLE_VERS_PATTERN)
             if vers then
                 crate.vers = crate.vers or vers
                 crate.vers.line = line_nr
@@ -45,7 +46,7 @@ local function select_version(ctx, line, alt)
                 crate.vers.quote = vers.quote
             end
         end
-    elseif crate.syntax == "plain" or crate.syntax == "inline_table" then
+    else -- ctx.crate.syntax == TomlCrateSyntax.INLINE_TABLE or ctx.crate.syntax == TomlCrateSyntax.PLAIN then
         local line_nr = line_span.s
         ---@type string
         local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
