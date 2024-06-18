@@ -1851,6 +1851,40 @@ local function validate_schema(path, schema, user_config)
     end
 end
 
+---@param config Config
+---@return Config
+local function setup_neoconf(config)
+    ---@type boolean, table
+    local ok, neoconf = pcall(require, 'neoconf')
+    if not ok then return config end
+
+    -- enables neodev to autocomplete settings in .neoconf.json
+    pcall(function()
+        ---@type table
+        local neoconf_plugins = require 'neoconf.plugins'
+        neoconf_plugins.register {
+            on_schema = function(schema)
+                schema:import("crates", config)
+            end
+        }
+    end)
+
+    return setmetatable({}, {
+        __index = function(self, key)
+            local buf = vim.api.nvim_get_current_buf()
+            local loc = rawget(self, buf)
+            if loc then return loc[key] end
+            ---@type Config
+            loc = neoconf.get("crates", config, {
+                buffer = buf,
+                lsp = true,
+            })
+            rawset(self, buf, loc)
+            return loc
+        end
+    })
+end
+
 ---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param user_config table<string,any>
 ---@return table
@@ -1894,7 +1928,7 @@ function M.build(user_config)
 
     handle_deprecated({}, M.schema, user_config, user_config)
     validate_schema({}, M.schema, user_config)
-    return build_config(M.schema, user_config)
+    return setup_neoconf(build_config(M.schema, user_config))
 end
 
 return M
