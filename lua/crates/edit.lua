@@ -285,7 +285,11 @@ end
 ---@param alt boolean|nil
 ---@return string
 function M.version_text(crate, version, alt)
-    local smart = alt ~= state.cfg.smart_insert
+    local smart = state.cfg.smart_insert
+    if alt then
+        smart = not smart
+    end
+
     if smart then
         return M.smart_version_text(crate, version)
     else
