@@ -28,6 +28,7 @@ Documentation for `crates.nvim` `unstable`
     - Navigate the dependency hierarchy
     - Show `normal`, `build` and `dev` dependencies
     - Show optional dependencies
+- Project-local configuration via [Neoconf](https://github.com/folke/neoconf.nvim)
 
 # Setup
 
@@ -591,3 +592,28 @@ function! s:show_documentation()
 endfunction
 ```
 </details>
+
+## Neoconf Integration
+
+You can also set project-local settings if you have [Neoconf](https://github.com/folke/neoconf.nvim)
+installed; all settings are exactly the same, but are under the "crates"
+namespace.
+
+Example:
+
+```jsonc
+// .neoconf.json
+
+{
+    //...
+    "crates": {
+        "smart_insert": false,
+        "max_parallel_requests": 50,
+        "completion": {
+            "crates": {
+                "enabled": false
+            }
+        }
+    }
+}
+```
