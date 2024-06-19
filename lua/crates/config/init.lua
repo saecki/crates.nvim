@@ -1856,12 +1856,14 @@ end
 local function setup_neoconf(config)
     ---@type boolean, table
     local ok, neoconf = pcall(require, 'neoconf')
-    if not ok then return config end
+    if not ok then
+        return config
+    end
 
     -- enables neodev to autocomplete settings in .neoconf.json
     pcall(function()
         ---@type table
-        local neoconf_plugins = require 'neoconf.plugins'
+        local neoconf_plugins = require('neoconf.plugins')
         neoconf_plugins.register {
             on_schema = function(schema)
                 schema:import("crates", config)
@@ -1873,14 +1875,16 @@ local function setup_neoconf(config)
         __index = function(self, key)
             local buf = vim.api.nvim_get_current_buf()
             local loc = rawget(self, buf)
-            if loc then return loc[key] end
+            if loc then
+                return loc[key]
+            end
             ---@type Config
             loc = neoconf.get("crates", config, {
                 buffer = buf,
                 lsp = true,
             })
             rawset(self, buf, loc)
-            return loc
+            return loc[key]
         end
     })
 end
