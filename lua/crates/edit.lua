@@ -300,7 +300,7 @@ end
 ---@param buf integer
 ---@param crate TomlCrate
 ---@param repo_url string
-function M.replace_version_with_git(buf, crate, repo_url)
+function M.use_git_source(buf, crate, repo_url)
     if not repo_url then
         return
     end
