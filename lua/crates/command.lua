@@ -21,6 +21,7 @@ local sub_commands = {
 
     { "expand_plain_crate_to_inline_table", actions.expand_plain_crate_to_inline_table },
     { "extract_crate_into_table",           actions.extract_crate_into_table },
+    { "replace_version_with_git",           actions.replace_version_with_git },
 
     { "open_homepage",                      actions.open_homepage },
     { "open_repository",                    actions.open_repository },

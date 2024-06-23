@@ -13,6 +13,22 @@ local M = {}
 ---@field name string
 ---@field action function
 
+function M.replace_version_with_git()
+    local buf = util.current_buf()
+    local line = util.cursor_pos()
+    local crates = util.get_line_crates(buf, Span.pos(line))
+    local _, crate = next(crates)
+
+    if crate and crate.vers then
+        local api_crate = state.api_cache[crate:package()]
+        if api_crate and api_crate.repository then
+            edit.replace_version_with_git(buf, crate, api_crate.repository)
+        else
+            util.notify(vim.log.levels.WARN, "No repository URL found for crate: %s", crate:package())
+        end
+    end
+end
+
 ---@param alt boolean|nil
 function M.upgrade_crate(alt)
     local buf = util.current_buf()
@@ -289,6 +305,11 @@ function M.get_actions()
                 action = M.extract_crate_into_table,
             })
         end
+
+        table.insert(actions, {
+            name = "replace_version_with_git",
+            action = M.replace_version_with_git,
+        })
 
         table.insert(actions, {
             name = "open_documentation",
