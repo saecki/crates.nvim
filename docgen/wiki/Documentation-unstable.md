@@ -428,6 +428,8 @@ require("crates").update_all_crates(alt: boolean|nil)
 require("crates").expand_plain_crate_to_inline_table()
 -- Extract an crate declaration from a dependency section into a table.
 require("crates").extract_crate_into_table()
+-- Convert crate dependency to use a git source instead of version number.
+require("crates").use_git_source()
 
 -- Open the homepage of the crate on the current line.
 require("crates").open_homepage()
@@ -478,6 +480,7 @@ corresponding functions. These are the functions available as commands:
 - `update_crate()`
 - `update_crates()`
 - `update_all_crates()`
+- `use_git_source()`
 - `expand_plain_crate_to_inline_table()`
 - `extract_crate_into_table()`
 - `open_homepage()`
