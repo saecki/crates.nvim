@@ -299,6 +299,39 @@ end
 
 ---@param buf integer
 ---@param crate TomlCrate
+---@param repo_url string
+function M.use_git_source(buf, crate, repo_url)
+    if not repo_url then
+        return
+    end
+
+    if crate.vers then
+        if crate.syntax == TomlCrateSyntax.PLAIN then
+            local t = '{ git = "' .. repo_url .. '" }'
+            local line = crate.vers.line
+            vim.api.nvim_buf_set_text(
+                buf, line, crate.vers.col.s - 1, line, crate.vers.col.e + 1, { t }
+            )
+            return
+        elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+            local line = crate.vers.line
+            local text = ' git = "' .. repo_url .. '"'
+            vim.api.nvim_buf_set_text(
+                buf, line, crate.vers.decl_col.s, line, crate.vers.col.e + 1, { text }
+            )
+            return
+        else
+            local line = crate.vers.line
+            local text = 'git = "' .. repo_url .. '"'
+            vim.api.nvim_buf_set_text(
+                buf, line, crate.vers.decl_col.s, line, crate.vers.col.e + 1, { text }
+            )
+        end
+    end
+end
+
+---@param buf integer
+---@param crate TomlCrate
 ---@param version SemVer
 ---@param alt boolean|nil
 ---@return Span

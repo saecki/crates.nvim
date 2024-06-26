@@ -18,6 +18,7 @@ local sub_commands = {
     { "update_crate",                       actions.update_crate },
     { "update_crates",                      actions.update_crates },
     { "update_all_crates",                  actions.update_all_crates },
+    { "use_git_source",                     actions.use_git_source },
 
     { "expand_plain_crate_to_inline_table", actions.expand_plain_crate_to_inline_table },
     { "extract_crate_into_table",           actions.extract_crate_into_table },
