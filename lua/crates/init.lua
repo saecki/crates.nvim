@@ -145,6 +145,9 @@ local M = {
     ---Extract an crate declaration from a dependency section into a table.
     ---@type fun()
     extract_crate_into_table = actions.extract_crate_into_table,
+    ---Convert crate dependency to use a git source instead of version number.
+    ---@type fun()
+    use_git_source = actions.use_git_source,
 
     ---Open the homepage of the crate on the current line.
     ---@type fun()
