@@ -44,7 +44,7 @@ M.MatchKind = {
 ---@field yanked boolean
 ---@field parsed SemVer
 ---@field created DateTime
----@field deps ApiDependency[]|nil
+---@field deps ApiDependency[]
 
 ---@class ApiFeature
 ---@field name string
@@ -52,6 +52,7 @@ M.MatchKind = {
 
 ---@class ApiDependency
 ---@field name string
+---@field package string
 ---@field opt boolean
 ---@field kind ApiDependencyKind
 ---@field vers ApiDependencyVers

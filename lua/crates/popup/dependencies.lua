@@ -38,19 +38,19 @@ local goto_dep = async.wrap(function(ctx, line)
     local transaction = math.random()
     popup.transaction = transaction
 
-    local crate_name = selected_dependency.name
+    local crate_package = selected_dependency.package or selected_dependency.name
     ---@type ApiCrate|nil
-    local crate = state.api_cache[crate_name]
+    local crate = state.api_cache[crate_package]
 
     if not crate then
         popup.show_loading_indicator()
 
-        if not api.is_fetching_crate(crate_name) then
-            core.load_crate(crate_name)
+        if not api.is_fetching_crate(crate_package) then
+            core.load_crate(crate_package)
         end
 
         local cancelled
-        crate, cancelled = api.await_crate(crate_name)
+        crate, cancelled = api.await_crate(crate_package)
 
         popup.hide_loading_indicator(transaction)
         if not crate or cancelled then
@@ -67,25 +67,6 @@ local goto_dep = async.wrap(function(ctx, line)
     local version = m or p or y
     assert(version, "crates cannot be published if no dependencies match the requirements")
 
-    if not version.deps then
-        popup.show_loading_indicator()
-
-        if not api.is_fetching_deps(crate_name, version.num) then
-            core.load_deps(crate_name, crate.versions, version)
-        end
-        local _, cancelled = api.await_deps(crate_name, version.num)
-
-        popup.hide_loading_indicator(transaction)
-        if cancelled then
-            return
-        end
-    end
-
-    -- abort if the user has taken other actions
-    if popup.transaction ~= transaction then
-        return
-    end
-
     ctx.hist_idx = ctx.hist_idx + 1
     for i = ctx.hist_idx, #ctx.history, 1 do
         ctx.history[i] = nil
@@ -93,12 +74,12 @@ local goto_dep = async.wrap(function(ctx, line)
 
     ---line_mapping is generated in `M.open_deps`
     ctx.history[ctx.hist_idx] = {
-        crate_name = crate_name,
+        crate_name = crate_package,
         version = version,
         line = 2,
     }
 
-    M.open_deps(ctx, crate_name, version, {
+    M.open_deps(ctx, crate_package, version, {
         focus = true,
         update = true,
     })
@@ -165,9 +146,6 @@ function M.open_deps(ctx, crate_name, version, opts)
     popup.omit_loading_transaction()
 
     local deps = version.deps
-    if not deps then
-        return
-    end
 
     local title = string.format(state.cfg.popup.text.title, crate_name .. " " .. version.num)
     local deps_width = 0
@@ -187,11 +165,15 @@ function M.open_deps(ctx, crate_name, version, opts)
     for _, d in ipairs(deps) do
         ---@type string, string
         local text, hl
+        local name = d.name
+        if d.package then
+            name = string.format("%s (%s)", d.name, d.package)
+        end
         if d.opt then
-            text = string.format(state.cfg.popup.text.optional, d.name)
+            text = string.format(state.cfg.popup.text.optional, name)
             hl = state.cfg.popup.highlight.optional
         else
-            text = string.format(state.cfg.popup.text.dependency, d.name)
+            text = string.format(state.cfg.popup.text.dependency, name)
             hl = state.cfg.popup.highlight.dependency
         end
         ---@type HighlightText

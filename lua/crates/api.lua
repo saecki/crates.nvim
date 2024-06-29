@@ -9,12 +9,10 @@ local ApiDependencyKind = types.ApiDependencyKind
 local M = {
     ---@type table<string,CrateJob>
     crate_jobs = {},
-    ---@type table<string,DepsJob>
-    deps_jobs = {},
     ---@type table<string,SearchJob>
     search_jobs = {},
-    ---@type QueuedJob[]
-    queued_jobs = {},
+    ---@type QueuedCrateJob[]
+    crate_queue = {},
     ---@type QueuedSearchJob[]
     search_queue = {},
     ---@type integer
@@ -29,33 +27,21 @@ local M = {
 ---@field job Job
 ---@field callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 
----@class DepsJob
----@field job Job
----@field callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
-
 ---@class SearchJob
 ---@field job Job
 ---@field callbacks fun(search: ApiCrateSummary[]?, cancelled: boolean)[]
 
----@class QueuedJob
----@field kind JobKind
+---@class QueuedCrateJob
 ---@field name string
 ---@field crate_callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
----@field version string
----@field deps_callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
 
 ---@class QueuedSearchJob
 ---@field name string
----@field callbacks fun(deps: ApiCrateSummary[]?, cancelled: boolean)[]
-
----@enum JobKind
-local JobKind = {
-    CRATE = 1,
-    DEPS = 2,
-}
+---@field callbacks fun(search: ApiCrateSummary[]?, cancelled: boolean)[]
 
 local SIGTERM = 15
-local ENDPOINT = "https://crates.io/api/v1"
+local API_ENDPOINT = "https://crates.io/api/v1"
+local SPARSE_INDEX_ENDPOINT = "https://index.crates.io"
 ---@type string
 local USERAGENT = vim.fn.shellescape("crates.nvim (https://github.com/saecki/crates.nvim)")
 
@@ -102,7 +88,7 @@ local function start_job(url, on_exit)
 
     local opts = {
         args = { unpack(state.cfg.curl_args), "-A", USERAGENT, url },
-        stdio = {nil, stdout, nil},
+        stdio = { nil, stdout, nil },
     }
     local handle, _pid
     ---@param code integer
@@ -163,36 +149,16 @@ end
 ---@param name string
 ---@param callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 local function enqueue_crate_job(name, callbacks)
-    for _, j in ipairs(M.queued_jobs) do
-        if j.kind == JobKind.CRATE and j.name == name then
+    for _, j in ipairs(M.crate_queue) do
+        if j.name == name then
             vim.list_extend(j.crate_callbacks, callbacks)
             return
         end
     end
 
-    table.insert(M.queued_jobs, {
-        kind = JobKind.CRATE,
+    table.insert(M.crate_queue, {
         name = name,
         crate_callbacks = callbacks,
-    })
-end
-
----@param name string
----@param version string
----@param callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
-local function enqueue_deps_job(name, version, callbacks)
-    for _, j in ipairs(M.queued_jobs) do
-        if j.kind == JobKind.DEPS and j.name == name and j.version == version then
-            vim.list_extend(j.deps_callbacks, callbacks)
-            return
-        end
-    end
-
-    table.insert(M.queued_jobs, {
-        kind = JobKind.DEPS,
-        name = name,
-        version = version,
-        deps_callbacks = callbacks,
     })
 end
 
@@ -252,7 +218,7 @@ local function fetch_search(name, callbacks)
 
     local url = string.format(
         "%s/crates?q=%s&per_page=%s",
-        ENDPOINT,
+        API_ENDPOINT,
         name,
         state.cfg.completion.crates.max_results
     )
@@ -304,62 +270,63 @@ end
 ---@param json_str string
 ---@return ApiCrate|nil
 function M.parse_crate(json_str)
-    local json = parse_json(json_str)
-    if not (json and json.crate) then
-        return nil
-    end
+    local lines = vim.split(json_str, '\n', { trimempty = true })
 
-    ---@type table<string,any>
-    local c = json.crate
     ---@type ApiCrate
     local crate = {
-        name = c.id,
-        description = assert(c.description),
-        created = assert(DateTime.parse_rfc_3339(c.created_at)),
-        updated = assert(DateTime.parse_rfc_3339(c.updated_at)),
-        downloads = assert(c.downloads),
-        homepage = c.homepage,
-        documentation = c.documentation,
-        repository = c.repository,
-        categories = {},
-        keywords = {},
+        -- name = c.id,
+        -- description = assert(c.description),
+        -- created = assert(DateTime.parse_rfc_3339(c.created_at)),
+        -- updated = assert(DateTime.parse_rfc_3339(c.updated_at)),
+        -- downloads = assert(c.downloads),
+        -- homepage = c.homepage,
+        -- documentation = c.documentation,
+        -- repository = c.repository,
+        -- categories = {},
+        -- keywords = {},
         versions = {},
     }
 
-    ---@diagnostic disable-next-line: no-unknown
-    for _, ct_id in ipairs(c.categories) do
-        ---@diagnostic disable-next-line: no-unknown
-        for _, ct in ipairs(json.categories) do
-            if ct.id == ct_id then
-                table.insert(crate.categories, ct.category)
-            end
-        end
-    end
+    -- ---@diagnostic disable-next-line: no-unknown
+    -- for _, ct_id in ipairs(c.categories) do
+    --     ---@diagnostic disable-next-line: no-unknown
+    --     for _, ct in ipairs(json.categories) do
+    --         if ct.id == ct_id then
+    --             table.insert(crate.categories, ct.category)
+    --         end
+    --     end
+    -- end
+    --
+    -- ---@diagnostic disable-next-line: no-unknown
+    -- for _, kw_id in ipairs(c.keywords) do
+    --     ---@diagnostic disable-next-line: no-unknown
+    --     for _, kw in ipairs(json.keywords) do
+    --         if kw.id == kw_id then
+    --             table.insert(crate.keywords, kw.keyword)
+    --         end
+    --     end
+    -- end
 
-    ---@diagnostic disable-next-line: no-unknown
-    for _, kw_id in ipairs(c.keywords) do
-        ---@diagnostic disable-next-line: no-unknown
-        for _, kw in ipairs(json.keywords) do
-            if kw.id == kw_id then
-                table.insert(crate.keywords, kw.keyword)
-            end
-        end
-    end
+    for _, line in ipairs(lines) do
+        local ok, json = pcall(parse_json, line)
+        if ok and json and json.name and json.vers then
+            crate.name = json.name
 
-    ---@diagnostic disable-next-line: no-unknown
-    for _, v in ipairs(json.versions) do
-        if v.num then
             ---@type ApiVersion
             local version = {
-                num = v.num,
+                num = json.vers,
+                deps = {},
                 features = ApiFeatures.new({}),
-                yanked = v.yanked,
-                parsed = semver.parse_version(v.num),
-                created = assert(DateTime.parse_rfc_3339(v.created_at)),
+                yanked = json.yanked,
+                parsed = semver.parse_version(json.vers),
+                -- created = assert(DateTime.parse_rfc_3339(v.created_at)),
             }
 
+            -- TODO: handle `features2` syntaxes
+            --      - explicit `dep:<crate_name>`
+            --      - weak dependencies `pkg?/feat`
             ---@diagnostic disable-next-line: no-unknown
-            for n, m in pairs(v.features) do
+            for n, m in pairs(json.features) do
                 table.sort(m)
                 version.features:insert({
                     name = n,
@@ -367,13 +334,25 @@ function M.parse_crate(json_str)
                 })
             end
 
-            -- add optional dependency members as features
-            for _, f in ipairs(version.features.list) do
-                for _, m in ipairs(f.members) do
-                    -- don't add dependency features
-                    if not string.find(m, "/") and not version.features:get_feat(m) then
+            ---@diagnostic disable-next-line: no-unknown
+            for _, d in ipairs(json.deps) do
+                if d.name then
+                    ---@type ApiDependency
+                    local dependency = {
+                        name = d.name,
+                        package = d.package,
+                        opt = d.optional or false,
+                        kind = DEPENDENCY_KIND_MAP[d.kind],
+                        vers = {
+                            text = d.req,
+                            reqs = semver.parse_requirements(d.req),
+                        },
+                    }
+                    table.insert(version.deps, dependency)
+
+                    if dependency.opt and not version.features.map[dependency.name] then
                         version.features:insert({
-                            name = m,
+                            name = dependency.name,
                             members = {},
                         })
                     end
@@ -391,10 +370,13 @@ function M.parse_crate(json_str)
                 })
             end
 
-            table.insert(crate.versions, version)
+            table.insert(crate.versions, 1, version)
         end
     end
 
+    if not crate.name then
+        return nil
+    end
 
     return crate
 end
@@ -413,7 +395,17 @@ local function fetch_crate(name, callbacks)
         return
     end
 
-    local url = string.format("%s/crates/%s", ENDPOINT, name)
+    ---@type string
+    local url
+    if #name == 1 then
+        url = string.format("%s/1/%s", SPARSE_INDEX_ENDPOINT, name)
+    elseif #name == 2 then
+        url = string.format("%s/2/%s", SPARSE_INDEX_ENDPOINT, name)
+    elseif #name == 3 then
+        url = string.format("%s/3/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 1), name)
+    else
+        url = string.format("%s/%s/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 2), string.sub(name, 3, 4), name)
+    end
 
     ---@param json_str string|nil
     ---@param cancelled boolean
@@ -459,110 +451,10 @@ function M.fetch_crate(name)
     end)
 end
 
----@param json_str string
----@return ApiDependency[]|nil
-function M.parse_deps(json_str)
-    local json = parse_json(json_str)
-    if not (json and json.dependencies) then
-        return
-    end
-
-    ---@type ApiDependency[]
-    local dependencies = {}
-    ---@diagnostic disable-next-line: no-unknown
-    for _, d in ipairs(json.dependencies) do
-        if d.crate_id then
-            ---@type ApiDependency
-            local dependency = {
-                name = d.crate_id,
-                opt = d.optional or false,
-                kind = DEPENDENCY_KIND_MAP[d.kind],
-                vers = {
-                    text = d.req,
-                    reqs = semver.parse_requirements(d.req),
-                },
-            }
-            table.insert(dependencies, dependency)
-        end
-    end
-
-    return dependencies
-end
-
----@param name string
----@param version string
----@param callbacks fun(deps: ApiDependency[]|nil, cancelled: boolean)[]
-local function fetch_deps(name, version, callbacks)
-    local jobname = name .. ":" .. version
-    local existing = M.deps_jobs[jobname]
-    if existing then
-        vim.list_extend(existing.callbacks, callbacks)
-        return
-    end
-
-    if M.num_requests >= state.cfg.max_parallel_requests then
-        enqueue_deps_job(name, version, callbacks)
-        return
-    end
-
-    local url = string.format("%s/crates/%s/%s/dependencies", ENDPOINT, name, version)
-
-    ---@param json_str string
-    ---@param cancelled boolean
-    local function on_exit(json_str, cancelled)
-        ---@type ApiDependency[]|nil
-        local deps
-        if not cancelled and json_str then
-            local ok, d = pcall(M.parse_deps, json_str)
-            if ok then
-                deps = d
-            end
-        end
-        for _, c in ipairs(callbacks) do
-            c(deps, cancelled)
-        end
-
-        M.num_requests = M.num_requests - 1
-        M.deps_jobs[jobname] = nil
-
-        M.run_queued_jobs()
-    end
-
-    local job = start_job(url, on_exit)
-    if job then
-        M.num_requests = M.num_requests + 1
-        M.deps_jobs[jobname] = {
-            job = job,
-            callbacks = callbacks,
-        }
-    else
-        for _, c in ipairs(callbacks) do
-            c(nil, false)
-        end
-    end
-end
-
----@param name string
----@param version string
----@return ApiDependency[]|nil, boolean
-function M.fetch_deps(name, version)
-    ---@param resolve fun(deps: ApiDependency[]|nil, cancelled: boolean)
-    return coroutine.yield(function(resolve)
-        fetch_deps(name, version, { resolve })
-    end)
-end
-
 ---@param name string
 ---@return boolean
 function M.is_fetching_crate(name)
     return M.crate_jobs[name] ~= nil
-end
-
----@param name string
----@param version string
----@return boolean
-function M.is_fetching_deps(name, version)
-    return M.deps_jobs[name .. ":" .. version] ~= nil
 end
 
 ---@param name string
@@ -586,26 +478,6 @@ function M.await_crate(name)
     ---@param resolve fun(crate: ApiCrate|nil, cancelled: boolean)
     return coroutine.yield(function(resolve)
         add_crate_callback(name, resolve)
-    end)
-end
-
----@param name string
----@param version string
----@param callback fun(deps: ApiDependency[]|nil, cancelled: boolean)
-local function add_deps_callback(name, version, callback)
-    table.insert(
-        M.deps_jobs[name .. ":" .. version].callbacks,
-        callback
-    )
-end
-
----@param name string
----@param version string
----@return ApiDependency[]|nil, boolean
-function M.await_deps(name, version)
-    ---@param resolve fun(crate: ApiDependency[]|nil, cancelled: boolean)
-    return coroutine.yield(function(resolve)
-        add_deps_callback(name, version, resolve)
     end)
 end
 
@@ -635,23 +507,16 @@ function M.run_queued_jobs()
         return
     end
 
-    if #M.queued_jobs == 0 then
+    if #M.crate_queue == 0 then
         return
     end
 
-    local job = table.remove(M.queued_jobs, 1)
-    if job.kind == JobKind.CRATE then
-        fetch_crate(job.name, job.crate_callbacks)
-    elseif job.kind == JobKind.DEPS then
-        fetch_deps(job.name, job.version, job.deps_callbacks)
-    end
+    local job = table.remove(M.crate_queue, 1)
+    fetch_crate(job.name, job.crate_callbacks)
 end
 
 function M.cancel_jobs()
     for _, r in pairs(M.crate_jobs) do
-        cancel_job(r.job)
-    end
-    for _, r in pairs(M.deps_jobs) do
         cancel_job(r.job)
     end
     for _, r in pairs(M.search_jobs) do
@@ -659,7 +524,6 @@ function M.cancel_jobs()
     end
 
     M.crate_jobs = {}
-    M.deps_jobs = {}
     M.search_jobs = {}
 end
 

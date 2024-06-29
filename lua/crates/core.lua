@@ -14,43 +14,6 @@ local M = {
     throttled_updates = {},
 }
 
----@type fun(crate_name: string, versions: ApiVersion[], version: ApiVersion)
-M.load_deps = async.wrap(function(crate_name, versions, version)
-    local deps, cancelled = api.fetch_deps(crate_name, version.num)
-    if cancelled then
-        return
-    end
-
-    if deps then
-        version.deps = deps
-        for _, d in ipairs(deps) do
-            -- optional dependencies are automatically promoted to features
-            if d.opt and not version.features:get_feat(d.name) then
-                version.features:insert({
-                    name = d.name,
-                    members = {},
-                })
-            end
-        end
-        version.features:sort()
-
-        for b, cache in pairs(state.buf_cache) do
-            -- update crate in all dependency sections
-            for _, c in pairs(cache.crates) do
-                if c:package() == crate_name then
-                    local m, p, y = util.get_newest(versions, c:vers_reqs())
-                    local match = m or p or y
-
-                    if c.vers and match == version and vim.api.nvim_buf_is_loaded(b) then
-                        local diagnostics = diagnostic.process_crate_deps(c, version, deps)
-                        ui.display_diagnostics(b, diagnostics)
-                    end
-                end
-            end
-        end
-    end
-end)
-
 ---@type fun(crate_name: string)
 M.load_crate = async.wrap(function(crate_name)
     local crate, cancelled = api.fetch_crate(crate_name)
@@ -64,7 +27,7 @@ M.load_crate = async.wrap(function(crate_name)
         state.api_cache[crate.name] = crate
     end
 
-    for b, cache in pairs(state.buf_cache) do
+    for buf, cache in pairs(state.buf_cache) do
         -- update crate in all dependency sections
         for k, c in pairs(cache.crates) do
             -- Don't try to fetch info from crates.io if it's a local or git crate,
@@ -74,18 +37,12 @@ M.load_crate = async.wrap(function(crate_name)
                 goto continue
             end
 
-            if c:package() == crate_name and vim.api.nvim_buf_is_loaded(b) then
-                local info, diagnostics = diagnostic.process_api_crate(c, crate)
+            if c:package() == crate_name and vim.api.nvim_buf_is_loaded(buf) then
+                local info, c_diagnostics = diagnostic.process_api_crate(c, crate)
                 cache.info[k] = info
-                vim.list_extend(cache.diagnostics, diagnostics)
+                vim.list_extend(cache.diagnostics, c_diagnostics)
 
-                ui.display_crate_info(b, info, diagnostics)
-
-                local version = info.vers_match or info.vers_upgrade
-                if version then
-                    ---@cast versions -nil
-                    M.load_deps(c:package(), versions, version)
-                end
+                ui.display_crate_info(buf, info, c_diagnostics)
             end
 
             ::continue::
@@ -133,18 +90,6 @@ local function update(buf, reload)
             vim.list_extend(cache.diagnostics, c_diagnostics)
 
             ui.display_crate_info(buf, info, c_diagnostics)
-
-            local version = info.vers_match or info.vers_upgrade
-            if version then
-                if version.deps then
-                    local d_diagnostics = diagnostic.process_crate_deps(c, version, version.deps)
-                    vim.list_extend(cache.diagnostics, d_diagnostics)
-
-                    ui.display_diagnostics(buf, d_diagnostics)
-                else
-                    M.load_deps(c:package(), versions, version)
-                end
-            end
         else
             if state.cfg.loading_indicator then
                 ui.display_loading(buf, c)
