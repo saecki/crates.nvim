@@ -272,6 +272,7 @@ end
 function M.parse_crate(json_str)
     local lines = vim.split(json_str, '\n', { trimempty = true })
 
+    -- TODO: fetch remaining metadata from the API_ENDPOINT
     ---@type ApiCrate
     local crate = {
         -- name = c.id,
@@ -377,9 +378,6 @@ function M.parse_crate(json_str)
             if json.features2 then
                 ---@diagnostic disable-next-line: no-unknown
                 for n, m in pairs(json.features2) do
-                    -- TODO: handle `features2` syntaxes
-                    --      - explicit `dep:<crate_name>`
-                    --      - weak dependencies `pkg?/feat`
                     table.sort(m)
                     version.features:insert({
                         name = n,
