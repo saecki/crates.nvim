@@ -126,18 +126,6 @@ function M.get_newest(versions, reqs)
 end
 
 ---@param crate TomlCrate
----@param feature ApiFeature
----@return boolean
-function M.is_feat_enabled(crate, feature)
-    local enabled = crate:get_feat(feature.name) ~= nil
-    if feature.name == "default" then
-        return enabled or crate:is_def_enabled()
-    else
-        return enabled
-    end
-end
-
----@param crate TomlCrate
 ---@param features ApiFeatures
 ---@return table<string,FeatureInfo>
 function M.features_info(crate, features)
