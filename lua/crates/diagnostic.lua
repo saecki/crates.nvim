@@ -325,7 +325,15 @@ function M.process_api_crate(crate, api_crate)
             -- invalid features diagnostics
             if info.vers_match then
                 for _, f in ipairs(crate:feats()) do
-                    if not info.vers_match.features.map[f.name] then
+                    if string.sub(f.name, 1, 4) == "dep:" then
+                        table.insert(diagnostics, feat_diagnostic(
+                            crate,
+                            f,
+                            CratesDiagnosticKind.FEAT_EXPLICIT_DEP,
+                            vim.diagnostic.severity.ERROR,
+                            { feat = f }
+                        ))
+                    elseif not info.vers_match.features:get_feat(f.name) then
                         table.insert(diagnostics, feat_diagnostic(
                             crate,
                             f,

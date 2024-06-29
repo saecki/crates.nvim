@@ -529,6 +529,12 @@ entry(schema_diagnostic, {
     default = "Invalid feature",
     hidden = true,
 })
+entry(schema_diagnostic, {
+    name = "feat_explicit_dep",
+    type = STRING_TYPE,
+    default = "Explicit `dep:` prefix for optional dependencies is not allowed",
+    hidden = true,
+})
 
 
 local schema_popup = section_entry(M.schema, {

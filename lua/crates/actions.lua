@@ -209,6 +209,19 @@ local function remove_feature_action(buf, crate, feat)
     end
 end
 
+---@param buf integer
+---@param crate TomlCrate
+---@param feat TomlFeature
+---@return fun()
+local function remove_feature_dep_prefix_action(buf, crate, feat)
+    return function()
+        local line = crate.feat.line
+        local col_start = crate.feat.col.s + feat.col.s
+        local col_end = col_start + 4
+        vim.api.nvim_buf_set_text(buf, line, col_start, line, col_end, {})
+    end
+end
+
 ---@return CratesAction[]
 function M.get_actions()
     ---@type CratesAction[]
@@ -269,6 +282,11 @@ function M.get_actions()
             table.insert(actions, {
                 name = "remove_invalid_feature",
                 action = remove_feature_action(buf, crate, d.data["feat"]),
+            })
+        elseif crate and d.kind == CratesDiagnosticKind.FEAT_EXPLICIT_DEP then
+            table.insert(actions, {
+                name = "remove_`dep:`_prefix",
+                action = remove_feature_dep_prefix_action(buf, crate, d.data["feat"]),
             })
         end
 

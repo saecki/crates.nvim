@@ -67,6 +67,7 @@
 ---@field feat_dup string
 ---@field feat_dup_orig string
 ---@field feat_invalid string
+---@field feat_explicit_dep string
 
 ---@class PopupConfig
 ---@field autofocus boolean

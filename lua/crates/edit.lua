@@ -379,7 +379,12 @@ end
 ---@param feature ApiFeature
 ---@return Span
 function M.enable_feature(buf, crate, feature)
-    local t = '"' .. feature.name .. '"'
+    local name = feature.name
+    if feature.dep then
+        name = string.sub(name, 5)
+    end
+    local t = '"' .. name .. '"'
+
     if crate.feat then
         local last_feat = crate.feat.items[#crate.feat.items]
         if last_feat then

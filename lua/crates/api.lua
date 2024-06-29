@@ -322,18 +322,6 @@ function M.parse_crate(json_str)
                 -- created = assert(DateTime.parse_rfc_3339(v.created_at)),
             }
 
-            -- TODO: handle `features2` syntaxes
-            --      - explicit `dep:<crate_name>`
-            --      - weak dependencies `pkg?/feat`
-            ---@diagnostic disable-next-line: no-unknown
-            for n, m in pairs(json.features) do
-                table.sort(m)
-                version.features:insert({
-                    name = n,
-                    members = m,
-                })
-            end
-
             ---@diagnostic disable-next-line: no-unknown
             for _, d in ipairs(json.deps) do
                 if d.name then
@@ -349,18 +337,78 @@ function M.parse_crate(json_str)
                         },
                     }
                     table.insert(version.deps, dependency)
-
-                    if dependency.opt and not version.features.map[dependency.name] then
-                        version.features:insert({
-                            name = dependency.name,
-                            members = {},
-                        })
-                    end
                 end
             end
 
-            -- sort features alphabetically
-            version.features:sort()
+            ---@param name string
+            ---@param members string[]
+            for name, members in pairs(json.features) do
+                for i, m in ipairs(members) do
+                    if json.features[m] then
+                        goto continue
+                    end
+
+                    -- enforce explicit `dep:<crate_name>` syntax
+                    for _,d in ipairs(version.deps) do
+                        if d.name == m then
+                            members[i] = "dep:" .. m
+                            break
+                        end
+                    end
+
+                    ::continue::
+                end
+
+                table.sort(members, function(a, b)
+                    if string.sub(a, 1, 4) == "dep:" then
+                        return false
+                    elseif string.sub(b, 1, 4) == "dep:" then
+                        return true
+                    else
+                        return a < b
+                    end
+                end)
+
+                version.features:insert({
+                    name = name,
+                    members = members,
+                })
+            end
+            if json.features2 then
+                ---@diagnostic disable-next-line: no-unknown
+                for n, m in pairs(json.features2) do
+                    -- TODO: handle `features2` syntaxes
+                    --      - explicit `dep:<crate_name>`
+                    --      - weak dependencies `pkg?/feat`
+                    table.sort(m)
+                    version.features:insert({
+                        name = n,
+                        members = m,
+                    })
+                end
+            end
+
+            -- sort features
+            table.sort(version.features.list, function(a, b)
+                if a.name == "default" then
+                    return true
+                elseif b.name == "default" then
+                    return false
+                else
+                    return a.name < b.name
+                end
+            end)
+
+            -- add optional dependencies as features
+            for _, d in ipairs(version.deps) do
+                if d.opt then
+                    version.features:insert({
+                        name = "dep:" .. d.name,
+                        members = {},
+                        dep = true,
+                    })
+                end
+            end
 
             -- add missing default feature
             if not version.features.list[1] or not (version.features.list[1].name == "default") then
