@@ -24,7 +24,7 @@ local M = {
 ---@field was_cancelled boolean|nil
 
 ---@class CrateJob
----@field job Job
+---@field jobs { [1]: Job, [2]: Job }
 ---@field callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 
 ---@class SearchJob
@@ -33,7 +33,7 @@ local M = {
 
 ---@class QueuedCrateJob
 ---@field name string
----@field crate_callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
+---@field callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
 
 ---@class QueuedSearchJob
 ---@field name string
@@ -65,13 +65,12 @@ local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 
 ---comment
 ---@param json_str string
----@return table|nil
+---@return table
 local function parse_json(json_str)
     ---@type any
     local json = vim.json.decode(json_str, JSON_DECODE_OPTS)
-    if json and type(json) == "table" then
-        return json
-    end
+    assert(type(json) == "table")
+    return json
 end
 
 ---@param url string
@@ -151,14 +150,14 @@ end
 local function enqueue_crate_job(name, callbacks)
     for _, j in ipairs(M.crate_queue) do
         if j.name == name then
-            vim.list_extend(j.crate_callbacks, callbacks)
+            vim.list_extend(j.callbacks, callbacks)
             return
         end
     end
 
     table.insert(M.crate_queue, {
         name = name,
-        crate_callbacks = callbacks,
+        callbacks = callbacks,
     })
 end
 
@@ -267,161 +266,171 @@ function M.fetch_search(name)
     end)
 end
 
----@param json_str string
+---@param index_json_str string
+---@param meta_json_str string
 ---@return ApiCrate|nil
-function M.parse_crate(json_str)
-    local lines = vim.split(json_str, '\n', { trimempty = true })
+function M.parse_crate(index_json_str, meta_json_str)
+    local lines = vim.split(index_json_str, '\n', { trimempty = true })
 
-    -- TODO: fetch remaining metadata from the API_ENDPOINT
-    ---@type ApiCrate
-    local crate = {
-        -- name = c.id,
-        -- description = assert(c.description),
-        -- created = assert(DateTime.parse_rfc_3339(c.created_at)),
-        -- updated = assert(DateTime.parse_rfc_3339(c.updated_at)),
-        -- downloads = assert(c.downloads),
-        -- homepage = c.homepage,
-        -- documentation = c.documentation,
-        -- repository = c.repository,
-        -- categories = {},
-        -- keywords = {},
-        versions = {},
-    }
-
-    -- ---@diagnostic disable-next-line: no-unknown
-    -- for _, ct_id in ipairs(c.categories) do
-    --     ---@diagnostic disable-next-line: no-unknown
-    --     for _, ct in ipairs(json.categories) do
-    --         if ct.id == ct_id then
-    --             table.insert(crate.categories, ct.category)
-    --         end
-    --     end
-    -- end
-    --
-    -- ---@diagnostic disable-next-line: no-unknown
-    -- for _, kw_id in ipairs(c.keywords) do
-    --     ---@diagnostic disable-next-line: no-unknown
-    --     for _, kw in ipairs(json.keywords) do
-    --         if kw.id == kw_id then
-    --             table.insert(crate.keywords, kw.keyword)
-    --         end
-    --     end
-    -- end
-
+    -- parse versions from sparse index file
+    ---@type ApiVersion[]
+    local versions = {}
     for _, line in ipairs(lines) do
-        local ok, json = pcall(parse_json, line)
-        if ok and json and json.name and json.vers then
-            crate.name = json.name
+        local json = parse_json(line)
+        assert(json.vers ~= nil)
 
-            ---@type ApiVersion
-            local version = {
-                num = json.vers,
-                deps = {},
-                features = ApiFeatures.new({}),
-                yanked = json.yanked,
-                parsed = semver.parse_version(json.vers),
-                -- created = assert(DateTime.parse_rfc_3339(v.created_at)),
-            }
+        ---@type ApiVersion
+        local version = {
+            num = json.vers,
+            parsed = semver.parse_version(json.vers),
+            yanked = json.yanked,
+            features = ApiFeatures.new({}),
+            deps = {},
+        }
 
-            ---@diagnostic disable-next-line: no-unknown
-            for _, d in ipairs(json.deps) do
-                if d.name then
-                    ---@type ApiDependency
-                    local dependency = {
-                        name = d.name,
-                        package = d.package,
-                        opt = d.optional or false,
-                        kind = DEPENDENCY_KIND_MAP[d.kind],
-                        vers = {
-                            text = d.req,
-                            reqs = semver.parse_requirements(d.req),
-                        },
-                    }
-                    table.insert(version.deps, dependency)
-                end
+        ---@diagnostic disable-next-line: no-unknown
+        for _, d in ipairs(json.deps) do
+            if d.name then
+                ---@type ApiDependency
+                local dependency = {
+                    name = d.name,
+                    package = d.package,
+                    opt = d.optional or false,
+                    kind = DEPENDENCY_KIND_MAP[d.kind],
+                    vers = {
+                        text = d.req,
+                        reqs = semver.parse_requirements(d.req),
+                    },
+                }
+                table.insert(version.deps, dependency)
             end
+        end
 
-            ---@param name string
-            ---@param members string[]
-            for name, members in pairs(json.features) do
-                for i, m in ipairs(members) do
-                    if json.features[m] then
-                        goto continue
-                    end
-
-                    -- enforce explicit `dep:<crate_name>` syntax
-                    for _,d in ipairs(version.deps) do
-                        if d.name == m then
-                            members[i] = "dep:" .. m
-                            break
-                        end
-                    end
-
-                    ::continue::
+        ---@param name string
+        ---@param members string[]
+        for name, members in pairs(json.features) do
+            for i, m in ipairs(members) do
+                if json.features[m] then
+                    goto continue
                 end
 
-                table.sort(members, function(a, b)
-                    if string.sub(a, 1, 4) == "dep:" then
-                        return false
-                    elseif string.sub(b, 1, 4) == "dep:" then
-                        return true
-                    else
-                        return a < b
+                -- enforce explicit `dep:<crate_name>` syntax
+                for _, d in ipairs(version.deps) do
+                    if d.name == m then
+                        members[i] = "dep:" .. m
+                        break
                     end
-                end)
-
-                version.features:insert({
-                    name = name,
-                    members = members,
-                })
-            end
-            if json.features2 then
-                ---@diagnostic disable-next-line: no-unknown
-                for n, m in pairs(json.features2) do
-                    table.sort(m)
-                    version.features:insert({
-                        name = n,
-                        members = m,
-                    })
                 end
+
+                ::continue::
             end
 
-            -- sort features
-            table.sort(version.features.list, function(a, b)
-                if a.name == "default" then
-                    return true
-                elseif b.name == "default" then
+            table.sort(members, function(a, b)
+                if string.sub(a, 1, 4) == "dep:" then
                     return false
+                elseif string.sub(b, 1, 4) == "dep:" then
+                    return true
                 else
-                    return a.name < b.name
+                    return a < b
                 end
             end)
 
-            -- add optional dependencies as features
-            for _, d in ipairs(version.deps) do
-                if d.opt then
-                    version.features:insert({
-                        name = "dep:" .. d.name,
-                        members = {},
-                        dep = true,
-                    })
-                end
-            end
-
-            -- add missing default feature
-            if not version.features.list[1] or not (version.features.list[1].name == "default") then
+            version.features:insert({
+                name = name,
+                members = members,
+            })
+        end
+        if json.features2 then
+            ---@diagnostic disable-next-line: no-unknown
+            for n, m in pairs(json.features2) do
+                table.sort(m)
                 version.features:insert({
-                    name = "default",
-                    members = {},
+                    name = n,
+                    members = m,
                 })
             end
+        end
 
-            table.insert(crate.versions, 1, version)
+        -- sort features
+        table.sort(version.features.list, function(a, b)
+            if a.name == "default" then
+                return true
+            elseif b.name == "default" then
+                return false
+            else
+                return a.name < b.name
+            end
+        end)
+
+        -- add optional dependencies as features
+        for _, d in ipairs(version.deps) do
+            if d.opt then
+                version.features:insert({
+                    name = "dep:" .. d.name,
+                    members = {},
+                    dep = true,
+                })
+            end
+        end
+
+        -- add missing default feature
+        if not version.features.list[1] or not (version.features.list[1].name == "default") then
+            version.features:insert({
+                name = "default",
+                members = {},
+            })
+        end
+
+        table.insert(versions, 1, version)
+    end
+
+    -- parse remaining metadata from api data
+    local json = parse_json(meta_json_str)
+
+    ---@type table<string,any>
+    local c = json.crate
+    ---@type ApiCrate
+    local crate = {
+        name = c.id,
+        description = assert(c.description),
+        created = assert(DateTime.parse_rfc_3339(c.created_at)),
+        updated = assert(DateTime.parse_rfc_3339(c.updated_at)),
+        downloads = assert(c.downloads),
+        homepage = c.homepage,
+        documentation = c.documentation,
+        repository = c.repository,
+        categories = {},
+        keywords = {},
+        versions = versions,
+    }
+
+    ---@diagnostic disable-next-line: no-unknown
+    for _, ct_id in ipairs(c.categories) do
+        ---@diagnostic disable-next-line: no-unknown
+        for _, ct in ipairs(json.categories) do
+            if ct.id == ct_id then
+                table.insert(crate.categories, ct.category)
+            end
         end
     end
 
-    if not crate.name then
-        return nil
+    ---@diagnostic disable-next-line: no-unknown
+    for _, kw_id in ipairs(c.keywords) do
+        ---@diagnostic disable-next-line: no-unknown
+        for _, kw in ipairs(json.keywords) do
+            if kw.id == kw_id then
+                table.insert(crate.keywords, kw.keyword)
+            end
+        end
+    end
+
+    assert(#versions == #json.versions)
+    ---@diagnostic disable-next-line: no-unknown
+    for i, v in ipairs(json.versions) do
+        local version = versions[i]
+        assert(v.num == version.num)
+
+        version.created = DateTime.parse_rfc_3339(v.created_at)
     end
 
     return crate
@@ -441,32 +450,38 @@ local function fetch_crate(name, callbacks)
         return
     end
 
-    ---@type string
-    local url
-    if #name == 1 then
-        url = string.format("%s/1/%s", SPARSE_INDEX_ENDPOINT, name)
-    elseif #name == 2 then
-        url = string.format("%s/2/%s", SPARSE_INDEX_ENDPOINT, name)
-    elseif #name == 3 then
-        url = string.format("%s/3/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 1), name)
-    else
-        url = string.format("%s/%s/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 2), string.sub(name, 3, 4), name)
-    end
+    local called = false
+    ---@type string?
+    local index_json_str = nil
+    ---@type string?
+    local meta_json_str = nil
 
-    ---@param json_str string|nil
     ---@param cancelled boolean
-    local function on_exit(json_str, cancelled)
-        ---@type ApiCrate|nil
-        local crate
-        if not cancelled and json_str then
-            local ok, c = pcall(M.parse_crate, json_str)
-            if ok then
-                crate = c
-            end
+    local function parse(cancelled)
+        if called then
+            return
         end
+
+        if cancelled then
+            for _, c in ipairs(callbacks) do
+                c(nil, true)
+            end
+            called = true
+            return
+        end
+
+        if not (index_json_str and meta_json_str) then
+            return
+        end
+
+        ---@type boolean, ApiCrate|nil
+        local ok, crate = pcall(M.parse_crate, index_json_str, meta_json_str)
+        crate = (ok and crate) or nil
+
         for _, c in ipairs(callbacks) do
             c(crate, cancelled)
         end
+        called = true
 
         M.crate_jobs[name] = nil
         M.num_requests = M.num_requests - 1
@@ -474,11 +489,41 @@ local function fetch_crate(name, callbacks)
         M.run_queued_jobs()
     end
 
-    local job = start_job(url, on_exit)
-    if job then
+    ---@type { [1]: Job, [2]: Job }
+    local jobs = {}
+    do
+        ---@type string
+        local url
+        if #name == 1 then
+            url = string.format("%s/1/%s", SPARSE_INDEX_ENDPOINT, name)
+        elseif #name == 2 then
+            url = string.format("%s/2/%s", SPARSE_INDEX_ENDPOINT, name)
+        elseif #name == 3 then
+            url = string.format("%s/3/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 1), name)
+        else
+            url = string.format("%s/%s/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 2), string.sub(name, 3, 4),
+                name)
+        end
+
+        jobs[1] = start_job(url, function(json_str, cancelled)
+            index_json_str = json_str
+            parse(cancelled)
+        end)
+    end
+    do
+        ---@type string
+        local url = string.format("%s/crates/%s", API_ENDPOINT, name)
+
+        jobs[2] = start_job(url, function(json_str, cancelled)
+            meta_json_str = json_str
+            parse(cancelled)
+        end)
+    end
+
+    if jobs[1] and jobs[2] then
         M.num_requests = M.num_requests + 1
         M.crate_jobs[name] = {
-            job = job,
+            jobs = jobs,
             callbacks = callbacks,
         }
     else
@@ -558,12 +603,13 @@ function M.run_queued_jobs()
     end
 
     local job = table.remove(M.crate_queue, 1)
-    fetch_crate(job.name, job.crate_callbacks)
+    fetch_crate(job.name, job.callbacks)
 end
 
 function M.cancel_jobs()
     for _, r in pairs(M.crate_jobs) do
-        cancel_job(r.job)
+        cancel_job(r.jobs[1])
+        cancel_job(r.jobs[2])
     end
     for _, r in pairs(M.search_jobs) do
         cancel_job(r.job)

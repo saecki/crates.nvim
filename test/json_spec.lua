@@ -8,6 +8,7 @@ local ApiFeatures = types.ApiFeatures
 local SemVer = types.SemVer
 local Span = types.Span
 
+-- TODO: update
 describe("crate", function()
     ---@type string
     local json_str
@@ -113,6 +114,7 @@ describe("crate", function()
     end)
 end)
 
+-- TODO: remove
 describe("dependencies", function()
     ---@type string
     local json_str

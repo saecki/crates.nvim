@@ -40,10 +40,10 @@ M.MatchKind = {
 
 ---@class ApiVersion
 ---@field num string
----@field features ApiFeatures
----@field yanked boolean
 ---@field parsed SemVer
+---@field yanked boolean
 ---@field created DateTime
+---@field features ApiFeatures
 ---@field deps ApiDependency[]
 
 ---@class ApiFeature
