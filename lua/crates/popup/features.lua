@@ -65,13 +65,15 @@ local function toggle_feature(ctx, line)
         local parent_name = string.sub(feat_name, 5)
         local parent_feat = features.map[parent_name]
 
-        if parent_feat and vim.tbl_contains(parent_feat.members, feat_name) then
+        if not parent_feat then
+            -- no direct explicit parent feature, so just toggle the implicit feature
+        elseif vim.tbl_contains(parent_feat.members, feat_name) then
             if #parent_feat.members > 1 then
                 util.notify(vim.log.levels.INFO, "Cannot enable/disable '%s' directly; instead toggle its parent feature '%s'", feat_name, parent_name)
                 return
+            else
+                -- the explicit parent feature only contains the dependency feature, so toggle it instead
             end
-        elseif not parent_feat then
-            -- no direct explicit parent feature, so just toggle the implicit feature
         else
             -- the parent feature named like the dependency, doesn't include the `dep:` feature,
             -- so find other features, that include it.
@@ -103,7 +105,7 @@ local function toggle_feature(ctx, line)
         if crate_feature then
             line_span = edit.disable_feature(ctx.buf, ctx.crate, crate_feature)
         else
-            line_span = edit.enable_feature(ctx.buf, ctx.crate, selected_feature)
+            line_span = edit.enable_feature(ctx.buf, ctx.crate, feat_name)
         end
     end
 

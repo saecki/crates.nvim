@@ -376,14 +376,10 @@ end
 
 ---@param buf integer
 ---@param crate TomlCrate
----@param feature ApiFeature
+---@param feature string
 ---@return Span
 function M.enable_feature(buf, crate, feature)
-    local name = feature.name
-    if feature.dep then
-        name = string.sub(name, 5)
-    end
-    local t = '"' .. name .. '"'
+    local t = '"' .. feature .. '"'
 
     if crate.feat then
         local last_feat = crate.feat.items[#crate.feat.items]
