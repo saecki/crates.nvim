@@ -294,31 +294,6 @@ local function sort_feature_members(a, b)
     end
 end
 
----@param a ApiVersion
----@param b ApiVersion
----@return boolean
-local function sort_versions (a, b)
-    if a.parsed.major > b.parsed.major then
-        return true
-    elseif a.parsed.major < b.parsed.major then
-        return false
-    elseif a.parsed.minor > b.parsed.minor then
-        return true
-    elseif a.parsed.minor < b.parsed.minor then
-        return false
-    elseif a.parsed.patch > b.parsed.patch then
-        return true
-    elseif a.parsed.patch < b.parsed.patch then
-        return false
-    elseif a.parsed.pre and b.parsed.pre then
-        return a.parsed.pre >= b.parsed.pre
-    elseif b.parsed.pre then
-        return true
-    else -- if a.parsed.pre then
-        return false
-    end
-end
-
 ---@param index_json_str string
 ---@param meta_json_str string
 ---@return ApiCrate|nil
@@ -326,7 +301,7 @@ function M.parse_crate(index_json_str, meta_json_str)
     local lines = vim.split(index_json_str, '\n', { trimempty = true })
 
     -- parse versions from sparse index file
-    ---@type ApiVersion[]
+    ---@type table<string,ApiVersion>
     local versions = {}
     for _, line in ipairs(lines) do
         local json = parse_json(line)
@@ -421,10 +396,8 @@ function M.parse_crate(index_json_str, meta_json_str)
             })
         end
 
-        table.insert(versions, 1, version)
+        versions[version.num] = version
     end
-
-    table.sort(versions, sort_versions)
 
     -- parse remaining metadata from api data
     local json = parse_json(meta_json_str)
@@ -443,7 +416,7 @@ function M.parse_crate(index_json_str, meta_json_str)
         repository = c.repository,
         categories = {},
         keywords = {},
-        versions = versions,
+        versions = {},
     }
 
     ---@diagnostic disable-next-line: no-unknown
@@ -466,13 +439,12 @@ function M.parse_crate(index_json_str, meta_json_str)
         end
     end
 
-    assert(#versions == #json.versions)
     ---@diagnostic disable-next-line: no-unknown
     for i, v in ipairs(json.versions) do
-        local version = versions[i]
-        assert(v.num == version.num)
-
+        local version = versions[v.num]
+        assert(version ~= nil)
         version.created = DateTime.parse_rfc_3339(v.created_at)
+        table.insert(crate.versions, version)
     end
 
     return crate
