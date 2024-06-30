@@ -266,6 +266,59 @@ function M.fetch_search(name)
     end)
 end
 
+---@param a ApiFeature
+---@param b ApiFeature
+---@return boolean
+local function sort_features(a, b)
+    if a.name == "default" then
+        return true
+    elseif b.name == "default" then
+        return false
+    else
+        return a.name < b.name
+    end
+end
+
+---@param a string
+---@param b string
+---@return boolean
+local function sort_feature_members(a, b)
+    local a_dep = string.sub(a, 1, 4) == "dep:"
+    local b_dep = string.sub(b, 1, 4) == "dep:"
+    if a_dep == b_dep then
+        return a < b
+    elseif a_dep then
+        return false
+    else -- if b_dep then
+        return true
+    end
+end
+
+---@param a ApiVersion
+---@param b ApiVersion
+---@return boolean
+local function sort_versions (a, b)
+    if a.parsed.major > b.parsed.major then
+        return true
+    elseif a.parsed.major < b.parsed.major then
+        return false
+    elseif a.parsed.minor > b.parsed.minor then
+        return true
+    elseif a.parsed.minor < b.parsed.minor then
+        return false
+    elseif a.parsed.patch > b.parsed.patch then
+        return true
+    elseif a.parsed.patch < b.parsed.patch then
+        return false
+    elseif a.parsed.pre and b.parsed.pre then
+        return a.parsed.pre >= b.parsed.pre
+    elseif b.parsed.pre then
+        return true
+    else -- if a.parsed.pre then
+        return false
+    end
+end
+
 ---@param index_json_str string
 ---@param meta_json_str string
 ---@return ApiCrate|nil
@@ -306,11 +359,13 @@ function M.parse_crate(index_json_str, meta_json_str)
             end
         end
 
+        local features2 = json.features2 or {}
+
         ---@param name string
         ---@param members string[]
         for name, members in pairs(json.features) do
             for i, m in ipairs(members) do
-                if json.features[m] then
+                if json.features[m] or features2[m] then
                     goto continue
                 end
 
@@ -325,42 +380,27 @@ function M.parse_crate(index_json_str, meta_json_str)
                 ::continue::
             end
 
-            table.sort(members, function(a, b)
-                if string.sub(a, 1, 4) == "dep:" then
-                    return false
-                elseif string.sub(b, 1, 4) == "dep:" then
-                    return true
-                else
-                    return a < b
-                end
-            end)
+            table.sort(members, sort_feature_members)
 
             version.features:insert({
                 name = name,
                 members = members,
             })
         end
-        if json.features2 then
-            ---@diagnostic disable-next-line: no-unknown
-            for n, m in pairs(json.features2) do
-                table.sort(m)
-                version.features:insert({
-                    name = n,
-                    members = m,
-                })
-            end
+
+        ---@param name string
+        ---@param members string[]
+        for name, members in pairs(features2) do
+            table.sort(members, sort_feature_members)
+
+            version.features:insert({
+                name = name,
+                members = members,
+            })
         end
 
         -- sort features
-        table.sort(version.features.list, function(a, b)
-            if a.name == "default" then
-                return true
-            elseif b.name == "default" then
-                return false
-            else
-                return a.name < b.name
-            end
-        end)
+        table.sort(version.features.list, sort_features)
 
         -- add optional dependencies as features
         for _, d in ipairs(version.deps) do
@@ -383,6 +423,8 @@ function M.parse_crate(index_json_str, meta_json_str)
 
         table.insert(versions, 1, version)
     end
+
+    table.sort(versions, sort_versions)
 
     -- parse remaining metadata from api data
     local json = parse_json(meta_json_str)
