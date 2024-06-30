@@ -172,7 +172,6 @@ require("crates").setup {
     max_parallel_requests = 80,
     open_programs = { "xdg-open", "open" },
     expand_crate_moves_cursor = true,
-    disable_invalid_feature_diagnostic = false,
     enable_update_available_warning = true,
     on_attach = function(bufnr) end,
     text = {

@@ -18,7 +18,6 @@
 ---@field max_parallel_requests integer
 ---@field open_programs string[]
 ---@field expand_crate_moves_cursor boolean
----@field disable_invalid_feature_diagnostic boolean
 ---@field enable_update_available_warning boolean
 ---@field on_attach fun(bufnr: integer)
 ---@field text TextConfig
@@ -68,6 +67,7 @@
 ---@field feat_dup string
 ---@field feat_dup_orig string
 ---@field feat_invalid string
+---@field feat_explicit_dep string
 
 ---@class PopupConfig
 ---@field autofocus boolean
@@ -233,7 +233,6 @@
 ---@field public max_parallel_requests? integer
 ---@field public open_programs? string[]
 ---@field public expand_crate_moves_cursor? boolean
----@field public disable_invalid_feature_diagnostic? boolean
 ---@field public enable_update_available_warning? boolean
 ---@field public on_attach? fun(bufnr: integer)
 ---@field public text? crates.UserTextConfig

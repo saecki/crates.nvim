@@ -169,19 +169,18 @@ end
 
 ---@param name string
 ---@return TomlFeature|nil
----@return integer|nil
 function Crate:get_feat(name)
     if not self.feat or not self.feat.items then
-        return nil, nil
+        return nil
     end
 
-    for i, f in ipairs(self.feat.items) do
+    for _, f in ipairs(self.feat.items) do
         if f.name == name then
-            return f, i
+            return f
         end
     end
 
-    return nil, nil
+    return nil
 end
 
 ---@return TomlFeature[]

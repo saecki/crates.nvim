@@ -1,0 +1,8 @@
+[package]
+edition = "2021"
+name = "hi_there"
+version = "0.1.0"
+
+[dependencies]
+# the `uuidv07` feature is a renamed dependency with the package `uuid`
+diesel = { version = "1.4.8", features = ["uuidv07"] }

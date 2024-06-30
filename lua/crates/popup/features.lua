@@ -60,9 +60,41 @@ local function toggle_feature(ctx, line)
         return
     end
 
+    local feat_name = selected_feature.name
+    if selected_feature.dep then
+        local parent_name = string.sub(feat_name, 5)
+        local parent_feat = features.map[parent_name]
+
+        if not parent_feat then
+            -- no direct explicit parent feature, so just toggle the implicit feature
+        elseif vim.tbl_contains(parent_feat.members, feat_name) then
+            if #parent_feat.members > 1 then
+                util.notify(vim.log.levels.INFO, "Cannot enable/disable '%s' directly; instead toggle its parent feature '%s'", feat_name, parent_name)
+                return
+            else
+                -- the explicit parent feature only contains the dependency feature, so toggle it instead
+            end
+        else
+            -- the parent feature named like the dependency, doesn't include the `dep:` feature,
+            -- so find other features, that include it.
+            local parents = {}
+            for _, f in ipairs(features.list) do
+                if vim.tbl_contains(f.members, feat_name) then
+                    table.insert(parents, string.format("'%s'", f.name))
+                end
+            end
+
+            local parent_names = table.concat(parents, ", ")
+            util.notify(vim.log.levels.INFO, "Cannot enable/disable '%s' directly; instead toggle a parent feature: %s", feat_name, parent_names)
+            return
+        end
+
+        feat_name = parent_name
+    end
+
     ---@type Span
     local line_span
-    local crate_feature = ctx.crate:get_feat(selected_feature.name)
+    local crate_feature = ctx.crate:get_feat(feat_name)
     if selected_feature.name == "default" then
         if crate_feature ~= nil or ctx.crate:is_def_enabled() then
             line_span = edit.disable_def_features(ctx.buf, ctx.crate, crate_feature)
@@ -73,7 +105,7 @@ local function toggle_feature(ctx, line)
         if crate_feature then
             line_span = edit.disable_feature(ctx.buf, ctx.crate, crate_feature)
         else
-            line_span = edit.enable_feature(ctx.buf, ctx.crate, selected_feature)
+            line_span = edit.enable_feature(ctx.buf, ctx.crate, feat_name)
         end
     end
 
@@ -143,7 +175,7 @@ local function goto_feature(ctx, line)
     if feature then
         local m = feature.members[index]
         if m then
-            selected_feature = version.features:get_feat(m)
+            selected_feature = version.features.map[m]
         end
     else
         selected_feature = version.features.list[index]
@@ -373,8 +405,7 @@ function M.open(crate, version, opts)
         crate = crate,
         version = version,
         history = {
-            --- TODO: 3?
-            { feature = nil, line = opts.line or 3 },
+            { feature = nil, line = opts.line or 2 },
         },
         hist_idx = 1,
     }
@@ -392,7 +423,7 @@ function M.open_details(crate, version, feature, opts)
         version = version,
         history = {
             { feature = nil,     line = 2 },
-            { feature = feature, line = opts.line or 3 },
+            { feature = feature, line = opts.line or 2 },
         },
         hist_idx = 2,
     }

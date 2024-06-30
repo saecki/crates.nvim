@@ -109,16 +109,29 @@ local function complete_features(crate, cf, versions)
             goto continue
         end
 
+        -- handle `dep:<crate_name>` features
+        local insert_text = nil
+        if f.dep then
+            local parent_name = string.sub(f.name, 5)
+            -- don't suggest duplicates         or already enabled features
+            if newest.features.map[parent_name] or crate:get_feat(parent_name) then
+                goto continue
+            end
+
+            insert_text = parent_name
+        end
+
         ---@type CompletionItem
         local r = {
             label = f.name,
             kind = CompletionItemKind.VALUE,
             sortText = f.name,
             detail = table.concat(f.members, "\n"),
+            insertText = insert_text,
         }
         if state.cfg.completion.insert_closing_quote then
             if not cf.quote.e then
-                r.insertText = f.name .. cf.quote.s
+                r.insertText = (insert_text or f.name) .. cf.quote.s
             end
         end
         if state.cfg.completion.cmp.use_custom_kind then

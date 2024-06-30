@@ -321,6 +321,29 @@ function M.process_api_crate(crate, api_crate)
                     ))
                 end
             end
+
+            -- invalid features diagnostics
+            if info.vers_match then
+                for _, f in ipairs(crate:feats()) do
+                    if string.sub(f.name, 1, 4) == "dep:" then
+                        table.insert(diagnostics, feat_diagnostic(
+                            crate,
+                            f,
+                            CratesDiagnosticKind.FEAT_EXPLICIT_DEP,
+                            vim.diagnostic.severity.ERROR,
+                            { feat = f }
+                        ))
+                    elseif not info.vers_match.features:get_feat(f.name) then
+                        table.insert(diagnostics, feat_diagnostic(
+                            crate,
+                            f,
+                            CratesDiagnosticKind.FEAT_INVALID,
+                            vim.diagnostic.severity.ERROR,
+                            { feat = f }
+                        ))
+                    end
+                end
+            end
         else
             table.insert(diagnostics, crate_diagnostic(
                 crate,
@@ -332,44 +355,6 @@ function M.process_api_crate(crate, api_crate)
     end
 
     return info, diagnostics
-end
-
----@param crate TomlCrate
----@param version ApiVersion
----@param deps ApiDependency[]
----@return CratesDiagnostic[]
-function M.process_crate_deps(crate, version, deps)
-    if crate.path or crate.git then
-        return {}
-    end
-
-    local diagnostics = {}
-
-    local valid_feats = {}
-    for _, f in ipairs(version.features.list) do
-        table.insert(valid_feats, f.name)
-    end
-    for _, d in ipairs(deps) do
-        if d.opt then
-            table.insert(valid_feats, d.name)
-        end
-    end
-
-    if not state.cfg.disable_invalid_feature_diagnostic then
-        for _, f in ipairs(crate:feats()) do
-            if not vim.tbl_contains(valid_feats, f.name) then
-                table.insert(diagnostics, feat_diagnostic(
-                    crate,
-                    f,
-                    CratesDiagnosticKind.FEAT_INVALID,
-                    vim.diagnostic.severity.ERROR,
-                    { feat = f }
-                ))
-            end
-        end
-    end
-
-    return diagnostics
 end
 
 return M

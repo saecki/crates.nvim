@@ -226,16 +226,6 @@ entry(M.schema, {
         Whether to move the cursor on |crates.expand_plain_crate_to_inline_table()|.
     ]],
 })
--- TODO: Blocked on: https://github.com/rust-lang/crates.io/issues/1539
-entry(M.schema, {
-    name = "disable_invalid_feature_diagnostic",
-    type = BOOLEAN_TYPE,
-    default = false,
-    description = [[
-        This is a temporary solution for:
-        https://github.com/Saecki/crates.nvim/issues/14
-    ]],
-})
 entry(M.schema, {
     name = "enable_update_available_warning",
     type = BOOLEAN_TYPE,
@@ -537,6 +527,12 @@ entry(schema_diagnostic, {
     name = "feat_invalid",
     type = STRING_TYPE,
     default = "Invalid feature",
+    hidden = true,
+})
+entry(schema_diagnostic, {
+    name = "feat_explicit_dep",
+    type = STRING_TYPE,
+    default = "Explicit `dep:` prefix for optional dependencies is not allowed",
     hidden = true,
 })
 

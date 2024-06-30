@@ -40,18 +40,20 @@ M.MatchKind = {
 
 ---@class ApiVersion
 ---@field num string
----@field features ApiFeatures
----@field yanked boolean
 ---@field parsed SemVer
+---@field yanked boolean
 ---@field created DateTime
----@field deps ApiDependency[]|nil
+---@field features ApiFeatures
+---@field deps ApiDependency[]
 
 ---@class ApiFeature
 ---@field name string
 ---@field members string[]
+---@field dep boolean?
 
 ---@class ApiDependency
 ---@field name string
+---@field package string
 ---@field opt boolean
 ---@field kind ApiDependencyKind
 ---@field vers ApiDependencyVers
@@ -128,6 +130,7 @@ M.CratesDiagnosticKind = {
     VERS_PRE = "vers_pre",
     DEF_INVALID = "def_invalid",
     FEAT_INVALID = "feat_invalid",
+    FEAT_EXPLICIT_DEP = "feat_explicit_dep",
     -- warning
     VERS_UPGRADE = "vers_upgrade",
     FEAT_DUP = "feat_dup",
@@ -154,22 +157,11 @@ function ApiFeatures.new(list)
     return setmetatable({ list = list, map = map }, { __index = ApiFeatures })
 end
 
+---Returns the feature directly matching `name` or alternatively in `dep:name` syntax.
 ---@param name string
 ---@return ApiFeature|nil
 function ApiFeatures:get_feat(name)
-    return self.map[name]
-end
-
-function ApiFeatures:sort()
-    table.sort(self.list, function(a, b)
-        if a.name == "default" then
-            return true
-        elseif b.name == "default" then
-            return false
-        else
-            return a.name < b.name
-        end
-    end)
+    return self.map[name] or self.map["dep:" .. name]
 end
 
 ---@param feat ApiFeature
