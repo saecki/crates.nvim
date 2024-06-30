@@ -114,9 +114,9 @@ function M.open_homepage()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local _, crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate:package()]
-        if crate_info and crate_info.homepage then
-            util.open_url(crate_info.homepage)
+        local api_crate = state.api_cache[crate:package()]
+        if api_crate and api_crate.homepage then
+            util.open_url(api_crate.homepage)
         else
             util.notify(vim.log.levels.INFO, "The crate '%s' has no homepage specified", crate:package())
         end
@@ -129,9 +129,9 @@ function M.open_repository()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local _, crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate:package()]
-        if crate_info and crate_info.repository then
-            util.open_url(crate_info.repository)
+        local api_crate = state.api_cache[crate:package()]
+        if api_crate and api_crate.repository then
+            util.open_url(api_crate.repository)
         else
             util.notify(vim.log.levels.INFO, "The crate '%s' has no repository specified", crate:package())
         end
@@ -144,8 +144,8 @@ function M.open_documentation()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local _, crate = next(crates)
     if crate then
-        local crate_info = state.api_cache[crate:package()]
-        local url = crate_info and crate_info.documentation
+        local api_crate = state.api_cache[crate:package()]
+        local url = api_crate and api_crate.documentation
         url = url or util.docs_rs_url(crate:package())
         util.open_url(url)
     end
