@@ -498,7 +498,7 @@ local function fetch_crate(name, callbacks)
         called = true
 
         M.crate_jobs[name] = nil
-        M.num_requests = M.num_requests - 1
+        M.num_requests = M.num_requests - 2
 
         M.run_queued_jobs()
     end
@@ -535,7 +535,7 @@ local function fetch_crate(name, callbacks)
     end
 
     if jobs[1] and jobs[2] then
-        M.num_requests = M.num_requests + 1
+        M.num_requests = M.num_requests + 2
         M.crate_jobs[name] = {
             jobs = jobs,
             callbacks = callbacks,
