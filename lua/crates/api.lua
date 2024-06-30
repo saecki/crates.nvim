@@ -377,6 +377,16 @@ function M.parse_crate(index_json_str, meta_json_str)
         -- sort features
         table.sort(version.features.list, sort_features)
 
+        -- add missing default feature
+        if not version.features.map["default"] then
+            local feature = {
+                name = "default",
+                members = {},
+            }
+            table.insert(version.features.list, feature)
+            version.features.map["default"] = feature
+        end
+
         -- add optional dependencies as features
         for _, d in ipairs(version.deps) do
             if d.opt then
@@ -386,14 +396,6 @@ function M.parse_crate(index_json_str, meta_json_str)
                     dep = true,
                 })
             end
-        end
-
-        -- add missing default feature
-        if not version.features.list[1] or not (version.features.list[1].name == "default") then
-            version.features:insert({
-                name = "default",
-                members = {},
-            })
         end
 
         versions[version.num] = version
