@@ -1585,6 +1585,14 @@ entry(schema_completion_crates, {
         complete a crate name.
     ]],
 })
+-- deprecated
+entry(M.schema, {
+    name = "src",
+    type = BOOLEAN_TYPE,
+    deprecated = {
+        new_field = { "completion" },
+    }
+})
 
 
 local schema_null_ls = section_entry(M.schema, {

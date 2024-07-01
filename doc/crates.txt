@@ -1514,6 +1514,11 @@ completion.crates.max_results    *crates-config-completion-crates-max_results*
     complete a crate name.
 
 
+src                                                        *crates-config-src*
+    DEPRECATED
+
+    Please use |crates-config-completion| instead.
+
 null_ls                                                *crates-config-null_ls*
     Section type: `NullLsConfig`
 
