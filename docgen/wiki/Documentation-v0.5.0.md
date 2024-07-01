@@ -41,7 +41,7 @@ Change the following:
 ```
 
 ## `nvim-cmp` source registration
-When using `nvim-cmp` and *NOT* the in-process lsp, it has to be manually enabled:
+When using `nvim-cmp` and *NOT* the [in-process language server](#in-process-language-server), it has to be manually enabled:
 ```diff
  require("crates").setup {
      src = {
@@ -80,7 +80,7 @@ require("crates").setup {
 ```
 
 ## Auto completion
-Completion is supported in a few different ways, either by the [in-process language server],
+Completion is supported in a few different ways, either by the [in-process language server](#in-process-language-server),
 which also supports code actions, or by one of the following sources.
 
 ### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
@@ -160,7 +160,7 @@ require("crates").setup {
 ```
 
 ## Code actions
-Code actions are supported in a few different ways, either by the [in-process language server],
+Code actions are supported in a few different ways, either by the [in-process language server](#in-process-language-server),
 which also supports completion, or by the null-ls/none-ls source.
 
 ### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) source
