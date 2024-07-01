@@ -4,7 +4,8 @@
 
 A neovim plugin that helps managing crates.io dependencies.
 
-Feel free to open issues.
+> [!IMPORTANT]
+> [See breaking changes](https://github.com/Saecki/crates.nvim/issues/89)
 
 [Screencast from 2023-03-11 05-29-22.webm](https://user-images.githubusercontent.com/43008152/224464963-9810110f-2923-4346-a442-9d4f2723bdff.webm)
 
@@ -68,7 +69,7 @@ lua require('crates').setup()
 </details>
 
 ## [Documentation](https://github.com/Saecki/crates.nvim/wiki)
-- [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.4.0)
+- [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.5.0)
 - [Unstable](https://github.com/Saecki/crates.nvim/wiki/Documentation-unstable)
 
 ## Related projects
