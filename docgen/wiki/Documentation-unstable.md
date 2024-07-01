@@ -11,8 +11,6 @@ Documentation for `crates.nvim` `unstable`
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
-- Automatically load when opening a `Cargo.toml` file (`autoload`)
-- Live update while editing (`autoupdate`)
 - Show version and upgrade candidates
     - Show if compatible version is a pre-release or yanked
     - Show if no version is compatible
