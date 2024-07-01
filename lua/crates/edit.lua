@@ -10,16 +10,17 @@ local SemVer = types.SemVer
 local M = {}
 
 local default_key_order = {
+    "workspace",
     "vers",
     "registry",
     "path",
     "git",
     "branch",
+    "tag",
     "rev",
     "pkg",
     "def",
     "feat",
-    "workspace",
     "opt",
 }
 
