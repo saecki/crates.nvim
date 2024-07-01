@@ -651,9 +651,6 @@ on_attach                                            *crates-config-on_attach*
     NOTE: Ignored if |crates-config-autoload| is disabled.
 
 
-avoid_prerelease                              *crates-config-avoid_prerelease*
-    DEPRECATED
-
 text                                                      *crates-config-text*
     Section type: `TextConfig`
 
@@ -827,11 +824,6 @@ popup.padding                                    *crates-config-popup-padding*
 
     The horizontal padding of the popup.
 
-
-popup.version_date                          *crates-config-popup-version_date*
-    DEPRECATED
-
-    Please use |crates-config-popup-show_version_date| instead.
 
 popup.text                                          *crates-config-popup-text*
     Section type: `PopupTextConfig`
@@ -1057,11 +1049,6 @@ popup.text.loading                          *crates-config-popup-text-loading*
 
     Format string used as a loading indicator when fetching dependencies.
 
-
-popup.text.date                                *crates-config-popup-text-date*
-    DEPRECATED
-
-    Please use |crates-config-popup-text-version_date| instead.
 
 popup.highlight                                *crates-config-popup-highlight*
     Section type: `PopupHighlightConfig`
@@ -1353,27 +1340,6 @@ popup.keys.jump_back                      *crates-config-popup-keys-jump_back*
 
     Key mappings to go back in the popup jump history.
 
-
-popup.keys.goto_feature                *crates-config-popup-keys-goto_feature*
-    DEPRECATED
-
-    Please use |crates-config-popup-keys-goto_item| instead.
-
-                               *crates-config-popup-keys-jump_forward_feature*
-popup.keys.jump_forward_feature
-    DEPRECATED
-
-    Please use |crates-config-popup-keys-jump_forward| instead.
-
-popup.keys.jump_back_feature      *crates-config-popup-keys-jump_back_feature*
-    DEPRECATED
-
-    Please use |crates-config-popup-keys-jump_back| instead.
-
-popup.keys.copy_version                *crates-config-popup-keys-copy_version*
-    DEPRECATED
-
-    Please use |crates-config-popup-keys-copy_value| instead.
 
 completion                                          *crates-config-completion*
     Section type: `CompletionConfig`

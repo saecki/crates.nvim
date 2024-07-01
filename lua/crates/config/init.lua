@@ -248,14 +248,6 @@ entry(M.schema, {
         NOTE: Ignored if |crates-config-autoload| is disabled.
     ]],
 })
--- deprecated
-entry(M.schema, {
-    name = "avoid_prerelease",
-    type = BOOLEAN_TYPE,
-    deprecated = {
-        hard = true,
-    },
-})
 
 local schema_text = section_entry(M.schema, {
     name = "text",
@@ -631,15 +623,6 @@ entry(schema_popup, {
         The horizontal padding of the popup.
     ]],
 })
--- deprecated
-entry(schema_popup, {
-    name = "version_date",
-    type = BOOLEAN_TYPE,
-    deprecated = {
-        new_field = { "popup", "show_version_date" },
-        hard = true,
-    }
-})
 
 
 local schema_popup_text = section_entry(schema_popup, {
@@ -944,15 +927,6 @@ entry(schema_popup_text, {
     description = [[
         Format string used as a loading indicator when fetching dependencies.
     ]],
-})
--- deprecated
-entry(schema_popup_text, {
-    name = "date",
-    type = STRING_TYPE,
-    deprecated = {
-        new_field = { "popup", "text", "version_date" },
-        hard = true,
-    }
 })
 
 
@@ -1347,39 +1321,6 @@ entry(schema_popup_keys, {
     description = [[
         Key mappings to go back in the popup jump history.
     ]],
-})
--- deprecated
-entry(schema_popup_keys, {
-    name = "goto_feature",
-    type = STRING_ARRAY_TYPE,
-    deprecated = {
-        new_field = { "popup", "keys", "goto_item" },
-        hard = true,
-    }
-})
-entry(schema_popup_keys, {
-    name = "jump_forward_feature",
-    type = STRING_ARRAY_TYPE,
-    deprecated = {
-        new_field = { "popup", "keys", "jump_forward" },
-        hard = true,
-    }
-})
-entry(schema_popup_keys, {
-    name = "jump_back_feature",
-    type = STRING_ARRAY_TYPE,
-    deprecated = {
-        new_field = { "popup", "keys", "jump_back" },
-        hard = true,
-    }
-})
-entry(schema_popup_keys, {
-    name = "copy_version",
-    type = STRING_ARRAY_TYPE,
-    deprecated = {
-        new_field = { "popup", "keys", "copy_value" },
-        hard = true,
-    }
 })
 
 
