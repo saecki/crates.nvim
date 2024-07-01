@@ -621,6 +621,9 @@ function M.extract_crate_into_table(buf, crate)
     local lines = {
         crate.section:display(crate.explicit_name),
     }
+    if crate.workspace then
+        table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
+    end
     if crate.vers then
         table.insert(lines, "version = " .. '"' .. crate.vers.text .. '"')
     end
@@ -636,7 +639,7 @@ function M.extract_crate_into_table(buf, crate)
     if crate.branch then
         table.insert(lines, "branch = " .. '"' .. crate.branch.text .. '"')
     end
-    if crate.branch then
+    if crate.tag then
         table.insert(lines, "tag = " .. '"' .. crate.tag.text .. '"')
     end
     if crate.rev then
@@ -644,9 +647,6 @@ function M.extract_crate_into_table(buf, crate)
     end
     if crate.pkg then
         table.insert(lines, "package = " .. '"' .. crate.pkg.text .. '"')
-    end
-    if crate.workspace then
-        table.insert(lines, "workspace = " .. '"' .. crate.workspace.text .. '"')
     end
     if crate.def then
         table.insert(lines, "default-features = " .. crate.def.text)
