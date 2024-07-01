@@ -47,7 +47,11 @@ function M.col_to_insert(crate, key)
         local entry = crate[k]
         if entry then
             if before then
-                col = entry.decl_col.e
+                col = entry.col.e
+                ---@cast entry TomlCrateString
+                if entry.quote and entry.quote.e then
+                    col = col + 1
+                end
             else
                 return entry.decl_col.s, false
             end
