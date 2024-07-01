@@ -10,8 +10,8 @@ License:  MIT license
 INTRODUCTION                                                          *crates*
 
 Crates is a plugin that helps managing crates.io dependencies.
-It can display a crate's versions and features and allows you to update,
-upgrade, select, enable or disable them.
+It can display a crate's versions, features and dependencies, allows
+updating/upgrading versions, enabling/disabling features and more.
 
 ==============================================================================
 USAGE                                                           *crates-usage*
