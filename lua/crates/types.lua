@@ -96,6 +96,7 @@ M.Cond = {
 ---@field severity integer
 ---@field kind CratesDiagnosticKind
 ---@field data table<string,any>|nil
+---@field message_args any[]?
 local CratesDiagnostic = {}
 M.CratesDiagnostic = CratesDiagnostic
 
@@ -111,6 +112,12 @@ end
 function CratesDiagnostic:contains(line, col)
     return (self.lnum < line or self.lnum == line and self.col <= col)
         and (self.end_lnum > line or self.end_lnum == line and self.end_col > col)
+end
+
+---@param template string
+---@return string
+function CratesDiagnostic:message(template)
+    return string.format(template, unpack(self.message_args or {}))
 end
 
 ---NOTE: Used to index the user configuration, so keys have to be in sync

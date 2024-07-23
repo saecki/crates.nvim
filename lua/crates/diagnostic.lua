@@ -28,10 +28,11 @@ local CrateScope = {
 ---@param section TomlSection
 ---@param kind CratesDiagnosticKind
 ---@param severity integer
----@param scope SectionScope|nil
----@param data table<string,any>|nil
+---@param scope SectionScope?
+---@param data table<string,any>?
+---@param message_args any[]?
 ---@return CratesDiagnostic
-local function section_diagnostic(section, kind, severity, scope, data)
+local function section_diagnostic(section, kind, severity, scope, data, message_args)
     local d = CratesDiagnostic.new({
         lnum = section.lines.s,
         end_lnum = section.lines.e - 1,
@@ -40,6 +41,7 @@ local function section_diagnostic(section, kind, severity, scope, data)
         severity = severity,
         kind = kind,
         data = data,
+        message_args = message_args,
     })
 
     if scope == SectionScope.HEADER then
@@ -52,10 +54,11 @@ end
 ---@param crate TomlCrate
 ---@param kind CratesDiagnosticKind
 ---@param severity integer
----@param scope CrateScope|nil
----@param data table<string,any>|nil
+---@param scope CrateScope?
+---@param data table<string,any>?
+---@param message_args any[]?
 ---@return CratesDiagnostic
-local function crate_diagnostic(crate, kind, severity, scope, data)
+local function crate_diagnostic(crate, kind, severity, scope, data, message_args)
     local d = CratesDiagnostic.new({
         lnum = crate.lines.s,
         end_lnum = crate.lines.e - 1,
@@ -64,6 +67,7 @@ local function crate_diagnostic(crate, kind, severity, scope, data)
         severity = severity,
         kind = kind,
         data = data,
+        message_args = message_args,
     })
 
     if not scope then
@@ -258,7 +262,8 @@ function M.process_api_crate(crate, api_crate)
                     CratesDiagnosticKind.CRATE_NAME_CASE,
                     vim.diagnostic.severity.ERROR,
                     CrateScope.PACKAGE,
-                    { crate = crate, crate_name = api_crate.name }
+                    { crate = crate, crate_name = api_crate.name },
+                    { api_crate.name }
                 ))
             end
         end

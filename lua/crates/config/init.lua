@@ -469,7 +469,7 @@ entry(schema_diagnostic, {
 entry(schema_diagnostic, {
     name = "crate_name_case",
     type = STRING_TYPE,
-    default = "Incorrect crate name casing",
+    default = "Incorrect crate name, perhaps you meant `%s`",
     hidden = true,
 })
 entry(schema_diagnostic, {

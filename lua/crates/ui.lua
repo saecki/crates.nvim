@@ -52,7 +52,7 @@ local function to_vim_diagnostic(d)
         col = d.col,
         end_col = d.end_col,
         severity = d.severity,
-        message = state.cfg.diagnostic[d.kind],
+        message = d:message(state.cfg.diagnostic[d.kind]),
         source = "crates",
     }
 end
