@@ -24,19 +24,20 @@ describe("json", function()
     ---@type string
     local index_json_str
     ---@type string
-    local meta_json_str
+    local meta_json
     it("read index file", function()
         index_json_str = io.open("test/diesel_index.json"):read("a")
         assert.equals("string", type(index_json_str))
     end)
 
     it("read meta file", function()
-        meta_json_str = io.open("test/diesel_meta.json"):read("a")
+        local meta_json_str = io.open("test/diesel_meta.json"):read("a")
         assert.equals("string", type(meta_json_str))
+        meta_json = api.parse_json(meta_json_str)
     end)
 
     it("parse crate", function()
-        local crate = api.parse_crate(index_json_str, meta_json_str)
+        local crate = api.parse_crate(index_json_str, meta_json)
         assert.is_not_nil(crate)
 
         ---@type ApiCrate

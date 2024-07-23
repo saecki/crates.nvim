@@ -66,7 +66,7 @@ local JSON_DECODE_OPTS = { luanil = { object = true, array = true } }
 ---comment
 ---@param json_str string
 ---@return table
-local function parse_json(json_str)
+function M.parse_json(json_str)
     ---@type any
     local json = vim.json.decode(json_str, JSON_DECODE_OPTS)
     assert(type(json) == "table")
@@ -180,7 +180,7 @@ end
 ---@param json_str string
 ---@return ApiCrateSummary[]?
 function M.parse_search(json_str)
-    local json = parse_json(json_str)
+    local json = M.parse_json(json_str)
     if not (json and json.crates) then
         return
     end
@@ -304,7 +304,7 @@ function M.parse_crate(index_json_str, meta_json)
     ---@type table<string,ApiVersion>
     local versions = {}
     for _, line in ipairs(lines) do
-        local json = parse_json(line)
+        local json = M.parse_json(line)
         assert(json.vers ~= nil)
 
         ---@type ApiVersion
@@ -546,7 +546,7 @@ local function fetch_crate(name, callbacks)
             -- the crates.io api is case and hyphen/underscore insensitive, but the sparse index
             -- requires the exact crate name. If the name doesn't match refetch the index with the
             -- exact name.
-            local ok, json = pcall(parse_json, json_str)
+            local ok, json = pcall(M.parse_json, json_str)
             meta_json = (ok and json) or nil
             if ok and json.crate and json.crate.id ~= name then
                 refetch = true
