@@ -139,7 +139,7 @@ local function start_job(url, on_exit)
 end
 
 ---@param job Job
-local function cancel_job(job)
+local function kill_job(job)
     if job.handle then
         job.handle:kill(SIGTERM)
     end
@@ -295,9 +295,9 @@ local function sort_feature_members(a, b)
 end
 
 ---@param index_json_str string
----@param meta_json_str string
+---@param meta_json table<string,any>
 ---@return ApiCrate|nil
-function M.parse_crate(index_json_str, meta_json_str)
+function M.parse_crate(index_json_str, meta_json)
     local lines = vim.split(index_json_str, '\n', { trimempty = true })
 
     -- parse versions from sparse index file
@@ -402,10 +402,8 @@ function M.parse_crate(index_json_str, meta_json_str)
     end
 
     -- parse remaining metadata from api data
-    local json = parse_json(meta_json_str)
-
     ---@type table<string,any>
-    local c = json.crate
+    local c = meta_json.crate
     ---@type ApiCrate
     local crate = {
         name = c.id,
@@ -424,7 +422,7 @@ function M.parse_crate(index_json_str, meta_json_str)
     ---@diagnostic disable-next-line: no-unknown
     for _, ct_id in ipairs(c.categories) do
         ---@diagnostic disable-next-line: no-unknown
-        for _, ct in ipairs(json.categories) do
+        for _, ct in ipairs(meta_json.categories) do
             if ct.id == ct_id then
                 table.insert(crate.categories, ct.category)
             end
@@ -434,7 +432,7 @@ function M.parse_crate(index_json_str, meta_json_str)
     ---@diagnostic disable-next-line: no-unknown
     for _, kw_id in ipairs(c.keywords) do
         ---@diagnostic disable-next-line: no-unknown
-        for _, kw in ipairs(json.keywords) do
+        for _, kw in ipairs(meta_json.keywords) do
             if kw.id == kw_id then
                 table.insert(crate.keywords, kw.keyword)
             end
@@ -442,7 +440,7 @@ function M.parse_crate(index_json_str, meta_json_str)
     end
 
     ---@diagnostic disable-next-line: no-unknown
-    for i, v in ipairs(json.versions) do
+    for i, v in ipairs(meta_json.versions) do
         local version = versions[v.num]
         assert(version ~= nil)
         version.created = DateTime.parse_rfc_3339(v.created_at)
@@ -469,8 +467,8 @@ local function fetch_crate(name, callbacks)
     local called = false
     ---@type string?
     local index_json_str = nil
-    ---@type string?
-    local meta_json_str = nil
+    ---@type table<string,any>?
+    local meta_json = nil
 
     ---@param cancelled boolean
     local function parse(cancelled)
@@ -486,12 +484,12 @@ local function fetch_crate(name, callbacks)
             return
         end
 
-        if not (index_json_str and meta_json_str) then
+        if not (index_json_str and meta_json) then
             return
         end
 
         ---@type boolean, ApiCrate|nil
-        local ok, crate = pcall(M.parse_crate, index_json_str, meta_json_str)
+        local ok, crate = pcall(M.parse_crate, index_json_str, meta_json)
         crate = (ok and crate) or nil
 
         for _, c in ipairs(callbacks) do
@@ -507,31 +505,56 @@ local function fetch_crate(name, callbacks)
 
     ---@type { [1]: Job, [2]: Job }
     local jobs = {}
-    do
+
+    local refetch = false
+    ---@param id string
+    local function fetch_index(id)
         ---@type string
         local url
-        if #name == 1 then
-            url = string.format("%s/1/%s", SPARSE_INDEX_ENDPOINT, name)
-        elseif #name == 2 then
-            url = string.format("%s/2/%s", SPARSE_INDEX_ENDPOINT, name)
-        elseif #name == 3 then
-            url = string.format("%s/3/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 1), name)
+        if #id == 1 then
+            url = string.format("%s/1/%s", SPARSE_INDEX_ENDPOINT, id)
+        elseif #id == 2 then
+            url = string.format("%s/2/%s", SPARSE_INDEX_ENDPOINT, id)
+        elseif #id == 3 then
+            url = string.format("%s/3/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(id, 1, 1), id)
         else
-            url = string.format("%s/%s/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(name, 1, 2), string.sub(name, 3, 4),
-                name)
+            url = string.format("%s/%s/%s/%s", SPARSE_INDEX_ENDPOINT, string.sub(id, 1, 2), string.sub(id, 3, 4),
+                id)
         end
 
         jobs[1] = start_job(url, function(json_str, cancelled)
+            if refetch and name == id then
+                return
+            end
+
             index_json_str = json_str
             parse(cancelled)
         end)
     end
+    fetch_index(name)
+
     do
         ---@type string
         local url = string.format("%s/crates/%s", API_ENDPOINT, name)
 
         jobs[2] = start_job(url, function(json_str, cancelled)
-            meta_json_str = json_str
+            if cancelled then
+                parse(cancelled)
+                return
+            end
+
+            -- the crates.io api is case and hyphen/underscore insensitive, but the sparse index
+            -- requires the exact crate name. If the name doesn't match refetch the index with the
+            -- exact name.
+            local ok, json = pcall(parse_json, json_str)
+            meta_json = (ok and json) or nil
+            if ok and json.crate and json.crate.id ~= name then
+                refetch = true
+                kill_job(jobs[1])
+                fetch_index(json.crate.id)
+                return
+            end
+
             parse(cancelled)
         end)
     end
@@ -624,11 +647,11 @@ end
 
 function M.cancel_jobs()
     for _, r in pairs(M.crate_jobs) do
-        cancel_job(r.jobs[1])
-        cancel_job(r.jobs[2])
+        kill_job(r.jobs[1])
+        kill_job(r.jobs[2])
     end
     for _, r in pairs(M.search_jobs) do
-        cancel_job(r.job)
+        kill_job(r.job)
     end
 
     M.crate_jobs = {}
@@ -637,7 +660,7 @@ end
 
 function M.cancel_search_jobs()
     for _, r in pairs(M.search_jobs) do
-        cancel_job(r.job)
+        kill_job(r.job)
     end
     M.search_jobs = {}
 end
