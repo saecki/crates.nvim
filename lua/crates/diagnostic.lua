@@ -22,6 +22,7 @@ local CrateScope = {
     VERS = 1,
     DEF = 2,
     FEAT = 3,
+    PACKAGE = 4,
 }
 
 ---@param section TomlSection
@@ -90,6 +91,12 @@ local function crate_diagnostic(crate, kind, severity, scope, data)
             d.col = crate.feat.col.s
             d.end_col = crate.feat.col.e
         end
+    elseif scope == CrateScope.PACKAGE then
+        local pkg_line, pkg_col = crate:package_pos()
+        d.lnum = pkg_line
+        d.end_lnum = pkg_line
+        d.col = pkg_col.s
+        d.end_col = pkg_col.e
     end
 
     return d
@@ -250,7 +257,7 @@ function M.process_api_crate(crate, api_crate)
                     crate,
                     CratesDiagnosticKind.CRATE_NAME_CASE,
                     vim.diagnostic.severity.ERROR,
-                    nil,
+                    CrateScope.PACKAGE,
                     { crate = crate, crate_name = api_crate.name }
                 ))
             end

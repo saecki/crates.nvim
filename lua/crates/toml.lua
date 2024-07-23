@@ -203,6 +203,15 @@ function Crate:package()
     return self.pkg and self.pkg.text or self.explicit_name
 end
 
+---@return integer, Span
+function Crate:package_pos()
+    if self.pkg then
+        return self.pkg.line, self.pkg.col
+    else
+        return self.lines.s, self.explicit_name_col
+    end
+end
+
 ---@return string
 function Crate:cache_key()
     return string.format(

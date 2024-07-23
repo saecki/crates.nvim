@@ -255,7 +255,7 @@ local function complete_crates(buf, prefix, line, col, crate)
         table.insert(results, {
             label = result.name,
             kind = CompletionItemKind.VALUE,
-            detail = table.concat({ result.newest_version, result.description}, "\n"),
+            detail = table.concat({ result.newest_version, result.description }, "\n"),
             textEditText = insertText(result.name, result.newest_version),
             additionalTextEdits = additionalTextEdits(result.newest_version),
         })
@@ -296,16 +296,10 @@ local function complete()
     end
 
     if state.cfg.completion.crates.enabled then
-        if crate.pkg then
-            if crate.pkg.line == line and crate.pkg.col:moved(0, 1):contains(col) then
-                local prefix = crate.pkg.text:sub(1, col - crate.pkg.col.s)
-                return complete_crates(buf, prefix, line, crate.pkg.col, crate);
-            end
-        else
-            if crate.lines.s == line and crate.explicit_name_col:moved(0, 1):contains(col) then
-                local prefix = crate.explicit_name:sub(1, col - crate.explicit_name_col.s)
-                return complete_crates(buf, prefix, line, crate.explicit_name_col, crate);
-            end
+        local pkg_line, pkg_col = crate:package_pos()
+        if pkg_line == line and pkg_col:moved(0, 1):contains(col) then
+            local prefix = crate:package():sub(1, col - pkg_col.s)
+            return complete_crates(buf, prefix, line, pkg_col, crate);
         end
     end
 
