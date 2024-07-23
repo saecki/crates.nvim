@@ -39,7 +39,7 @@ local goto_dep = async.wrap(function(ctx, line)
     popup.transaction = transaction
 
     local crate_package = selected_dependency.package or selected_dependency.name
-    ---@type ApiCrate|nil
+    ---@type ApiCrate?
     local crate = state.api_cache[crate_package]
 
     if not crate then

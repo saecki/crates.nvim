@@ -2,7 +2,7 @@ local M = {}
 
 ---@class CoqCompletionSource
 ---@field name string
----@field fn fun(ctx: table, callback: fun(list: CompletionList|nil))
+---@field fn fun(ctx: table, callback: fun(list: CompletionList?))
 
 local completion = require("crates.completion.common")
 
@@ -18,7 +18,7 @@ local function new_uid(map)
 end
 
 ---@param _ctx table
----@param callback fun(list: CompletionList|nil)
+---@param callback fun(list: CompletionList?)
 function M.complete(_ctx, callback)
     if vim.fn.expand("%:t") ~= "Cargo.toml" then
         callback(nil)

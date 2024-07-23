@@ -279,7 +279,7 @@ end
 
 ---@param crate TomlCrate
 ---@param version SemVer
----@param alt boolean|nil
+---@param alt boolean?
 ---@return string
 function M.version_text(crate, version, alt)
     local smart = state.cfg.smart_insert
@@ -333,7 +333,7 @@ end
 ---@param buf integer
 ---@param crate TomlCrate
 ---@param version SemVer
----@param alt boolean|nil
+---@param alt boolean?
 ---@return Span
 function M.set_version(buf, crate, version, alt)
     local text = M.version_text(crate, version, alt)
@@ -343,7 +343,7 @@ end
 ---@param buf integer
 ---@param crates table<string,TomlCrate>
 ---@param info table<string,CrateInfo>
----@param alt boolean|nil
+---@param alt boolean?
 function M.upgrade_crates(buf, crates, info, alt)
     for k, c in pairs(crates) do
         local i = info[k]
@@ -360,7 +360,7 @@ end
 ---@param buf integer
 ---@param crates table<string,TomlCrate>
 ---@param info table<string,CrateInfo>
----@param alt boolean|nil
+---@param alt boolean?
 function M.update_crates(buf, crates, info, alt)
     for k, c in pairs(crates) do
         local i = info[k]
@@ -570,7 +570,7 @@ end
 
 ---@param buf integer
 ---@param crate TomlCrate
----@param feature TomlFeature|nil
+---@param feature TomlFeature?
 ---@return Span
 function M.disable_def_features(buf, crate, feature)
     if feature then

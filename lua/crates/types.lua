@@ -3,9 +3,9 @@ local M = {}
 ---@class CrateInfo
 ---@field lines Span
 ---@field vers_line integer
----@field vers_match ApiVersion|nil
----@field vers_update ApiVersion|nil
----@field vers_upgrade ApiVersion|nil
+---@field vers_match ApiVersion?
+---@field vers_update ApiVersion?
+---@field vers_upgrade ApiVersion?
 ---@field match_kind MatchKind
 
 ---NOTE: Used to index the user configuration, so keys have to be in sync
@@ -31,9 +31,9 @@ M.MatchKind = {
 ---@field created DateTime
 ---@field updated DateTime
 ---@field downloads integer
----@field homepage string|nil
----@field repository string|nil
----@field documentation string|nil
+---@field homepage string?
+---@field repository string?
+---@field documentation string?
 ---@field categories string[]
 ---@field keywords string[]
 ---@field versions ApiVersion[]
@@ -95,7 +95,7 @@ M.Cond = {
 ---@field end_col integer
 ---@field severity integer
 ---@field kind CratesDiagnosticKind
----@field data table<string,any>|nil
+---@field data table<string,any>?
 ---@field message_args any[]?
 local CratesDiagnostic = {}
 M.CratesDiagnostic = CratesDiagnostic
@@ -166,7 +166,7 @@ end
 
 ---Returns the feature directly matching `name` or alternatively in `dep:name` syntax.
 ---@param name string
----@return ApiFeature|nil
+---@return ApiFeature?
 function ApiFeatures:get_feat(name)
     return self.map[name] or self.map["dep:" .. name]
 end
@@ -178,11 +178,11 @@ function ApiFeatures:insert(feat)
 end
 
 ---@class SemVer
----@field major integer|nil
----@field minor integer|nil
----@field patch integer|nil
----@field pre string|nil
----@field meta string|nil
+---@field major integer?
+---@field minor integer?
+---@field patch integer?
+---@field pre string?
+---@field meta string?
 local SemVer = {}
 M.SemVer = SemVer
 
@@ -264,7 +264,7 @@ function Span:moved(s, e)
     return Span.new(self.s + s, self.e + e)
 end
 
----@return fun(): integer|nil
+---@return fun(): integer?
 function Span:iter()
     local i = self.s
     local e = self.e

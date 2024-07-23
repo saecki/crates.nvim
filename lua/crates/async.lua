@@ -36,7 +36,7 @@ end
 function M.throttle(f, timeout)
     local last_call = 0;
 
-    ---@type vim.loop.Timer|nil
+    ---@type vim.loop.Timer?
     local timer = nil
 
     return function(...)

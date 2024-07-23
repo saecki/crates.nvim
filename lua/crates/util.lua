@@ -43,21 +43,21 @@ function M.selected_lines()
 end
 
 ---@param buf integer
----@return table<string, TomlCrate>|nil
+---@return table<string, TomlCrate>?
 function M.get_buf_crates(buf)
     local cache = state.buf_cache[buf]
     return cache and cache.crates
 end
 
 ---@param buf integer
----@return table<string, CrateInfo>|nil
+---@return table<string, CrateInfo>?
 function M.get_buf_info(buf)
     local cache = state.buf_cache[buf]
     return cache and cache.info
 end
 
 ---@param buf integer
----@return CratesDiagnostic[]|nil
+---@return CratesDiagnostic[]?
 function M.get_buf_diagnostics(buf)
     local cache = state.buf_cache[buf]
     return cache and cache.diagnostics
@@ -65,7 +65,7 @@ end
 
 ---@param buf integer
 ---@param key string
----@return CrateInfo|nil
+---@return CrateInfo?
 function M.get_crate_info(buf, key)
     local info = M.get_buf_info(buf)
     return info and info[key]
@@ -92,11 +92,11 @@ function M.get_line_crates(buf, lines)
     return line_crates
 end
 
----@param versions ApiVersion[]|nil
----@param reqs Requirement[]|nil
----@return ApiVersion|nil
----@return ApiVersion|nil
----@return ApiVersion|nil
+---@param versions ApiVersion[]?
+---@param reqs Requirement[]?
+---@return ApiVersion?
+---@return ApiVersion?
+---@return ApiVersion?
 function M.get_newest(versions, reqs)
     if not versions or not next(versions) then
         return nil
@@ -104,7 +104,7 @@ function M.get_newest(versions, reqs)
 
     local allow_pre = reqs and semver.allows_pre(reqs) or false
 
-    ---@type ApiVersion|nil, ApiVersion|nil, ApiVersion|nil
+    ---@type ApiVersion?, ApiVersion?, ApiVersion?
     local newest_yanked, newest_pre, newest
 
     for _, v in ipairs(versions) do

@@ -11,8 +11,8 @@ local M = {
 ---@class ServerOpts
 ---@field capabilities table
 ---@field handlers table<string,fun(method: string, params: any, callback: function)>
----@field on_request fun(method: string, params: any)|nil
----@field on_notify fun(method: string, params: any)|nil
+---@field on_request fun(method: string, params: any)?
+---@field on_notify fun(method: string, params: any)?
 
 ---@class CodeAction
 ---@field title string
@@ -40,7 +40,7 @@ function M.server(opts)
 
         ---@param method string
         ---@param params any
-        ---@param callback fun(method: string|nil, params: any)
+        ---@param callback fun(method: string?, params: any)
         ---@return boolean
         ---@return integer
         function srv.request(method, params, callback)
@@ -139,7 +139,7 @@ function M.start_server()
             end,
             ---@param _method string
             ---@param _params any
-            ---@param callback fun(err: nil, items: CompletionList|nil)
+            ---@param callback fun(err: nil, items: CompletionList?)
             ["textDocument/completion"] = function(_method, _params, callback)
                 completion.complete(function(items)
                     callback(nil, items)

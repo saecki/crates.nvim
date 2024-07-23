@@ -12,7 +12,7 @@ function DateTime.new(epoch)
 end
 
 ---@param str string
----@return DateTime|nil
+---@return DateTime?
 function DateTime.parse_rfc_3339(str)
     -- lua regex suports no {n} occurences
     local pat = "^([0-9][0-9][0-9][0-9])%-([0-9][0-9])%-([0-9][0-9])" -- date

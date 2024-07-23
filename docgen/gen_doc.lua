@@ -8,7 +8,7 @@ local config = require("lua.crates.config.init")
 local highlight = require("lua.crates.highlight")
 local version = "unstable"
 
----@param line_iter fun(): string|nil
+---@param line_iter fun(): string?
 ---@param line string
 local function skip_lines_until(line_iter, line)
     for l in line_iter do
@@ -45,7 +45,7 @@ end
 local function gen_markdown_functions(lines)
     local file = io.open("lua/crates/init.lua", "r")
     ---@cast file -nil
-    ---@type fun(): string|nil
+    ---@type fun(): string?
     local line_iter = file:lines("*l")
     skip_lines_until(line_iter, "^local M = {$")
 
@@ -54,7 +54,7 @@ local function gen_markdown_functions(lines)
             break
         end
         if l ~= "" then
-            ---@type string|nil, string|nil, string|nil|nil
+            ---@type string?, string?, string??
             local params, ret_type = l:match("^%s*%-%-%-@type fun%(([^%)]*)%)(.*)$")
             if params then
                 local next_line = line_iter()
@@ -90,7 +90,7 @@ local function gen_markdown_subcommands(lines)
             break
         end
         if l ~= "" then
-            ---@type string|nil
+            ---@type string?
             local name = l:match("^%s*{%s*\"([^\"]+)\"%s*,%s*[^%s]+%s*},$")
             if name then
                 local doc_ref = string.format("- `%s()`", name)
@@ -149,7 +149,7 @@ local function gen_vimdoc_functions(lines)
 
     local file = io.open("lua/crates/init.lua", "r")
     ---@cast file -nil
-    ---@type fun(): string|nil
+    ---@type fun(): string?
     local line_iter = file:lines("*l")
     skip_lines_until(line_iter, "^local M = {$")
 
@@ -158,7 +158,7 @@ local function gen_vimdoc_functions(lines)
             break
         end
         if l ~= "" then
-            ---@type string|nil, string|nil
+            ---@type string?, string?
             local params, ret_type = l:match("^%s*%-%-%-@type fun%(([^%)]*)%)(.*)$")
             if params and ret_type then
                 local next_line = line_iter()
@@ -358,7 +358,7 @@ local function gen_def_config(lines, indent, path, schema)
 end
 
 ---@param l string
----@return string|nil, integer|nil
+---@return string?, integer?
 local function parse_placeholder(l)
     ---@type integer, string
     local preceeding_spaces, placeholder = l:match("^%s*()<SHARED%:([a-zA-Z0-9_%.]+)>$")
@@ -377,7 +377,7 @@ local function gen_vim_doc()
 
     local infile = io.open("docgen/templates/crates.txt.in", "r")
     ---@cast infile -nil
-    ---@type fun(): string|nil
+    ---@type fun(): string?
     local line_iter = infile:lines("*l")
     for l in line_iter do
         local ph, indent = parse_placeholder(l)
@@ -416,7 +416,7 @@ local function gen_markdown(inpath, outpath)
 
     local infile = io.open(inpath, "r")
     ---@cast infile -nil
-    ---@type fun(): string|nil
+    ---@type fun(): string?
     local line_iter = infile:lines("*l")
     for l in line_iter do
         local ph, indent = parse_placeholder(l)

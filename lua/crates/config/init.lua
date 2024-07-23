@@ -37,7 +37,7 @@ local M = {}
 ---@field name string
 ---@field type SchemaType|SchemaType[]
 ---@field default any
----@field default_text string|nil
+---@field default_text string?
 ---@field description string
 
 ---@class HiddenFieldSchemaElement
@@ -49,11 +49,11 @@ local M = {}
 ---@class DeprecatedSchemaElement
 ---@field name string
 ---@field type SchemaType|SchemaType[]
----@field deprecated Deprecated|nil
+---@field deprecated Deprecated?
 
 ---@class Deprecated
----@field new_field string[]|nil
----@field hard boolean|nil
+---@field new_field string[]?
+---@field hard boolean?
 
 ---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param elem SchemaElement
@@ -1679,7 +1679,7 @@ end
 ---@param user_config table<string,any>
 local function handle_deprecated(path, schema, root_config, user_config)
     for k, v in pairs(user_config) do
-        ---@type SchemaElement|nil
+        ---@type SchemaElement?
         local elem
         if type(k) == "string" then
             elem = schema[k]
@@ -1735,7 +1735,7 @@ end
 local function validate_schema(path, schema, user_config)
     for k, v in pairs(user_config) do
         local p = join_path(path, k)
-        ---@type SchemaElement|nil
+        ---@type SchemaElement?
         local elem
         if type(k) == "string" then
             elem = schema[k]
@@ -1865,7 +1865,7 @@ local function build_config(schema, user_config)
 end
 
 ---comment
----@param user_config table<string,any>|nil
+---@param user_config table<string,any>?
 ---@return Config
 function M.build(user_config)
     user_config = user_config or {}

@@ -4,7 +4,7 @@ local completion = require("crates.completion.common")
 ---@field register_source fun(name: string, src: CmpCompletionSource)
 
 ---@class CmpCompletionSource
----@field registered_source boolean|nil
+---@field registered_source boolean?
 local M = {}
 
 ---@class LspCompletionItemKind
@@ -44,14 +44,14 @@ local M = {}
 
 ---@class LspCompletionItem
 ---@field label string
----@field kind integer|nil -- CompletionItemKind|nil
----@field detail string|nil
----@field documentation LspMarkupContent|string|nil
----@field deprecated boolean|nil
----@field preselect boolean|nil
----@field sortText string|nil
----@field filterText string|nil
----@field insertText string|nil
+---@field kind integer? -- CompletionItemKind?
+---@field detail string?
+---@field documentation LspMarkupContent|string?
+---@field deprecated boolean?
+---@field preselect boolean?
+---@field sortText string?
+---@field filterText string?
+---@field insertText string?
 
 ---@class CmpSourceBaseApiParams
 ---@field option table
@@ -98,7 +98,7 @@ end
 ---Invoke completion (required).
 ---  If you want to abort completion, just call the callback without arguments.
 ---@param _params CmpSourceBaseApiParams
----@param callback fun(list: CompletionList|nil)
+---@param callback fun(list: CompletionList?)
 function M:complete(_params, callback)
     completion.complete(callback)
 end

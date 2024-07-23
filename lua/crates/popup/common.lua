@@ -5,10 +5,10 @@ local state = require("crates.state")
 ---@field POPUP_NS integer
 ---@field LOADING_NS integer
 --
----@field win integer|nil
----@field buf integer|nil
----@field type PopupType|nil
----@field transaction number|nil
+---@field win integer?
+---@field buf integer?
+---@field type PopupType?
+---@field transaction number?
 local M = {
     TOP_OFFSET = 2,
     POPUP_NS = vim.api.nvim_create_namespace("crates.nvim.popup"),
@@ -25,16 +25,16 @@ M.Type = {
 }
 
 ---@class WinOpts
----@field focus boolean|nil
----@field line integer|nil -- 1 indexed
----@field update boolean|nil
+---@field focus boolean?
+---@field line integer? -- 1 indexed
+---@field update boolean?
 
 ---@class HighlightText
 ---@field text string
 ---@field hl string
 
 ---0-indexed
----@param line integer|nil
+---@param line integer?
 function M.focus(line)
     if M.win and vim.api.nvim_win_is_valid(M.win) then
         vim.api.nvim_set_current_win(M.win)
@@ -204,7 +204,7 @@ function M.open_win(width, height, title, text, opts, configure)
     end
 end
 
----@param transaction number|nil
+---@param transaction number?
 function M.hide_loading_indicator(transaction)
     if transaction and transaction ~= M.transaction then
         return

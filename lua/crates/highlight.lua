@@ -1,12 +1,12 @@
 local M = {}
 
 ---@class HighlightGroup
----@field default boolean|nil
----@field ctermfg integer|nil
----@field fg string|nil
----@field ctermbg integer|nil
----@field bg string|nil
----@field link string|nil
+---@field default boolean?
+---@field ctermfg integer?
+---@field fg string?
+---@field ctermbg integer?
+---@field bg string?
+---@field link string?
 
 ---@type {[1]: string, [2]: HighlightGroup}[]
 M.highlights = {

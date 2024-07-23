@@ -29,7 +29,7 @@ function M.use_git_source()
     end
 end
 
----@param alt boolean|nil
+---@param alt boolean?
 function M.upgrade_crate(alt)
     local buf = util.current_buf()
     local line = util.cursor_pos()
@@ -40,7 +40,7 @@ function M.upgrade_crate(alt)
     end
 end
 
----@param alt boolean|nil
+---@param alt boolean?
 function M.upgrade_crates(alt)
     local buf = util.current_buf()
     local lines = util.selected_lines()
@@ -51,7 +51,7 @@ function M.upgrade_crates(alt)
     end
 end
 
----@param alt boolean|nil
+---@param alt boolean?
 function M.upgrade_all_crates(alt)
     local buf = util.current_buf()
     local cache = state.buf_cache[buf]
@@ -60,7 +60,7 @@ function M.upgrade_all_crates(alt)
     end
 end
 
----@param alt boolean|nil
+---@param alt boolean?
 function M.update_crate(alt)
     local buf = util.current_buf()
     local line = util.cursor_pos()
@@ -81,7 +81,7 @@ function M.update_crates(alt)
     end
 end
 
----@param alt boolean|nil
+---@param alt boolean?
 function M.update_all_crates(alt)
     local buf = util.current_buf()
     local cache = state.buf_cache[buf]

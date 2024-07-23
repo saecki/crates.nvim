@@ -16,10 +16,10 @@ local M = {}
 ---@field pref PopupType
 ---@field crate TomlCrate
 ---@field versions ApiVersion[]
----@field newest ApiVersion|nil
----@field feature ApiFeature|nil
+---@field newest ApiVersion?
+---@field feature ApiFeature?
 
----@return LineCrateInfo|nil
+---@return LineCrateInfo?
 local function line_crate_info()
     local buf = util.current_buf()
     local line, col = util.cursor_pos()

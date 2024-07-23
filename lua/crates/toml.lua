@@ -6,12 +6,12 @@ local M = {}
 
 ---@class TomlSection
 ---@field text string
----@field invalid boolean|nil
----@field workspace boolean|nil
----@field target string|nil
+---@field invalid boolean?
+---@field workspace boolean?
+---@field target string?
 ---@field kind TomlSectionKind
----@field name string|nil
----@field name_col Span|nil
+---@field name string?
+---@field name_col Span?
 ---@field lines Span
 ---@field header_col Span
 local Section = {}
@@ -99,7 +99,7 @@ M.TomlFeature = TomlFeature
 
 ---@class Quotes
 ---@field s string
----@field e string|nil
+---@field e string?
 
 
 ---@param text string
@@ -112,9 +112,9 @@ function M.parse_crate_features(text)
     ---@param fs integer
     ---@param f string
     ---@param fe integer
-    ---@param qe string|nil
+    ---@param qe string?
     ---@param fde integer
-    ---@param c string|nil
+    ---@param c string?
     for fds, qs, fs, f, fe, qe, fde, c in text:gmatch([[[,]?()%s*(["'])()([^,"']*)()(["']?)%s*()([,]?)]]) do
         ---@type TomlFeature
         local feat = {
@@ -168,7 +168,7 @@ function Crate:vers_reqs()
 end
 
 ---@param name string
----@return TomlFeature|nil
+---@return TomlFeature?
 function Crate:get_feat(name)
     if not self.feat or not self.feat.items then
         return nil
@@ -229,7 +229,7 @@ function Section.new(obj)
     return setmetatable(obj, { __index = Section })
 end
 
----@param override_name string|nil
+---@param override_name string?
 ---@return string
 function Section:display(override_name)
     local text = "["
@@ -263,7 +263,7 @@ end
 ---@param text string
 ---@param line_nr integer
 ---@param header_col Span
----@return TomlSection|nil
+---@return TomlSection?
 function M.parse_section(text, line_nr, header_col)
     ---@type string, integer, string
     local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
@@ -502,7 +502,7 @@ end
 ---comment
 ---@param line string
 ---@param line_nr integer
----@return TomlCrate|nil
+---@return TomlCrate?
 function M.parse_inline_crate(line, line_nr)
     -- plain version
     do

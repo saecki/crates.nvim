@@ -110,7 +110,7 @@ end
 ---@param feat TomlFeature
 ---@param kind CratesDiagnosticKind
 ---@param severity integer
----@param data table<string,any>|nil
+---@param data table<string,any>?
 ---@return CratesDiagnostic
 local function feat_diagnostic(crate, feat, kind, severity, data)
     return CratesDiagnostic.new({
@@ -238,7 +238,7 @@ function M.process_crates(sections, crates)
 end
 
 ---@param crate TomlCrate
----@param api_crate ApiCrate|nil
+---@param api_crate ApiCrate?
 ---@return CrateInfo
 ---@return CratesDiagnostic[]
 function M.process_api_crate(crate, api_crate)

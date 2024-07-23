@@ -106,37 +106,37 @@ local M = {
     ---@type fun()
     toggle = core.toggle,
     ---Update data. Optionally specify which `p#buf` to update.
-    ---@type fun(buf: integer|nil)
+    ---@type fun(buf: integer?)
     update = core.update,
     ---Reload data (clears cache). Optionally specify which `p#buf` to reload.
-    ---@type fun(buf: integer|nil)
+    ---@type fun(buf: integer?)
     reload = core.reload,
 
     ---Upgrade the crate on the current line.
     ---If the `p#alt` flag is passed as true, the opposite of the `c#smart_insert` config
     ---option will be used to insert the version.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     upgrade_crate = actions.upgrade_crate,
     ---Upgrade the crates on the lines visually selected.
     ---See `f#crates.upgrade_crate()`.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     upgrade_crates = actions.upgrade_crates,
     ---Upgrade all crates in the buffer.
     ---See `f#crates.upgrade_crate()`.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     upgrade_all_crates = actions.upgrade_all_crates,
 
     ---Update the crate on the current line.
     ---See `f#crates.upgrade_crate()`.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     update_crate = actions.update_crate,
     ---Update the crates on the lines visually selected.
     ---See `f#crates.upgrade_crate()`.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     update_crates = actions.update_crates,
     ---Update all crates in the buffer.
     ---See `f#crates.upgrade_crate()`.
-    ---@type fun(alt: boolean|nil)
+    ---@type fun(alt: boolean?)
     update_all_crates = actions.update_all_crates,
 
     ---Expand a plain crate declaration into an inline table.
@@ -186,7 +186,7 @@ local M = {
     show_dependencies_popup = popup.show_dependencies,
     ---Focus the popup (jump into the floating window).
     ---Optionally specify the line to jump to, inside the popup.
-    ---@type fun(line: integer|nil)
+    ---@type fun(line: integer?)
     focus_popup = popup.focus,
     ---Hide the popup.
     ---@type fun()

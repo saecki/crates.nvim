@@ -380,41 +380,41 @@ toggle()                                                     *crates.toggle()*
     Enable or disable UI elements (virtual text and diagnostics).
 
 
-update({buf}: `integer|nil`)                                 *crates.update()*
+update({buf}: `integer?`)                                    *crates.update()*
     Update data. Optionally specify which {buf} to update.
 
 
-reload({buf}: `integer|nil`)                                 *crates.reload()*
+reload({buf}: `integer?`)                                    *crates.reload()*
     Reload data (clears cache). Optionally specify which {buf} to reload.
 
 
-upgrade_crate({alt}: `boolean|nil`)                   *crates.upgrade_crate()*
+upgrade_crate({alt}: `boolean?`)                      *crates.upgrade_crate()*
     Upgrade the crate on the current line.
     If the {alt} flag is passed as true, the opposite of the |crates-config-smart_insert| config
     option will be used to insert the version.
 
 
-upgrade_crates({alt}: `boolean|nil`)                 *crates.upgrade_crates()*
+upgrade_crates({alt}: `boolean?`)                    *crates.upgrade_crates()*
     Upgrade the crates on the lines visually selected.
     See `crates.upgrade_crate()`.
 
 
-upgrade_all_crates({alt}: `boolean|nil`)         *crates.upgrade_all_crates()*
+upgrade_all_crates({alt}: `boolean?`)            *crates.upgrade_all_crates()*
     Upgrade all crates in the buffer.
     See `crates.upgrade_crate()`.
 
 
-update_crate({alt}: `boolean|nil`)                     *crates.update_crate()*
+update_crate({alt}: `boolean?`)                        *crates.update_crate()*
     Update the crate on the current line.
     See `crates.upgrade_crate()`.
 
 
-update_crates({alt}: `boolean|nil`)                   *crates.update_crates()*
+update_crates({alt}: `boolean?`)                      *crates.update_crates()*
     Update the crates on the lines visually selected.
     See `crates.upgrade_crate()`.
 
 
-update_all_crates({alt}: `boolean|nil`)           *crates.update_all_crates()*
+update_all_crates({alt}: `boolean?`)              *crates.update_all_crates()*
     Update all crates in the buffer.
     See `crates.upgrade_crate()`.
 
@@ -477,7 +477,7 @@ show_dependencies_popup()                   *crates.show_dependencies_popup()*
     Same as `crates.show_popup()` but always show dependencies.
 
 
-focus_popup({line}: `integer|nil`)                      *crates.focus_popup()*
+focus_popup({line}: `integer?`)                         *crates.focus_popup()*
     Focus the popup (jump into the floating window).
     Optionally specify the line to jump to, inside the popup.
 

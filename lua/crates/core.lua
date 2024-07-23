@@ -9,7 +9,7 @@ local util = require("crates.util")
 
 ---@class Core
 ---@field throttled_updates table<integer,fun()[]>
----@field inner_throttled_update fun(buf: integer|nil, reload: boolean|nil)
+---@field inner_throttled_update fun(buf: integer?, reload: boolean?)
 local M = {
     throttled_updates = {},
 }
@@ -50,8 +50,8 @@ M.load_crate = async.wrap(function(crate_name)
     end
 end)
 
----@param buf integer|nil
----@param reload boolean|nil
+---@param buf integer?
+---@param reload boolean?
 local function update(buf, reload)
     buf = buf or util.current_buf()
 
@@ -110,8 +110,8 @@ local function update(buf, reload)
     M.throttled_updates[buf] = nil
 end
 
----@param buf integer|nil
----@param reload boolean|nil
+---@param buf integer?
+---@param reload boolean?
 function M.throttled_update(buf, reload)
     buf = buf or util.current_buf()
     local existing = M.throttled_updates[buf]
@@ -167,12 +167,12 @@ function M.toggle()
     end
 end
 
----@param buf integer|nil
+---@param buf integer?
 function M.update(buf)
     update(buf, false)
 end
 
----@param buf integer|nil
+---@param buf integer?
 function M.reload(buf)
     update(buf, true)
 end

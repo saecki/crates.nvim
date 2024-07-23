@@ -15,7 +15,7 @@ local M = {}
 
 ---@param ctx VersContext
 ---@param line integer
----@param alt boolean|nil
+---@param alt boolean?
 local function select_version(ctx, line, alt)
     local index = popup.item_index(line)
     local crate = ctx.crate

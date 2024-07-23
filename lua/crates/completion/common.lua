@@ -28,11 +28,11 @@ local M = {
 
 ---@class CompletionItem
 ---@field label string
----@field kind integer|nil -- CompletionItemKind|nil
----@field deprecated boolean|nil
----@field sortText string|nil
----@field insertText string|nil
----@field cmp CmpCompletionExtension|nil
+---@field kind integer? -- CompletionItemKind?
+---@field deprecated boolean?
+---@field sortText string?
+---@field insertText string?
+---@field cmp CmpCompletionExtension?
 
 ---@class CmpCompletionExtension
 ---@field kind_text string
@@ -268,7 +268,7 @@ local function complete_crates(buf, prefix, line, col, crate)
     }
 end
 
----@return CompletionList|nil
+---@return CompletionList?
 local function complete()
     local buf = util.current_buf()
 
@@ -337,7 +337,7 @@ local function complete()
     end
 end
 
----@param callback fun(list: CompletionList|nil)
+---@param callback fun(list: CompletionList?)
 function M.complete(callback)
     vim.schedule(async.wrap(function()
         callback(complete())

@@ -46,7 +46,7 @@ local function toggle_feature(ctx, line)
     local features = ctx.version.features
     local entry = ctx.history[ctx.hist_idx]
 
-    ---@type ApiFeature|nil
+    ---@type ApiFeature?
     local selected_feature
     if entry.feature then
         local m = entry.feature.members[index]
@@ -170,7 +170,7 @@ local function goto_feature(ctx, line)
     local version = ctx.version
     local feature = ctx.history[ctx.hist_idx].feature
 
-    ---@type ApiFeature|nil
+    ---@type ApiFeature?
     local selected_feature
     if feature then
         local m = feature.members[index]

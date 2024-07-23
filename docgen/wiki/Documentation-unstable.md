@@ -396,30 +396,30 @@ require("crates").show()
 -- Enable or disable UI elements (virtual text and diagnostics).
 require("crates").toggle()
 -- Update data. Optionally specify which `buf` to update.
-require("crates").update(buf: integer|nil)
+require("crates").update(buf: integer?)
 -- Reload data (clears cache). Optionally specify which `buf` to reload.
-require("crates").reload(buf: integer|nil)
+require("crates").reload(buf: integer?)
 
 -- Upgrade the crate on the current line.
 -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
 -- option will be used to insert the version.
-require("crates").upgrade_crate(alt: boolean|nil)
+require("crates").upgrade_crate(alt: boolean?)
 -- Upgrade the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require("crates").upgrade_crates(alt: boolean|nil)
+require("crates").upgrade_crates(alt: boolean?)
 -- Upgrade all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require("crates").upgrade_all_crates(alt: boolean|nil)
+require("crates").upgrade_all_crates(alt: boolean?)
 
 -- Update the crate on the current line.
 -- See `crates.upgrade_crate()`.
-require("crates").update_crate(alt: boolean|nil)
+require("crates").update_crate(alt: boolean?)
 -- Update the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require("crates").update_crates(alt: boolean|nil)
+require("crates").update_crates(alt: boolean?)
 -- Update all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require("crates").update_all_crates(alt: boolean|nil)
+require("crates").update_all_crates(alt: boolean?)
 
 -- Expand a plain crate declaration into an inline table.
 require("crates").expand_plain_crate_to_inline_table()
@@ -454,7 +454,7 @@ require("crates").show_features_popup()
 require("crates").show_dependencies_popup()
 -- Focus the popup (jump into the floating window).
 -- Optionally specify the line to jump to, inside the popup.
-require("crates").focus_popup(line: integer|nil)
+require("crates").focus_popup(line: integer?)
 -- Hide the popup.
 require("crates").hide_popup()
 

@@ -20,12 +20,12 @@ local M = {
 }
 
 ---@class Job
----@field handle uv.uv_process_t|nil
----@field was_cancelled boolean|nil
+---@field handle uv.uv_process_t?
+---@field was_cancelled boolean?
 
 ---@class CrateJob
 ---@field jobs { [1]: Job, [2]: Job }
----@field callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
+---@field callbacks fun(crate: ApiCrate?, cancelled: boolean)[]
 
 ---@class SearchJob
 ---@field job Job
@@ -33,7 +33,7 @@ local M = {
 
 ---@class QueuedCrateJob
 ---@field name string
----@field callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
+---@field callbacks fun(crate: ApiCrate?, cancelled: boolean)[]
 
 ---@class QueuedSearchJob
 ---@field name string
@@ -74,15 +74,15 @@ local function parse_json(json_str)
 end
 
 ---@param url string
----@param on_exit fun(data: string|nil, cancelled: boolean)
----@return Job|nil
+---@param on_exit fun(data: string?, cancelled: boolean)
+---@return Job?
 local function start_job(url, on_exit)
     ---@type Job
     local job = {}
     ---@type uv.uv_pipe_t
     local stdout = vim.loop.new_pipe()
 
-    ---@type string|nil
+    ---@type string?
     local stdout_str = nil
 
     local opts = {
@@ -146,7 +146,7 @@ local function kill_job(job)
 end
 
 ---@param name string
----@param callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
+---@param callbacks fun(crate: ApiCrate?, cancelled: boolean)[]
 local function enqueue_crate_job(name, callbacks)
     for _, j in ipairs(M.crate_queue) do
         if j.name == name then
@@ -296,7 +296,7 @@ end
 
 ---@param index_json_str string
 ---@param meta_json table<string,any>
----@return ApiCrate|nil
+---@return ApiCrate?
 function M.parse_crate(index_json_str, meta_json)
     local lines = vim.split(index_json_str, '\n', { trimempty = true })
 
@@ -451,7 +451,7 @@ function M.parse_crate(index_json_str, meta_json)
 end
 
 ---@param name string
----@param callbacks fun(crate: ApiCrate|nil, cancelled: boolean)[]
+---@param callbacks fun(crate: ApiCrate?, cancelled: boolean)[]
 local function fetch_crate(name, callbacks)
     local existing = M.crate_jobs[name]
     if existing then
@@ -488,7 +488,7 @@ local function fetch_crate(name, callbacks)
             return
         end
 
-        ---@type boolean, ApiCrate|nil
+        ---@type boolean, ApiCrate?
         local ok, crate = pcall(M.parse_crate, index_json_str, meta_json)
         crate = (ok and crate) or nil
 
@@ -573,9 +573,9 @@ local function fetch_crate(name, callbacks)
 end
 
 ---@param name string
----@return ApiCrate|nil, boolean
+---@return ApiCrate?, boolean
 function M.fetch_crate(name)
-    ---@param resolve fun(crate: ApiCrate|nil, cancelled: boolean)
+    ---@param resolve fun(crate: ApiCrate?, cancelled: boolean)
     return coroutine.yield(function(resolve)
         fetch_crate(name, { resolve })
     end)
@@ -594,7 +594,7 @@ function M.is_fetching_search(name)
 end
 
 ---@param name string
----@param callback fun(crate: ApiCrate|nil, cancelled: boolean)
+---@param callback fun(crate: ApiCrate?, cancelled: boolean)
 local function add_crate_callback(name, callback)
     table.insert(
         M.crate_jobs[name].callbacks,
@@ -603,9 +603,9 @@ local function add_crate_callback(name, callback)
 end
 
 ---@param name string
----@return ApiCrate|nil, boolean
+---@return ApiCrate?, boolean
 function M.await_crate(name)
-    ---@param resolve fun(crate: ApiCrate|nil, cancelled: boolean)
+    ---@param resolve fun(crate: ApiCrate?, cancelled: boolean)
     return coroutine.yield(function(resolve)
         add_crate_callback(name, resolve)
     end)
