@@ -212,7 +212,7 @@
 ---@class LspConfig
 ---@field enabled boolean
 ---@field name string
----@field on_attach fun(client: vim.lsp.Client, bufnr: integer)
+---@field on_attach fun(client: lsp.Client, bufnr: integer)
 ---@field actions boolean
 ---@field completion boolean
 ---@field hover boolean
@@ -405,7 +405,7 @@
 ---@class crates.UserLspConfig
 ---@field public enabled? boolean
 ---@field public name? string
----@field public on_attach? fun(client: vim.lsp.Client, bufnr: integer)
+---@field public on_attach? fun(client: lsp.Client, bufnr: integer)
 ---@field public actions? boolean
 ---@field public completion? boolean
 ---@field public hover? boolean
