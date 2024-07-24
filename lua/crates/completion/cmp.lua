@@ -92,7 +92,7 @@ end
 ---@param _params CmpSourceBaseApiParams
 ---@return string[]
 function M:get_trigger_characters(_params)
-    return completion.trigger_characters
+    return completion.trigger_characters()
 end
 
 ---Invoke completion (required).

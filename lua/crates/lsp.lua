@@ -113,7 +113,7 @@ function M.start_server()
         capabilities = {
             codeActionProvider = state.cfg.lsp.actions,
             completionProvider = state.cfg.lsp.completion and {
-                triggerCharacters = completion.trigger_characters,
+                triggerCharacters = completion.trigger_characters(),
             },
             hoverProvider = state.cfg.lsp.hover,
         },
