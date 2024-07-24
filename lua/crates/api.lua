@@ -80,7 +80,7 @@ local function start_job(url, on_exit)
     ---@type Job
     local job = {}
     ---@type uv.uv_pipe_t
-    local stdout = vim.loop.new_pipe()
+    local stdout = assert(vim.loop.new_pipe())
 
     ---@type string?
     local stdout_str = nil
@@ -99,7 +99,7 @@ local function start_job(url, on_exit)
         local success = code == 0
 
         ---@type uv.uv_check_t
-        local check = vim.loop.new_check()
+        local check = assert(vim.loop.new_check())
         check:start(function()
             if not stdout:is_closing() then
                 return
@@ -440,10 +440,9 @@ function M.parse_crate(index_json_str, meta_json)
     end
 
     ---@diagnostic disable-next-line: no-unknown
-    for i, v in ipairs(meta_json.versions) do
-        local version = versions[v.num]
-        assert(version ~= nil)
-        version.created = DateTime.parse_rfc_3339(v.created_at)
+    for _, v in ipairs(meta_json.versions) do
+        local version = assert(versions[v.num])
+        version.created = assert(DateTime.parse_rfc_3339(v.created_at))
         table.insert(crate.versions, version)
     end
 

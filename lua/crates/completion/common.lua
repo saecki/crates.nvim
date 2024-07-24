@@ -22,6 +22,7 @@ local M = {}
 
 ---@class CompletionItem
 ---@field label string
+---@field detail string?
 ---@field kind integer? -- CompletionItemKind?
 ---@field deprecated boolean?
 ---@field sortText string?
@@ -207,7 +208,7 @@ local function complete_crates(buf, prefix, line, col, crate)
         search = state.search_cache.searches[prefix]
 
         if transaction then
-            local cancelled = ui.hide_search_indicator(buf, transaction)
+            cancelled = ui.hide_search_indicator(buf, transaction)
             if cancelled then
                 return
             end

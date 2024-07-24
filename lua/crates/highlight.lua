@@ -1,14 +1,6 @@
 local M = {}
 
----@class HighlightGroup
----@field default boolean?
----@field ctermfg integer?
----@field fg string?
----@field ctermbg integer?
----@field bg string?
----@field link string?
-
----@type {[1]: string, [2]: HighlightGroup}[]
+---@type {[1]: string, [2]: vim.api.keyset.highlight}[]
 M.highlights = {
     { "CratesNvimSearching",                    { default = true, link = "DiagnosticVirtualTextInfo" } },
     { "CratesNvimLoading",                      { default = true, link = "DiagnosticVirtualTextInfo" } },

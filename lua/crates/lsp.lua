@@ -154,12 +154,14 @@ function M.start_server()
         end,
     })
 
-    ---@type integer
+    local buf = util.current_buf()
+
     local client_id = vim.lsp.start({
         name = state.cfg.lsp.name,
         cmd = server,
         commands = commands,
     }, {
+        bufnr = buf,
         reuse_client = reuse_client,
     })
 
@@ -169,13 +171,11 @@ function M.start_server()
         return
     end
 
-    ---@type lsp.Client
     local client = vim.lsp.get_client_by_id(client_id)
     if not client then
         return
     end
 
-    local buf = util.current_buf()
     state.cfg.lsp.on_attach(client, buf)
 end
 

@@ -52,7 +52,7 @@ function M.throttle(f, timeout)
             -- Reuse timer
             if timer == nil then
                 ---@type vim.loop.Timer
-                timer = vim.loop.new_timer()
+                timer = assert(vim.loop.new_timer())
             end
 
             local args = { ... }

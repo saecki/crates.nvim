@@ -1877,7 +1877,8 @@ function M.build(user_config)
 
     handle_deprecated({}, M.schema, user_config, user_config)
     validate_schema({}, M.schema, user_config)
-    return setup_neoconf(build_config(M.schema, user_config))
+    local config = build_config(M.schema, user_config)
+    return setup_neoconf(config)
 end
 
 return M

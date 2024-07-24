@@ -82,8 +82,6 @@ local function update(buf, reload)
         end
 
         local api_crate = state.api_cache[c:package()]
-        local versions = api_crate and api_crate.versions
-
         if not reload and api_crate then
             local info, c_diagnostics = diagnostic.process_api_crate(c, api_crate)
             cache.info[k] = info

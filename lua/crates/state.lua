@@ -16,7 +16,8 @@ local State = {
 ---@param name string
 ---@return string
 local function normalize_crate_name(name)
-    return name:lower():gsub("-", "_")
+    local id = name:lower():gsub("-", "_")
+    return id
 end
 
 local ApiCache = {}

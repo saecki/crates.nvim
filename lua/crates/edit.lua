@@ -102,7 +102,6 @@ end
 ---@param crate TomlCrate
 ---@param name string
 function M.rename_crate_package(buf, crate, name)
-    ---@type integer, Span
     local line, col = crate:package_pos()
     vim.api.nvim_buf_set_text(buf, line, col.s, line, col.e, { name })
 end
