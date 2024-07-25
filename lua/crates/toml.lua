@@ -574,7 +574,7 @@ function M.parse_crates(buf)
         local line_nr = i - 1
 
         ---@type string, string
-        local section_start, section_text, section_end = line:match("^%s*()%[(.+)()%s*$")
+        local section_start, section_text, section_end = line:match("^%s*()%[([^%s]+)()%s*$")
         if section_text then
             if dep_section then
                 -- close line span
@@ -588,7 +588,7 @@ function M.parse_crates(buf)
             end
 
             local header_col = Span.new(section_start - 1, section_end - 1)
-            if section_text and section_text:sub(-1) == ']' then
+            if section_text and section_text:sub(-1) == "]" then
                 section_text = section_text:sub(1, -2)
             end
 
