@@ -1522,7 +1522,7 @@ lsp.name                                              *crates-config-lsp-name*
 
 
 lsp.on_attach                                    *crates-config-lsp-on_attach*
-    Type: `fun(client: lsp.Client, bufnr: integer)`, Default: `function(client, bufnr) end`
+    Type: `fun(client: vim.lsp.Client, bufnr: integer)`, Default: `function(client, bufnr) end`
 
     Callback to run when the in-process language server attaches to a buffer.
 

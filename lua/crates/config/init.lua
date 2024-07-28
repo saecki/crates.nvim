@@ -1596,7 +1596,7 @@ entry(schema_lsp, {
     name = "on_attach",
     type = {
         config_type = "function",
-        emmylua_annotation = "fun(client: lsp.Client, bufnr: integer)",
+        emmylua_annotation = "fun(client: vim.lsp.Client, bufnr: integer)",
     },
     default = function(_client, _bufnr) end,
     default_text = "function(client, bufnr) end",
