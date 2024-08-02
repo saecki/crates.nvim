@@ -211,6 +211,7 @@ function M.get_actions()
     local actions = {}
 
     local buf = util.current_buf()
+    local buf_cache = state.buf_cache[buf]
     local line, col = util.cursor_pos()
     local key, crate = util.get_crate_on_line(buf, line)
 
@@ -276,7 +277,7 @@ function M.get_actions()
     end
 
     if key and crate then
-        local info = util.get_crate_info(buf, key)
+        local info = buf_cache.info[key]
         if info then
             if info.vers_update then
                 table.insert(actions, {
@@ -327,14 +328,24 @@ function M.get_actions()
         })
     end
 
-    table.insert(actions, {
-        name = "update all crates",
-        action = M.update_all_crates,
-    })
-    table.insert(actions, {
-        name = "upgrade all crates",
-        action = M.upgrade_all_crates,
-    })
+    local has_update = false
+    local has_upgrade = false
+    for _, info in pairs(buf_cache.info) do
+        has_update = has_update or (info.vers_update ~= nil)
+        has_upgrade = has_upgrade or (info.vers_upgrade ~= nil)
+    end
+    if has_update then
+        table.insert(actions, {
+            name = "update all crates",
+            action = M.update_all_crates,
+        })
+    end
+    if has_upgrade then
+        table.insert(actions, {
+            name = "upgrade all crates",
+            action = M.upgrade_all_crates,
+        })
+    end
 
     return actions
 end
