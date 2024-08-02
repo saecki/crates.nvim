@@ -19,7 +19,7 @@ function M.use_git_source()
     local crates = util.get_line_crates(buf, Span.pos(line))
     local _, crate = next(crates)
 
-    if crate and crate.vers then
+    if crate and crate.vers and not crate.git then
         local api_crate = state.api_cache[crate:package()]
         if api_crate and api_crate.repository then
             edit.use_git_source(buf, crate, api_crate.repository)
@@ -324,10 +324,12 @@ function M.get_actions()
             })
         end
 
-        table.insert(actions, {
-            name = "use_git_source",
-            action = M.use_git_source,
-        })
+        if crate.vers and not crate.git then
+            table.insert(actions, {
+                name = "use_git_source",
+                action = M.use_git_source,
+            })
+        end
 
         table.insert(actions, {
             name = "open_documentation",

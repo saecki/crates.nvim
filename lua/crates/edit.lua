@@ -297,7 +297,7 @@ end
 ---@param crate TomlCrate
 ---@param repo_url string
 function M.use_git_source(buf, crate, repo_url)
-    if not (repo_url and crate.vers) then
+    if not (repo_url and crate.vers and not crate.git) then
         return
     end
 
@@ -310,7 +310,7 @@ function M.use_git_source(buf, crate, repo_url)
         local t = '{ git = "' .. repo_url .. '" }'
         local line = crate.vers.line
         vim.api.nvim_buf_set_text(
-            buf, line, crate.vers.col.s - 1, line,  end_col, { t }
+            buf, line, crate.vers.col.s - 1, line, end_col, { t }
         )
         return
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
