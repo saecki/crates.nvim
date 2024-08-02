@@ -234,8 +234,8 @@ end
 ---@param url string
 function M.open_url(url)
     for _, prg in ipairs(state.cfg.open_programs) do
-        if M.binary_installed(prg) then
-            vim.cmd(string.format("silent !%s %s", prg, url))
+        local ok, result = pcall(vim.cmd, string.format("silent !%s %s", prg, url))
+        if ok == true then
             return
         end
     end
