@@ -5,7 +5,6 @@ local toml = require("crates.toml")
 local TomlCrateSyntax = toml.TomlCrateSyntax
 local types = require("crates.types")
 local CratesDiagnosticKind = types.CratesDiagnosticKind
-local Span = types.Span
 
 local M = {}
 
@@ -15,9 +14,7 @@ local M = {}
 
 function M.use_git_source()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
 
     if crate and crate.vers and not crate.git then
         local api_crate = state.api_cache[crate:package()]
@@ -32,11 +29,10 @@ end
 ---@param alt boolean?
 function M.upgrade_crate(alt)
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
+    local key, crate = util.get_crate_on_line(buf)
     local info = util.get_buf_info(buf)
-    if next(crates) and info then
-        edit.upgrade_crates(buf, crates, info, alt)
+    if crate and info then
+        edit.upgrade_crates(buf, { [key] = crate }, info, alt)
     end
 end
 
@@ -44,7 +40,7 @@ end
 function M.upgrade_crates(alt)
     local buf = util.current_buf()
     local lines = util.selected_lines()
-    local crates = util.get_line_crates(buf, lines)
+    local crates = util.get_crates_on_line_span(buf, lines)
     local info = util.get_buf_info(buf)
     if next(crates) and info then
         edit.upgrade_crates(buf, crates, info, alt)
@@ -63,18 +59,17 @@ end
 ---@param alt boolean?
 function M.update_crate(alt)
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
+    local key, crate = util.get_crate_on_line(buf)
     local info = util.get_buf_info(buf)
-    if next(crates) and info then
-        edit.update_crates(buf, crates, info, alt)
+    if crate and info then
+        edit.update_crates(buf, { [key] = crate }, info, alt)
     end
 end
 
 function M.update_crates(alt)
     local buf = util.current_buf()
     local lines = util.selected_lines()
-    local crates = util.get_line_crates(buf, lines)
+    local crates = util.get_crates_on_line_span(buf, lines)
     local info = util.get_buf_info(buf)
     if next(crates) and info then
         edit.update_crates(buf, crates, info, alt)
@@ -92,8 +87,7 @@ end
 
 function M.expand_plain_crate_to_inline_table()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local _, crate = next(util.get_line_crates(buf, Span.pos(line)))
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         edit.expand_plain_crate_to_inline_table(buf, crate)
     end
@@ -101,8 +95,7 @@ end
 
 function M.extract_crate_into_table()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local _, crate = next(util.get_line_crates(buf, Span.pos(line)))
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         edit.extract_crate_into_table(buf, crate)
     end
@@ -110,9 +103,7 @@ end
 
 function M.open_homepage()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         local api_crate = state.api_cache[crate:package()]
         if api_crate and api_crate.homepage then
@@ -125,9 +116,7 @@ end
 
 function M.open_repository()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         local api_crate = state.api_cache[crate:package()]
         if api_crate and api_crate.repository then
@@ -140,9 +129,7 @@ end
 
 function M.open_documentation()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         local api_crate = state.api_cache[crate:package()]
         local url = api_crate and api_crate.documentation
@@ -153,9 +140,7 @@ end
 
 function M.open_crates_io()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         util.open_url(util.crates_io_url(crate:package()))
     end
@@ -163,9 +148,7 @@ end
 
 function M.open_lib_rs()
     local buf = util.current_buf()
-    local line = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf)
     if crate then
         util.open_url(util.lib_rs_url(crate:package()))
     end
@@ -229,8 +212,7 @@ function M.get_actions()
 
     local buf = util.current_buf()
     local line, col = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.pos(line))
-    local key, crate = next(crates)
+    local key, crate = util.get_crate_on_line(buf, line)
 
     local diagnostics = util.get_buf_diagnostics(buf) or {}
     for _, d in ipairs(diagnostics) do
@@ -293,7 +275,7 @@ function M.get_actions()
         ::continue::
     end
 
-    if crate then
+    if key and crate then
         local info = util.get_crate_info(buf, key)
         if info then
             if info.vers_update then

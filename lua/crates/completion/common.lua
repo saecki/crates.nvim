@@ -292,8 +292,7 @@ local function complete()
     end
 
     local line, col = util.cursor_pos()
-    local crates = util.get_line_crates(buf, Span.new(line, line + 1))
-    local _, crate = next(crates)
+    local _, crate = util.get_crate_on_line(buf, line)
 
     if state.cfg.completion.crates.enabled then
         local working_crates = state.buf_cache[buf].working_crates
@@ -327,8 +326,7 @@ local function complete()
         end
 
         line, col = util.cursor_pos()
-        crates = util.get_line_crates(buf, Span.new(line, line + 1))
-        _, crate = next(crates)
+        _, crate = util.get_crate_on_line(buf, line)
         if not crate then
             return
         end

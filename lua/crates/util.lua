@@ -74,7 +74,7 @@ end
 ---@param buf integer
 ---@param lines Span
 ---@return table<string,TomlCrate>
-function M.get_line_crates(buf, lines)
+function M.get_crates_on_line_span(buf, lines)
     local cache = state.buf_cache[buf]
     local crates = cache and cache.crates
     if not crates then
@@ -90,6 +90,25 @@ function M.get_line_crates(buf, lines)
     end
 
     return line_crates
+end
+
+---@param buf integer
+---@param line integer?
+---@return string?
+---@return TomlCrate?
+function M.get_crate_on_line(buf, line)
+    line = line or M.cursor_pos()
+    local cache = state.buf_cache[buf]
+    local crates = cache and cache.crates
+    if not crates then
+        return nil
+    end
+
+    for k, c in pairs(crates) do
+        if c.lines:contains(line) then
+            return k, c
+        end
+    end
 end
 
 ---@param versions ApiVersion[]?
