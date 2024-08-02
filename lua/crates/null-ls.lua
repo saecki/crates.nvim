@@ -80,7 +80,7 @@ function M.source(name)
                 local items = {}
                 for _, action in ipairs(actions.get_actions()) do
                     table.insert(items, {
-                        title = util.format_title(action.name),
+                        title = action.name,
                         action = function()
                             vim.api.nvim_buf_call(params.bufnr, action.action)
                         end,

@@ -240,52 +240,52 @@ function M.get_actions()
 
         if d.kind == CratesDiagnosticKind.SECTION_DUP then
             table.insert(actions, {
-                name = "remove_duplicate_section",
+                name = "remove duplicate section",
                 action = remove_diagnostic_range_action(buf, d),
             })
         elseif d.kind == CratesDiagnosticKind.SECTION_DUP_ORIG then
             table.insert(actions, {
-                name = "remove_original_section",
+                name = "remove original section",
                 action = remove_lines_action(buf, d.data["lines"]),
             })
         elseif d.kind == CratesDiagnosticKind.SECTION_INVALID then
             table.insert(actions, {
-                name = "remove_invalid_dependency_section",
+                name = "remove invalid dependency section",
                 action = remove_diagnostic_range_action(buf, d),
             })
         elseif d.kind == CratesDiagnosticKind.CRATE_DUP then
             table.insert(actions, {
-                name = "remove_duplicate_crate",
+                name = "remove duplicate crate",
                 action = remove_diagnostic_range_action(buf, d),
             })
         elseif d.kind == CratesDiagnosticKind.CRATE_DUP_ORIG then
             table.insert(actions, {
-                name = "remove_original_crate",
+                name = "remove original crate",
                 action = remove_diagnostic_range_action(buf, d),
             })
         elseif d.kind == CratesDiagnosticKind.CRATE_NAME_CASE then
             table.insert(actions, {
-                name = "rename_crate",
+                name = "rename crate",
                 action = rename_crate_package_action(buf, d.data["crate"], d.data["crate_name"]),
             })
         elseif crate and d.kind == CratesDiagnosticKind.FEAT_DUP then
             table.insert(actions, {
-                name = "remove_duplicate_feature",
+                name = "remove duplicate feature",
                 action = remove_feature_action(buf, crate, d.data["feat"]),
             })
         elseif crate and d.kind == CratesDiagnosticKind.FEAT_DUP_ORIG then
             table.insert(actions, {
-                name = "remove_original_feature",
+                name = "remove original feature",
                 action = remove_feature_action(buf, crate, d.data["feat"]),
             })
         elseif crate and d.kind == CratesDiagnosticKind.FEAT_INVALID then
             table.insert(actions, {
-                name = "remove_invalid_feature",
+                name = "remove invalid feature",
                 action = remove_feature_action(buf, crate, d.data["feat"]),
             })
         elseif crate and d.kind == CratesDiagnosticKind.FEAT_EXPLICIT_DEP then
             table.insert(actions, {
-                name = "remove_`dep:`_prefix",
+                name = "remove `dep:` prefix",
                 action = remove_feature_dep_prefix_action(buf, crate, d.data["feat"]),
             })
         end
@@ -298,13 +298,13 @@ function M.get_actions()
         if info then
             if info.vers_update then
                 table.insert(actions, {
-                    name = "update_crate",
+                    name = "update crate",
                     action = M.update_crate,
                 })
             end
             if info.vers_upgrade then
                 table.insert(actions, {
-                    name = "upgrade_crate",
+                    name = "upgrade crate",
                     action = M.upgrade_crate,
                 })
             end
@@ -313,44 +313,44 @@ function M.get_actions()
         -- refactorings
         if crate.syntax == TomlCrateSyntax.PLAIN then
             table.insert(actions, {
-                name = "expand_crate_to_inline_table",
+                name = "expand crate to inline table",
                 action = M.expand_plain_crate_to_inline_table,
             })
         end
         if crate.syntax ~= TomlCrateSyntax.TABLE then
             table.insert(actions, {
-                name = "extract_crate_into_table",
+                name = "extract crate into table",
                 action = M.extract_crate_into_table,
             })
         end
 
         if crate.vers and not crate.git then
             table.insert(actions, {
-                name = "use_git_source",
+                name = "use git source",
                 action = M.use_git_source,
             })
         end
 
         table.insert(actions, {
-            name = "open_documentation",
+            name = "open documentation",
             action = M.open_documentation,
         })
         table.insert(actions, {
-            name = "open_crates.io",
+            name = "open crates.io",
             action = M.open_crates_io,
         })
         table.insert(actions, {
-            name = "open_lib.rs",
+            name = "open lib.rs",
             action = M.open_lib_rs,
         })
     end
 
     table.insert(actions, {
-        name = "update_all_crates",
+        name = "update all crates",
         action = M.update_all_crates,
     })
     table.insert(actions, {
-        name = "upgrade_all_crates",
+        name = "upgrade all crates",
         action = M.upgrade_all_crates,
     })
 

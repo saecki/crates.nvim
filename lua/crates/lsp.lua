@@ -120,16 +120,15 @@ function M.start_server()
         handlers = {
             ---@param _method string
             ---@param _params any
-            ---@param callback fun(err: nil, actions: CodeAction[])
+            ---@param callback fun(err: nil, actions: lsp.CodeAction[])
             ["textDocument/codeAction"] = function(_method, _params, callback)
                 local code_actions = {}
                 for _, action in ipairs(actions.get_actions()) do
-                    local title = util.format_title(action.name)
                     table.insert(code_actions, {
-                        title = title,
+                        title = action.name,
                         kind = "refactor.rewrite",
                         command = {
-                            title = title,
+                            title = action.name,
                             command = CRATES_COMMAND,
                             arguments = { action.action },
                         },
