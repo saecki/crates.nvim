@@ -233,14 +233,10 @@ end
 
 ---@param url string
 function M.open_url(url)
-    for _, prg in ipairs(state.cfg.open_programs) do
-        local ok, result = pcall(vim.cmd, string.format("silent !%s %s", prg, url))
-        if ok == true then
-            return
-        end
+    local _cmd, err = vim.ui.open(url)
+    if err then
+        M.notify(vim.log.levels.ERROR, "Couldn't open url: %s", err)
     end
-
-    M.notify(vim.log.levels.WARN, "Couldn't open url")
 end
 
 return M

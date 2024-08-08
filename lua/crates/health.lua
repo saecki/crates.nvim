@@ -17,20 +17,6 @@ function M.check()
     else
         vim.health.error("curl not found")
     end
-
-    local num = 0
-    for _, prg in ipairs(state.cfg.open_programs) do
-        if util.binary_installed(prg) then
-            vim.health.ok(string.format("%s installed", prg))
-            ---@type integer
-            num = num + 1
-        end
-    end
-
-    if num == 0 then
-        local programs = table.concat(state.cfg.open_programs, " ")
-        vim.health.warn("none of the following are installed " .. programs)
-    end
 end
 
 return M

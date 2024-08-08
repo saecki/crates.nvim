@@ -16,7 +16,6 @@
 ---@field notification_title string
 ---@field curl_args string[]
 ---@field max_parallel_requests integer
----@field open_programs string[]
 ---@field expand_crate_moves_cursor boolean
 ---@field enable_update_available_warning boolean
 ---@field on_attach fun(bufnr: integer)
@@ -231,7 +230,6 @@
 ---@field public notification_title? string
 ---@field public curl_args? string[]
 ---@field public max_parallel_requests? integer
----@field public open_programs? string[]
 ---@field public expand_crate_moves_cursor? boolean
 ---@field public enable_update_available_warning? boolean
 ---@field public on_attach? fun(bufnr: integer)

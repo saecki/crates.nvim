@@ -88,7 +88,6 @@ For more information about individual config options see |crates-config|.
         notification_title = "crates.nvim",
         curl_args = { "-sL", "--retry", "1" },
         max_parallel_requests = 80,
-        open_programs = { "xdg-open", "open" },
         expand_crate_moves_cursor = true,
         enable_update_available_warning = true,
         on_attach = function(bufnr) end,
@@ -624,12 +623,6 @@ max_parallel_requests                    *crates-config-max_parallel_requests*
     Maximum number of parallel requests.
 
 
-open_programs                                    *crates-config-open_programs*
-    Type: `string[]`, Default: `{ "xdg-open", "open" }`
-
-    A list of programs that used to open urls.
-
-
 expand_crate_moves_cursor            *crates-config-expand_crate_moves_cursor*
     Type: `boolean`, Default: `true`
 
@@ -704,6 +697,9 @@ text.error                                          *crates-config-text-error*
 
     Format string used when there was an error loading crate information.
 
+
+open_programs                                    *crates-config-open_programs*
+    DEPRECATED
 
 highlight                                            *crates-config-highlight*
     Section type: `HighlightConfig`
