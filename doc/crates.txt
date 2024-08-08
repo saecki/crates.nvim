@@ -699,7 +699,7 @@ text.error                                          *crates-config-text-error*
 
 
 open_programs                                    *crates-config-open_programs*
-    DEPRECATED
+    DEPRECATED: `vim.ui.open()` is used instead
 
 highlight                                            *crates-config-highlight*
     Section type: `HighlightConfig`
@@ -1477,9 +1477,7 @@ completion.crates.max_results    *crates-config-completion-crates-max_results*
 
 
 src                                                        *crates-config-src*
-    DEPRECATED
-
-    Please use |crates-config-completion| instead.
+    DEPRECATED: please use |crates-config-completion| instead.
 
 null_ls                                                *crates-config-null_ls*
     Section type: `NullLsConfig`

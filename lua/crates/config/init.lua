@@ -322,7 +322,7 @@ entry(M.schema, {
     name = "open_programs",
     type = STRING_ARRAY_TYPE,
     deprecated = {
-        msg = ", `vim.ui.open()` is used instead",
+        msg = "`vim.ui.open()` is used instead",
         hard = true,
     },
 })
@@ -1751,7 +1751,7 @@ local function validate_schema(path, schema, user_config)
                 ---@type string
                 local msg
                 if dep.msg then
-                    msg = dep.msg
+                    msg = ", " .. dep.msg
                 elseif dep.hard or not dep.new_field then
                     msg = " and won't work anymore"
                 else
