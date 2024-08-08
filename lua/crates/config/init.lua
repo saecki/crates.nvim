@@ -54,6 +54,7 @@ local M = {}
 ---@class Deprecated
 ---@field new_field string[]?
 ---@field hard boolean?
+---@field msg string?
 
 ---@param schema table<string,SchemaElement>|SchemaElement[]
 ---@param elem SchemaElement
@@ -211,14 +212,6 @@ entry(M.schema, {
     ]],
 })
 entry(M.schema, {
-    name = "open_programs",
-    type = STRING_ARRAY_TYPE,
-    default = { "xdg-open", "open" },
-    description = [[
-        A list of programs that used to open urls.
-    ]],
-})
-entry(M.schema, {
     name = "expand_crate_moves_cursor",
     type = BOOLEAN_TYPE,
     default = true,
@@ -323,6 +316,15 @@ entry(schema_text, {
     description = [[
         Format string used when there was an error loading crate information.
     ]],
+})
+-- DEPRECATED
+entry(M.schema, {
+    name = "open_programs",
+    type = STRING_ARRAY_TYPE,
+    deprecated = {
+        msg = ", `vim.ui.open()` is used instead",
+        hard = true,
+    },
 })
 
 
@@ -1746,25 +1748,28 @@ local function validate_schema(path, schema, user_config)
             local dep = elem.deprecated
 
             if dep then
-                if dep.new_field then
-                    ---@type string
-                    local dep_text
-                    if dep.hard then
-                        dep_text = "deprecated and won't work anymore"
-                    else
-                        dep_text = "deprecated and will stop working soon"
-                    end
+                ---@type string
+                local msg
+                if dep.msg then
+                    msg = dep.msg
+                elseif dep.hard or not dep.new_field then
+                    msg = " and won't work anymore"
+                else
+                    msg = " and will stop working soon"
+                end
 
+                if dep.new_field then
                     warn(
-                        "'%s' is now %s, please use '%s'",
+                        "`%s` is now deprecated%s\nPlease use `%s`",
                         table.concat(p, "."),
-                        dep_text,
+                        msg,
                         table.concat(dep.new_field, ".")
                     )
                 else
                     warn(
-                        "'%s' is now deprecated, ignoring",
-                        table.concat(p, ".")
+                        "`%s` is now deprecated%s",
+                        table.concat(p, "."),
+                        msg
                     )
                 end
             elseif elem.type.config_type == "section" then
@@ -1772,7 +1777,7 @@ local function validate_schema(path, schema, user_config)
                     validate_schema(p, elem.fields, v)
                 else
                     warn(
-                        "Config field '%s' was expected to be of type 'table' but was '%s', using default value.",
+                        "Config field `%s` was expected to be of type `table` but was `%s`, using default value.",
                         table.concat(p, "."),
                         value_type
                     )
@@ -1780,7 +1785,7 @@ local function validate_schema(path, schema, user_config)
             else
                 if not matches_type(value_type, elem.type) then
                     warn(
-                        "Config field '%s' was expected to be of type '%s' but was '%s', using default value.",
+                        "Config field `%s` was expected to be of type `%s` but was `%s`, using default value.",
                         table.concat(p, "."),
                         to_user_config_type_string(elem.type),
                         value_type
@@ -1789,7 +1794,7 @@ local function validate_schema(path, schema, user_config)
             end
         else
             warn(
-                "Ignoring invalid config key '%s'",
+                "Ignoring invalid config key `%s`",
                 table.concat(p, ".")
             )
         end
@@ -1800,7 +1805,7 @@ end
 ---@return Config
 local function setup_neoconf(config)
     ---@type boolean, table
-    local ok, neoconf = pcall(require, 'neoconf')
+    local ok, neoconf = pcall(require, "neoconf")
     if not ok then
         return config
     end
@@ -1808,7 +1813,7 @@ local function setup_neoconf(config)
     -- enables neodev to autocomplete settings in .neoconf.json
     pcall(function()
         ---@type table
-        local neoconf_plugins = require('neoconf.plugins')
+        local neoconf_plugins = require("neoconf.plugins")
         neoconf_plugins.register {
             on_schema = function(schema)
                 schema:import("crates", config)
@@ -1871,7 +1876,7 @@ function M.build(user_config)
     user_config = user_config or {}
     local user_config_type = type(user_config)
     if user_config_type ~= "table" then
-        warn("Expected config of type 'table' found '%s'", user_config_type)
+        warn("Expected config of type `table` found `%s`", user_config_type)
         user_config = {}
     end
 

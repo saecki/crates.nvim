@@ -168,7 +168,6 @@ require("crates").setup {
     notification_title = "crates.nvim",
     curl_args = { "-sL", "--retry", "1" },
     max_parallel_requests = 80,
-    open_programs = { "xdg-open", "open" },
     expand_crate_moves_cursor = true,
     enable_update_available_warning = true,
     on_attach = function(bufnr) end,
