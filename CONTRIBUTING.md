@@ -21,18 +21,12 @@ __To update it:__
     │   Fetch    │ │   Offline   │   │   Ui   │
     │ Crate Data │ │ Diagnostics ├──▶│ Update │
     └─────┬──────┘ └─────────────┘   └────────┘
-          ├─────────────────┐
-          ▼                 ▼
-    ┌──────────────┐ ┌─────────────┐   ┌────────┐
-    │    Fetch     │ │    Crate    │   │   Ui   │
-    │ Dependencies │ │ Diagnostics ├──▶│ Update │
-    └──────────────┘ └─────────────┘   └────────┘
           │
           ▼
-    ┌──────────────┐   ┌────────┐
-    │   Feature    │   │   Ui   │
-    │ Diagnostics  ├──▶│ Update │
-    └──────────────┘   └────────┘
+    ┌─────────────┐   ┌────────┐
+    │    Crate    │   │   Ui   │
+    │ Diagnostics ├──▶│ Update │
+    └─────────────┘   └────────┘
 ```
 
 ## Testing
