@@ -154,8 +154,7 @@ function M.features_info(crate, features)
     ---@param f ApiFeature
     local function update_transitive(f)
         for _, m in ipairs(f.members) do
-            local i = info[m]
-            if not i then
+            if not info[m] then
                 info[m] = FeatureInfo.TRANSITIVE
                 local tf = features:get_feat(m)
                 if tf then

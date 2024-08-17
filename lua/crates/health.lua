@@ -1,6 +1,5 @@
 local M = {}
 
-local state = require("crates.state")
 local util = require("crates.util")
 
 function M.check()
