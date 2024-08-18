@@ -97,6 +97,83 @@ vim.api.nvim_create_autocmd("BufRead", {
 ```
 </details>
 
+<details>
+<summary>Custom nvim-cmp completion kinds</summary>
+
+Enable custom completion kind in the config.
+```lua
+require("crates").setup {
+    ...
+    completion = {
+        ...
+        cmp = {
+            use_custom_kind = true,
+            -- optionally change the text and highlight groups
+            kind_text = {
+                version = "Version",
+                feature = "Feature",
+            },
+            kind_highlight = {
+                version = "CmpItemKindVersion",
+                feature = "CmpItemKindFeature",
+            },
+        },
+    },
+}
+```
+This will set a custom completion `cmp.kind_text` and `cmp.kind_hl_group` attributes
+to completion items for `nvim-cmp`.
+
+Depending on how you've set up [the nvim-cmp menu](https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations)
+you'll have to handle these explicitly.
+If you haven't changed `nvim-cmp`s `formatting` configuration everything should work out of the box.
+
+Here's an example of how add custom icons.
+```lua
+local kind_icons = {
+    ["Class"] = "🅒 ",
+    ["Interface"] = "🅘 ",
+    ["TypeParameter"] = "🅣 ",
+    ["Struct"] = "🅢 ",
+    ["Enum"] = "🅔 ",
+    ["Unit"] = "🅤 ",
+    ["EnumMember"] = "🅔 ",
+    ["Constant"] = "🅒 ",
+    ["Field"] = "🅕 ",
+    ["Property"] = "🅟 ",
+    ["Variable"] = "🅥 ",
+    ["Reference"] = "🅡 ",
+    ["Function"] = "🅕 ",
+    ["Method"] = "🅜 ",
+    ["Constructor"] = "🅒 ",
+    ["Module"] = "🅜 ",
+    ["File"] = "🅕 ",
+    ["Folder"] = "🅕 ",
+    ["Keyword"] = "🅚 ",
+    ["Operator"] = "🅞 ",
+    ["Snippet"] = "🅢 ",
+    ["Value"] = "🅥 ",
+    ["Color"] = "🅒 ",
+    ["Event"] = "🅔 ",
+    ["Text"] = "🅣 ",
+
+    -- crates.nvim extensions
+    ["Version"] = "🅥 ",
+    ["Feature"] = "🅕 ",
+}
+
+require("cmp").setup({
+    formatting = {
+        fields = { "abbr", "kind" },
+        format = function(_, vim_item)
+            vim_item.kind = kind_icons[vim_item.kind] or "  "
+            return vim_item
+        end,
+    },
+})
+```
+</details>
+
 ### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
 Enable it in the setup, and optionally change the display name.
 ```lua
