@@ -242,6 +242,10 @@ For more information about individual config options see |crates-config|.
             enabled = false,
             name = "crates.nvim",
         },
+        neoconf = {
+            enabled = false,
+            namespace = "crates",
+        },
         lsp = {
             enabled = false,
             name = "crates.nvim",
@@ -1495,6 +1499,24 @@ null_ls.name                                      *crates-config-null_ls-name*
     Type: `string`, Default: `"crates.nvim"`
 
     The |null-ls.nvim| name.
+
+
+neoconf                                                *crates-config-neoconf*
+    Section type: `NeoconfConfig`
+
+    Configuration options for neoconf.nvim integration.
+
+
+neoconf.enabled                                *crates-config-neoconf-enabled*
+    Type: `boolean`, Default: `false`
+
+    Whether to enable project-local configuration with |neoconf.nvim|.
+
+
+neoconf.namespace                            *crates-config-neoconf-namespace*
+    Type: `string`, Default: `"crates"`
+
+    The root namespace for the project-local neoconf schema.
 
 
 lsp                                                        *crates-config-lsp*

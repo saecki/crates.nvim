@@ -25,6 +25,7 @@
 ---@field popup PopupConfig
 ---@field completion CompletionConfig
 ---@field null_ls NullLsConfig
+---@field neoconf NeoconfConfig
 ---@field lsp LspConfig
 
 ---@class TextConfig
@@ -208,6 +209,10 @@
 ---@field enabled boolean
 ---@field name string
 
+---@class NeoconfConfig
+---@field enabled boolean
+---@field namespace string
+
 ---@class LspConfig
 ---@field enabled boolean
 ---@field name string
@@ -238,6 +243,7 @@
 ---@field public popup? crates.UserPopupConfig
 ---@field public completion? crates.UserCompletionConfig
 ---@field public null_ls? crates.UserNullLsConfig
+---@field public neoconf? crates.UserNeoconfConfig
 ---@field public lsp? crates.UserLspConfig
 
 ---@class crates.UserTextConfig
@@ -399,6 +405,10 @@
 ---@class crates.UserNullLsConfig
 ---@field public enabled? boolean
 ---@field public name? string
+
+---@class crates.UserNeoconfConfig
+---@field public enabled? boolean
+---@field public namespace? string
 
 ---@class crates.UserLspConfig
 ---@field public enabled? boolean

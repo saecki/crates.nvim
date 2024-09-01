@@ -399,6 +399,10 @@ require("crates").setup {
         enabled = false,
         name = "crates.nvim",
     },
+    neoconf = {
+        enabled = false,
+        namespace = "crates",
+    },
     lsp = {
         enabled = false,
         name = "crates.nvim",
@@ -669,11 +673,21 @@ endfunction
 ```
 </details>
 
-## Neoconf Integration
+## neoconf.nvim integration
 
-You can also set project-local settings if you have [Neoconf](https://github.com/folke/neoconf.nvim)
-installed; all settings are exactly the same, but are under the "crates"
-namespace.
+You can also set project-local settings if you have [neoconf.nvim](https://github.com/folke/neoconf.nvim)
+installed; all settings are exactly the same, but are by default under the "crates" namespace.
+
+Neoconf integration has to be enabled, and optionally the namespace can be changed.
+```lua
+require("crates").setup {
+    ...
+    neoconf = {
+        enabled = false,
+        namespace = "crates",
+    },
+}
+```
 
 Example:
 

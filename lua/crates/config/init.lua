@@ -1566,6 +1566,34 @@ entry(schema_null_ls, {
     ]],
 })
 
+local schema_neoconf = section_entry(M.schema, {
+    name = "neoconf",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "NeoconfConfig",
+    },
+    description = [[
+        Configuration options for neoconf.nvim integration.
+    ]],
+    fields = {},
+})
+entry(schema_neoconf, {
+    name = "enabled",
+    type = BOOLEAN_TYPE,
+    default = false,
+    description = [[
+        Whether to enable project-local configuration with |neoconf.nvim|.
+    ]],
+})
+entry(schema_neoconf, {
+    name = "namespace",
+    type = STRING_TYPE,
+    default = "crates",
+    description = [[
+        The root namespace for the project-local neoconf schema.
+    ]],
+})
+
 
 local schema_lsp = section_entry(M.schema, {
     name = "lsp",
@@ -1804,22 +1832,19 @@ end
 ---@param config Config
 ---@return Config
 local function setup_neoconf(config)
-    ---@type boolean, table
     local ok, neoconf = pcall(require, "neoconf")
     if not ok then
+        warn("neoconf.nvim was not found")
         return config
     end
 
     -- enables neodev to autocomplete settings in .neoconf.json
-    pcall(function()
-        ---@type table
-        local neoconf_plugins = require("neoconf.plugins")
-        neoconf_plugins.register {
-            on_schema = function(schema)
-                schema:import("crates", config)
-            end
-        }
-    end)
+    local neoconf_plugins = require("neoconf.plugins")
+    neoconf_plugins.register({
+        on_schema = function(schema)
+            schema:import(config.neoconf.namespace, config)
+        end
+    })
 
     return setmetatable({}, {
         __index = function(self, key)
@@ -1829,7 +1854,7 @@ local function setup_neoconf(config)
                 return loc[key]
             end
             ---@type Config
-            loc = neoconf.get("crates", config, {
+            loc = neoconf.get(config.neoconf.namespace, config, {
                 buffer = buf,
                 lsp = true,
             })
@@ -1883,7 +1908,11 @@ function M.build(user_config)
     handle_deprecated({}, M.schema, user_config, user_config)
     validate_schema({}, M.schema, user_config)
     local config = build_config(M.schema, user_config)
-    return setup_neoconf(config)
+    if config.neoconf.enabled then
+        return setup_neoconf(config)
+    else
+        return config
+    end
 end
 
 return M
