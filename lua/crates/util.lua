@@ -12,8 +12,6 @@ local FeatureInfo = {
 }
 M.FeatureInfo = FeatureInfo
 
-local IS_WIN = vim.api.nvim_call_function("has", { "win32" }) == 1
-
 ---@return integer
 function M.current_buf()
     return vim.api.nvim_get_current_buf()
@@ -184,24 +182,6 @@ function M.features_info(crate, features)
     end
 
     return info
-end
-
----@param name string
----@return boolean
-function M.lualib_installed(name)
-    local ok = pcall(require, name)
-    return ok
-end
-
----comment
----@param name string
----@return boolean
-function M.binary_installed(name)
-    if IS_WIN then
-        name = name .. ".exe"
-    end
-
-    return vim.fn.executable(name) == 1
 end
 
 ---comment
