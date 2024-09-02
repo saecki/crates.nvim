@@ -17,16 +17,11 @@ jobs:
       with:
         ref: ${{ github.head_ref }}
 
-    - name: Install lua
-      uses: leafo/gh-actions-lua@v10
+    - name: Install neovim
+      uses: rhysd/action-setup-vim@v1
       with:
-        luaVersion: "luajit-2.1.0-beta3"
+        neovim: true
 
-    - name: Install luarocks
-      uses: leafo/gh-actions-luarocks@v4
-
-    - name: Install inspect
-      run: luarocks install inspect
 
     - name: Generate types
       run: make types
@@ -36,6 +31,7 @@ jobs:
       with:
         file_pattern: lua/crates/config/types.lua
         commit_message: "chore: generate types"
+
 
     - name: Generate docs
       run: make doc
@@ -52,15 +48,6 @@ jobs:
       with:
         path: docgen/wiki
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install neovim
-      uses: rhysd/action-setup-vim@v1
-      with:
-        neovim: true
 
     - name: Install plenary.nvim
       uses: actions/checkout@v4
@@ -71,4 +58,3 @@ jobs:
     - name: Run tests
       run: make test
       timeout-minutes: 1
-

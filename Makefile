@@ -1,6 +1,6 @@
 .PHONY: types
 types:
-	./scripts/gen_types.lua
+	nvim -l scripts/gen_types.lua
 
 .PHONY: test
 test:
@@ -8,5 +8,5 @@ test:
 
 .PHONY: doc
 doc:
-	./docgen/gen_doc.lua
+	nvim -l docgen/gen_doc.lua
 

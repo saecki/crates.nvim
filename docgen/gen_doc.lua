@@ -3,7 +3,6 @@ _=[[
 exec lua "$0" "$@"
 ]]
 
-local inspect = require("inspect")
 local config = require("lua.crates.config.init")
 local highlight = require("lua.crates.highlight")
 local version = "unstable"
@@ -313,7 +312,7 @@ local function gen_vimdoc_config(lines, path, schema)
                 table.insert(lines, "")
             else
                 local t = s.type.emmylua_annotation
-                local d = s.default_text or inspect(s.default)
+                local d = s.default_text or vim.inspect(s.default)
                 table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
                 table.insert(lines, "")
             end
@@ -352,7 +351,7 @@ local function gen_def_config(lines, indent, path, schema)
                 gen_def_config(lines, indent, p, s.fields)
                 insert_indent("},")
             else
-                local d = s.default_text or inspect(s.default)
+                local d = s.default_text or vim.inspect(s.default)
                 insert_indent(string.format("%s = %s,", name, d))
             end
         end

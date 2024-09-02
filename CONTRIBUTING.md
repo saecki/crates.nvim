@@ -43,15 +43,6 @@ make test
 
 ## Writing Documentation
 
-### Requirements
-- [Luarocks](https://luarocks.org/)
-    - macos: `brew install luarocks`
-    - fedora: `dnf install luarocks`
-    - ubuntu: `apt install luarocks`
-    - arch: `pacman -S install luarocks`
-- [Inspect](https://github.com/kikito/inspect.lua)
-    - `luarocks install inspect`
-
 > [!IMPORTANT]
 > Do not edit the `README.md`, `doc/crates.txt` or wiki files.\
 > They are automatically generated.
