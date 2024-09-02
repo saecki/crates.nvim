@@ -60,7 +60,8 @@ end
 ---comment
 ---@param buf integer
 ---@param diagnostics CratesDiagnostic[]
-function M.display_diagnostics(buf, diagnostics)
+---@param custom_diagnostics CratesDiagnostic[]
+function M.display_diagnostics(buf, diagnostics, custom_diagnostics)
     if not state.visible then
         return
     end
@@ -70,77 +71,78 @@ function M.display_diagnostics(buf, diagnostics)
         local vim_diagnostic = to_vim_diagnostic(d)
         table.insert(buf_state.diagnostics, vim_diagnostic)
     end
-
-    vim.diagnostic.set(DIAGNOSTIC_NS, buf, buf_state.diagnostics)
-end
-
----@param buf integer
----@param info CrateInfo
----@param diagnostics CratesDiagnostic[]
-function M.display_crate_info(buf, info, diagnostics)
-    if not state.visible then
-        return
-    end
-
-    local buf_state = M.get_or_init(buf)
-    for _, d in ipairs(diagnostics) do
+    for _, d in ipairs(custom_diagnostics) do
         local vim_diagnostic = to_vim_diagnostic(d)
         table.insert(buf_state.custom_diagnostics, vim_diagnostic)
     end
 
-    local virt_text = {}
-    if info.vers_match then
-        table.insert(virt_text, {
-            string.format(state.cfg.text[info.match_kind], info.vers_match.num),
-            state.cfg.highlight[info.match_kind],
-        })
-    elseif info.match_kind == MatchKind.NOMATCH then
-        table.insert(virt_text, {
-            state.cfg.text.nomatch,
-            state.cfg.highlight.nomatch,
-        })
-    end
-    if info.vers_upgrade then
-        table.insert(virt_text, {
-            string.format(state.cfg.text.upgrade, info.vers_upgrade.num),
-            state.cfg.highlight.upgrade,
-        })
-    end
-
-    if not (info.vers_match or info.vers_upgrade) then
-        table.insert(virt_text, {
-            state.cfg.text.error,
-            state.cfg.highlight.error,
-        })
-    end
-
+    vim.diagnostic.set(DIAGNOSTIC_NS, buf, buf_state.diagnostics, {})
     vim.diagnostic.set(CUSTOM_NS, buf, buf_state.custom_diagnostics, { virtual_text = false })
-    vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, info.lines.s, info.lines.e)
-    vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, info.vers_line, -1, {
-        virt_text = virt_text,
-        virt_text_pos = "eol",
-        hl_mode = "combine",
-    })
 end
 
 ---@param buf integer
----@param crate TomlCrate
-function M.display_loading(buf, crate)
+---@param infos CrateInfo[]
+function M.display_crate_info(buf, infos)
+    if not state.visible then
+        return
+    end
+
+    for _, info in ipairs(infos) do
+        local virt_text = {}
+        if info.vers_match then
+            table.insert(virt_text, {
+                string.format(state.cfg.text[info.match_kind], info.vers_match.num),
+                state.cfg.highlight[info.match_kind],
+            })
+        elseif info.match_kind == MatchKind.NOMATCH then
+            table.insert(virt_text, {
+                state.cfg.text.nomatch,
+                state.cfg.highlight.nomatch,
+            })
+        end
+        if info.vers_upgrade then
+            table.insert(virt_text, {
+                string.format(state.cfg.text.upgrade, info.vers_upgrade.num),
+                state.cfg.highlight.upgrade,
+            })
+        end
+
+        if not (info.vers_match or info.vers_upgrade) then
+            table.insert(virt_text, {
+                state.cfg.text.error,
+                state.cfg.highlight.error,
+            })
+        end
+
+        vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, info.lines.s, info.lines.e)
+        vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, info.vers_line, -1, {
+            virt_text = virt_text,
+            virt_text_pos = "eol",
+            hl_mode = "combine",
+        })
+    end
+end
+
+---@param buf integer
+---@param crates TomlCrate[]
+function M.display_loading(buf, crates)
     if not state.visible then
         return
     end
 
     local buf_state = M.get_or_init(buf)
-    local vers_line = crate.vers and crate.vers.line or crate.lines.s
-    buf_state.line_state[vers_line] = LineState.LOADING
 
-    local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }
-    vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, vers_line, vers_line + 1)
-    vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, vers_line, -1, {
-        virt_text = virt_text,
-        virt_text_pos = "eol",
-        hl_mode = "combine",
-    })
+    for _, crate in ipairs(crates) do
+        local vers_line = crate.vers and crate.vers.line or crate.lines.s
+        buf_state.line_state[vers_line] = LineState.LOADING
+
+        local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }
+        vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, vers_line, -1, {
+            virt_text = virt_text,
+            virt_text_pos = "eol",
+            hl_mode = "combine",
+        })
+    end
 end
 
 ---@param buf integer

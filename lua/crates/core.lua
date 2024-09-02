@@ -38,11 +38,13 @@ M.load_crate = async.wrap(function(crate_name)
             end
 
             if c:package() == crate_name and vim.api.nvim_buf_is_loaded(buf) then
-                local info, c_diagnostics = diagnostic.process_api_crate(c, crate)
+                local c_diagnostics = {}
+                local info = diagnostic.process_api_crate(c, crate, c_diagnostics)
                 cache.info[k] = info
                 vim.list_extend(cache.diagnostics, c_diagnostics)
 
-                ui.display_crate_info(buf, info, c_diagnostics)
+                ui.display_crate_info(buf, { info })
+                ui.display_diagnostics(buf, {}, c_diagnostics)
             end
 
             ::continue::
@@ -71,8 +73,9 @@ local function update(buf, reload)
     }
     state.buf_cache[buf] = cache
 
-    ui.clear(buf)
-    ui.display_diagnostics(buf, diagnostics)
+    local crates_info = {}
+    local crates_loading = {}
+    local custom_diagnostics = {}
     for k, c in pairs(crate_cache) do
         -- Don't try to fetch info from crates.io if it's a local or git crate,
         -- or from a registry other than crates.io
@@ -83,14 +86,13 @@ local function update(buf, reload)
 
         local api_crate = state.api_cache[c:package()]
         if not reload and api_crate then
-            local info, c_diagnostics = diagnostic.process_api_crate(c, api_crate)
+            local info = diagnostic.process_api_crate(c, api_crate, custom_diagnostics)
             cache.info[k] = info
-            vim.list_extend(cache.diagnostics, c_diagnostics)
 
-            ui.display_crate_info(buf, info, c_diagnostics)
+            table.insert(crates_info, info)
         else
             if state.cfg.loading_indicator then
-                ui.display_loading(buf, c)
+                table.insert(crates_loading, c)
             end
 
             M.load_crate(c:package())
@@ -98,6 +100,13 @@ local function update(buf, reload)
 
         ::continue::
     end
+
+    ui.clear(buf)
+    ui.display_crate_info(buf, crates_info)
+    ui.display_loading(buf, crates_loading)
+    ui.display_diagnostics(buf, diagnostics, custom_diagnostics)
+
+    vim.list_extend(cache.diagnostics, custom_diagnostics)
 
     local callbacks = M.throttled_updates[buf]
     if callbacks then

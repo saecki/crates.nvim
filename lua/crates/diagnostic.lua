@@ -239,9 +239,10 @@ end
 
 ---@param crate TomlCrate
 ---@param api_crate ApiCrate?
+---out parameter, diagnostics are appended
+---@param diagnostics CratesDiagnostic[]
 ---@return CrateInfo
----@return CratesDiagnostic[]
-function M.process_api_crate(crate, api_crate)
+function M.process_api_crate(crate, api_crate, diagnostics)
     local versions = api_crate and api_crate.versions
     local newest, newest_pre, newest_yanked = util.get_newest(versions, nil)
     newest = newest or newest_pre or newest_yanked
@@ -252,7 +253,6 @@ function M.process_api_crate(crate, api_crate)
         vers_line = crate.vers and crate.vers.line or crate.lines.s,
         match_kind = MatchKind.NOMATCH,
     }
-    local diagnostics = {}
 
     if crate.dep_kind == DepKind.REGISTRY then
         if api_crate then
@@ -366,7 +366,7 @@ function M.process_api_crate(crate, api_crate)
         end
     end
 
-    return info, diagnostics
+    return info
 end
 
 return M
