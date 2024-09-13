@@ -583,7 +583,7 @@ function M.parse_crates(buf)
         local line_nr = i - 1
 
         ---@type string, string
-        local section_start, section_text, section_end = line:match("^%s*()%[([^%s]+)()%s*$")
+        local section_start, section_text, section_end = line:match("^%s*()%[(.-)()%s*$")
         if section_text then
             if dep_section then
                 -- close line span
