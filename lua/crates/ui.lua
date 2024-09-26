@@ -42,11 +42,13 @@ local CUSTOM_NS = vim.api.nvim_create_namespace("crates.nvim")
 ---@type integer
 local DIAGNOSTIC_NS = vim.api.nvim_create_namespace("crates.nvim.diagnostic")
 
+---@param buf integer
 ---@param d CratesDiagnostic
 ---@return vim.Diagnostic
-local function to_vim_diagnostic(d)
+local function to_vim_diagnostic(buf, d)
     ---@type vim.Diagnostic
     return {
+        bufnr = buf,
         lnum = d.lnum,
         end_lnum = d.end_lnum,
         col = d.col,
@@ -68,11 +70,11 @@ function M.display_diagnostics(buf, diagnostics, custom_diagnostics)
 
     local buf_state = M.get_or_init(buf)
     for _, d in ipairs(diagnostics) do
-        local vim_diagnostic = to_vim_diagnostic(d)
+        local vim_diagnostic = to_vim_diagnostic(buf, d)
         table.insert(buf_state.diagnostics, vim_diagnostic)
     end
     for _, d in ipairs(custom_diagnostics) do
-        local vim_diagnostic = to_vim_diagnostic(d)
+        local vim_diagnostic = to_vim_diagnostic(buf, d)
         table.insert(buf_state.custom_diagnostics, vim_diagnostic)
     end
 
