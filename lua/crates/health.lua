@@ -23,6 +23,11 @@ local function binary_installed(name)
 end
 
 function M.check()
+    if not state.cfg then
+        vim.health.info("skipping health check, setup hasn't been called")
+        return
+    end
+
     vim.health.start("Checking plugins")
     if lualib_installed("null-ls") then
         vim.health.ok("null-ls.nvim installed")
