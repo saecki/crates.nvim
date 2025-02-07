@@ -22,12 +22,17 @@ local M = {}
 
 ---@class CompletionItem
 ---@field label string
+---@field labelDetails? CompletionItemLabelDetails
 ---@field detail string?
 ---@field kind integer? -- CompletionItemKind?
 ---@field deprecated boolean?
 ---@field sortText string?
 ---@field insertText string?
 ---@field cmp CmpCompletionExtension?
+
+---@class CompletionItemLabelDetails
+---@field detail? string
+---@field description? string
 
 ---@class CmpCompletionExtension
 ---@field kind_text string
@@ -268,6 +273,9 @@ local function complete_crates(buf, prefix, line, col, crate)
         local result = state.search_cache.results[r]
         table.insert(results, {
             label = result.name,
+            labelDetails = {
+                description = result.newest_version,
+            },
             kind = CompletionItemKind.VALUE,
             detail = table.concat({ result.newest_version, result.description }, "\n"),
             textEditText = insertText(result.name, result.newest_version),
