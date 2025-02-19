@@ -233,7 +233,7 @@ For more information about individual config options see |crates-config|.
                 name = "crates.nvim",
             },
             crates = {
-                enabled = false,
+                enabled = true,
                 min_chars = 3,
                 max_results = 8,
             },
@@ -1461,7 +1461,7 @@ completion.crates                            *crates-config-completion-crates*
 
 
 completion.crates.enabled            *crates-config-completion-crates-enabled*
-    Type: `boolean`, Default: `false`
+    Type: `boolean`, Default: `true`
 
     Enable completing crate names from crates.io search results.
 

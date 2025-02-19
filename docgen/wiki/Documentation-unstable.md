@@ -390,7 +390,7 @@ require("crates").setup {
             name = "crates.nvim",
         },
         crates = {
-            enabled = false,
+            enabled = true,
             min_chars = 3,
             max_results = 8,
         },
