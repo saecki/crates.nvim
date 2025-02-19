@@ -1,4 +1,4 @@
-Documentation for `crates.nvim` `v0.5.0`
+Documentation for `crates.nvim` `v0.6.0`
 
 # Features
 - Complete crate names, versions and features using one of:
@@ -29,33 +29,16 @@ Documentation for `crates.nvim` `v0.5.0`
 - Project-local configuration via [Neoconf](https://github.com/folke/neoconf.nvim)
 
 # Breaking changes
-## The `src` config key was renamed to `completion`
-Change the following:
+## `neoconf` integration has been disabled by default
+It has to be enabled manually from now on:
 ```diff
  require("crates").setup {
--    src = {
-+    completion = {
-         ...
-     }
++    neoconf = {
++        enabled = true,
++    },
  }
 ```
 
-## `nvim-cmp` source registration
-When using `nvim-cmp` and *NOT* the [in-process language server](#in-process-language-server), it has to be manually enabled:
-```diff
- require("crates").setup {
-     src = {
-     completion = {
-         cmp = {
-+            enabled = true,
-         }
-     }
- }
-```
-If you have `autoload` disabled you'll have to call it's setup manually:
-```lua
-require("crates.completion.cmp").setup()
-```
 
 # Setup
 
@@ -122,6 +105,83 @@ vim.api.nvim_create_autocmd("BufRead", {
     callback = function()
         cmp.setup.buffer({ sources = { { name = "crates" } } })
     end,
+})
+```
+</details>
+
+<details>
+<summary>Custom nvim-cmp completion kinds</summary>
+
+Enable custom completion kind in the config.
+```lua
+require("crates").setup {
+    ...
+    completion = {
+        ...
+        cmp = {
+            use_custom_kind = true,
+            -- optionally change the text and highlight groups
+            kind_text = {
+                version = "Version",
+                feature = "Feature",
+            },
+            kind_highlight = {
+                version = "CmpItemKindVersion",
+                feature = "CmpItemKindFeature",
+            },
+        },
+    },
+}
+```
+This will set a custom completion `cmp.kind_text` and `cmp.kind_hl_group` attributes
+to completion items for `nvim-cmp`.
+
+Depending on how you've set up [the nvim-cmp menu](https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations)
+you'll have to handle these explicitly.
+If you haven't changed `nvim-cmp`s `formatting` configuration everything should work out of the box.
+
+Here's an example of how add custom icons.
+```lua
+local kind_icons = {
+    ["Class"] = "🅒 ",
+    ["Interface"] = "🅘 ",
+    ["TypeParameter"] = "🅣 ",
+    ["Struct"] = "🅢 ",
+    ["Enum"] = "🅔 ",
+    ["Unit"] = "🅤 ",
+    ["EnumMember"] = "🅔 ",
+    ["Constant"] = "🅒 ",
+    ["Field"] = "🅕 ",
+    ["Property"] = "🅟 ",
+    ["Variable"] = "🅥 ",
+    ["Reference"] = "🅡 ",
+    ["Function"] = "🅕 ",
+    ["Method"] = "🅜 ",
+    ["Constructor"] = "🅒 ",
+    ["Module"] = "🅜 ",
+    ["File"] = "🅕 ",
+    ["Folder"] = "🅕 ",
+    ["Keyword"] = "🅚 ",
+    ["Operator"] = "🅞 ",
+    ["Snippet"] = "🅢 ",
+    ["Value"] = "🅥 ",
+    ["Color"] = "🅒 ",
+    ["Event"] = "🅔 ",
+    ["Text"] = "🅣 ",
+
+    -- crates.nvim extensions
+    ["Version"] = "🅥 ",
+    ["Feature"] = "🅕 ",
+}
+
+require("cmp").setup({
+    formatting = {
+        fields = { "abbr", "kind" },
+        format = function(_, vim_item)
+            vim_item.kind = kind_icons[vim_item.kind] or "  "
+            return vim_item
+        end,
+    },
 })
 ```
 </details>
@@ -197,7 +257,6 @@ require("crates").setup {
     notification_title = "crates.nvim",
     curl_args = { "-sL", "--retry", "1" },
     max_parallel_requests = 80,
-    open_programs = { "xdg-open", "open" },
     expand_crate_moves_cursor = true,
     enable_update_available_warning = true,
     on_attach = function(bufnr) end,
@@ -343,7 +402,7 @@ require("crates").setup {
             name = "crates.nvim",
         },
         crates = {
-            enabled = false,
+            enabled = true,
             min_chars = 3,
             max_results = 8,
         },
@@ -351,6 +410,10 @@ require("crates").setup {
     null_ls = {
         enabled = false,
         name = "crates.nvim",
+    },
+    neoconf = {
+        enabled = false,
+        namespace = "crates",
     },
     lsp = {
         enabled = false,
@@ -425,30 +488,30 @@ require("crates").show()
 -- Enable or disable UI elements (virtual text and diagnostics).
 require("crates").toggle()
 -- Update data. Optionally specify which `buf` to update.
-require("crates").update(buf: integer|nil)
+require("crates").update(buf: integer?)
 -- Reload data (clears cache). Optionally specify which `buf` to reload.
-require("crates").reload(buf: integer|nil)
+require("crates").reload(buf: integer?)
 
 -- Upgrade the crate on the current line.
 -- If the `alt` flag is passed as true, the opposite of the `smart_insert` config
 -- option will be used to insert the version.
-require("crates").upgrade_crate(alt: boolean|nil)
+require("crates").upgrade_crate(alt: boolean?)
 -- Upgrade the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require("crates").upgrade_crates(alt: boolean|nil)
+require("crates").upgrade_crates(alt: boolean?)
 -- Upgrade all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require("crates").upgrade_all_crates(alt: boolean|nil)
+require("crates").upgrade_all_crates(alt: boolean?)
 
 -- Update the crate on the current line.
 -- See `crates.upgrade_crate()`.
-require("crates").update_crate(alt: boolean|nil)
+require("crates").update_crate(alt: boolean?)
 -- Update the crates on the lines visually selected.
 -- See `crates.upgrade_crate()`.
-require("crates").update_crates(alt: boolean|nil)
+require("crates").update_crates(alt: boolean?)
 -- Update all crates in the buffer.
 -- See `crates.upgrade_crate()`.
-require("crates").update_all_crates(alt: boolean|nil)
+require("crates").update_all_crates(alt: boolean?)
 
 -- Expand a plain crate declaration into an inline table.
 require("crates").expand_plain_crate_to_inline_table()
@@ -483,7 +546,7 @@ require("crates").show_features_popup()
 require("crates").show_dependencies_popup()
 -- Focus the popup (jump into the floating window).
 -- Optionally specify the line to jump to, inside the popup.
-require("crates").focus_popup(line: integer|nil)
+require("crates").focus_popup(line: integer?)
 -- Hide the popup.
 require("crates").hide_popup()
 
@@ -622,11 +685,21 @@ endfunction
 ```
 </details>
 
-## Neoconf Integration
+## neoconf.nvim integration
 
-You can also set project-local settings if you have [Neoconf](https://github.com/folke/neoconf.nvim)
-installed; all settings are exactly the same, but are under the "crates"
-namespace.
+You can also set project-local settings if you have [neoconf.nvim](https://github.com/folke/neoconf.nvim)
+installed; all settings are exactly the same, but are by default under the "crates" namespace.
+
+Neoconf integration has to be enabled, and optionally the namespace can be changed.
+```lua
+require("crates").setup {
+    ...
+    neoconf = {
+        enabled = false,
+        namespace = "crates",
+    },
+}
+```
 
 Example:
 
