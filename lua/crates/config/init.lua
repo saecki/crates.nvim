@@ -1505,7 +1505,7 @@ local schema_completion_crates = section_entry(schema_completion, {
 entry(schema_completion_crates, {
     name = "enabled",
     type = BOOLEAN_TYPE,
-    default = false,
+    default = true,
     description = [[
         Enable completing crate names from crates.io search results.
     ]],
