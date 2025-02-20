@@ -200,10 +200,29 @@ function M.parse_requirements(str)
     return requirements
 end
 
----@param version string
----@param req string
+-- TODO: port https://github.com/dtolnay/semver/blob/master/src%2Fimpls.rs#L51-L107
+---@param version? string
+---@param req? string
 ---@return integer
-local function compare_pre(version, req)
+function M.compare_pre(version, req)
+    if version and req then
+        if version < req then
+            return -1
+        elseif version == req then
+            return 0
+        elseif version > req then
+            return 1
+        end
+    end
+
+    return (req and 1 or 0) - (version and 1 or 0)
+end
+
+-- TODO: port https://github.com/dtolnay/semver/blob/master/src/impls.rs#L109-L153
+---@param version? string
+---@param req? string
+---@return integer
+function M.compare_meta(version, req)
     if version and req then
         if version < req then
             return -1
@@ -231,7 +250,7 @@ local function matches_less(version, req)
         return version.patch < req.patch
     end
 
-    return compare_pre(version.pre, req.pre) < 0
+    return M.compare_pre(version.pre, req.pre) < 0
 end
 
 ---@param version SemVer
@@ -248,7 +267,7 @@ local function matches_greater(version, req)
         return version.patch > req.patch
     end
 
-    return compare_pre(version.pre, req.pre) > 0
+    return M.compare_pre(version.pre, req.pre) > 0
 end
 
 ---@param version SemVer
@@ -304,7 +323,7 @@ local function matches_caret(version, req)
         return false
     end
 
-    return compare_pre(version.pre, req.pre) >= 0
+    return M.compare_pre(version.pre, req.pre) >= 0
 end
 
 ---@param version SemVer
@@ -321,7 +340,7 @@ local function matches_tilde(version, req)
         return version.patch > req.patch
     end
 
-    return compare_pre(version.pre, req.pre) >= 0
+    return M.compare_pre(version.pre, req.pre) >= 0
 end
 
 ---@param v SemVer

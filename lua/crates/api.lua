@@ -266,6 +266,26 @@ function M.fetch_search(name)
     end)
 end
 
+---@param a SemVer
+---@param b SemVer
+---@return boolean
+local function sort_semvers(a, b)
+    if a.major ~= b.major then
+        return a.major > b.major
+    end
+    if a.minor ~= b.minor then
+        return a.minor > b.minor
+    end
+    if a.patch ~= b.patch then
+        return a.patch > b.patch
+    end
+    local pre = semver.compare_pre(a.pre, b.pre)
+    if pre ~= 0 then
+        return pre > 0
+    end
+    return semver.compare_meta(a.meta, b.meta) > 0
+end
+
 ---@param a ApiFeature
 ---@param b ApiFeature
 ---@return boolean
@@ -447,10 +467,7 @@ function M.parse_crate(index_json_str, meta_json)
     end
     -- sort versions
     table.sort(crate.versions, function(a, b)
-        return semver.matches_requirement(a.parsed, {
-            cond = types.Cond.GT,
-            vers = b.parsed,
-        })
+        return sort_semvers(a.parsed, b.parsed)
     end)
 
     return crate
