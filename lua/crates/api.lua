@@ -445,6 +445,13 @@ function M.parse_crate(index_json_str, meta_json)
         version.created = assert(DateTime.parse_rfc_3339(v.created_at))
         table.insert(crate.versions, version)
     end
+    -- sort versions
+    table.sort(crate.versions, function(a, b)
+        return semver.matches_requirement(a.parsed, {
+            cond = types.Cond.GT,
+            vers = b.parsed,
+        })
+    end)
 
     return crate
 end
