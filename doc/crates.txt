@@ -232,6 +232,21 @@ For more information about individual config options see |crates-config|.
                 enabled = false,
                 name = "crates.nvim",
             },
+            blink = {
+                use_custom_kind = true,
+                kind_text = {
+                    version = "Version",
+                    feature = "Feature",
+                },
+                kind_highlight = {
+                    version = "BlinkCmpKindVersion",
+                    feature = "BlinkCmpKindFeature",
+                },
+                kind_icon = {
+                    version = "🅥 ",
+                    feature = "🅕 ",
+                },
+            },
             crates = {
                 enabled = true,
                 min_chars = 3,
@@ -1454,6 +1469,80 @@ completion.coq.name                        *crates-config-completion-coq-name*
     The source name displayed by |coq_nvim|.
 
 
+completion.blink                              *crates-config-completion-blink*
+    Section type: `BlinkConfig`
+
+    Configuration options for |blink-cmp|.
+
+
+                              *crates-config-completion-blink-use_custom_kind*
+completion.blink.use_custom_kind
+    Type: `boolean`, Default: `true`
+
+    Use custom a custom kind to display inside the |blink-cmp| completion menu.
+
+
+completion.blink.kind_text          *crates-config-completion-blink-kind_text*
+    Section type: `BlinkKindTextConfig`
+
+    The kind text shown in the |blink-cmp| completion menu.
+
+
+                            *crates-config-completion-blink-kind_text-version*
+completion.blink.kind_text.version
+    Type: `string`, Default: `"Version"`
+
+    The version kind text shown in the |blink-cmp| completion menu.
+
+
+                            *crates-config-completion-blink-kind_text-feature*
+completion.blink.kind_text.feature
+    Type: `string`, Default: `"Feature"`
+
+    The feature kind text shown in the |blink-cmp| completion menu.
+
+
+                               *crates-config-completion-blink-kind_highlight*
+completion.blink.kind_highlight
+    Section type: `BlinkKindHighlightConfig`
+
+    Highlight groups used for the kind text in the |blink-cmp| completion menu.
+
+
+                       *crates-config-completion-blink-kind_highlight-version*
+completion.blink.kind_highlight.version
+    Type: `string`, Default: `"BlinkCmpKindVersion"`
+
+    Highlight group used for the version kind text in the |blink-cmp| completion menu.
+
+
+                       *crates-config-completion-blink-kind_highlight-feature*
+completion.blink.kind_highlight.feature
+    Type: `string`, Default: `"BlinkCmpKindFeature"`
+
+    Highlight group used for the feature kind text in the |blink-cmp| completion menu.
+
+
+completion.blink.kind_icon          *crates-config-completion-blink-kind_icon*
+    Section type: `BlinkKindTextConfig`
+
+    The kind text shown in the |blink-cmp| completion menu.
+
+
+                            *crates-config-completion-blink-kind_icon-version*
+completion.blink.kind_icon.version
+    Type: `string`, Default: `"🅥 "`
+
+    The version kind icon shown in the |blink-cmp| completion menu.
+
+
+                            *crates-config-completion-blink-kind_icon-feature*
+completion.blink.kind_icon.feature
+    Type: `string`, Default: `"🅕 "`
+
+    The feature kind icon shown in the |blink-cmp| completion menu.
+
+
 completion.crates                            *crates-config-completion-crates*
     Section type: `CrateCompletionConfig`
 
@@ -1665,6 +1754,12 @@ CmpItemKindVersion                              *crates-hl-CmpItemKindVersion*
     Default: links to |Special|
 
 CmpItemKindFeature                              *crates-hl-CmpItemKindFeature*
+    Default: links to |Special|
+
+BlinkCmpKindVersion                            *crates-hl-BlinkCmpKindVersion*
+    Default: links to |Special|
+
+BlinkCmpKindFeature                            *crates-hl-BlinkCmpKindFeature*
     Default: links to |Special|
 
 

@@ -1491,6 +1491,110 @@ entry(schema_completion_coq, {
     ]],
 })
 
+local schema_completion_blink = section_entry(schema_completion, {
+    name = "blink",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "BlinkConfig",
+    },
+    description = [[
+        Configuration options for |blink-cmp|.
+    ]],
+    fields = {},
+})
+entry(schema_completion_blink, {
+    name = "use_custom_kind",
+    type = BOOLEAN_TYPE,
+    default = true,
+    description = [[
+        Use custom a custom kind to display inside the |blink-cmp| completion menu.
+    ]],
+})
+
+local schema_completion_blink_kind_text = section_entry(schema_completion_blink, {
+    name = "kind_text",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "BlinkKindTextConfig",
+    },
+    description = [[
+        The kind text shown in the |blink-cmp| completion menu.
+    ]],
+    fields = {},
+})
+entry(schema_completion_blink_kind_text, {
+    name = "version",
+    type = STRING_TYPE,
+    default = "Version",
+    description = [[
+        The version kind text shown in the |blink-cmp| completion menu.
+    ]],
+})
+entry(schema_completion_blink_kind_text, {
+    name = "feature",
+    type = STRING_TYPE,
+    default = "Feature",
+    description = [[
+        The feature kind text shown in the |blink-cmp| completion menu.
+    ]],
+})
+
+local schema_completion_blink_kind_hl = section_entry(schema_completion_blink, {
+    name = "kind_highlight",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "BlinkKindHighlightConfig",
+    },
+    description = [[
+        Highlight groups used for the kind text in the |blink-cmp| completion menu.
+    ]],
+    fields = {},
+})
+entry(schema_completion_blink_kind_hl, {
+    name = "version",
+    type = STRING_TYPE,
+    default = "BlinkCmpKindVersion",
+    description = [[
+        Highlight group used for the version kind text in the |blink-cmp| completion menu.
+    ]],
+})
+entry(schema_completion_blink_kind_hl, {
+    name = "feature",
+    type = STRING_TYPE,
+    default = "BlinkCmpKindFeature",
+    description = [[
+        Highlight group used for the feature kind text in the |blink-cmp| completion menu.
+    ]],
+})
+
+local schema_completion_blink_kind_icon = section_entry(schema_completion_blink, {
+    name = "kind_icon",
+    type = {
+        config_type = "section",
+        emmylua_annotation = "BlinkKindTextConfig",
+    },
+    description = [[
+        The kind text shown in the |blink-cmp| completion menu.
+    ]],
+    fields = {},
+})
+entry(schema_completion_blink_kind_icon, {
+    name = "version",
+    type = STRING_TYPE,
+    default = "🅥 ",
+    description = [[
+        The version kind icon shown in the |blink-cmp| completion menu.
+    ]],
+})
+entry(schema_completion_blink_kind_icon, {
+    name = "feature",
+    type = STRING_TYPE,
+    default = "🅕 ",
+    description = [[
+        The feature kind icon shown in the |blink-cmp| completion menu.
+    ]],
+})
+
 local schema_completion_crates = section_entry(schema_completion, {
     name = "crates",
     type = {

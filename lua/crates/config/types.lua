@@ -176,6 +176,7 @@
 ---@field text CompletionTextConfig
 ---@field cmp CmpConfig
 ---@field coq CoqConfig
+---@field blink BlinkConfig
 ---@field crates CrateCompletionConfig
 
 ---@class CompletionTextConfig
@@ -199,6 +200,24 @@
 ---@class CoqConfig
 ---@field enabled boolean
 ---@field name string
+
+---@class BlinkConfig
+---@field use_custom_kind boolean
+---@field kind_text BlinkKindTextConfig
+---@field kind_highlight BlinkKindHighlightConfig
+---@field kind_icon BlinkKindTextConfig
+
+---@class BlinkKindTextConfig
+---@field version string
+---@field feature string
+
+---@class BlinkKindHighlightConfig
+---@field version string
+---@field feature string
+
+---@class BlinkKindTextConfig
+---@field version string
+---@field feature string
 
 ---@class CrateCompletionConfig
 ---@field enabled boolean
@@ -373,6 +392,7 @@
 ---@field public text? crates.UserCompletionTextConfig
 ---@field public cmp? crates.UserCmpConfig
 ---@field public coq? crates.UserCoqConfig
+---@field public blink? crates.UserBlinkConfig
 ---@field public crates? crates.UserCrateCompletionConfig
 
 ---@class crates.UserCompletionTextConfig
@@ -396,6 +416,24 @@
 ---@class crates.UserCoqConfig
 ---@field public enabled? boolean
 ---@field public name? string
+
+---@class crates.UserBlinkConfig
+---@field public use_custom_kind? boolean
+---@field public kind_text? crates.UserBlinkKindTextConfig
+---@field public kind_highlight? crates.UserBlinkKindHighlightConfig
+---@field public kind_icon? crates.UserBlinkKindTextConfig
+
+---@class crates.UserBlinkKindTextConfig
+---@field public version? string
+---@field public feature? string
+
+---@class crates.UserBlinkKindHighlightConfig
+---@field public version? string
+---@field public feature? string
+
+---@class crates.UserBlinkKindTextConfig
+---@field public version? string
+---@field public feature? string
 
 ---@class crates.UserCrateCompletionConfig
 ---@field public enabled? boolean

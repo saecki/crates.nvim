@@ -35,6 +35,9 @@ M.highlights = {
 
     { "CmpItemKindVersion",                     { default = true, link = "Special" } },
     { "CmpItemKindFeature",                     { default = true, link = "Special" } },
+
+    { "BlinkCmpKindVersion",                    { default = true, link = "Special" } },
+    { "BlinkCmpKindFeature",                    { default = true, link = "Special" } },
 }
 
 function M.define()

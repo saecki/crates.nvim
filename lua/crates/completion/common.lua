@@ -98,6 +98,11 @@ local function complete_versions(crate, versions)
                 kind_hl_group = state.cfg.completion.cmp.kind_highlight.version,
             }
         end
+        if state.cfg.completion.blink.use_custom_kind then
+            r.kind_name = state.cfg.completion.blink.kind_text.version
+            r.kind_icon = state.cfg.completion.blink.kind_icon.version
+            r.kind_hl = state.cfg.completion.blink.kind_highlight.version
+        end
 
         table.insert(items, r)
     end
@@ -158,6 +163,11 @@ local function complete_features(crate, cf, versions)
                 kind_text = state.cfg.completion.cmp.kind_text.feature,
                 kind_hl_group = state.cfg.completion.cmp.kind_highlight.feature,
             }
+        end
+        if state.cfg.completion.blink.use_custom_kind then
+            r.kind_name = state.cfg.completion.blink.kind_text.feature
+            r.kind_icon = state.cfg.completion.blink.kind_icon.feature
+            r.kind_hl = state.cfg.completion.blink.kind_highlight.feature
         end
 
         table.insert(items, r)

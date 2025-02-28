@@ -389,6 +389,21 @@ require("crates").setup {
             enabled = false,
             name = "crates.nvim",
         },
+        blink = {
+            use_custom_kind = true,
+            kind_text = {
+                version = "Version",
+                feature = "Feature",
+            },
+            kind_highlight = {
+                version = "BlinkCmpKindVersion",
+                feature = "BlinkCmpKindFeature",
+            },
+            kind_icon = {
+                version = "🅥 ",
+                feature = "🅕 ",
+            },
+        },
         crates = {
             enabled = true,
             min_chars = 3,
