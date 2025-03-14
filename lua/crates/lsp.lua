@@ -138,6 +138,12 @@ function M.start_server()
             end,
             ---@param _method string
             ---@param _params any
+            ---@param callback fun(err: nil, action: lsp.CodeAction)
+            ["codeAction/resolve"] = function(_method, _params, callback)
+                callback(nil, _params)
+            end,
+            ---@param _method string
+            ---@param _params any
             ---@param callback fun(err: nil, items: CompletionList?)
             ["textDocument/completion"] = function(_method, _params, callback)
                 completion.complete(function(items)
