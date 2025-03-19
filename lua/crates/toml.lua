@@ -267,72 +267,76 @@ end
 function M.parse_section(text, line_nr, header_col)
     ---@type string, integer, string
     local prefix, suffix_s, suffix = text:match("^(.*)dependencies()(.*)$")
-    if prefix and suffix then
-        prefix = vim.trim(prefix)
-        suffix = vim.trim(suffix)
-        ---@type TomlSection
-        local section = {
-            text = text,
-            invalid = false,
-            kind = TomlSectionKind.DEFAULT,
-            ---end bound is assigned when the section ends
-            ---@diagnostic disable-next-line: param-type-mismatch
-            lines = Span.new(line_nr, nil),
-            header_col = header_col,
-        }
-
-        local target = prefix
-
-        local dev_target = prefix:match("^(.*)dev%-$")
-        if dev_target then
-            target = vim.trim(dev_target)
-            section.kind = TomlSectionKind.DEV
-        end
-
-        local build_target = prefix:match("^(.*)build%-$")
-        if build_target then
-            target = vim.trim(build_target)
-            section.kind = TomlSectionKind.BUILD
-        end
-
-        local workspace_target = target:match("^(.*)workspace%s*%.$")
-        if workspace_target then
-            section.workspace = true
-            target = vim.trim(workspace_target)
-        end
-
-        if target then
-            local t = target:match("^target%s*%.(.+)%.$")
-            if t then
-                section.target = vim.trim(t)
-                target = ""
-            end
-        end
-
-        if suffix then
-            local n_s, n, n_e = suffix:match("^%.%s*()(.+)()%s*$")
-            if n then
-                section.name = vim.trim(n)
-                local offset = header_col.s + 1 + suffix_s - 1
-                section.name_col = Span.new(n_s - 1 + offset, n_e - 1 + offset)
-                suffix = ""
-            end
-        end
-
-        section.invalid = (target ~= "" or suffix ~= "")
-            or (section.workspace and section.kind ~= TomlSectionKind.DEFAULT)
-            or (section.workspace and section.target ~= nil)
-
-        return Section.new(section)
+    if not (prefix and suffix) then
+        return nil
     end
 
-    return nil
+    prefix = vim.trim(prefix)
+    suffix = vim.trim(suffix)
+
+    ---@type TomlSection
+    local section = {
+        text = text,
+        invalid = false,
+        kind = TomlSectionKind.DEFAULT,
+        ---end bound is assigned when the section ends
+        ---@diagnostic disable-next-line: param-type-mismatch
+        lines = Span.new(line_nr, nil),
+        header_col = header_col,
+    }
+
+    local target = prefix
+
+    local dev_target = prefix:match("^(.*)dev%-$")
+    if dev_target then
+        target = vim.trim(dev_target)
+        section.kind = TomlSectionKind.DEV
+    end
+
+    local build_target = prefix:match("^(.*)build%-$")
+    if build_target then
+        target = vim.trim(build_target)
+        section.kind = TomlSectionKind.BUILD
+    end
+
+    local workspace_target = target:match("^(.*)workspace%s*%.$")
+    if workspace_target then
+        section.workspace = true
+        target = vim.trim(workspace_target)
+    end
+
+    if target ~= "" then
+        local t = target:match("^target%s*%.(.+)%.$")
+        if t then
+            section.target = vim.trim(t)
+            target = ""
+        else
+            -- not a depndency section
+            return nil
+        end
+    end
+
+    if suffix then
+        local n_s, n, n_e = suffix:match("^%.%s*()(.+)()%s*$")
+        if n then
+            section.name = vim.trim(n)
+            local offset = header_col.s + 1 + suffix_s - 1
+            section.name_col = Span.new(n_s - 1 + offset, n_e - 1 + offset)
+            suffix = ""
+        end
+    end
+
+    section.invalid = (suffix ~= "")
+        or (section.workspace and section.kind ~= TomlSectionKind.DEFAULT)
+        or (section.workspace and section.target ~= nil)
+
+    return Section.new(section)
 end
 
 ---@param name string
 ---@return string
 local function table_bool_pattern(name)
-    return "^%s*".. name .. "%s*=%s*()([^%s]*)()%s*$"
+    return "^%s*" .. name .. "%s*=%s*()([^%s]*)()%s*$"
 end
 
 ---@param name string
@@ -677,7 +681,6 @@ function M.parse_crates(buf)
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.feat = feat
             end
-
         elseif dep_section then
             local crate = M.parse_inline_crate(line, line_nr)
             if crate then
