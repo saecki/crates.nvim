@@ -662,6 +662,8 @@ on_attach                                            *crates-config-on_attach*
 
     NOTE: Ignored if |crates-config-autoload| is disabled.
 
+    NOTE: If you're using the |LspAttach| autocmd, this isn't necessary.
+
 
 text                                                      *crates-config-text*
     Section type: `TextConfig`

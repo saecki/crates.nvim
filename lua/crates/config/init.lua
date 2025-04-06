@@ -239,6 +239,8 @@ entry(M.schema, {
         Callback to run when a `Cargo.toml` file is opened.
 
         NOTE: Ignored if |crates-config-autoload| is disabled.
+
+        NOTE: If you're using the |LspAttach| autocmd, this isn't necessary.
     ]],
 })
 
