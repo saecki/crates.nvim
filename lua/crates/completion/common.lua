@@ -18,6 +18,7 @@ local M = {}
 
 ---@class CompletionList
 ---@field isIncomplete boolean
+---@field itemDefaults lsp.ItemDefaults?
 ---@field items CompletionItem[]
 
 ---@class CompletionItem
@@ -29,6 +30,11 @@ local M = {}
 ---@field sortText string?
 ---@field insertText string?
 ---@field cmp CmpCompletionExtension?
+---
+--- blink.cmp extensions
+---@field kind_name string?
+---@field kind_icon string?
+---@field kind_hl string?
 
 ---@class CompletionItemLabelDetails
 ---@field detail? string
@@ -72,6 +78,17 @@ end
 local function complete_versions(crate, versions)
     local items = {}
 
+    local line, col = util.cursor_pos()
+
+    local edit_range = nil
+    for _, req in ipairs(crate:vers_reqs()) do
+        local req_col = req.vers_col:moved(crate.vers.col.s, crate.vers.col.s)
+        if req_col:moved(0, 1):contains(col) then
+            edit_range = req_col:range(line)
+            break
+        end
+    end
+
     for i, v in ipairs(versions) do
         ---@type CompletionItem
         local r = {
@@ -109,6 +126,9 @@ local function complete_versions(crate, versions)
 
     return {
         isIncomplete = false,
+        itemDefaults = {
+            editRange = edit_range,
+        },
         items = items,
     }
 end

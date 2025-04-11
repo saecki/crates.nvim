@@ -71,9 +71,9 @@ M.ApiDependencyKind = {
 
 ---@class Requirement
 ---@field cond Cond
----@field cond_col Span
+---@field cond_col Span -- Relative to the version requirement start
 ---@field vers SemVer
----@field vers_col Span
+---@field vers_col Span -- Relative to the version requirement start
 
 ---@enum Cond
 M.Cond = {
