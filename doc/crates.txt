@@ -1526,7 +1526,7 @@ completion.blink.kind_highlight.feature
 
 
 completion.blink.kind_icon          *crates-config-completion-blink-kind_icon*
-    Section type: `BlinkKindTextConfig`
+    Section type: `BlinkKindIconConfig`
 
     The kind text shown in the |blink-cmp| completion menu.
 

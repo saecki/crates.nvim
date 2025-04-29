@@ -205,7 +205,7 @@
 ---@field use_custom_kind boolean
 ---@field kind_text BlinkKindTextConfig
 ---@field kind_highlight BlinkKindHighlightConfig
----@field kind_icon BlinkKindTextConfig
+---@field kind_icon BlinkKindIconConfig
 
 ---@class BlinkKindTextConfig
 ---@field version string
@@ -215,7 +215,7 @@
 ---@field version string
 ---@field feature string
 
----@class BlinkKindTextConfig
+---@class BlinkKindIconConfig
 ---@field version string
 ---@field feature string
 
@@ -421,7 +421,7 @@
 ---@field public use_custom_kind? boolean
 ---@field public kind_text? crates.UserBlinkKindTextConfig
 ---@field public kind_highlight? crates.UserBlinkKindHighlightConfig
----@field public kind_icon? crates.UserBlinkKindTextConfig
+---@field public kind_icon? crates.UserBlinkKindIconConfig
 
 ---@class crates.UserBlinkKindTextConfig
 ---@field public version? string
@@ -431,7 +431,7 @@
 ---@field public version? string
 ---@field public feature? string
 
----@class crates.UserBlinkKindTextConfig
+---@class crates.UserBlinkKindIconConfig
 ---@field public version? string
 ---@field public feature? string
 

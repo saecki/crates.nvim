@@ -1573,7 +1573,7 @@ local schema_completion_blink_kind_icon = section_entry(schema_completion_blink,
     name = "kind_icon",
     type = {
         config_type = "section",
-        emmylua_annotation = "BlinkKindTextConfig",
+        emmylua_annotation = "BlinkKindIconConfig",
     },
     description = [[
         The kind text shown in the |blink-cmp| completion menu.
