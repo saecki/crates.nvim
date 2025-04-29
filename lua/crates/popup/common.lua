@@ -102,7 +102,10 @@ local function set_buf_body(text)
     for i, line in ipairs(text) do
         local pos = state.cfg.popup.padding
         for _, t in ipairs(line) do
-            vim.api.nvim_buf_add_highlight(M.buf, M.POPUP_NS, t.hl, M.TOP_OFFSET + i - 1, pos, pos + t.text:len())
+            vim.api.nvim_buf_set_extmark(M.buf, M.POPUP_NS, M.TOP_OFFSET + i - 1, pos, {
+                end_col = pos + t.text:len(),
+                hl_group = t.hl,
+            })
             pos = pos + t.text:len()
         end
     end
@@ -130,7 +133,10 @@ local function set_buf_content(buf, title, text)
     local padding = string.rep(" ", state.cfg.popup.padding)
     local title_text = padding .. title .. padding
     vim.api.nvim_buf_set_lines(buf, 0, 2, false, { title_text, "" })
-    vim.api.nvim_buf_add_highlight(buf, M.POPUP_NS, state.cfg.popup.highlight.title, 0, 0, -1)
+    vim.api.nvim_buf_set_extmark(buf, M.POPUP_NS, 0, 0, {
+        end_col = title_text:len(),
+        hl_group = state.cfg.popup.highlight.title,
+    })
 
     set_buf_body(text)
 
