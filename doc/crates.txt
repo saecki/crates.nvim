@@ -77,6 +77,7 @@ For more information about individual config options see |crates-config|.
 >lua
     require('crates').setup {
         smart_insert = true,
+        remove_enabled_default_features = true,
         insert_closing_quote = true,
         autoload = true,
         autoupdate = true,
@@ -567,6 +568,13 @@ smart_insert                                      *crates-config-smart_insert*
 
         Resulting requirement:
         `>0.8, <1.6`
+
+
+                               *crates-config-remove_enabled_default_features*
+remove_enabled_default_features
+    Type: `boolean`, Default: `true`
+
+    Whether to remove `default_features = true` when toggled.
 
 
 insert_closing_quote                      *crates-config-insert_closing_quote*

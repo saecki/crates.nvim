@@ -9,6 +9,20 @@ local SemVer = types.SemVer
 
 local M = {}
 
+---@alias TomlCrateEntryKey =
+--- | "workspace"
+--- | "vers"
+--- | "registry"
+--- | "path"
+--- | "git"
+--- | "branch"
+--- | "tag"
+--- | "rev"
+--- | "pkg"
+--- | "def"
+--- | "feat"
+--- | "opt"
+
 local default_key_order = {
     "workspace",
     "vers",
@@ -24,11 +38,11 @@ local default_key_order = {
     "opt",
 }
 
----Returns the column at which to insert the key and whether there is another key before that
+---Returns the column at which to insert the key and whether there is another key before that.
 ---Requires that the key to insert isn't present in the crate,
 ---and that at least one other key is present
 ---@param crate TomlCrate
----@param key string
+---@param key TomlCrateEntryKey
 ---@return integer, boolean
 function M.col_to_insert(crate, key)
     local col = 0
@@ -66,11 +80,11 @@ end
 ---Returns the line at which to insert the key
 ---Requires that the key to insert isn't present in the crate
 ---@param crate TomlCrate
----@param key string
+---@param key TomlCrateEntryKey
 ---@return integer
 function M.line_to_insert(crate, key)
     local line = 0
-    local before = false
+    local before = true
     for _, k in ipairs(default_key_order) do
         if key == k then
             if line ~= 0 then
@@ -85,7 +99,7 @@ function M.line_to_insert(crate, key)
         local entry = crate[k]
         if entry then
             if before then
-                line = entry.decl_col.e
+                line = entry.line + 1
             else
                 return entry.line
             end
@@ -97,7 +111,71 @@ function M.line_to_insert(crate, key)
     return crate.lines.s + 1
 end
 
----comment
+---@param buf integer
+---@param crate TomlCrate
+---@param entry TomlCrateEntry
+local function remove_inline_table_entry(buf, crate, entry)
+    local index = 1
+    local prev_entry_end = nil
+    local next_entry_start = nil
+    for _, k in ipairs(default_key_order) do
+        ---@type TomlCrateEntry
+        local e = crate[k]
+        if e then
+            if e.decl_col.s < entry.decl_col.s then
+                index = index + 1
+
+                if not prev_entry_end or prev_entry_end < e.decl_col.e then
+                    prev_entry_end = e.decl_col.e
+                end
+            elseif e.decl_col.s > entry.decl_col.s then
+                if not next_entry_start or next_entry_start > e.decl_col.s then
+                    next_entry_start = e.decl_col.s
+                end
+            end
+        end
+    end
+
+    local col_start = entry.decl_col.s
+    local col_end = entry.decl_col.e
+    local text = {}
+    if index == 1 then
+        if next_entry_start then
+            col_end = next_entry_start
+        end
+    else
+        if prev_entry_end then
+            col_start = prev_entry_end
+            if not next_entry_start then
+                text = { " " }
+            end
+        end
+    end
+
+    vim.api.nvim_buf_set_text(buf, entry.line, col_start, entry.line, col_end, text)
+end
+
+---Removes the key and returns the crate's span of lines after editing.
+---@param buf integer
+---@param crate TomlCrate
+---@param key TomlCrateEntryKey
+---@return Span
+function M.remove_entry(buf, crate, key)
+    ---@type TomlCrateEntry
+    local entry = crate[key]
+
+    if crate.syntax == TomlCrateSyntax.TABLE then
+        local line = entry.line
+        vim.api.nvim_buf_set_lines(buf, line, line + 1, false, {})
+        return crate.lines:moved(0, -1)
+    elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        remove_inline_table_entry(buf, crate, entry)
+        return crate.lines
+    else -- crate.syntax == TomlCrateSyntax.PLAIN then
+        error("unreachable")
+    end
+end
+
 ---@param buf integer
 ---@param crate TomlCrate
 ---@param name string
@@ -487,15 +565,19 @@ end
 ---@param crate TomlCrate
 ---@return Span
 function M.enable_def_features(buf, crate)
-    vim.api.nvim_buf_set_text(
-        buf,
-        crate.def.line,
-        crate.def.col.s,
-        crate.def.line,
-        crate.def.col.e,
-        { "true" }
-    )
-    return Span.pos(crate.def.line)
+    if state.cfg.remove_enabled_default_features then
+        return M.remove_entry(buf, crate, "def")
+    else
+        vim.api.nvim_buf_set_text(
+            buf,
+            crate.def.line,
+            crate.def.col.s,
+            crate.def.line,
+            crate.def.col.e,
+            { "true" }
+        )
+        return Span.pos(crate.def.line)
+    end
 end
 
 ---@param buf integer

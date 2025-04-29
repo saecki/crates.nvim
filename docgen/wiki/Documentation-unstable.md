@@ -235,6 +235,7 @@ Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 ```lua
 require("crates").setup {
     smart_insert = true,
+    remove_enabled_default_features = true,
     insert_closing_quote = true,
     autoload = true,
     autoupdate = true,

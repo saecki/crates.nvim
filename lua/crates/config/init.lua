@@ -117,6 +117,14 @@ entry(M.schema, {
     ]],
 })
 entry(M.schema, {
+    name = "remove_enabled_default_features",
+    type = BOOLEAN_TYPE,
+    default = true,
+    description = [[
+        Whether to remove `default_features = true` when toggled.
+    ]],
+})
+entry(M.schema, {
     name = "insert_closing_quote",
     type = BOOLEAN_TYPE,
     default = true,
