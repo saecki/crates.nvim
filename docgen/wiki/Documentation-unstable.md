@@ -236,6 +236,7 @@ Any [Nerd Font](https://www.nerdfonts.com/font-downloads) should work.
 require("crates").setup {
     smart_insert = true,
     remove_enabled_default_features = true,
+    remove_empty_features = true,
     insert_closing_quote = true,
     autoload = true,
     autoupdate = true,

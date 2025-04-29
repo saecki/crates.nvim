@@ -526,6 +526,10 @@ end
 ---@param feature TomlFeature
 ---@return Span
 function M.disable_feature(buf, crate, feature)
+    if state.cfg.remove_empty_features and #crate:feats() == 1 then
+        return M.remove_entry(buf, crate, "feat")
+    end
+
     -- check reference in case of duplicates
     ---@type integer
     local index

@@ -6,6 +6,7 @@
 ---@class Config
 ---@field smart_insert boolean
 ---@field remove_enabled_default_features boolean
+---@field remove_empty_features boolean
 ---@field insert_closing_quote boolean
 ---@field autoload boolean
 ---@field autoupdate boolean
@@ -245,6 +246,7 @@
 ---@class crates.UserConfig
 ---@field public smart_insert? boolean
 ---@field public remove_enabled_default_features? boolean
+---@field public remove_empty_features? boolean
 ---@field public insert_closing_quote? boolean
 ---@field public autoload? boolean
 ---@field public autoupdate? boolean

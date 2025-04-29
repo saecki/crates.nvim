@@ -78,6 +78,7 @@ For more information about individual config options see |crates-config|.
     require('crates').setup {
         smart_insert = true,
         remove_enabled_default_features = true,
+        remove_empty_features = true,
         insert_closing_quote = true,
         autoload = true,
         autoupdate = true,
@@ -575,6 +576,12 @@ remove_enabled_default_features
     Type: `boolean`, Default: `true`
 
     Whether to remove `default_features = true` when toggled.
+
+
+remove_empty_features                    *crates-config-remove_empty_features*
+    Type: `boolean`, Default: `true`
+
+    Whether to the empty `features = []` list when the last feature is disabled.
 
 
 insert_closing_quote                      *crates-config-insert_closing_quote*

@@ -125,6 +125,14 @@ entry(M.schema, {
     ]],
 })
 entry(M.schema, {
+    name = "remove_empty_features",
+    type = BOOLEAN_TYPE,
+    default = true,
+    description = [[
+        Whether to the empty `features = []` list when the last feature is disabled.
+    ]],
+})
+entry(M.schema, {
     name = "insert_closing_quote",
     type = BOOLEAN_TYPE,
     default = true,
