@@ -401,8 +401,8 @@ require("crates").setup {
                 feature = "BlinkCmpKindFeature",
             },
             kind_icon = {
-                version = "🅥 ",
-                feature = "🅕 ",
+                version = " ",
+                feature = " ",
             },
         },
         crates = {

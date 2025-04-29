@@ -1583,7 +1583,7 @@ local schema_completion_blink_kind_icon = section_entry(schema_completion_blink,
 entry(schema_completion_blink_kind_icon, {
     name = "version",
     type = STRING_TYPE,
-    default = "🅥 ",
+    default = " ",
     description = [[
         The version kind icon shown in the |blink-cmp| completion menu.
     ]],
@@ -1591,7 +1591,7 @@ entry(schema_completion_blink_kind_icon, {
 entry(schema_completion_blink_kind_icon, {
     name = "feature",
     type = STRING_TYPE,
-    default = "🅕 ",
+    default = " ",
     description = [[
         The feature kind icon shown in the |blink-cmp| completion menu.
     ]],

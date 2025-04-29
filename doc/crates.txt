@@ -243,8 +243,8 @@ For more information about individual config options see |crates-config|.
                     feature = "BlinkCmpKindFeature",
                 },
                 kind_icon = {
-                    version = "🅥 ",
-                    feature = "🅕 ",
+                    version = " ",
+                    feature = " ",
                 },
             },
             crates = {
@@ -1533,14 +1533,14 @@ completion.blink.kind_icon          *crates-config-completion-blink-kind_icon*
 
                             *crates-config-completion-blink-kind_icon-version*
 completion.blink.kind_icon.version
-    Type: `string`, Default: `"🅥 "`
+    Type: `string`, Default: `" "`
 
     The version kind icon shown in the |blink-cmp| completion menu.
 
 
                             *crates-config-completion-blink-kind_icon-feature*
 completion.blink.kind_icon.feature
-    Type: `string`, Default: `"🅕 "`
+    Type: `string`, Default: `" "`
 
     The feature kind icon shown in the |blink-cmp| completion menu.
 
