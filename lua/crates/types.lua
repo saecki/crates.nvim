@@ -75,16 +75,26 @@ M.ApiDependencyKind = {
 ---@field vers SemVer
 ---@field vers_col Span -- Relative to the version requirement start
 
+-- See: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#version-requirement-syntax
 ---@enum Cond
 M.Cond = {
+    -- `=` equals
     EQ = 1,
+    -- `<` less than
     LT = 2,
+    -- `<=` less than or equals
     LE = 3,
+    -- `>` greater than
     GT = 4,
+    -- `>=` greater than or equals
     GE = 5,
+    -- `^` caret
     CR = 6,
+    -- `~` tilde
     TL = 7,
+    -- `*` wildcard
     WL = 8,
+    -- blank (no explicit condition), equivalent to caret
     BL = 9,
 }
 
