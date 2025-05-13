@@ -244,7 +244,8 @@ end
 ---@return CrateInfo
 function M.process_api_crate(crate, api_crate, diagnostics)
     local versions = api_crate and api_crate.versions
-    local newest, newest_pre, newest_yanked = util.get_newest(versions, nil)
+    local allow_pre = semver.allows_pre(crate:vers_reqs())
+    local newest, newest_pre, newest_yanked = util.get_newest(versions, nil, allow_pre)
     newest = newest or newest_pre or newest_yanked
 
     ---@type CrateInfo
@@ -269,18 +270,13 @@ function M.process_api_crate(crate, api_crate, diagnostics)
         end
 
         if newest then
-            local newest_matches = semver.matches_requirements(newest.parsed, crate:vers_reqs())
-            local pre_matches = newest_pre and semver.matches_requirements(newest_pre.parsed, crate:vers_reqs())
-
-            if newest_matches or pre_matches then
-                -- matching release or pre-release found
-                local matched = pre_matches and newest_pre or newest
-
-                info.vers_match = matched
+            if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
+                -- version matches, no upgrade available
+                info.vers_match = newest
                 info.match_kind = MatchKind.VERSION
 
-                if crate.vers and crate.vers.text ~= edit.version_text(crate, matched.parsed) then
-                    info.vers_update = matched
+                if crate.vers and crate.vers.text ~= edit.version_text(crate, newest.parsed) then
+                    info.vers_update = newest
                 end
             else
                 -- version does not match, upgrade available
