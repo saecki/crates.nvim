@@ -269,13 +269,18 @@ function M.process_api_crate(crate, api_crate, diagnostics)
         end
 
         if newest then
-            if semver.matches_requirements(newest.parsed, crate:vers_reqs()) then
-                -- version matches, no upgrade available
-                info.vers_match = newest
+            local newest_matches = semver.matches_requirements(newest.parsed, crate:vers_reqs())
+            local pre_matches = newest_pre and semver.matches_requirements(newest_pre.parsed, crate:vers_reqs())
+
+            if newest_matches or pre_matches then
+                -- matching release or pre-release found
+                local matched = pre_matches and newest_pre or newest
+
+                info.vers_match = matched
                 info.match_kind = MatchKind.VERSION
 
-                if crate.vers and crate.vers.text ~= edit.version_text(crate, newest.parsed) then
-                    info.vers_update = newest
+                if crate.vers and crate.vers.text ~= edit.version_text(crate, matched.parsed) then
+                    info.vers_update = matched
                 end
             else
                 -- version does not match, upgrade available
