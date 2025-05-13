@@ -111,15 +111,16 @@ end
 
 ---@param versions ApiVersion[]?
 ---@param reqs Requirement[]?
+---@param allow_pre boolean? -- fallback to use when `reqs` is nil
 ---@return ApiVersion?
 ---@return ApiVersion?
 ---@return ApiVersion?
-function M.get_newest(versions, reqs)
+function M.get_newest(versions, reqs, allow_pre)
     if not versions or not next(versions) then
         return nil
     end
 
-    local allow_pre = reqs and semver.allows_pre(reqs) or false
+    allow_pre = reqs and semver.allows_pre(reqs) or allow_pre or false
 
     ---@type ApiVersion?, ApiVersion?, ApiVersion?
     local newest_yanked, newest_pre, newest

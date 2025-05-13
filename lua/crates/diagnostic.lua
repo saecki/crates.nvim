@@ -244,7 +244,8 @@ end
 ---@return CrateInfo
 function M.process_api_crate(crate, api_crate, diagnostics)
     local versions = api_crate and api_crate.versions
-    local newest, newest_pre, newest_yanked = util.get_newest(versions, nil)
+    local allow_pre = semver.allows_pre(crate:vers_reqs())
+    local newest, newest_pre, newest_yanked = util.get_newest(versions, nil, allow_pre)
     newest = newest or newest_pre or newest_yanked
 
     ---@type CrateInfo
