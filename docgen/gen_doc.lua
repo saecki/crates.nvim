@@ -5,7 +5,13 @@ exec nvim -l "$0" "$@"
 
 local config = require("lua.crates.config.init")
 local highlight = require("lua.crates.highlight")
-local version = "unstable"
+local version = vim.env["RELEASE_VERSION"] or "unstable"
+local stable_version = nil
+do
+    local file = io.open("docgen/shared/stable.txt")
+    stable_version = vim.trim(file:read("*a"))
+    file:close()
+end
 
 ---@param line_iter fun(): string?
 ---@param line string
@@ -399,6 +405,7 @@ local function gen_vim_doc()
         else
             ---@type string
             l = l:gsub("<VERSION>", version)
+            l = l:gsub("<STABLE>", stable_version)
             table.insert(lines, l)
         end
     end
@@ -433,6 +440,7 @@ local function gen_markdown(inpath, outpath)
             end
         else
             l = l:gsub("<VERSION>", version)
+            l = l:gsub("<STABLE>", stable_version)
             table.insert(lines, l)
         end
     end

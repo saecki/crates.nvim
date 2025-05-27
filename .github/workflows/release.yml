@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'User facing version name (eg: 0.3.0)'
+        type: string
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: 'v${{ github.event.inputs.version_name }}'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update docs
+        run: make release
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'chore: v${{ github.event.inputs.version_name  }} release'
+          tag: 'v${{ github.event.inputs.version_name }} --force'
+
+      - name: Create github release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 'v${{ github.event.inputs.version_name }}'
+          body: ''
+          tag_name: 'v${{ github.event.inputs.version_name }}'
+          prerelease: false
+          draft: true

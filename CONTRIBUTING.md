@@ -64,3 +64,11 @@ would be replaced by the generated default configuration, but
 is replaced by the contents of the `docgen/shared/keymaps.lua` file.\
 The indentation of the placeholder has to be a multiple of 4 spaces
 and will be applied to the replacement file.
+
+## Releases
+__Manual steps:__
+1. Update changelog and add migration guide
+2. Run github `Release` action and input new version
+2. Verify release
+  - Publish draft-release
+  - update `stable` tag
