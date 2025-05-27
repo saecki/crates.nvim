@@ -1,6 +1,6 @@
 #!/bin/sh
 _=[[
-exec lua "$0" "$@"
+exec nvim -l "$0" "$@"
 ]]
 
 local config = require("lua.crates.config.init")
