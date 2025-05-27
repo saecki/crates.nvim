@@ -598,9 +598,11 @@ entry(schema_popup, {
         config_type = { "string", "table" },
         emmylua_annotation = "string|string[]",
     },
-    default = "none",
+    default = vim.opt_global.winborder:get(),
     description = [[
         Same as nvim_open_win config.border.
+
+        If unset, defaults to global |'winborder'|.
     ]],
 })
 entry(schema_popup, {
