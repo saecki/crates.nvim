@@ -30,11 +30,16 @@ jobs:
         message: 'chore: v${{ github.event.inputs.version_name  }} release'
         tag: 'v${{ github.event.inputs.version_name }} --force'
 
+    - name: Upload Documentation to Wiki
+      uses: spenserblack/actions-wiki@v0.3.0
+      with:
+        path: docgen/wiki
+
     - name: Create github release
       uses: softprops/action-gh-release@v2
       with:
         name: 'v${{ github.event.inputs.version_name }}'
-        body: ''
+        body: 'See [CHANGELOG.md](https://github.com/saecki/crates.nvim/blob/main/CHANGELOG.md)'
         tag_name: 'v${{ github.event.inputs.version_name }}'
         prerelease: false
         draft: true
