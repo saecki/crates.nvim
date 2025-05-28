@@ -15,4 +15,3 @@ release:
 	@test $${RELEASE_VERSION?Please set environment variable RELEASE_VERSION}
 	echo "${RELEASE_VERSION}" > docgen/shared/stable.txt
 	nvim -l docgen/gen_doc.lua
-	mv docgen/wiki/Documentation-unstable.md "docgen/wiki/Documentation-${RELEASE_VERSION}.md"

@@ -457,7 +457,7 @@ end
 local function gen_docs()
     gen_vim_doc()
     gen_markdown("docgen/templates/README.md.in", "README.md")
-    gen_markdown("docgen/templates/documentation.md.in", "docgen/wiki/Documentation-unstable.md")
+    gen_markdown("docgen/templates/documentation.md.in", string.format("docgen/wiki/Documentation-%s.md", version))
 end
 
 gen_docs()
