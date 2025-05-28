@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.1
+
+### Bug Fixes
+- api: make crate id lowercase (#164)
+
 ## v0.7.0
 
 ### Features
