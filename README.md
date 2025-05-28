@@ -69,7 +69,7 @@ lua require('crates').setup()
 </details>
 
 ## [Documentation](https://github.com/Saecki/crates.nvim/wiki)
-- [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.7.0)
+- [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.7.1)
 - [Unstable](https://github.com/Saecki/crates.nvim/wiki/Documentation-unstable)
 
 ## Related projects

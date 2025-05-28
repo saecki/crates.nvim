@@ -2,7 +2,7 @@
 *crates.nvim*
 
 Author:   Tobias Schmitz <tobiasschmitz2001@gmail.com>
-Version:  unstable
+Version:  v0.7.1
 Homepage: <https://github.com/saecki/crates.nvim>
 License:  MIT license
 

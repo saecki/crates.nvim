@@ -1,4 +1,4 @@
-Documentation for `crates.nvim` `unstable`
+Documentation for `crates.nvim` `v0.7.1`
 
 # Features
 - Complete crate names, versions and features using one of:
