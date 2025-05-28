@@ -532,6 +532,7 @@ local function fetch_crate(name, callbacks)
     local refetch = false
     ---@param id string
     local function fetch_index(id)
+        id = string.lower(id)
         ---@type string
         local url
         if #id == 1 then
