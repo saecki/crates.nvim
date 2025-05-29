@@ -118,7 +118,7 @@ For more information about individual config options see |crates-config|.
             hide_on_select = false,
             copy_register = '"',
             style = "minimal",
-            border = "none",
+            border = nil,
             show_version_date = false,
             show_dependency_version = true,
             max_height = 30,
@@ -822,9 +822,12 @@ popup.style                                        *crates-config-popup-style*
 
 
 popup.border                                      *crates-config-popup-border*
-    Type: `string|string[]`, Default: `"none"`
+    Type: `string|string[]`, Default: `nil`
 
     Same as nvim_open_win config.border.
+
+    If unset or nil, defaults to global 'winborder' on nvim >= 0.11.0, else
+    "none".
 
 
 popup.show_version_date                *crates-config-popup-show_version_date*

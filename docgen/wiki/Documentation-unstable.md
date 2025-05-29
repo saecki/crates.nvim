@@ -276,7 +276,7 @@ require("crates").setup {
         hide_on_select = false,
         copy_register = '"',
         style = "minimal",
-        border = "none",
+        border = nil,
         show_version_date = false,
         show_dependency_version = true,
         max_height = 30,
