@@ -598,11 +598,12 @@ entry(schema_popup, {
         config_type = { "string", "table" },
         emmylua_annotation = "string|string[]",
     },
-    default = vim.version.ge(vim.version(), {0, 11, 0}) and vim.opt_global.winborder:get() or "none",
+    default = nil,
     description = [[
         Same as nvim_open_win config.border.
 
-        If unset, defaults to global 'winborder' on nvim >= 0.11.0, else "none".
+        If unset or nil, defaults to global 'winborder' on nvim >= 0.11.0, else
+        "none".
     ]],
 })
 entry(schema_popup, {
