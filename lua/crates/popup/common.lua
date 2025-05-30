@@ -165,6 +165,22 @@ function M.update_win(width, height, title, text, opts)
     vim.api.nvim_win_set_cursor(M.win, { l, 0 })
 end
 
+--- Get the border of the popup menu.
+---
+--- Returns the first valid value out of the following choices (in that order):
+--- 1. Config value `popup.border`, if configured
+--- 2. Global `winborder`, if neovim version >= 0.11.0
+--- 3. `"none"`
+local function popup_border()
+    if state.cfg.popup.border ~= nil then
+        return state.cfg.popup.border
+    elseif vim.version.ge(vim.version(), {0, 11, 0}) then
+        return vim.opt_global.winborder:get()
+    else
+        return "none"
+    end
+end
+
 ---@param width integer
 ---@param height integer
 ---@param title string
@@ -185,7 +201,7 @@ function M.open_win(width, height, title, text, opts, configure)
         width = width,
         height = height,
         style = state.cfg.popup.style,
-        border = state.cfg.popup.border,
+        border = popup_border(),
     })
 
     -- add key mappings
