@@ -58,7 +58,7 @@ local function update(buf, reload)
     buf = buf or util.current_buf()
 
     if reload then
-        state.api_cache = {}
+        state:clear_cache()
         api.cancel_jobs()
     end
 

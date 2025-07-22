@@ -1,18 +1,3 @@
----@class State
----@field cfg Config
----@field api_cache table<string,ApiCrate>
----@field buf_cache table<integer,BufCache>
----@field search_cache SearchCache
----@field visible boolean
-local State = {
-    buf_cache = {},
-    search_cache = {
-        results = {},
-        searches = {},
-    },
-    visible = true,
-}
-
 ---@param name string
 ---@return string
 local function normalize_crate_name(name)
@@ -41,8 +26,6 @@ function ApiCache:__newindex(key, value)
     return rawset(self, id, value)
 end
 
-State.api_cache = ApiCache.new()
-
 ---@class BufCache
 ---@field crates table<string,TomlCrate>
 ---@field info table<string,CrateInfo>
@@ -52,5 +35,29 @@ State.api_cache = ApiCache.new()
 ---@class SearchCache
 ---@field searches table<string, string[]>
 ---@field results table<string, ApiCrateSummary>
+
+---@class State
+---@field cfg Config
+---@field buf_cache table<integer,BufCache>
+---@field api_cache table<string,ApiCrate>
+---@field search_cache SearchCache
+---@field visible boolean
+local State = {
+    buf_cache = {},
+    api_cache = ApiCache.new(),
+    search_cache = {
+        results = {},
+        searches = {},
+    },
+    visible = true,
+}
+
+function State:clear_cache()
+    self.api_cache = ApiCache.new()
+    self.search_cache = {
+        results = {},
+        searches = {},
+    }
+end
 
 return State
