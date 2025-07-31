@@ -41,7 +41,7 @@ function M.server(opts)
         ---@param method string
         ---@param params any
         ---@param callback fun(method: string?, params: any)
-        ---@param notify_reply_callback fun(request_id: integer)
+        ---@param notify_reply_callback? fun(request_id: integer)
         ---@return boolean
         ---@return integer
         function srv.request(method, params, callback, notify_reply_callback)
