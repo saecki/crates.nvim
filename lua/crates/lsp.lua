@@ -41,9 +41,10 @@ function M.server(opts)
         ---@param method string
         ---@param params any
         ---@param callback fun(method: string?, params: any)
+        ---@param notify_reply_callback? fun(request_id: integer)
         ---@return boolean
         ---@return integer
-        function srv.request(method, params, callback)
+        function srv.request(method, params, callback, notify_reply_callback)
             pcall(on_request, method, params)
             local handler = handlers[method]
             if handler then
@@ -56,6 +57,9 @@ function M.server(opts)
                 callback(nil, nil)
             end
             request_id = request_id + 1
+            if notify_reply_callback then
+                notify_reply_callback(request_id)
+            end
             return true, request_id
         end
 
