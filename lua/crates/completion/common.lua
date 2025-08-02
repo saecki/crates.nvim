@@ -314,7 +314,12 @@ local function complete_crates(buf, prefix, line, col, crate)
     end
 
     return {
-        isIncomplete = false,
+        -- Always set `isIncomplete = true`.
+        -- A completion list that has isIncomplete set to false, might prevent a
+        -- completion engine from requesting further completions. This is correct
+        -- behavior, because normally the results will only get reduced by further
+        -- characters typed.
+        isIncomplete = true,
         items = results,
         itemDefaults = itemDefaults,
     }
