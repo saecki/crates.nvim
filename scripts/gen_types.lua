@@ -16,7 +16,8 @@ local function gen_config_types(lines, schema, type_name, user)
     ---@param s SchemaElement
     ---@return boolean
     local function skip(s)
-        return s.deprecated ~= nil or s.hidden and user
+        return s.deprecated ~= nil and (s.deprecated.hard or s.deprecated.new_field)
+            or s.hidden and user
     end
 
     for _, s in ipairs(schema) do
