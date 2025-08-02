@@ -33,8 +33,6 @@ function M.check()
         vim.health.ok("null-ls.nvim installed")
     elseif state.cfg.null_ls.enabled then
         vim.health.warn("null-ls.nvim not found, but `null_ls.enabled` is set")
-    else
-        vim.health.info("null-ls.nvim not found")
     end
     if state.cfg.lsp.enabled and state.cfg.lsp.actions and state.cfg.null_ls.enabled then
         vim.health.warn("lsp actions and null-ls.nvim actions are enabled, only one should be necessary")
@@ -44,24 +42,18 @@ function M.check()
         vim.health.ok("neoconf.nvim installed")
     elseif state.cfg.neoconf.enabled then
         vim.health.warn("neoconf.nvim not found, but `neoconf.enabled` is set")
-    else
-        vim.health.info("neoconf.nvim not found")
     end
 
     if lualib_installed("cmp") then
         vim.health.ok("nvim-cmp installed")
     elseif state.cfg.completion.cmp.enabled then
         vim.health.warn("nvim-cmp not found, but `completion.cmp.enabled` is set")
-    else
-        vim.health.info("nvim-cmp not found")
     end
 
     if lualib_installed("coq") then
         vim.health.ok("coq_nvim installed")
     elseif state.cfg.completion.coq.enabled then
         vim.health.warn("coq_nvim not found, but `completion.coq.enabled` is set")
-    else
-        vim.health.info("coq_nvim not found")
     end
 
     if state.cfg.lsp.enabled and state.cfg.lsp.completion then

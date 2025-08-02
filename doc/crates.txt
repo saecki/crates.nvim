@@ -734,9 +734,6 @@ text.error                                          *crates-config-text-error*
     Format string used when there was an error loading crate information.
 
 
-open_programs                                    *crates-config-open_programs*
-    DEPRECATED: `vim.ui.open()` is used instead
-
 highlight                                            *crates-config-highlight*
     Section type: `HighlightConfig`
 
@@ -1414,6 +1411,7 @@ completion.cmp                                  *crates-config-completion-cmp*
 
 
 completion.cmp.enabled                  *crates-config-completion-cmp-enabled*
+    DEPRECATED: The nvim-cmp source will be removed soon. Use the in-process language server instead.
     Type: `boolean`, Default: `false`
 
     Whether to load and register the |nvim-cmp| source.
@@ -1478,6 +1476,7 @@ completion.coq                                  *crates-config-completion-coq*
 
 
 completion.coq.enabled                  *crates-config-completion-coq-enabled*
+    DEPRECATED: The coq_nvim source will be removed soon. Use the in-process language server instead.
     Type: `boolean`, Default: `false`
 
     Whether to load and register the |coq_nvim| source.
@@ -1590,21 +1589,24 @@ completion.crates.max_results    *crates-config-completion-crates-max_results*
 
 
 src                                                        *crates-config-src*
-    DEPRECATED: please use |crates-config-completion| instead.
-
+    DEPRECATED: This will be ignored.
+    Please use |crates-config-completion| instead.
 null_ls                                                *crates-config-null_ls*
+    DEPRECATED: The null-ls source will be removed soon. Use the in-process language server instead.
     Section type: `NullLsConfig`
 
     Configuration options for null-ls.nvim actions.
 
 
 null_ls.enabled                                *crates-config-null_ls-enabled*
+    DEPRECATED: The null-ls source will be removed soon. Use the in-process language server instead.
     Type: `boolean`, Default: `false`
 
     Whether to register the |null-ls.nvim| source.
 
 
 null_ls.name                                      *crates-config-null_ls-name*
+    DEPRECATED: The null-ls source will be removed soon. Use the in-process language server instead.
     Type: `string`, Default: `"crates.nvim"`
 
     The |null-ls.nvim| name.
@@ -1650,6 +1652,8 @@ lsp.on_attach                                    *crates-config-lsp-on_attach*
     Type: `fun(client: vim.lsp.Client, bufnr: integer)`, Default: `function(client, bufnr) end`
 
     Callback to run when the in-process language server attaches to a buffer.
+
+    NOTE: Alternatively you can also use the `LspAttach` autocmd.
 
     NOTE: Ignored if |crates-config-autoload| is disabled.
 

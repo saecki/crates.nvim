@@ -284,7 +284,8 @@ end
 ---@param lines string[]
 ---@param path string[]
 ---@param schema SchemaElement[]
-local function gen_vimdoc_config(lines, path, schema)
+---@param parent_deprecated Deprecated?
+local function gen_vimdoc_config(lines, path, schema, parent_deprecated)
     for _, s in ipairs(schema) do
         if s.hidden then
             goto continue
@@ -302,34 +303,43 @@ local function gen_vimdoc_config(lines, path, schema)
             table.insert(lines, key)
         end
 
-        if s.deprecated then
-            if s.deprecated.new_field then
-                local nf = "crates-config-" .. table.concat(s.deprecated.new_field, "-")
-                table.insert(lines, string.format("    DEPRECATED: please use |%s| instead.", nf))
-            elseif s.deprecated.msg then
-                table.insert(lines, "    DEPRECATED: " .. s.deprecated.msg)
-            elseif s.deprecated.hard then
-                table.insert(lines, "    DEPRECATED: ignored")
-            end
-            table.insert(lines, "")
-        else
-            if s.type.config_type == "section" then
-                table.insert(lines, string.format("    Section type: `%s`", s.type.emmylua_annotation))
-                table.insert(lines, "")
+        local deprecated = s.deprecated or parent_deprecated
+        if deprecated then
+            if deprecated.msg then
+                local msg = string.sub(deprecated.msg, 1, 1):upper() .. string.sub(deprecated.msg, 2)
+                table.insert(lines, "    DEPRECATED: " .. msg)
+            elseif not deprecated.hard then
+                table.insert(lines, "    DEPRECATED: This will stop working soon.")
             else
-                local t = s.type.emmylua_annotation
-                local d = s.default_text or vim.inspect(s.default)
-                table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
-                table.insert(lines, "")
+                table.insert(lines, "    DEPRECATED: This will be ignored.")
             end
+            if deprecated.new_field then
+                local nf = "crates-config-" .. table.concat(deprecated.new_field, "-")
+                table.insert(lines, string.format("    Please use |%s| instead.", nf))
+            end
+        end
 
+        if deprecated and deprecated.hard then
+            goto continue
+        end
+
+        if s.type.config_type == "section" then
+            table.insert(lines, string.format("    Section type: `%s`", s.type.emmylua_annotation))
+        else
+            local t = s.type.emmylua_annotation
+            local d = s.default_text or vim.inspect(s.default)
+            table.insert(lines, string.format("    Type: `%s`, Default: `%s`", t, d))
+        end
+        table.insert(lines, "")
+
+        if s.description then
             local description = s.description:gsub("^    ", ""):gsub("\n    ", "\n")
             table.insert(lines, description)
             table.insert(lines, "")
         end
 
         if s.type.config_type == "section" then
-            gen_vimdoc_config(lines, p, s.fields)
+            gen_vimdoc_config(lines, p, s.fields, deprecated)
         end
 
         ::continue::
@@ -348,7 +358,7 @@ local function gen_def_config(lines, indent, path, schema)
     end
 
     for _, s in ipairs(schema) do
-        if not s.hidden and not s.deprecated then
+        if not s.hidden and not (s.deprecated and (s.deprecated.hard or s.deprecated.new_field)) then
             local name = s.name
 
             if s.type.config_type == "section" then
@@ -396,7 +406,7 @@ local function gen_vim_doc()
             elseif ph == "SUBCOMMANDS" then
                 gen_vimdoc_subcommands(lines)
             elseif ph == "CONFIGURATION" then
-                gen_vimdoc_config(lines, {}, config.schema)
+                gen_vimdoc_config(lines, {}, config.schema, nil)
             elseif ph == "HIGHLIGHTS" then
                 gen_vimdoc_highlights(lines)
             else

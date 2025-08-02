@@ -1,13 +1,10 @@
 Documentation for `crates.nvim` `unstable`
 
 # Features
-- Complete crate names, versions and features using one of:
-    - In-process language server (`lsp`)
-    - [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source (`completion.cmp`)
-    - [coq.nvim](https://github.com/ms-jpq/coq_nvim) source (`completion.coq`)
-- Code actions using one of:
-    - In-process language server (`lsp`)
-    - [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim)
+- In-process language server (`lsp`)
+    - Complete crate names, versions and features
+    - Code actions
+    - Hover
 - Update crates to newest compatible version
 - Upgrade crates to newest version
 - Respect existing version requirements and update them in an elegant way (`smart_insert`)
@@ -31,10 +28,12 @@ Documentation for `crates.nvim` `unstable`
 # Setup
 
 ## In-process language server
-This is the recommended way to enable completion and code actions.
+The in-process langauge server is disabled by default. It can be enabled
+to support completions, code actions, and hover.
 
 Enable the in-process language server in the setup and select whether to enable
-code actions, auto completion and hover.
+code actions, auto completion and hover. The `on_attach` function, or the `LspAttach`
+autocmd can be used to setup key mappings, just like for other language servers.
 ```lua
 require("crates").setup {
     ...
@@ -52,56 +51,30 @@ require("crates").setup {
 ```
 
 ## Auto completion
-Completion is supported in a few different ways, either by the [in-process language server](#in-process-language-server),
-which also supports code actions, or by one of the following sources.
+Auto completion works through the [in-process language server](#in-process-language-server).
 
-### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
+### Crate name completion
 
-Enable it in the setup.
+Crate names of dependencies can be completed from searches on `crates.io`.
+This has to be enabled seperately:
+
 ```lua
 require("crates").setup {
     ...
     completion = {
-        ...
-        cmp = {
-            enabled = true,
-        },
-    },
+        crates = {
+            enabled = true -- Disabled by default
+            max_results = 8 -- The maximum number of search results to display
+            min_chars = 3 -- The minimum number of charaters to type before completions begin appearing
+        }
+    }
 }
 ```
 
-And add it to your list of sources.
-```lua
-require("cmp").setup {
-    ...
-    sources = {
-        { name = "path" },
-        { name = "buffer" },
-        { name = "nvim_lsp" },
-        ...
-        { name = "crates" },
-    },
-}
-```
+### [nvim-cmp](https://github.com/hrsh7th/nvim-cmp) source
 
-<details>
-<summary>Or add it lazily.</summary>
-
-```lua
-vim.api.nvim_create_autocmd("BufRead", {
-    group = vim.api.nvim_create_augroup("CmpSourceCargo", { clear = true }),
-    pattern = "Cargo.toml",
-    callback = function()
-        cmp.setup.buffer({ sources = { { name = "crates" } } })
-    end,
-})
-```
-</details>
-
-<details>
-<summary>Custom nvim-cmp completion kinds</summary>
-
-Enable custom completion kind in the config.
+Custom completion kinds are enabled by default, but icons need to be specified
+manually. The default kind names and highlight groups are as follows:
 ```lua
 require("crates").setup {
     ...
@@ -125,11 +98,12 @@ require("crates").setup {
 This will set a custom completion `cmp.kind_text` and `cmp.kind_hl_group` attributes
 to completion items for `nvim-cmp`.
 
-Depending on how you've set up [the nvim-cmp menu](https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations)
-you'll have to handle these explicitly.
-If you haven't changed `nvim-cmp`s `formatting` configuration everything should work out of the box.
+<details>
+<summary>Custom nvim-cmp kind icons</summary>
 
-Here's an example of how add custom icons.
+How custom icons can be added depends on how you've set up [the nvim-cmp menu](https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations).
+
+Here's an example of how add custom icons, you might need to adapt some things.
 ```lua
 local kind_icons = {
     ["Class"] = "🅒 ",
@@ -175,57 +149,15 @@ require("cmp").setup({
 ```
 </details>
 
-### [coq.nvim](https://github.com/ms-jpq/coq_nvim) source
-Enable it in the setup, and optionally change the display name.
-```lua
-require("crates").setup {
-    ...
-    completion = {
-        ...
-        coq = {
-            enabled = true,
-            name = "crates.nvim",
-        },
-    },
-}
-```
-
-### Crate name completion
-
-Crate names in dependencies can be completed from searches on `crates.io`. This has to be
-enabled seperately:
-
-```lua
-require("crates").setup {
-    ...
-    completion = {
-        crates = {
-            enabled = true -- disabled by default
-            max_results = 8 -- The maximum number of search results to display
-            min_chars = 3 -- The minimum number of charaters to type before completions begin appearing
-        }
-    }
-}
-```
-
 ## Code actions
-Code actions are supported in a few different ways, either by the [in-process language server](#in-process-language-server),
-which also supports completion, or by the null-ls/none-ls source.
+Code actions work through the [in-process language server](#in-process-language-server).
+But you can also set up key mappings for specific actions. See [key mappings](#key-mappings).
 
-### [null-ls.nvim](https://github.com/jose-elias-alvarez/null-ls.nvim)/[none-ls.nvim](https://github.com/nvimtools/none-ls.nvim) source
-Enable it in the setup, and optionally change the display name.
-```lua
-require("crates").setup {
-    ...
-    null_ls = {
-        enabled = true,
-        name = "crates.nvim",
-    },
-}
-```
+## Hover
+Hover is supported through the [in-process language server](#in-process-language-server).
+But you can also set up key mappings for specific menus. See [key mappings](#key-mappings).
 
 # Config
-
 For more information about the config types have a look at the vimdoc or [`lua/crates/config/types.lua`](https://github.com/Saecki/crates.nvim/blob/main/lua/crates/config/types.lua).
 
 ## Default

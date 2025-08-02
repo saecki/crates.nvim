@@ -335,15 +335,6 @@ entry(schema_text, {
         Format string used when there was an error loading crate information.
     ]],
 })
--- DEPRECATED
-entry(M.schema, {
-    name = "open_programs",
-    type = STRING_ARRAY_TYPE,
-    deprecated = {
-        msg = "`vim.ui.open()` is used instead",
-        hard = true,
-    },
-})
 
 
 local schema_hl = section_entry(M.schema, {
@@ -1418,6 +1409,9 @@ entry(schema_completion_cmp, {
             require("crates.completion.cmp").setup()
         <
     ]],
+    deprecated = {
+        msg = "the nvim-cmp source will be removed soon. Use the in-process language server instead.",
+    },
 })
 entry(schema_completion_cmp, {
     name = "use_custom_kind",
@@ -1502,6 +1496,9 @@ entry(schema_completion_coq, {
     description = [[
         Whether to load and register the |coq_nvim| source.
     ]],
+    deprecated = {
+        msg = "the coq_nvim source will be removed soon. Use the in-process language server instead.",
+    },
 })
 entry(schema_completion_coq, {
     name = "name",
@@ -1653,12 +1650,13 @@ entry(schema_completion_crates, {
         complete a crate name.
     ]],
 })
--- deprecated
+-- DEPRECATED
 entry(M.schema, {
     name = "src",
     type = BOOLEAN_TYPE,
     deprecated = {
         new_field = { "completion" },
+        hard = true,
     }
 })
 
@@ -1673,6 +1671,9 @@ local schema_null_ls = section_entry(M.schema, {
         Configuration options for null-ls.nvim actions.
     ]],
     fields = {},
+    deprecated = {
+        msg = "the null-ls source will be removed soon. Use the in-process language server instead.",
+    },
 })
 entry(schema_null_ls, {
     name = "enabled",
@@ -1757,6 +1758,8 @@ entry(schema_lsp, {
     default_text = "function(client, bufnr) end",
     description = [[
         Callback to run when the in-process language server attaches to a buffer.
+
+        NOTE: Alternatively you can also use the `LspAttach` autocmd.
 
         NOTE: Ignored if |crates-config-autoload| is disabled.
     ]],
