@@ -223,7 +223,6 @@ function M.compare_pre(version, req)
         return -1
     end
 
-    -- Both are non-empty prerelease strings, compare them
     ---@param str string
     ---@return string[]
     local function split_identifiers(str)
