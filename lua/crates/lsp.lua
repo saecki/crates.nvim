@@ -40,25 +40,34 @@ function M.server(opts)
 
         ---@param method string
         ---@param params any
-        ---@param callback fun(method: string?, params: any)
-        ---@param notify_reply_callback? fun(request_id: integer)
+        ---@param callback fun(error: any?, data: any?)
+        ---@param notify_reply_callback fun(request_id: integer)?
         ---@return boolean
         ---@return integer
         function srv.request(method, params, callback, notify_reply_callback)
+            request_id = request_id + 1
             pcall(on_request, method, params)
+
+            ---@param error any
+            ---@param data any
+            local function callback_wrapper(error, data)
+                callback(error, data)
+                if notify_reply_callback then
+                    vim.schedule(function()
+                        notify_reply_callback(request_id)
+                    end)
+                end
+            end
+
             local handler = handlers[method]
             if handler then
-                handler(method, params, callback)
+                handler(method, params, callback_wrapper)
             elseif method == "initialize" then
-                callback(nil, {
+                callback_wrapper(nil, {
                     capabilities = capabilities,
                 })
             elseif method == "shutdown" then
-                callback(nil, nil)
-            end
-            request_id = request_id + 1
-            if notify_reply_callback then
-                notify_reply_callback(request_id)
+                callback_wrapper(nil, nil)
             end
             return true, request_id
         end
