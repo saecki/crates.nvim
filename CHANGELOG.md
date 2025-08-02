@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+- deprecate the nvim-cmp, coq_nvim, and null-ls sources (#172)
+
+### Bug Fixes
+- missing crates in completion (#170)
+- prevent lsp request from beeing endlesly pending (#167)
+- handle winborder:get return correctly (#165)
+
+### Features
+- support nvim 0.11 winborder as popup.border (#163)
+
 ## v0.7.1
 
 ### Bug Fixes
