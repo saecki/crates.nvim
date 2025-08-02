@@ -200,22 +200,112 @@ function M.parse_requirements(str)
     return requirements
 end
 
--- TODO: port https://github.com/dtolnay/semver/blob/master/src%2Fimpls.rs#L51-L107
 ---@param version? string
 ---@param req? string
 ---@return integer
 function M.compare_pre(version, req)
-    if version and req then
-        if version < req then
+    -- Handle identical strings (optimization)
+    if version == req then
+        return 0
+    end
+
+    -- Handle empty prerelease cases
+    local version_empty = not version or version == ""
+    local req_empty = not req or req == ""
+
+    if version_empty and req_empty then
+        return 0
+    elseif version_empty then
+        -- A real release compares greater than prerelease
+        return 1
+    elseif req_empty then
+        -- Prerelease compares less than the real release
+        return -1
+    end
+
+    -- Both are non-empty prerelease strings, compare them
+    ---@param str string
+    ---@return string[]
+    local function split_identifiers(str)
+        local parts = {}
+        for part in str:gmatch("[^%.]+") do
+            table.insert(parts, part)
+        end
+        return parts
+    end
+
+    ---@param str string
+    ---@return boolean
+    local function is_numeric(str)
+        return str:match("^%d+$") ~= nil
+    end
+
+    ---@param a string
+    ---@param b string
+    ---@return integer
+    local function compare_numeric_strings(a, b)
+        -- First compare by length (shorter number is smaller)
+        local len_cmp = #a - #b
+        if len_cmp ~= 0 then
+            return len_cmp
+        end
+        -- If same length, compare lexically
+        if a < b then
             return -1
-        elseif version == req then
-            return 0
-        elseif version > req then
+        elseif a > b then
             return 1
+        else
+            return 0
         end
     end
 
-    return (req and 1 or 0) - (version and 1 or 0)
+    local version_parts = version and split_identifiers(version) or {}
+    local req_parts = req and split_identifiers(req) or {}
+
+    local max_len = math.max(#version_parts, #req_parts)
+
+    for i = 1, max_len do
+        local version_part = version_parts[i]
+        local req_part = req_parts[i]
+
+        -- If one side has no more parts, the longer one is greater
+        if not version_part then
+            return -1
+        elseif not req_part then
+            return 1
+        end
+
+        local version_numeric = is_numeric(version_part)
+        local req_numeric = is_numeric(req_part)
+
+        ---@type integer
+        local cmp
+        if version_numeric and req_numeric then
+            -- Both numeric: compare numerically
+            cmp = compare_numeric_strings(version_part, req_part)
+        elseif version_numeric and not req_numeric then
+            -- Numeric has lower precedence than non-numeric
+            cmp = -1
+        elseif not version_numeric and req_numeric then
+            -- Non-numeric has higher precedence than numeric
+            cmp = 1
+        else
+            -- Both non-numeric: compare lexically
+            if version_part < req_part then
+                cmp = -1
+            elseif version_part > req_part then
+                cmp = 1
+            else
+                cmp = 0
+            end
+        end
+
+        if cmp ~= 0 then
+            return cmp
+        end
+    end
+
+    return 0
 end
 
 -- TODO: port https://github.com/dtolnay/semver/blob/master/src/impls.rs#L109-L153
