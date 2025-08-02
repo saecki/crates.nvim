@@ -224,16 +224,6 @@ function M.compare_pre(version, req)
     end
 
     ---@param str string
-    ---@return string[]
-    local function split_identifiers(str)
-        local parts = {}
-        for part in str:gmatch("[^%.]+") do
-            table.insert(parts, part)
-        end
-        return parts
-    end
-
-    ---@param str string
     ---@return boolean
     local function is_numeric(str)
         return str:match("^%d+$") ~= nil
@@ -258,8 +248,8 @@ function M.compare_pre(version, req)
         end
     end
 
-    local version_parts = version and split_identifiers(version) or {}
-    local req_parts = req and split_identifiers(req) or {}
+    local version_parts = version and vim.split(version, "%.") or {}
+    local req_parts = req and vim.split(req, "%.") or {}
 
     local max_len = math.max(#version_parts, #req_parts)
 
