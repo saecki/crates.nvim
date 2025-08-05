@@ -178,9 +178,17 @@ local function popup_border()
         ---@type string[]
         local winborder = vim.opt_global.winborder:get()
 
-        -- This returns { "<value>" } if something like "single" or "rounded"
-        -- is set, or a list of border chars.
-        return #winborder == 1 and winborder[1] or winborder
+        -- This returns:
+        -- * An empty list if unset, or
+        -- * { "<value>" } if something like "single" or "rounded" is set, or
+        -- * A list of border chars.
+        if #winborder == 0 then
+            return "none"
+        elseif #winborder == 1 then
+            return winborder[1]
+        else
+            return winborder
+        end
     else
         return "none"
     end
