@@ -73,3 +73,4 @@ __Manual steps:__
 4. Verify release
   - Publish draft-release
   - update `stable` tag
+  - update wiki homepage
