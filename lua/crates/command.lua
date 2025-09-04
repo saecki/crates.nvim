@@ -1,41 +1,37 @@
-local actions = require("crates.actions")
-local core = require("crates.core")
-local popup = require("crates.popup")
-
 local M = {}
 
 ---@type {[1]: string, [2]: function}[]
 local sub_commands = {
-    { "hide",                               core.hide },
-    { "show",                               core.show },
-    { "toggle",                             core.toggle },
-    { "update",                             core.update },
-    { "reload",                             core.reload },
+    { "hide",                               function() return require("crates.core").hide() end },
+    { "show",                               function() return require("crates.core").show() end },
+    { "toggle",                             function() return require("crates.core").toggle() end },
+    { "update",                             function() return require("crates.core").update() end },
+    { "reload",                             function() return require("crates.core").reload() end },
 
-    { "upgrade_crate",                      actions.upgrade_crate },
-    { "upgrade_crates",                     actions.upgrade_crates },
-    { "upgrade_all_crates",                 actions.upgrade_all_crates },
-    { "update_crate",                       actions.update_crate },
-    { "update_crates",                      actions.update_crates },
-    { "update_all_crates",                  actions.update_all_crates },
-    { "use_git_source",                     actions.use_git_source },
+    { "upgrade_crate",                      function() return require("crates.actions").upgrade_crate() end },
+    { "upgrade_crates",                     function() return require("crates.actions").upgrade_crates() end },
+    { "upgrade_all_crates",                 function() return require("crates.actions").upgrade_all_crates() end },
+    { "update_crate",                       function() return require("crates.actions").update_crate() end },
+    { "update_crates",                      function() return require("crates.actions").update_crates() end },
+    { "update_all_crates",                  function() return require("crates.actions").update_all_crates() end },
+    { "use_git_source",                     function() return require("crates.actions").use_git_source() end },
 
-    { "expand_plain_crate_to_inline_table", actions.expand_plain_crate_to_inline_table },
-    { "extract_crate_into_table",           actions.extract_crate_into_table },
+    { "expand_plain_crate_to_inline_table", function() return require("crates.actions").expand_plain_crate_to_inline_table() end },
+    { "extract_crate_into_table",           function() return require("crates.actions").extract_crate_into_table() end },
 
-    { "open_homepage",                      actions.open_homepage },
-    { "open_repository",                    actions.open_repository },
-    { "open_documentation",                 actions.open_documentation },
-    { "open_cratesio",                      actions.open_crates_io },
+    { "open_homepage",                      function() return require("crates.actions").open_homepage() end },
+    { "open_repository",                    function() return require("crates.actions").open_repository() end },
+    { "open_documentation",                 function() return require("crates.actions").open_documentation() end },
+    { "open_cratesio",                      function() return require("crates.actions").open_crates_io() end },
 
-    { "popup_available",                    popup.available },
-    { "show_popup",                         popup.show },
-    { "show_crate_popup",                   popup.show_crate },
-    { "show_versions_popup",                popup.show_versions },
-    { "show_features_popup",                popup.show_features },
-    { "show_dependencies_popup",            popup.show_dependencies },
-    { "focus_popup",                        popup.focus },
-    { "hide_popup",                         popup.hide },
+    { "popup_available",                    function() return require("crates.popup").available() end },
+    { "show_popup",                         function() return require("crates.popup").show() end },
+    { "show_crate_popup",                   function() return require("crates.popup").show_crate() end },
+    { "show_versions_popup",                function() return require("crates.popup").show_versions() end },
+    { "show_features_popup",                function() return require("crates.popup").show_features() end },
+    { "show_dependencies_popup",            function() return require("crates.popup").show_dependencies() end },
+    { "focus_popup",                        function() return require("crates.popup").focus() end },
+    { "hide_popup",                         function() return require("crates.popup").hide() end },
 }
 
 ---@param arglead string
