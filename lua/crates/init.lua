@@ -1,12 +1,8 @@
 local actions = require("crates.actions")
 local async = require("crates.async")
-local command = require("crates.command")
-local config = require("crates.config")
 local core = require("crates.core")
-local highlight = require("crates.highlight")
 local popup = require("crates.popup")
 local state = require("crates.state")
-local util = require("crates.util")
 
 local function attach()
     if state.cfg.completion.cmp.enabled then
@@ -18,15 +14,12 @@ local function attach()
     end
 
     core.update()
-    state.cfg.on_attach(util.current_buf())
+    state.cfg.on_attach(require("crates.util").current_buf())
 end
 
 ---@param cfg crates.UserConfig
 local function setup(cfg)
-    state.cfg = config.build(cfg)
-
-    command.register()
-    highlight.define()
+    state.cfg = require("crates.config").build(cfg)
 
     ---@type integer
     local group = vim.api.nvim_create_augroup("Crates", {})
