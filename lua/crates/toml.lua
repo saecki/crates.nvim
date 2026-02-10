@@ -348,7 +348,7 @@ end
 ---@param name string
 ---@return string
 local function table_str_array_pattern(name)
-    return "%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*$"
+    return "%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]%s*$"
 end
 
 ---@param name string
@@ -366,7 +366,7 @@ end
 ---@param name string
 ---@return string
 local function inline_table_str_array_pattern(name)
-    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]?%s*()[,]?.*[}]?%s*$"
+    return "^%s*()([^%s]+)()%s*=%s*{.-[,]?()%s*" .. name .. "%s*=%s*%[()([^%]]*)()[%]]%s*()[,]?.*[}]?%s*$"
 end
 
 M.TABLE_VERS_PATTERN = table_str_pattern("version")
@@ -426,6 +426,25 @@ function M.parse_crate_table_str_array(line, line_nr, pattern)
             decl_col = Span.new(0, line:len()),
         }
     end
+end
+
+---Check if a line starts a multiline array for features
+---@param line string
+---@param name string
+---@return integer?, string?
+local function check_multiline_array_start(line, name)
+    -- Match "name = [" with optional content but no closing ]
+    -- Capture everything after the opening bracket
+    -- Pattern explanation: [^%]]* means zero or more chars that are not ]
+    -- (In Lua patterns, %] is the escape sequence for literal ])
+    -- NOTE: This assumes feature names don't contain ] which is guaranteed
+    -- by Cargo spec (features can only contain ASCII alphanumeric, _, -, +)
+    local pattern = "%s*" .. name .. "%s*=%s*%[()([^%]]*)$"
+    local array_s, partial_text = line:match(pattern)
+    if array_s then
+        return array_s, partial_text
+    end
+    return nil, nil
 end
 
 ---@param line string
@@ -553,6 +572,15 @@ function M.parse_inline_crate(line, line_nr)
         return crate
     end
 
+    -- Fallback: Check if it looks like an inline table start "name = {"
+    local pattern = [[^%s*()([^%s]+)()%s*=%s*{]]
+    local name_s, name, name_e = line:match(pattern)
+    if name then
+        crate.explicit_name = name
+        crate.explicit_name_col = Span.new(name_s - 1, name_e - 1)
+        return crate
+    end
+
     return nil
 end
 
@@ -581,6 +609,10 @@ function M.parse_crates(buf)
     local dep_section_crate
     ---@type WorkingCrate[]
     local working_crates = {}
+    ---@type table<string,any>?
+    local multiline_feat
+    ---@type string[]?
+    local multiline_feat_lines
 
     for i, line in ipairs(lines) do
         line = M.trim_comments(line)
@@ -594,7 +626,7 @@ function M.parse_crates(buf)
                 dep_section.lines.e = line_nr
 
                 -- push pending crate
-                if dep_section_crate then
+                if dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.TABLE then
                     dep_section_crate.lines = dep_section.lines
                     table.insert(crates, Crate.new(dep_section_crate))
                 end
@@ -607,8 +639,45 @@ function M.parse_crates(buf)
 
             dep_section = M.parse_section(section_text, line_nr, header_col)
             dep_section_crate = nil
+            multiline_feat = nil
+            multiline_feat_lines = nil
             if dep_section then
                 table.insert(sections, dep_section)
+            end
+        elseif multiline_feat then
+            -- We're in the middle of a multiline features array
+            -- Pattern explanation: [^%]]* means zero or more chars that are not ]
+            -- (In Lua patterns, %] is the escape sequence for literal ])
+            -- NOTE: This assumes feature names don't contain ] which is guaranteed
+            -- by Cargo spec (features can only contain ASCII alphanumeric, _, -, +)
+            local content_before_close = line:match("^%s*([^%]]*)%]")
+            if content_before_close then
+                -- Found the closing bracket
+                table.insert(multiline_feat_lines, content_before_close)
+                multiline_feat.text = table.concat(multiline_feat_lines, "\n")
+
+                if not dep_section_crate then
+                    -- Must be section crate case if dep_section_crate is nil
+                    dep_section_crate = {
+                        explicit_name = dep_section.name,
+                        explicit_name_col = dep_section.name_col,
+                        section = dep_section,
+                        syntax = TomlCrateSyntax.TABLE,
+                    }
+                end
+
+                dep_section_crate.feat = multiline_feat
+                dep_section_crate.feat.items = M.parse_crate_features(multiline_feat.text)
+                multiline_feat = nil
+                multiline_feat_lines = nil
+
+                -- Check if we should clear dep_section_crate (inline crate logic)
+                if dep_section_crate.syntax ~= TomlCrateSyntax.TABLE then
+                    dep_section_crate = nil
+                end
+            else
+                -- Still accumulating content
+                table.insert(multiline_feat_lines, line)
             end
         elseif dep_section and dep_section.name then
             ---@class EmptyCrate: TomlCrate
@@ -676,15 +745,51 @@ function M.parse_crates(buf)
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.opt = opt
             end
+            
+            -- Try to parse features on a single line first
             local feat = M.parse_crate_table_str_array(line, line_nr, M.TABLE_FEAT_PATTERN)
             if feat then
                 dep_section_crate = dep_section_crate or empty_crate
                 dep_section_crate.feat = feat
+            else
+                -- Check if this starts a multiline features array
+                local array_s, initial_content = check_multiline_array_start(line, "features")
+                if array_s then
+                    multiline_feat_lines = { initial_content }
+                    multiline_feat = {
+                        text = "", -- Will be filled when we find the closing bracket
+                        line = line_nr,
+                        -- NOTE: For multiline arrays, col represents the start position.
+                        -- col.e is set to line length as a placeholder since the true end
+                        -- is on a different line and cannot be represented in a single Span.
+                        col = Span.new(array_s - 1, line:len()),
+                        decl_col = Span.new(0, line:len()),
+                    }
+                end
             end
         elseif dep_section then
             local crate = M.parse_inline_crate(line, line_nr)
             if crate then
                 crate.section = dep_section
+
+                if not crate.feat then
+                    -- Check for multiline features array
+                    local array_s, initial_content = check_multiline_array_start(line, "features")
+                    if array_s then
+                        multiline_feat_lines = { initial_content }
+                        multiline_feat = {
+                            text = "", -- Will be filled when we find the closing bracket
+                            line = line_nr,
+                            -- NOTE: For multiline arrays, col represents the start position.
+                            -- col.e is set to line length as a placeholder since the true end
+                            -- is on a different line and cannot be represented in a single Span.
+                            col = Span.new(array_s - 1, line:len()),
+                            decl_col = Span.new(0, line:len()),
+                        }
+                        dep_section_crate = crate
+                    end
+                end
+
                 table.insert(crates, Crate.new(crate))
             else
                 local name_s, name, name_e = line:match [[^%s*()([^%s]+)()%s*$]]
@@ -704,7 +809,7 @@ function M.parse_crates(buf)
         dep_section.lines.e = #lines
 
         -- push pending crate
-        if dep_section_crate then
+        if dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.TABLE then
             dep_section_crate.lines = dep_section.lines
             table.insert(crates, Crate.new(dep_section_crate))
         end
