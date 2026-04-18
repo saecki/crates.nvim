@@ -54,20 +54,6 @@ lua require('crates').setup()
 </details>
 
 
-<details>
-<summary>For lazy loading.</summary>
-
-```lua
-{
-    'saecki/crates.nvim',
-    event = { "BufRead Cargo.toml" },
-    config = function()
-        require('crates').setup()
-    end,
-}
-```
-</details>
-
 ## [Documentation](https://github.com/Saecki/crates.nvim/wiki)
 - [Stable](https://github.com/Saecki/crates.nvim/wiki/Documentation-v0.7.1)
 - [Unstable](https://github.com/Saecki/crates.nvim/wiki/Documentation-unstable)
