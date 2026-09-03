@@ -1993,34 +1993,25 @@ local function setup_neoconf(config)
 end
 
 ---@param schema table<string,SchemaElement>|SchemaElement[]
----@param user_config table<string,any>
 ---@return table
-local function build_config(schema, user_config)
+local function build_config(schema)
     ---@type table<string,any>
     local config = {}
 
     for _, elem in ipairs(schema) do
         local key = elem.name
-        local user_value = user_config[key]
-        local value_type = type(user_value)
 
         if elem.type.config_type == "section" then
-            if value_type == "table" then
-                config[key] = build_config(elem.fields, user_value)
-            else
-                config[key] = build_config(elem.fields, {})
-            end
+            config[key] = build_config(elem.fields)
         else
-            if matches_type(value_type, elem.type) then
-                config[key] = user_value
-            else
-                config[key] = elem.default
-            end
+            config[key] = elem.default
         end
     end
 
     return config
 end
+
+local current_config = build_config(M.schema)
 
 ---comment
 ---@param user_config table<string,any>?
@@ -2035,11 +2026,11 @@ function M.build(user_config)
 
     handle_deprecated({}, M.schema, user_config, user_config)
     validate_schema({}, M.schema, user_config)
-    local config = build_config(M.schema, user_config)
-    if config.neoconf.enabled then
-        return setup_neoconf(config)
+    current_config = vim.tbl_deep_extend("force", current_config, user_config)
+    if current_config.neoconf.enabled then
+        return setup_neoconf(current_config)
     else
-        return config
+        return current_config
     end
 end
 
