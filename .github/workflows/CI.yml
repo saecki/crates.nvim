@@ -14,8 +14,6 @@ jobs:
       id-token: write
     steps:
     - uses: actions/checkout@v7
-      with:
-        ref: ${{ github.head_ref }}
 
     - name: Install neovim
       uses: rhysd/action-setup-vim@v1
@@ -27,6 +25,7 @@ jobs:
       run: make types
 
     - name: Commit changes
+      if: github.event_name == 'push'
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
         file_pattern: lua/crates/config/types.lua
@@ -37,6 +36,7 @@ jobs:
       run: make doc
 
     - name: Commit changes
+      if: github.event_name == 'push'
       uses: stefanzweifel/git-auto-commit-action@v7
       with:
         file_pattern: README.md doc/crates.txt docgen/wiki
