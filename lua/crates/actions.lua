@@ -198,8 +198,8 @@ end
 ---@return fun()
 local function remove_feature_dep_prefix_action(buf, crate, feat)
     return function()
-        local line = crate.feat.line
-        local col_start = crate.feat.col.s + feat.col.s
+        local line = feat.line or crate.feat.line
+        local col_start = feat.col.s
         local col_end = col_start + 4
         vim.api.nvim_buf_set_text(buf, line, col_start, line, col_end, {})
     end

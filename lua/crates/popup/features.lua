@@ -2,7 +2,6 @@ local edit = require("crates.edit")
 local popup = require("crates.popup.common")
 local state = require("crates.state")
 local toml = require("crates.toml")
-local TomlCrateSyntax = toml.TomlCrateSyntax
 local util = require("crates.util")
 local FeatureInfo = util.FeatureInfo
 
@@ -92,57 +91,28 @@ local function toggle_feature(ctx, line)
         feat_name = parent_name
     end
 
-    ---@type Span
-    local line_span
     local crate_feature = ctx.crate:get_feat(feat_name)
     if selected_feature.name == "default" then
         if crate_feature ~= nil or ctx.crate:is_def_enabled() then
-            line_span = edit.disable_def_features(ctx.buf, ctx.crate, crate_feature)
+            edit.disable_def_features(ctx.buf, ctx.crate, crate_feature)
         else
-            line_span = edit.enable_def_features(ctx.buf, ctx.crate)
+            edit.enable_def_features(ctx.buf, ctx.crate)
         end
     else
         if crate_feature then
-            line_span = edit.disable_feature(ctx.buf, ctx.crate, crate_feature)
+            edit.disable_feature(ctx.buf, ctx.crate, crate_feature)
         else
-            line_span = edit.enable_feature(ctx.buf, ctx.crate, feat_name)
+            edit.enable_feature(ctx.buf, ctx.crate, feat_name)
         end
     end
 
-    -- update crate version, features, and default_features positions
-    -- because they probably have changed after the edits, so toggling
-    -- multiple features will be correct
-    if ctx.crate.syntax == TomlCrateSyntax.TABLE then
-        for line_nr in line_span:iter() do
-            ---@type string
-            local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
-            text = toml.trim_comments(text)
-
-            local def = toml.parse_crate_table_bool(text, line_nr, toml.TABLE_DEF_PATTERN)
-            if def then
-                ctx.crate.def = def
-            end
-            local feat = toml.parse_crate_table_str_array(text, line_nr, toml.TABLE_FEAT_PATTERN)
-            if feat then
-                ctx.crate.feat = feat
-            end
-
-            ctx.crate = toml.Crate.new(ctx.crate)
-        end
-    else -- ctx.crate.syntax == TomlCrateSyntax.INLINE_TABLE or ctx.crate.syntax == TomlCrateSyntax.PLAIN then
-        local line_nr = line_span.s
-        ---@type string
-        local text = vim.api.nvim_buf_get_lines(ctx.buf, line_nr, line_nr + 1, false)[1]
-        text = toml.trim_comments(text)
-
-        local raw_crate = toml.parse_inline_crate(text, line_nr)
-        assert(raw_crate, "edits were valid")
-        local crate = toml.Crate.new(raw_crate)
-        ctx.crate.syntax = crate.syntax
-        ctx.crate.vers = crate.vers
-        ctx.crate.feat = crate.feat
-        ctx.crate.def = crate.def
+    -- Spans shift after an edit; stale columns would corrupt the next toggle.
+    local refreshed = toml.refresh_crate(ctx.buf, ctx.crate)
+    if not refreshed then
+        util.notify(vim.log.levels.WARN, "Failed to re-parse crate after edit")
+        return
     end
+    ctx.crate = refreshed
 
     -- update buffer
     local features_text = {}

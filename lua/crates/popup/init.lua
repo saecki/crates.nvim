@@ -51,7 +51,7 @@ local function line_crate_info()
 
     local function features_info()
         for _, cf in ipairs(crate.feat.items) do
-            if cf.decl_col:contains(col - crate.feat.col.s) then
+            if cf.line == line and cf.decl_col:contains(col) then
                 info.feature = newest.features:get_feat(cf.name)
                 break
             end
@@ -78,7 +78,7 @@ local function line_crate_info()
     elseif crate.syntax == TomlCrateSyntax.TABLE then
         if crate.vers and line == crate.vers.line then
             versions_info()
-        elseif crate.feat and line == crate.feat.line then
+        elseif crate.feat and toml.feat_contains_line(crate.feat, line) then
             features_info()
         elseif crate.def and line == crate.def.line then
             default_features_info()
@@ -86,11 +86,13 @@ local function line_crate_info()
             -- crate_info()
         end
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-        if crate.vers and crate.vers.decl_col:contains(col) then
+        if crate.vers and crate.vers.line == line and crate.vers.decl_col:contains(col) then
             versions_info()
-        elseif crate.feat and crate.feat.decl_col:contains(col) then
+        elseif crate.feat and toml.feat_contains_line(crate.feat, line)
+            and (line ~= crate.feat.line or crate.feat.decl_col:contains(col) or col >= crate.feat.col.s)
+        then
             features_info()
-        elseif crate.def and crate.def.decl_col:contains(col) then
+        elseif crate.def and crate.def.line == line and crate.def.decl_col:contains(col) then
             default_features_info()
         else
             -- crate_info()
