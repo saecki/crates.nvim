@@ -70,6 +70,30 @@ describe("edit multiline features", function()
         assert.is_not_nil(result[5]:find("]", 1, true))
     end)
 
+    it("enable then disable does not leave a stray quote", function()
+        local lines = {
+            '[dependencies]',
+            'diesel = { version = "1.4.8", features = [',
+            '  "uuidv07",',
+            '  "extras",',
+            '] }',
+        }
+        local crate, buf = parse(lines)
+        edit.enable_feature(buf, crate, "mysql")
+        crate = toml.refresh_crate(buf, crate)
+        local added = crate:get_feat("mysql")
+        assert.is_not_nil(added)
+        edit.disable_feature(buf, crate, added)
+
+        local result = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+        local text = table.concat(result, "\n")
+        assert.is_nil(text:find('"mysql"', 1, true))
+        assert.is_nil(result[5]:find('"', 1, true))
+        assert.equals("] }", result[5]:match("%S.*"))
+        local _, crates = toml.parse_crates(buf)
+        assert.equals(2, #crates[1].feat.items)
+    end)
+
     it("refreshes spans after two edits", function()
         local lines = {
             '[dependencies]',

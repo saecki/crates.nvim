@@ -788,7 +788,8 @@ function M.parse_crates(buf)
             end
             handled = true
         elseif multiline_feat then
-            local content_before_close, suffix = line:match("^%s*([^%]]*)%](.*)$")
+            -- Keep leading whitespace so feature columns match the buffer line.
+            local content_before_close, suffix = line:match("^([^%]]*)%](.*)$")
             if content_before_close then
                 table.insert(multiline_feat_lines, content_before_close)
                 multiline_feat.text = table.concat(multiline_feat_lines, "\n")
