@@ -120,4 +120,35 @@ describe("parse_crates multiline features", function()
         assert.equals("serde", crates[2]:package())
         assert.equals("1", crates[2].vers.text)
     end)
+
+    it("keeps in-progress features when the array is unclosed at EOF", function()
+        local lines = {
+            '[dependencies]',
+            'tokio = { version = "1", features = [',
+            '    "full"',
+        }
+        local crates = parse(lines)
+
+        assert.equals(1, #crates)
+        assert.equals("tokio", crates[1]:package())
+        assert.is_not_nil(crates[1].feat)
+        assert.equals(1, #crates[1].feat.items)
+        assert.equals("full", crates[1].feat.items[1].name)
+        assert.equals(2, crates[1].feat.items[1].line)
+        assert.equals(3, crates[1].lines.e)
+    end)
+
+    it("does not treat extra-features as a features array", function()
+        local lines = {
+            '[dependencies]',
+            'tokio = { version = "1", extra-features = [',
+            '    "nope"',
+            '] }',
+        }
+        local crates = parse(lines)
+
+        assert.equals(1, #crates)
+        assert.is_nil(crates[1].feat)
+        assert.equals("1", crates[1].vers.text)
+    end)
 end)

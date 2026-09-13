@@ -22,12 +22,12 @@ describe("parse_crates repro", function()
         }
         local buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-        
+
         local sections, crates = toml.parse_crates(buf)
-        
+
         assert.equals(1, #sections)
         assert.equals(1, #crates)
-        
+
         local crate = crates[1]
         assert.equals("diesel", crate:package())
         assert.is_not_nil(crate.feat)
@@ -48,7 +48,7 @@ describe("parse_crates repro", function()
         assert.is_not_nil(crates[1].feat)
         assert.equals(0, #crates[1].feat.items)
     end)
-    
+
     it("parses array with spaces", function()
         local lines = {
             '[dependencies]',
@@ -60,7 +60,7 @@ describe("parse_crates repro", function()
         assert.equals(1, #crates)
         assert.equals(2, #crates[1].feat.items)
     end)
-    
+
     it("parses diesel with features first", function()
         local lines = {
             '[dependencies]',
@@ -70,9 +70,9 @@ describe("parse_crates repro", function()
         }
         local buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-        
+
         local sections, crates = toml.parse_crates(buf)
-        
+
         assert.equals(1, #crates)
         local crate = crates[1]
         assert.equals("diesel", crate:package())
@@ -91,9 +91,9 @@ describe("parse_crates repro", function()
         }
         local buf = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-        
+
         local sections, crates = toml.parse_crates(buf)
-        
+
         assert.equals(1, #crates)
         local crate = crates[1]
         assert.equals("diesel", crate:package())

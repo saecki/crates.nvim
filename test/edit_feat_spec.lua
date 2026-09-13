@@ -30,8 +30,8 @@ describe("edit multiline features", function()
         assert.equals('diesel = { version = "1.4.8", features = [', result[2])
         assert.equals('  "uuidv07",', result[3])
         assert.equals('  "extras",', result[4])
-        assert.is_not_nil(result[5]:find('"mysql"', 1, true))
-        assert.is_not_nil(result[5]:find("]", 1, true))
+        assert.equals('  "mysql"', result[5])
+        assert.equals('] }', result[6])
         assert.is_nil(result[2]:find('"mysql"', 1, true))
     end)
 
@@ -66,8 +66,8 @@ describe("edit multiline features", function()
 
         local result = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
         assert.equals('    "full",', result[4])
-        assert.is_not_nil(result[5]:find('"rt"', 1, true))
-        assert.is_not_nil(result[5]:find("]", 1, true))
+        assert.equals('    "rt"', result[5])
+        assert.equals(']', result[6])
     end)
 
     it("enable then disable does not leave a stray quote", function()
@@ -88,8 +88,14 @@ describe("edit multiline features", function()
         local result = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
         local text = table.concat(result, "\n")
         assert.is_nil(text:find('"mysql"', 1, true))
-        assert.is_nil(result[5]:find('"', 1, true))
-        assert.equals("] }", result[5]:match("%S.*"))
+        local close
+        for _, l in ipairs(result) do
+            if l:find("]", 1, true) then
+                close = l
+            end
+        end
+        assert.equals("] }", close:match("%S.*"))
+        assert.is_nil(close:find('"', 1, true))
         local _, crates = toml.parse_crates(buf)
         assert.equals(2, #crates[1].feat.items)
     end)

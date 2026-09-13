@@ -63,6 +63,8 @@ M.TomlCrateSyntax = TomlCrateSyntax
 ---@field col Span
 ---@field decl_col Span
 ---@field text string
+---@field end_line integer?
+---@field end_col integer?
 
 ---@class TomlCrateVers: TomlCrateEntry
 ---@field reqs Requirement[]
@@ -156,7 +158,11 @@ function M.parse_crate_features(text, start_line, start_col)
             decl_s = 0
         end
         if decl_end_line ~= line then
+            -- `col_e` is the exclusive name end (the closing quote). Keep the quote.
             decl_e = col_e
+            if qe ~= "" then
+                decl_e = col_e + 1
+            end
         end
         ---@type TomlFeature
         local feat = {
@@ -482,12 +488,16 @@ end
 local function check_multiline_array_start(line, name)
     -- `array_s` is the 1-based index of the first char after `[`.
     -- Feature names cannot contain `]` (Cargo: ASCII alphanumeric, `_`, `-`, `+`).
-    local pattern = "()" .. name .. "%s*=%s*%[()([^%]]*)$"
-    local decl_s, array_s, partial_text = line:match(pattern)
-    if array_s then
-        return array_s, partial_text, decl_s
+    -- Reject keys that only *end* with `name` (`extra-features = [`).
+    local before, decl_s, array_s, partial_text = line:match("^(.-)()" .. name .. "%s*=%s*%[()([^%]]*)$")
+    if not array_s then
+        return nil, nil, nil
     end
-    return nil, nil, nil
+    local last = before:sub(-1)
+    if before ~= "" and not last:match("[%s{,]") then
+        return nil, nil, nil
+    end
+    return array_s, partial_text, decl_s
 end
 
 ---@param feat TomlCrateFeat
@@ -613,7 +623,6 @@ local function parse_inline_table_str_array(crate, line, line_nr, pattern)
     end
 end
 
----comment
 ---@param crate TomlCrate
 ---@param line string
 ---@param line_nr integer
@@ -633,7 +642,6 @@ local function parse_inline_table_bool(crate, line, line_nr, pattern)
     end
 end
 
----comment
 ---@param line string
 ---@param line_nr integer
 ---@return TomlCrate?
@@ -704,7 +712,7 @@ end
 
 ---@param buf integer
 ---@param crate TomlCrate
----@return TomlCrate
+---@return TomlCrate?
 function M.refresh_crate(buf, crate)
     local _, crates = M.parse_crates(buf)
     local key = crate:cache_key()
@@ -713,7 +721,7 @@ function M.refresh_crate(buf, crate)
             return c
         end
     end
-    return crate
+    return nil
 end
 
 ---@param crate TomlCrate
@@ -731,7 +739,22 @@ local function finish_multiline_feat(crate, feat, line_nr, suffix, closing_brack
     end
 end
 
----comment
+---@param crate TomlCrate
+---@param feat table<string,any>
+---@param feat_lines string[]
+local function apply_unclosed_feat(crate, feat, feat_lines)
+    if not crate or not feat or not feat_lines then
+        return
+    end
+    feat.text = table.concat(feat_lines, "\n")
+    feat.end_line = feat.line + #feat_lines - 1
+    feat.end_col = #(feat_lines[#feat_lines] or "")
+    crate.feat = feat
+    if crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        crate.lines.e = feat.end_line + 1
+    end
+end
+
 ---@param buf integer
 ---@return TomlSection[]
 ---@return TomlCrate[]
@@ -766,10 +789,11 @@ function M.parse_crates(buf)
                 dep_section.lines.e = line_nr
 
                 if dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.TABLE then
+                    apply_unclosed_feat(dep_section_crate, multiline_feat, multiline_feat_lines)
                     dep_section_crate.lines = dep_section.lines
                     table.insert(crates, Crate.new(dep_section_crate))
                 elseif dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-                    -- unclosed multiline array: still emit the crate
+                    apply_unclosed_feat(dep_section_crate, multiline_feat, multiline_feat_lines)
                     table.insert(crates, Crate.new(dep_section_crate))
                 end
             end
@@ -820,6 +844,7 @@ function M.parse_crates(buf)
                 end
                 handled = true
             elseif looks_like_assignment(line) then
+                apply_unclosed_feat(dep_section_crate, multiline_feat, multiline_feat_lines)
                 multiline_feat = nil
                 multiline_feat_lines = nil
                 if dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.INLINE_TABLE then
@@ -955,9 +980,11 @@ function M.parse_crates(buf)
         dep_section.lines.e = #lines
 
         if dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.TABLE then
+            apply_unclosed_feat(dep_section_crate, multiline_feat, multiline_feat_lines)
             dep_section_crate.lines = dep_section.lines
             table.insert(crates, Crate.new(dep_section_crate))
         elseif dep_section_crate and dep_section_crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+            apply_unclosed_feat(dep_section_crate, multiline_feat, multiline_feat_lines)
             table.insert(crates, Crate.new(dep_section_crate))
         end
     end

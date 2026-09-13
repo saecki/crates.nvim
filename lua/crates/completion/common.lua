@@ -279,10 +279,10 @@ local function complete_crates(buf, prefix, line, col, crate)
                     return ('%s]\nversion = "${1:%s}"'):format(name, version)
                 end
             elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-                local vers_col = edit.col_to_insert(crate, "vers")
+                local vers_line, vers_col = edit.insert_pos(crate, "vers")
                 additionalTextEdits = function(version)
                     return { {
-                        range = Span.new(vers_col, vers_col):range(line),
+                        range = Span.new(vers_col, vers_col):range(vers_line),
                         newText = string.format(' version = "%s",', version),
                     } }
                 end
@@ -389,11 +389,25 @@ local function complete()
                 return complete_features(crate, f, api_crate.versions)
             end
         end
-        local cf = crate.feat.items[#crate.feat.items] or {
-            quote = { s = '"', e = '"' },
-        }
-        return complete_features(crate, cf, api_crate.versions)
+        -- New array element, not a replacement of an existing quoted name.
+        local list = complete_features(crate, { quote = { s = '"', e = '"' } }, api_crate.versions)
+        if list then
+            for _, item in ipairs(list.items) do
+                local name = item.insertText or item.label
+                if state.cfg.completion.insert_closing_quote then
+                    item.insertText = '"' .. name .. '"'
+                else
+                    item.insertText = '"' .. name
+                end
+            end
+        end
+        return list
     end
+end
+
+---@return CompletionList?
+function M.complete_sync()
+    return complete()
 end
 
 ---@param callback fun(list: CompletionList?)

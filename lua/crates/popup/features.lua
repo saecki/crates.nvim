@@ -106,8 +106,13 @@ local function toggle_feature(ctx, line)
         end
     end
 
-    -- Re-parse the buffer so multiline arrays keep correct spans after a toggle.
-    ctx.crate = toml.refresh_crate(ctx.buf, ctx.crate)
+    -- Spans shift after an edit; stale columns would corrupt the next toggle.
+    local refreshed = toml.refresh_crate(ctx.buf, ctx.crate)
+    if not refreshed then
+        util.notify(vim.log.levels.WARN, "Failed to re-parse crate after edit")
+        return
+    end
+    ctx.crate = refreshed
 
     -- update buffer
     local features_text = {}

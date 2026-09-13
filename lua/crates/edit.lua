@@ -38,19 +38,70 @@ local default_key_order = {
     "opt",
 }
 
----Returns the column at which to insert the key and whether there is another key before that.
----Requires that the key to insert isn't present in the crate,
----and that at least one other key is present
+---@param a_line integer
+---@param a_col integer
+---@param b_line integer
+---@param b_col integer
+---@return boolean
+local function pos_before(a_line, a_col, b_line, b_col)
+    return a_line < b_line or (a_line == b_line and a_col < b_col)
+end
+
+---@param text string
+---@param col integer
+---@return integer
+local function skip_comma_space(text, col)
+    local i = col + 1
+    if text:sub(i, i) == "," then
+        i = i + 1
+        while text:sub(i, i) == " " do
+            i = i + 1
+        end
+        return i - 1
+    end
+    return col
+end
+
+---Exclusive end of a value (`]` for a multiline array, after the closing quote otherwise).
+---@param entry TomlCrateEntry
+---@return integer, integer
+local function entry_end_pos(entry)
+    if entry.end_col then
+        return entry.end_line or entry.line, entry.end_col + 1
+    end
+    local col = entry.col.e
+    ---@cast entry TomlCrateString
+    if entry.quote and entry.quote.e then
+        col = col + 1
+    end
+    return entry.line, col
+end
+
+---Declaration span: start of the key through exclusive end of the value.
+---@param entry TomlCrateEntry
+---@return integer, integer, integer, integer
+local function entry_decl_span(entry)
+    local end_line, end_col = entry_end_pos(entry)
+    if entry.end_line and entry.end_line ~= entry.line then
+        return entry.line, entry.decl_col.s, end_line, end_col
+    end
+    return entry.line, entry.decl_col.s, entry.line, entry.decl_col.e
+end
+
+---Returns the buffer position at which to insert `key`, and whether another key precedes it.
+---Requires that `key` is missing and that at least one other key is present.
 ---@param crate TomlCrate
 ---@param key TomlCrateEntryKey
----@return integer, boolean
-function M.col_to_insert(crate, key)
-    local col = 0
+---@return integer, integer, boolean
+function M.insert_pos(crate, key)
+    local ins_line = crate.lines.s
+    local ins_col = 0
+    local found_prev = false
     local before = true
     for _, k in ipairs(default_key_order) do
         if key == k then
-            if col ~= 0 then
-                return col, true
+            if found_prev then
+                return ins_line, ins_col, true
             end
 
             before = false
@@ -61,20 +112,32 @@ function M.col_to_insert(crate, key)
         local entry = crate[k]
         if entry then
             if before then
-                col = entry.col.e
-                ---@cast entry TomlCrateString
-                if entry.quote and entry.quote.e then
-                    col = col + 1
-                end
+                ins_line, ins_col = entry_end_pos(entry)
+                found_prev = true
             else
-                return entry.decl_col.s, false
+                return entry.line, entry.decl_col.s, false
             end
         end
 
         ::continue::
     end
 
+    if found_prev then
+        return ins_line, ins_col, true
+    end
+
     error("no other keys present")
+end
+
+---Returns the column at which to insert the key and whether there is another key before that.
+---Requires that the key to insert isn't present in the crate,
+---and that at least one other key is present
+---@param crate TomlCrate
+---@param key TomlCrateEntryKey
+---@return integer, boolean
+function M.col_to_insert(crate, key)
+    local _, col, before = M.insert_pos(crate, key)
+    return col, before
 end
 
 ---Returns the line at which to insert the key
@@ -99,7 +162,7 @@ function M.line_to_insert(crate, key)
         local entry = crate[k]
         if entry then
             if before then
-                line = entry.line + 1
+                line = (entry.end_line or entry.line) + 1
             else
                 return entry.line
             end
@@ -115,44 +178,44 @@ end
 ---@param crate TomlCrate
 ---@param entry TomlCrateEntry
 local function remove_inline_table_entry(buf, crate, entry)
-    local index = 1
-    local prev_entry_end = nil
-    local next_entry_start = nil
+    local s_line, s_col, e_line, e_col = entry_decl_span(entry)
+
+    local prev_end_line, prev_end_col = nil, nil
+    local next_start_line, next_start_col = nil, nil
     for _, k in ipairs(default_key_order) do
         ---@type TomlCrateEntry
         local e = crate[k]
-        if e then
-            if e.decl_col.s < entry.decl_col.s then
-                index = index + 1
-
-                if not prev_entry_end or prev_entry_end < e.decl_col.e then
-                    prev_entry_end = e.decl_col.e
+        if e and e ~= entry then
+            local es, ecs, ee, ece = entry_decl_span(e)
+            if pos_before(es, ecs, s_line, s_col) then
+                if not prev_end_line or pos_before(prev_end_line, prev_end_col, ee, ece) then
+                    prev_end_line, prev_end_col = ee, ece
                 end
-            elseif e.decl_col.s > entry.decl_col.s then
-                if not next_entry_start or next_entry_start > e.decl_col.s then
-                    next_entry_start = e.decl_col.s
+            elseif pos_before(s_line, s_col, es, ecs) then
+                if not next_start_line or pos_before(es, ecs, next_start_line, next_start_col) then
+                    next_start_line, next_start_col = es, ecs
                 end
             end
         end
     end
 
-    local col_start = entry.decl_col.s
-    local col_end = entry.decl_col.e
+    local start_line, start_col = s_line, s_col
+    local end_line, end_col = e_line, e_col
     local text = {}
-    if index == 1 then
-        if next_entry_start then
-            col_end = next_entry_start
+    if prev_end_line == s_line then
+        start_line, start_col = prev_end_line, prev_end_col
+        if not next_start_line then
+            text = { " " }
         end
-    else
-        if prev_entry_end then
-            col_start = prev_entry_end
-            if not next_entry_start then
-                text = { " " }
-            end
-        end
+    elseif next_start_line == e_line then
+        end_line, end_col = next_start_line, next_start_col
+        -- Suffix keys after `]` include the comma in `decl_col`; eat it so we
+        -- don't leave `{ , version = ... }`.
+        local end_text = vim.api.nvim_buf_get_lines(buf, end_line, end_line + 1, false)[1]
+        end_col = skip_comma_space(end_text, end_col)
     end
 
-    vim.api.nvim_buf_set_text(buf, entry.line, col_start, entry.line, col_end, text)
+    vim.api.nvim_buf_set_text(buf, start_line, start_col, end_line, end_col, text)
 end
 
 ---Removes the key and returns the crate's span of lines after editing.
@@ -173,31 +236,6 @@ function M.remove_entry(buf, crate, key)
         vim.api.nvim_buf_set_lines(buf, line, end_line, false, {})
         return crate.lines:moved(0, -(end_line - line))
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-        if key == "feat" and entry.end_line and entry.end_line ~= entry.line then
-            local col_start = entry.decl_col.s
-            local prev_end = nil
-            for _, k in ipairs(default_key_order) do
-                ---@type TomlCrateEntry
-                local e = crate[k]
-                if e and e.line == entry.line and e.decl_col.s < entry.decl_col.s then
-                    if not prev_end or prev_end < e.decl_col.e then
-                        prev_end = e.decl_col.e
-                    end
-                end
-            end
-            if prev_end then
-                col_start = prev_end
-            end
-            vim.api.nvim_buf_set_text(
-                buf,
-                entry.line,
-                col_start,
-                entry.end_line,
-                entry.end_col + 1,
-                { "" }
-            )
-            return crate.lines
-        end
         remove_inline_table_entry(buf, crate, entry)
         return crate.lines
     else -- crate.syntax == TomlCrateSyntax.PLAIN then
@@ -227,8 +265,7 @@ local function insert_version(buf, crate, text)
             )
             return crate.lines:moved(0, 1)
         elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-            local line = crate.lines.s
-            local col = M.col_to_insert(crate, "vers")
+            local line, col = M.insert_pos(crate, "vers")
             vim.api.nvim_buf_set_text(
                 buf, line, col, line, col,
                 { ' version = "' .. text .. '",' }
@@ -489,6 +526,27 @@ function M.enable_feature(buf, crate, feature)
 
     if crate.feat then
         local last_feat = crate.feat.items[#crate.feat.items]
+        local line = crate.feat.end_line or crate.feat.line
+        local col = crate.feat.end_col or crate.feat.col.e
+        local multiline = crate.feat.end_line and crate.feat.end_line ~= crate.feat.line
+
+        if multiline then
+            if last_feat and not last_feat.comma then
+                local comma_at = last_feat.col.e
+                if last_feat.quote.e then
+                    comma_at = comma_at + 1
+                end
+                vim.api.nvim_buf_set_text(buf, last_feat.line, comma_at, last_feat.line, comma_at, { "," })
+            end
+            local indent = "    "
+            if last_feat then
+                local last_line = vim.api.nvim_buf_get_lines(buf, last_feat.line, last_feat.line + 1, false)[1]
+                indent = last_line:match("^%s*") or indent
+            end
+            vim.api.nvim_buf_set_text(buf, line, col, line, col, { indent .. t, "" })
+            return Span.pos(line)
+        end
+
         if last_feat then
             if not last_feat.comma then
                 t = ", " .. t
@@ -500,8 +558,6 @@ function M.enable_feature(buf, crate, feature)
             end
         end
 
-        local line = crate.feat.end_line or crate.feat.line
-        local col = crate.feat.end_col or crate.feat.col.e
         vim.api.nvim_buf_set_text(buf, line, col, line, col, { t })
         return Span.pos(line)
     end
@@ -514,8 +570,7 @@ function M.enable_feature(buf, crate, feature)
         )
         return Span.pos(line)
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-        local line = crate.lines.s
-        local col, before = M.col_to_insert(crate, "feat")
+        local line, col, before = M.insert_pos(crate, "feat")
         local text = ", features = [" .. t .. "]"
         if not before then
             text = " features = [" .. t .. "],"
@@ -573,7 +628,13 @@ function M.disable_feature(buf, crate, feature)
     local multiline = crate.feat.end_line and crate.feat.end_line ~= crate.feat.line
 
     if multiline then
-        if feature.comma then
+        local prev_feat = crate.feat.items[index - 1]
+        local next_feat = crate.feat.items[index + 1]
+        if prev_feat and prev_feat.line == line then
+            col_start = prev_feat.col.e + 1
+        elseif next_feat and next_feat.line == line then
+            col_end = next_feat.col.s - 1
+        elseif feature.comma then
             col_end = col_end + 1
         end
         vim.api.nvim_buf_set_text(buf, line, col_start, line, col_end, { "" })
@@ -642,8 +703,7 @@ local function disable_def_features(buf, crate)
         )
         return crate.lines:moved(0, 1)
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
-        local line = crate.lines.s
-        local col, before = M.col_to_insert(crate, "def")
+        local line, col, before = M.insert_pos(crate, "def")
         local text = ", default-features = false"
         if not before then
             text = " default-features = false,"
@@ -689,7 +749,9 @@ end
 ---@return Span
 function M.disable_def_features(buf, crate, feature)
     if feature then
-        if not crate.def or crate.def.col.s < crate.feat.col.s then
+        local def_before_feat = not crate.def
+            or pos_before(crate.def.line, crate.def.col.s, crate.feat.line, crate.feat.col.s)
+        if def_before_feat then
             M.disable_feature(buf, crate, feature)
             return disable_def_features(buf, crate)
         else
@@ -721,6 +783,23 @@ function M.expand_plain_crate_to_inline_table(buf, crate)
     end
 end
 
+---@param feat TomlCrateFeat
+---@return string[]
+local function feat_as_table_lines(feat)
+    local inner = vim.split(feat.text, "\n", { plain = true })
+    if #inner == 1 then
+        return { "features = [" .. inner[1] .. "]" }
+    end
+
+    ---@type string[]
+    local out = { "features = [" .. inner[1] }
+    for i = 2, #inner - 1 do
+        table.insert(out, inner[i])
+    end
+    table.insert(out, inner[#inner] .. "]")
+    return out
+end
+
 ---@param buf integer
 ---@param crate TomlCrate
 function M.extract_crate_into_table(buf, crate)
@@ -728,10 +807,9 @@ function M.extract_crate_into_table(buf, crate)
         return
     end
 
-    -- remove original line
+    local insert_line = crate.section.lines.e - (crate.lines.e - crate.lines.s)
     vim.api.nvim_buf_set_lines(buf, crate.lines.s, crate.lines.e, false, {})
 
-    -- insert table after dependency section
     local lines = {
         crate.section:display(crate.explicit_name),
     }
@@ -766,7 +844,9 @@ function M.extract_crate_into_table(buf, crate)
         table.insert(lines, "default-features = " .. crate.def.text)
     end
     if crate.feat then
-        table.insert(lines, "features = [" .. crate.feat.text .. "]")
+        for _, l in ipairs(feat_as_table_lines(crate.feat)) do
+            table.insert(lines, l)
+        end
     end
     if crate.opt then
         table.insert(lines, "optional = " .. '"' .. crate.opt.text .. '"')
@@ -774,8 +854,7 @@ function M.extract_crate_into_table(buf, crate)
 
     table.insert(lines, "")
 
-    local line = crate.section.lines.e - 1
-    vim.api.nvim_buf_set_lines(buf, line, line, false, lines)
+    vim.api.nvim_buf_set_lines(buf, insert_line, insert_line, false, lines)
 end
 
 return M

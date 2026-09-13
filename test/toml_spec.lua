@@ -56,6 +56,7 @@ describe("parse_crate_features", function()
         assert.equals(1, features[1].line)
         assert.equals(2, features[2].line)
         assert.equals(3, features[3].line)
+        assert.equals(features[3].col.e + 1, features[3].decl_col.e)
     end)
 
     it("applies start_col on the first line only", function()
