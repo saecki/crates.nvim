@@ -13,6 +13,9 @@ local M = {
 ---@field diagnostics vim.Diagnostic[]
 ---@field search_transaction SearchTransaction?
 ---@field line_state table<integer,LineState>
+---@field loading_timer uv.uv_timer_t?
+---@field loading_frame integer
+---@field loading_lines table<integer,boolean>
 
 ---@class SearchTransaction
 ---@field id number
@@ -25,6 +28,19 @@ local LineState = {
     UPDATE = 3,
 }
 
+local LOADING_FRAMES = {
+    "⠋",
+    "⠙",
+    "⠹",
+    "⠸",
+    "⠼",
+    "⠴",
+    "⠦",
+    "⠧",
+    "⠇",
+    "⠏",
+}
+
 ---@param buf integer
 ---@return BufUiState
 function M.get_or_init(buf)
@@ -32,6 +48,8 @@ function M.get_or_init(buf)
         custom_diagnostics = {},
         diagnostics = {},
         line_state = {},
+        loading_frame = 1,
+        loading_lines = {},
     }
     M.state[buf] = buf_state
     return buf_state
@@ -40,7 +58,82 @@ end
 ---@type integer
 local CUSTOM_NS = vim.api.nvim_create_namespace("crates.nvim")
 ---@type integer
+local LOADING_NS = vim.api.nvim_create_namespace("crates.nvim.loading")
+---@type integer
 local DIAGNOSTIC_NS = vim.api.nvim_create_namespace("crates.nvim.diagnostic")
+
+---@param text string
+---@param frame string
+---@return string
+local function loading_text(text, frame)
+    local replaced = text:gsub("^(%s*)%S+", "%1" .. frame, 1)
+    return replaced
+end
+
+---@param buf_state BufUiState
+local function stop_loading_timer(buf_state)
+    if buf_state.loading_timer then
+        buf_state.loading_timer:stop()
+        buf_state.loading_timer:close()
+        buf_state.loading_timer = nil
+    end
+end
+
+---@param buf integer
+---@param buf_state BufUiState
+---@param line integer
+local function hide_loading_indicator(buf, buf_state, line)
+    if buf_state.line_state[line] == LineState.LOADING then
+        buf_state.line_state[line] = nil
+        buf_state.loading_lines[line] = nil
+        vim.api.nvim_buf_clear_namespace(buf, LOADING_NS, line, line + 1)
+    end
+end
+
+---@param buf integer
+---@param buf_state BufUiState
+local function render_loading(buf, buf_state)
+    if not next(buf_state.loading_lines) then
+        stop_loading_timer(buf_state)
+        return
+    end
+
+    local frame = LOADING_FRAMES[buf_state.loading_frame] or LOADING_FRAMES[1]
+    buf_state.loading_frame = (buf_state.loading_frame % #LOADING_FRAMES) + 1
+
+    vim.api.nvim_buf_clear_namespace(buf, LOADING_NS, 0, -1)
+    for line, _ in pairs(buf_state.loading_lines) do
+        vim.api.nvim_buf_set_extmark(buf, LOADING_NS, line, -1, {
+            virt_text = { { loading_text(state.cfg.text.loading, frame), state.cfg.highlight.loading } },
+            virt_text_pos = "eol",
+            hl_mode = "combine",
+        })
+    end
+end
+
+---@param buf integer
+---@param buf_state BufUiState
+local function ensure_loading_timer(buf, buf_state)
+    if buf_state.loading_timer then
+        return
+    end
+
+    local timer = assert(vim.loop.new_timer())
+    buf_state.loading_timer = timer
+    timer:start(120, 120, vim.schedule_wrap(function()
+        local current = M.state[buf]
+        if not current or current.loading_timer ~= timer then
+            return
+        end
+
+        if not state.visible or not vim.api.nvim_buf_is_loaded(buf) or not next(current.loading_lines) then
+            stop_loading_timer(current)
+            return
+        end
+
+        render_loading(buf, current)
+    end))
+end
 
 ---@param buf integer
 ---@param d CratesDiagnostic
@@ -89,7 +182,10 @@ function M.display_crate_info(buf, infos)
         return
     end
 
+    local buf_state = M.get_or_init(buf)
     for _, info in ipairs(infos) do
+        hide_loading_indicator(buf, buf_state, info.vers_line)
+
         local virt_text = {}
         if info.vers_match then
             table.insert(virt_text, {
@@ -123,6 +219,10 @@ function M.display_crate_info(buf, infos)
             hl_mode = "combine",
         })
     end
+
+    if not next(buf_state.loading_lines) then
+        stop_loading_timer(buf_state)
+    end
 end
 
 ---@param buf integer
@@ -137,14 +237,11 @@ function M.display_loading(buf, crates)
     for _, crate in ipairs(crates) do
         local vers_line = crate.vers and crate.vers.line or crate.lines.s
         buf_state.line_state[vers_line] = LineState.LOADING
-
-        local virt_text = { { state.cfg.text.loading, state.cfg.highlight.loading } }
-        vim.api.nvim_buf_set_extmark(buf, CUSTOM_NS, vers_line, -1, {
-            virt_text = virt_text,
-            virt_text_pos = "eol",
-            hl_mode = "combine",
-        })
+        buf_state.loading_lines[vers_line] = true
     end
+
+    render_loading(buf, buf_state)
+    ensure_loading_timer(buf, buf_state)
 end
 
 ---@param buf integer
@@ -214,9 +311,15 @@ end
 
 ---@param buf integer
 function M.clear(buf)
+    local buf_state = M.state[buf]
+    if buf_state then
+        stop_loading_timer(buf_state)
+    end
+
     M.state[buf] = nil
 
     vim.api.nvim_buf_clear_namespace(buf, CUSTOM_NS, 0, -1)
+    vim.api.nvim_buf_clear_namespace(buf, LOADING_NS, 0, -1)
     vim.diagnostic.reset(CUSTOM_NS, buf)
     vim.diagnostic.reset(DIAGNOSTIC_NS, buf)
 end
