@@ -78,6 +78,8 @@ describe("parse_crates repro", function()
         assert.equals("diesel", crate:package())
         assert.equals(1, #crate.feat.items)
         assert.equals("uuidv07", crate.feat.items[1].name)
+        assert.is_not_nil(crate.vers)
+        assert.equals("1.4.8", crate.vers.text)
     end)
 
     it("parses diesel with NO version (only features)", function()

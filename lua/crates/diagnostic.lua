@@ -91,9 +91,13 @@ local function crate_diagnostic(crate, kind, severity, scope, data, message_args
     elseif scope == CrateScope.FEAT then
         if crate.feat then
             d.lnum = crate.feat.line
-            d.end_lnum = crate.feat.line
+            d.end_lnum = crate.feat.end_line or crate.feat.line
             d.col = crate.feat.col.s
-            d.end_col = crate.feat.col.e
+            if d.end_lnum == d.lnum then
+                d.end_col = crate.feat.col.e
+            else
+                d.end_col = crate.feat.end_col or crate.feat.col.e
+            end
         end
     elseif scope == CrateScope.PACKAGE then
         local pkg_line, pkg_col = crate:package_pos()
@@ -114,10 +118,10 @@ end
 ---@return CratesDiagnostic
 local function feat_diagnostic(crate, feat, kind, severity, data)
     return CratesDiagnostic.new({
-        lnum = crate.feat.line,
-        end_lnum = crate.feat.line,
-        col = crate.feat.col.s + feat.col.s,
-        end_col = crate.feat.col.s + feat.col.e,
+        lnum = feat.line or crate.feat.line,
+        end_lnum = feat.line or crate.feat.line,
+        col = feat.col.s,
+        end_col = feat.col.e,
         severity = severity,
         kind = kind,
         data = data,

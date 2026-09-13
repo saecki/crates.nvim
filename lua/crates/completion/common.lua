@@ -383,12 +383,16 @@ local function complete()
 
     if crate.vers and crate.vers.line == line and crate.vers.col:moved(0, 1):contains(col) then
         return complete_versions(crate, api_crate.versions)
-    elseif crate.feat and crate.feat.line == line and crate.feat.col:moved(0, 1):contains(col) then
+    elseif crate.feat and toml.feat_contains_line(crate.feat, line) then
         for _, f in ipairs(crate.feat.items) do
-            if f.col:moved(0, 1):contains(col - crate.feat.col.s) then
+            if f.line == line and f.col:moved(0, 1):contains(col) then
                 return complete_features(crate, f, api_crate.versions)
             end
         end
+        local cf = crate.feat.items[#crate.feat.items] or {
+            quote = { s = '"', e = '"' },
+        }
+        return complete_features(crate, cf, api_crate.versions)
     end
 end
 

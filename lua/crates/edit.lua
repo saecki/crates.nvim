@@ -166,9 +166,38 @@ function M.remove_entry(buf, crate, key)
 
     if crate.syntax == TomlCrateSyntax.TABLE then
         local line = entry.line
-        vim.api.nvim_buf_set_lines(buf, line, line + 1, false, {})
-        return crate.lines:moved(0, -1)
+        local end_line = line + 1
+        if key == "feat" and entry.end_line and entry.end_line >= line then
+            end_line = entry.end_line + 1
+        end
+        vim.api.nvim_buf_set_lines(buf, line, end_line, false, {})
+        return crate.lines:moved(0, -(end_line - line))
     elseif crate.syntax == TomlCrateSyntax.INLINE_TABLE then
+        if key == "feat" and entry.end_line and entry.end_line ~= entry.line then
+            local col_start = entry.decl_col.s
+            local prev_end = nil
+            for _, k in ipairs(default_key_order) do
+                ---@type TomlCrateEntry
+                local e = crate[k]
+                if e and e.line == entry.line and e.decl_col.s < entry.decl_col.s then
+                    if not prev_end or prev_end < e.decl_col.e then
+                        prev_end = e.decl_col.e
+                    end
+                end
+            end
+            if prev_end then
+                col_start = prev_end
+            end
+            vim.api.nvim_buf_set_text(
+                buf,
+                entry.line,
+                col_start,
+                entry.end_line,
+                entry.end_col + 1,
+                { "" }
+            )
+            return crate.lines
+        end
         remove_inline_table_entry(buf, crate, entry)
         return crate.lines
     else -- crate.syntax == TomlCrateSyntax.PLAIN then
@@ -463,21 +492,18 @@ function M.enable_feature(buf, crate, feature)
         if last_feat then
             if not last_feat.comma then
                 t = ", " .. t
+            else
+                t = " " .. t
             end
             if not last_feat.quote.e then
                 t = last_feat.quote.s .. t
             end
         end
 
-        vim.api.nvim_buf_set_text(
-            buf,
-            crate.feat.line,
-            crate.feat.col.e,
-            crate.feat.line,
-            crate.feat.col.e,
-            { t }
-        )
-        return Span.pos(crate.feat.line)
+        local line = crate.feat.end_line or crate.feat.line
+        local col = crate.feat.end_col or crate.feat.col.e
+        vim.api.nvim_buf_set_text(buf, line, col, line, col, { t })
+        return Span.pos(line)
     end
 
     if crate.syntax == TomlCrateSyntax.TABLE then
@@ -541,8 +567,19 @@ function M.disable_feature(buf, crate, feature)
     end
     assert(index)
 
+    local line = feature.line or crate.feat.line
     local col_start = feature.decl_col.s
     local col_end = feature.decl_col.e
+    local multiline = crate.feat.end_line and crate.feat.end_line ~= crate.feat.line
+
+    if multiline then
+        if feature.comma then
+            col_end = col_end + 1
+        end
+        vim.api.nvim_buf_set_text(buf, line, col_start, line, col_end, { "" })
+        return Span.pos(line)
+    end
+
     if index == 1 then
         if #crate.feat.items > 1 then
             col_end = crate.feat.items[2].col.s - 1
@@ -554,15 +591,8 @@ function M.disable_feature(buf, crate, feature)
         col_start = prev_feature.col.e + 1
     end
 
-    vim.api.nvim_buf_set_text(
-        buf,
-        crate.feat.line,
-        crate.feat.col.s + col_start,
-        crate.feat.line,
-        crate.feat.col.s + col_end,
-        { "" }
-    )
-    return Span.pos(crate.feat.line)
+    vim.api.nvim_buf_set_text(buf, line, col_start, line, col_end, { "" })
+    return Span.pos(line)
 end
 
 ---@param buf integer
